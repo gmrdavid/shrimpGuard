@@ -4,108 +4,211 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f5f8f4">
     <title>Alerts and Notifications | ShrimpGuard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
-<body>
+<body class="alerts-page">
 {% include "_icon_sprite.html" %}
 
-<div class="sidebar">
-    <div class="logo"><svg class="ui-icon brand-icon"><use href="#icon-shrimp"></use></svg> <span>ShrimpGuard</span></div>
+<div class="sidebar alerts-sidebar">
+    <div class="logo">
+        <svg class="ui-icon brand-icon"><use href="#icon-shrimp"></use></svg>
+        <span>ShrimpGuard</span>
+    </div>
     <p class="subtitle">Water Quality Monitoring</p>
+
     <nav>
-        <a href="/"><svg class="ui-icon"><use href="#icon-dashboard"></use></svg> Dashboard</a>
-        <a href="/monitoring"><svg class="ui-icon"><use href="#icon-monitor"></use></svg> Real-time Monitoring</a>
-        <a href="/historical"><svg class="ui-icon"><use href="#icon-history"></use></svg> Historical Data</a>
-        <a href="/analytics"><svg class="ui-icon"><use href="#icon-chart"></use></svg> Analytics &amp; Reports</a>
-        <a href="/alerts" class="active"><svg class="ui-icon"><use href="#icon-alert"></use></svg> Alerts and Notifications</a>
-        <a href="/settings"><svg class="ui-icon"><use href="#icon-settings"></use></svg> Settings</a>
+        <a href="/">
+            <svg class="ui-icon"><use href="#icon-dashboard"></use></svg>
+            <span>Dashboard</span>
+        </a>
+        <a href="/monitoring">
+            <svg class="ui-icon"><use href="#icon-monitor"></use></svg>
+            <span>Real-time Monitoring</span>
+        </a>
+        <a href="/historical">
+            <svg class="ui-icon"><use href="#icon-history"></use></svg>
+            <span>Historical Data</span>
+        </a>
+        <a href="/analytics">
+            <svg class="ui-icon"><use href="#icon-chart"></use></svg>
+            <span>Analytics &amp; Reports</span>
+        </a>
+        <a href="/alerts" class="active" aria-current="page">
+            <svg class="ui-icon"><use href="#icon-alert"></use></svg>
+            <span>Alerts and Notifications</span>
+        </a>
+        <a href="/settings">
+            <svg class="ui-icon"><use href="#icon-settings"></use></svg>
+            <span>Settings</span>
+        </a>
     </nav>
+
     {% include "_logout_form.html" %}
+
+    <div class="alerts-sidebar-note">
+        <span class="alerts-sidebar-note-icon">
+            <svg class="ui-icon"><use href="#icon-alert"></use></svg>
+        </span>
+        <div>
+            <strong>Stay informed</strong>
+            <p>Review water quality alerts and follow up on important events.</p>
+        </div>
+    </div>
 </div>
 
-<div class="main-content">
-    <header>
-        <div>
+<main class="main-content alerts-main">
+    <header class="alerts-header">
+        <div class="alerts-page-heading">
+            <span class="alerts-eyebrow">MONITORING CENTER</span>
             <h1>Alerts and Notifications</h1>
-            <p>Live updates generated from the latest pond sensor readings.</p>
+            <p>Track abnormal water conditions, review alert history, and monitor notification activity.</p>
         </div>
-        <div class="header-info">
-            <button id="notification-button" class="notification-button" type="button" aria-label="View notifications"><svg class="ui-icon"><use href="#icon-bell"></use></svg></button>
-            <div class="time"><span id="time"></span></div>
+
+        <div class="header-info alerts-header-info">
+            <div class="alerts-header-label">
+                <span class="alerts-header-dot"></span>
+                <span>Alert center</span>
+            </div>
+            <button id="notification-button"
+                    class="notification-button"
+                    type="button"
+                    aria-label="View notifications">
+                <svg class="ui-icon"><use href="#icon-bell"></use></svg>
+            </button>
+            <div class="time alerts-clock">
+                <span id="time"></span>
+            </div>
         </div>
     </header>
 
-    <section class="cards">
-        <div class="card">
-            <div class="icon"><svg class="ui-icon"><use href="#icon-alert"></use></svg></div>
+    <section class="alerts-section" aria-label="Alert overview">
+        <div class="alerts-section-heading">
             <div>
-                <h3>Critical Alerts</h3>
-                <h2 id="critical-alerts-count">0</h2>
-                <p>Require immediate action</p>
+                <h2>Alert Overview</h2>
+                <p>A quick look at alerts and notifications across your monitoring system.</p>
             </div>
+            <span class="alerts-overview-tag">
+                <svg class="ui-icon"><use href="#icon-alert"></use></svg>
+                Alert summary
+            </span>
         </div>
 
-        <div class="card">
-            <div class="icon"><svg class="ui-icon"><use href="#icon-alert"></use></svg></div>
-            <div>
-                <h3>Warning Alerts</h3>
-                <h2 id="warning-alerts-count">0</h2>
-                <p>Need monitoring</p>
-            </div>
-        </div>
+        <div class="cards alerts-metric-grid">
+            <article class="card alerts-metric-card alerts-critical-card">
+                <div class="alerts-metric-top">
+                    <span class="alerts-metric-icon">
+                        <svg class="ui-icon"><use href="#icon-alert"></use></svg>
+                    </span>
+                    <span class="alerts-metric-label">URGENT</span>
+                </div>
+                <div class="alerts-metric-content">
+                    <h3>Critical Alerts</h3>
+                    <h2 id="critical-alerts-count">0</h2>
+                    <p>Require immediate attention</p>
+                </div>
+            </article>
 
-        <div class="card">
-            <div class="icon"><svg class="ui-icon"><use href="#icon-check-circle"></use></svg></div>
-            <div>
-                <h3>Resolved Alerts</h3>
-                <h2 id="resolved-alerts-count">0</h2>
-                <p>In the last 7 days</p>
-            </div>
-        </div>
+            <article class="card alerts-metric-card alerts-warning-card">
+                <div class="alerts-metric-top">
+                    <span class="alerts-metric-icon">
+                        <svg class="ui-icon"><use href="#icon-alert"></use></svg>
+                    </span>
+                    <span class="alerts-metric-label">CAUTION</span>
+                </div>
+                <div class="alerts-metric-content">
+                    <h3>Warning Alerts</h3>
+                    <h2 id="warning-alerts-count">0</h2>
+                    <p>Require continued monitoring</p>
+                </div>
+            </article>
 
-        <div class="card">
-            <div class="icon"><svg class="ui-icon"><use href="#icon-message"></use></svg></div>
-            <div>
-                <h3>Unread Notifications</h3>
-                <h2 id="unread-notifications-count">0</h2>
-                <p>New messages</p>
-            </div>
+            <article class="card alerts-metric-card alerts-resolved-card">
+                <div class="alerts-metric-top">
+                    <span class="alerts-metric-icon">
+                        <svg class="ui-icon"><use href="#icon-check-circle"></use></svg>
+                    </span>
+                    <span class="alerts-metric-label">COMPLETED</span>
+                </div>
+                <div class="alerts-metric-content">
+                    <h3>Resolved Alerts</h3>
+                    <h2 id="resolved-alerts-count">0</h2>
+                    <p>Resolved in the last 7 days</p>
+                </div>
+            </article>
+
+            <article class="card alerts-metric-card alerts-unread-card">
+                <div class="alerts-metric-top">
+                    <span class="alerts-metric-icon">
+                        <svg class="ui-icon"><use href="#icon-message"></use></svg>
+                    </span>
+                    <span class="alerts-metric-label">INBOX</span>
+                </div>
+                <div class="alerts-metric-content">
+                    <h3>Unread Notifications</h3>
+                    <h2 id="unread-notifications-count">0</h2>
+                    <p>Messages awaiting review</p>
+                </div>
+            </article>
         </div>
     </section>
 
     <section class="alerts-layout">
-        <div class="alerts-main">
-            <section class="panel">
-                <div class="panel-heading">
-                    <div>
-                        <p class="eyebrow">Live overview</p>
-                        <h2>Active Alerts</h2>
+        <div class="alerts-main-column">
+
+            <section class="panel alerts-active-panel">
+                <div class="panel-heading alerts-panel-heading">
+                    <div class="alerts-panel-title-group">
+                        <span class="alerts-panel-icon alerts-active-icon">
+                            <svg class="ui-icon"><use href="#icon-alert"></use></svg>
+                        </span>
+                        <div>
+                            <p class="eyebrow">Live overview</p>
+                            <h2>Active Alerts</h2>
+                            <p class="alerts-panel-subtitle">Conditions that may need your attention.</p>
+                        </div>
                     </div>
+                    <span class="alerts-live-tag">
+                        <span class="alerts-live-dot"></span>
+                        Live
+                    </span>
                 </div>
-                <div id="active-alerts">
+
+                <div id="active-alerts" class="alerts-active-list">
                     <div class="status-box">
                         Loading alerts...
                     </div>
                 </div>
             </section>
 
-            <section class="panel">
-                <div class="panel-heading">
-                    <div>
-                        <p class="eyebrow">Audit trail</p>
-                        <h2>Alert History</h2>
-                    </div>
-                    <div class="alert-history-controls">
-                        <button type="button" class="history-filter-button">All Types</button>
-                        <button type="button" class="history-filter-button">All Ponds</button>
-                        <button type="button" class="history-filter-button active">Today</button>
-                        <button type="button" class="history-filter-button">Filter</button>
+            <section class="panel alerts-history-panel">
+                <div class="panel-heading alerts-panel-heading alerts-history-heading">
+                    <div class="alerts-panel-title-group">
+                        <span class="alerts-panel-icon alerts-history-icon">
+                            <svg class="ui-icon"><use href="#icon-history"></use></svg>
+                        </span>
+                        <div>
+                            <p class="eyebrow">Audit trail</p>
+                            <h2>Alert History</h2>
+                            <p class="alerts-panel-subtitle">Review recorded events and their resolution status.</p>
+                        </div>
                     </div>
                 </div>
-                <div class="table-wrap">
-                    <table>
+
+                <div class="alert-history-controls">
+                    <button type="button" class="history-filter-button">All Types</button>
+                    <button type="button" class="history-filter-button">All Ponds</button>
+                    <button type="button" class="history-filter-button active">Today</button>
+                    <button type="button" class="history-filter-button">
+                        <svg class="ui-icon"><use href="#icon-settings"></use></svg>
+                        Filter
+                    </button>
+                </div>
+
+                <div class="table-wrap alerts-table-wrap">
+                    <table class="alerts-history-table">
                         <thead>
                             <tr>
                                 <th>Date &amp; Time</th>
@@ -122,18 +225,33 @@
                         <tbody id="alert-history-body"></tbody>
                     </table>
                 </div>
+
+                <div class="alerts-table-footer">
+                    <span>Alert records from your monitoring system</span>
+                    <span class="alerts-table-footer-icon">
+                        <svg class="ui-icon"><use href="#icon-history"></use></svg>
+                        Alert history
+                    </span>
+                </div>
             </section>
         </div>
 
-        <aside class="alerts-side">
-            <section class="panel">
-                <div class="panel-heading compact">
-                    <div>
-                        <p class="eyebrow">Summary</p>
-                        <h2>Notification Status</h2>
+        <aside class="alerts-side-column">
+
+            <section class="panel alerts-side-panel">
+                <div class="panel-heading compact alerts-panel-heading">
+                    <div class="alerts-panel-title-group">
+                        <span class="alerts-panel-icon alerts-status-icon">
+                            <svg class="ui-icon"><use href="#icon-message"></use></svg>
+                        </span>
+                        <div>
+                            <p class="eyebrow">Delivery summary</p>
+                            <h2>Notification Status</h2>
+                        </div>
                     </div>
                     <button type="button" class="text-button">View History</button>
                 </div>
+
                 <div id="notification-status">
                     <div class="status-box">
                         Loading notification status...
@@ -141,23 +259,43 @@
                 </div>
             </section>
 
-            <section class="panel">
-                <div class="panel-heading compact">
-                    <div>
-                        <p class="eyebrow">Latest activity</p>
-                        <h2>Recent Notifications</h2>
+            <section class="panel alerts-side-panel">
+                <div class="panel-heading compact alerts-panel-heading">
+                    <div class="alerts-panel-title-group">
+                        <span class="alerts-panel-icon alerts-recent-icon">
+                            <svg class="ui-icon"><use href="#icon-clock"></use></svg>
+                        </span>
+                        <div>
+                            <p class="eyebrow">Latest activity</p>
+                            <h2>Recent Notifications</h2>
+                        </div>
                     </div>
                     <button type="button" class="text-button">View All</button>
                 </div>
+
                 <div id="recent-notifications">
                     <div class="status-box">
                         Loading notifications...
                     </div>
                 </div>
             </section>
+
+            <section class="alerts-reminder-card">
+                <span class="alerts-reminder-icon">
+                    <svg class="ui-icon"><use href="#icon-lightbulb"></use></svg>
+                </span>
+                <h3>Farm management reminder</h3>
+                <p>Check the latest temperature and pH readings before deciding on corrective action. Verify abnormal readings and follow established farm procedures.</p>
+            </section>
+
         </aside>
     </section>
-</div>
+
+    <footer class="alerts-footer">
+        <span>ShrimpGuard · Water Quality Monitoring</span>
+        <span>Review critical conditions promptly.</span>
+    </footer>
+</main>
 
 <script src="{{ url_for('static', filename='js/alerts.js') }}"></script>
 <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
