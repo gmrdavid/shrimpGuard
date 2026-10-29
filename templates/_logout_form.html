@@ -1,15 +1,303 @@
 
+<!-- ==================== LOGOUT FORM ==================== -->
 <form class="sidebar-logout"
+      id="logoutForm"
       method="post"
-      action="{{ url_for('logout') }}"
-      onsubmit="return confirm('Are you sure you want to log out?');">
+      action="{{ url_for('logout') }}">
 
-    <input type="hidden" name="csrf_token" value="{{ logout_csrf_token }}">
+    <input type="hidden"
+           name="csrf_token"
+           value="{{ logout_csrf_token }}">
 
-    <button type="submit">
+    <button type="button" id="logoutButton">
         <svg class="ui-icon" aria-hidden="true">
             <use href="#icon-logout"></use>
         </svg>
         Log Out
     </button>
 </form>
+
+
+<!-- ==================== LOGOUT CONFIRMATION MODAL ==================== -->
+<div class="logout-modal-overlay"
+     id="logoutModal"
+     hidden>
+
+    <div class="logout-modal"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="logoutModalTitle"
+         aria-describedby="logoutModalMessage">
+
+        <!-- Icon -->
+        <div class="logout-modal-icon">
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-logout"></use>
+            </svg>
+        </div>
+
+        <!-- Title -->
+        <h2 id="logoutModalTitle">Confirm Logout</h2>
+
+        <!-- Message -->
+        <p id="logoutModalMessage">
+            Are you sure you want to log out of your ShrimpGuard account?
+        </p>
+
+        <!-- Buttons -->
+        <div class="logout-modal-actions">
+            <button type="button"
+                    class="logout-cancel-btn"
+                    id="cancelLogout">
+                Cancel
+            </button>
+
+            <button type="button"
+                    class="logout-confirm-btn"
+                    id="confirmLogout">
+                Yes, Log Out
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<!-- ==================== CSS STYLES ==================== -->
+<style>
+    /* Modal overlay */
+    .logout-modal-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(15, 23, 42, 0.55);
+        backdrop-filter: blur(4px);
+    }
+
+    /* Respect the hidden attribute */
+    .logout-modal-overlay[hidden] {
+        display: none;
+    }
+
+    /* Modal container */
+    .logout-modal {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 400px;
+        padding: 30px;
+        border-radius: 16px;
+        background: #ffffff;
+        color: #1e293b;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        animation: logoutModalEnter 0.2s ease-out;
+    }
+
+    /* Logout icon */
+    .logout-modal-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .logout-modal-icon .ui-icon {
+        width: 30px;
+        height: 30px;
+    }
+
+    /* Modal heading */
+    .logout-modal h2 {
+        margin: 0 0 12px;
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    /* Modal description */
+    .logout-modal p {
+        margin: 0 0 26px;
+        color: #64748b;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    /* Button container */
+    .logout-modal-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    /* Shared button styles */
+    .logout-modal-actions button {
+        flex: 1;
+        min-height: 44px;
+        padding: 10px 16px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition:
+            background 0.2s ease,
+            transform 0.2s ease;
+    }
+
+    .logout-modal-actions button:active {
+        transform: scale(0.98);
+    }
+
+    /* Cancel button */
+    .logout-cancel-btn {
+        background: #f1f5f9;
+        color: #334155;
+    }
+
+    .logout-cancel-btn:hover {
+        background: #e2e8f0;
+    }
+
+    /* Confirm button */
+    .logout-confirm-btn {
+        background: #dc2626;
+        color: #ffffff;
+    }
+
+    .logout-confirm-btn:hover {
+        background: #b91c1c;
+    }
+
+    /* Keyboard focus */
+    .logout-modal-actions button:focus-visible {
+        outline: 3px solid #93c5fd;
+        outline-offset: 3px;
+    }
+
+    /* Modal animation */
+    @keyframes logoutModalEnter {
+        from {
+            opacity: 0;
+            transform: translateY(10px) scale(0.98);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    /* Small screens */
+    @media (max-width: 400px) {
+        .logout-modal {
+            padding: 24px 20px;
+        }
+
+        .logout-modal-actions {
+            flex-direction: column-reverse;
+        }
+    }
+
+    /* Reduced motion accessibility */
+    @media (prefers-reduced-motion: reduce) {
+        .logout-modal {
+            animation: none;
+        }
+
+        .logout-modal-actions button {
+            transition: none;
+        }
+    }
+</style>
+
+
+<!-- ==================== JAVASCRIPT ==================== -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const logoutForm = document.getElementById("logoutForm");
+        const logoutButton = document.getElementById("logoutButton");
+        const logoutModal = document.getElementById("logoutModal");
+        const cancelLogout = document.getElementById("cancelLogout");
+        const confirmLogout = document.getElementById("confirmLogout");
+
+        // Ensure all required elements exist.
+        if (
+            !logoutForm ||
+            !logoutButton ||
+            !logoutModal ||
+            !cancelLogout ||
+            !confirmLogout
+        ) {
+            return;
+        }
+
+        // Open the confirmation popup.
+        function openLogoutModal() {
+            logoutModal.hidden = false;
+            cancelLogout.focus();
+        }
+
+        // Close the popup without logging out.
+        function closeLogoutModal() {
+            logoutModal.hidden = true;
+            logoutButton.focus();
+        }
+
+        // Click Log Out.
+        logoutButton.addEventListener("click", openLogoutModal);
+
+        // Click Cancel.
+        cancelLogout.addEventListener("click", closeLogoutModal);
+
+        // Confirm logout and submit the original POST form.
+        confirmLogout.addEventListener("click", function () {
+            logoutForm.requestSubmit();
+        });
+
+        // Close the popup when clicking the dark overlay.
+        logoutModal.addEventListener("click", function (event) {
+            if (event.target === logoutModal) {
+                closeLogoutModal();
+            }
+        });
+
+        // Close the popup by pressing Escape.
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape" && !logoutModal.hidden) {
+                closeLogoutModal();
+            }
+        });
+
+        // Allow keyboard users to navigate within the dialog.
+        logoutModal.addEventListener("keydown", function (event) {
+            if (event.key !== "Tab" || logoutModal.hidden) {
+                return;
+            }
+
+            const focusableButtons = [
+                cancelLogout,
+                confirmLogout
+            ];
+
+            const firstButton = focusableButtons[0];
+            const lastButton = focusableButtons[1];
+
+            if (event.shiftKey && document.activeElement === firstButton) {
+                event.preventDefault();
+                lastButton.focus();
+            } else if (
+                !event.shiftKey &&
+                document.activeElement === lastButton
+            ) {
+                event.preventDefault();
+                firstButton.focus();
+            }
+        });
+    });
+</script>
