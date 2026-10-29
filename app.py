@@ -716,7 +716,7 @@ def admin_home():
         try:
             recent_activities = (
                 ActivityLog.query.order_by(ActivityLog.timestamp.desc())
-                .limit(20)
+                .limit(100)
                 .all()
             )
         except SQLAlchemyError:

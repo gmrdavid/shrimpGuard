@@ -436,9 +436,27 @@
                     </div>
 
                     {% if recent_activities %}
-                    <div class="admin-activity-timeline">
+                    <!-- ACTIVITY LIMIT / TOOLBAR -->
+                    <div class="activity-controls-row">
+                        <div class="activity-limit-select-wrap">
+                            <label for="activity-limit-select" class="activity-limit-label">Show:</label>
+                            <select id="activity-limit-select" class="activity-limit-select" aria-label="Activities per page">
+                                <option value="5" selected>5 items</option>
+                                <option value="10">10 items</option>
+                                <option value="20">20 items</option>
+                                <option value="all">All items</option>
+                            </select>
+                        </div>
+
+                        <span class="activity-page-info" id="activity-page-info" aria-live="polite">
+                            Showing 1–{{ [5, recent_activities|length]|min }} of {{ recent_activities|length }}
+                        </span>
+                    </div>
+
+                    <!-- ACTIVITY TIMELINE -->
+                    <div class="admin-activity-timeline" id="admin-activity-timeline">
                         {% for act in recent_activities %}
-                        <div class="activity-timeline-item">
+                        <div class="activity-timeline-item" data-activity-item>
                             <div class="activity-timeline-icon {% if act.action in ['LOGIN', 'SIGNUP'] %}act-login{% elif act.action == 'LOGOUT' %}act-logout{% elif act.action in ['USER_CREATE', 'PROFILE_UPDATE'] %}act-create{% elif act.action in ['USER_EDIT', 'PASSWORD_CHANGE'] %}act-edit{% elif act.action == 'USER_DELETE' %}act-delete{% else %}act-default{% endif %}">
                                 <svg class="ui-icon" aria-hidden="true">
                                     {% if act.action in ['LOGIN', 'SIGNUP'] %}
@@ -478,6 +496,23 @@
                         </div>
                         {% endfor %}
                     </div>
+
+                    <!-- ACTIVITY PAGINATION -->
+                    <nav class="activity-pagination" id="activity-pagination" aria-label="Activity pagination">
+                        <button type="button" class="activity-page-btn prev-btn" id="activity-prev-btn" aria-label="Previous page">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-arrow"></use></svg>
+                            <span>Prev</span>
+                        </button>
+
+                        <div class="activity-page-numbers" id="activity-page-numbers">
+                            <!-- Populated dynamically by script -->
+                        </div>
+
+                        <button type="button" class="activity-page-btn next-btn" id="activity-next-btn" aria-label="Next page">
+                            <span>Next</span>
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-arrow"></use></svg>
+                        </button>
+                    </nav>
                     {% else %}
                     <div class="dashboard-empty-panel">
                         <span class="dashboard-empty-icon" aria-hidden="true">
@@ -523,6 +558,112 @@
         }
         updateDeviceTime();
         setInterval(updateDeviceTime, 1000);
+
+        // Recent Activity Pagination & Limit Controller
+        (() => {
+            const timeline = document.getElementById("admin-activity-timeline");
+            if (!timeline) return;
+
+            const items = Array.from(timeline.querySelectorAll("[data-activity-item]"));
+            if (!items.length) return;
+
+            const limitSelect = document.getElementById("activity-limit-select");
+            const pageInfo = document.getElementById("activity-page-info");
+            const prevBtn = document.getElementById("activity-prev-btn");
+            const nextBtn = document.getElementById("activity-next-btn");
+            const pageNumbers = document.getElementById("activity-page-numbers");
+            const paginationNav = document.getElementById("activity-pagination");
+
+            let currentPage = 1;
+            let itemsPerPage = limitSelect ? (limitSelect.value === "all" ? items.length : parseInt(limitSelect.value, 10) || 5) : 5;
+
+            function render() {
+                const totalItems = items.length;
+                const totalPages = itemsPerPage >= totalItems ? 1 : Math.ceil(totalItems / itemsPerPage);
+
+                if (currentPage > totalPages) currentPage = totalPages;
+                if (currentPage < 1) currentPage = 1;
+
+                const start = (currentPage - 1) * itemsPerPage;
+                const end = Math.min(start + itemsPerPage, totalItems);
+
+                items.forEach((item, idx) => {
+                    item.style.display = (idx >= start && idx < end) ? "flex" : "none";
+                });
+
+                if (pageInfo) {
+                    if (totalItems === 0) {
+                        pageInfo.textContent = "0 events";
+                    } else if (start + 1 >= end) {
+                        pageInfo.textContent = `Showing event ${end} of ${totalItems}`;
+                    } else {
+                        pageInfo.textContent = `Showing ${start + 1}–${end} of ${totalItems}`;
+                    }
+                }
+
+                if (paginationNav) {
+                    paginationNav.style.display = totalPages <= 1 ? "none" : "flex";
+                }
+
+                if (prevBtn) prevBtn.disabled = currentPage === 1;
+                if (nextBtn) nextBtn.disabled = currentPage === totalPages;
+
+                if (pageNumbers) {
+                    pageNumbers.innerHTML = "";
+                    for (let p = 1; p <= totalPages; p++) {
+                        if (totalPages <= 7 || p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1) {
+                            const btn = document.createElement("button");
+                            btn.type = "button";
+                            btn.className = "activity-page-num" + (p === currentPage ? " active" : "");
+                            btn.textContent = p;
+                            btn.setAttribute("aria-label", "Page " + p);
+                            if (p === currentPage) btn.setAttribute("aria-current", "page");
+                            btn.addEventListener("click", () => {
+                                currentPage = p;
+                                render();
+                            });
+                            pageNumbers.appendChild(btn);
+                        } else if ((p === 2 && currentPage > 3) || (p === totalPages - 1 && currentPage < totalPages - 2)) {
+                            const dots = document.createElement("span");
+                            dots.className = "activity-page-dots";
+                            dots.textContent = "…";
+                            dots.style.cssText = "padding: 0 4px; color: var(--dash-muted); font-size: 12px;";
+                            pageNumbers.appendChild(dots);
+                        }
+                    }
+                }
+            }
+
+            if (limitSelect) {
+                limitSelect.addEventListener("change", () => {
+                    const val = limitSelect.value;
+                    itemsPerPage = val === "all" ? items.length : parseInt(val, 10) || 5;
+                    currentPage = 1;
+                    render();
+                });
+            }
+
+            if (prevBtn) {
+                prevBtn.addEventListener("click", () => {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        render();
+                    }
+                });
+            }
+
+            if (nextBtn) {
+                nextBtn.addEventListener("click", () => {
+                    const totalPages = Math.ceil(items.length / itemsPerPage);
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                        render();
+                    }
+                });
+            }
+
+            render();
+        })();
     </script>
 
 </body>
