@@ -1356,79 +1356,6 @@
                 transition-duration: .01ms !important;
             }
         }
-
-                .user-actions {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .action-btn {
-            width: 36px;
-            height: 36px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0;
-            border: 1px solid transparent;
-            border-radius: 9px;
-            background: #f3f6f8;
-            cursor: pointer;
-            transition: background 0.2s ease,
-                        color 0.2s ease,
-                        transform 0.2s ease;
-        }
-
-        .action-btn svg {
-            display: block;
-            width: 18px;
-            height: 18px;
-            fill: none;
-            stroke: currentColor;
-            stroke-width: 1.8;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            flex-shrink: 0;
-        }
-
-        .view-btn {
-            color: #087f8c;
-        }
-
-        .view-btn:hover {
-            background: #dff5f5;
-        }
-
-        .edit-btn {
-            color: #b7791f;
-        }
-
-        .edit-btn:hover {
-            background: #fff0cf;
-        }
-
-        .delete-btn {
-            color: #dc3545;
-        }
-
-        .delete-btn:hover {
-            background: #fde8e8;
-        }
-
-        .action-btn:hover:not(:disabled) {
-            transform: translateY(-1px);
-        }
-
-        .action-btn:focus-visible {
-            outline: 2px solid #0d9488;
-            outline-offset: 2px;
-        }
-
-        .action-btn:disabled {
-            opacity: 0.35;
-            cursor: not-allowed;
-        }
     </style>
 </head>
 
@@ -1942,53 +1869,52 @@
                             </td>
 
                             <td>
-                                <div class="user-actions">
-                                <!-- View User -->
-                                <button type="button"
-                                        class="action-btn view-btn"
-                                        data-view-user
-                                        data-name="{{ user.name }}"
-                                        data-email="{{ user.email }}"
-                                        data-role="{{ user.role }}"
-                                        data-status="{{ user.status }}"
-                                        data-last-login="{{ user.last_login or 'Never' }}"
-                                        title="View User"
-                                        aria-label="View User">
-                                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                                        <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/>
-                                        <circle cx="12" cy="12" r="3"/>
-                                    </svg>
-                                </button>
+                                <div class="admin-action-group">
 
-                                <!-- Edit User -->
-                                <button type="button"
-                                        class="action-btn edit-btn"
-                                        data-edit-user
-                                        data-name="{{ user.name }}"
-                                        data-email="{{ user.email }}"
-                                        data-role="{{ user.role }}"
-                                        data-status="{{ user.status }}"
-                                        title="Edit User"
-                                        aria-label="Edit User">
-                                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                                        <path d="m15 5 4 4M4 20l4.5-1 10.8-10.8a2.1 2.1 0 0 0-3-3L5.5 16 4 20Z"/>
-                                    </svg>
-                                </button>
+                                    <button class="admin-action-btn view-btn admin-view-user"
+                                            type="button"
+                                            aria-label="View {{ user.user_name }}"
+                                            title="View account"
+                                            data-email="{{ user.email }}"
+                                            data-name="{{ user.user_name }}"
+                                            data-role="{{ user.role }}"
+                                            data-status="{{ user.status }}"
+                                            data-last-login="{% if user.last_login %}{{ user.last_login.strftime('%b %d, %Y %I:%M %p') }}{% else %}Never{% endif %}">
+                                        <svg class="ui-icon" aria-hidden="true">
+                                            <use href="#icon-eye"></use>
+                                        </svg>
+                                    </button>
 
-                                <!-- Delete User -->
-                                <button type="button"
-                                        class="action-btn delete-btn"
-                                        data-delete-user
-                                        data-email="{{ user.email }}"
-                                        data-name="{{ user.name }}"
-                                        title="Delete User"
-                                        aria-label="Delete User"
-                                        {% if session.get('user_id') == user.email %}disabled{% endif %}>
-                                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                                        <path d="M3 6h18M8 6V4h8v2m-11 0 1 14h12l1-14M10 10v6m4-6v6"/>
-                                    </svg>
-                                </button>
-                            </div>
+                                    <button class="admin-action-btn edit-btn admin-edit-user"
+                                            type="button"
+                                            aria-label="Edit {{ user.user_name }}"
+                                            title="Edit account"
+                                            data-email="{{ user.email }}"
+                                            data-name="{{ user.user_name }}"
+                                            data-role="{{ user.role }}"
+                                            data-status="{{ user.status }}">
+                                        <svg class="ui-icon" aria-hidden="true">
+                                            <use href="#icon-edit"></use>
+                                        </svg>
+                                    </button>
+
+                                    <button class="admin-action-btn delete-btn admin-delete-user"
+                                            type="button"
+                                            aria-label="Delete {{ user.user_name }}"
+                                            title="Delete account"
+                                            data-email="{{ user.email }}"
+                                            data-name="{{ user.user_name }}"
+                                            {% if session.get('user_id') == user.email %}
+                                            disabled
+                                            title="Cannot delete your own account"
+                                            aria-disabled="true"
+                                            {% endif %}>
+                                        <svg class="ui-icon" aria-hidden="true">
+                                            <use href="#icon-trash"></use>
+                                        </svg>
+                                    </button>
+
+                                </div>
                             </td>
                         </tr>
                         {% else %}
