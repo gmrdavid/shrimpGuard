@@ -5,33 +5,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#f4f8f7">
+    <meta name="theme-color" content="#126b4f">
     <title>User Management | ShrimpGuard</title>
 
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/style.css') }}">
-
-    <style>
-      
-    </style>
 </head>
 
-<body class="admin-page">
+<body class="dashboard-page admin-page">
 
 {% include "_icon_sprite.html" %}
 
+<div class="dashboard-layout">
+
 <!-- SIDEBAR -->
-<aside class="sidebar">
-    <div class="logo">
-        <svg class="ui-icon brand-icon" aria-hidden="true">
-            <use href="#icon-shrimp"></use>
-        </svg>
+<aside class="sidebar dashboard-sidebar">
+    <a href="/admin/dashboard" class="logo dashboard-logo" aria-label="ShrimpGuard administration">
+        <span class="dashboard-logo-mark">
+            <svg class="ui-icon brand-icon" aria-hidden="true">
+                <use href="#icon-shrimp"></use>
+            </svg>
+        </span>
         <span>ShrimpGuard</span>
-    </div>
+    </a>
 
     <p class="subtitle">Administration</p>
 
-    <nav aria-label="Admin navigation">
+    <div class="sidebar-section-label">ADMIN MENU</div>
+
+    <nav class="dashboard-nav" aria-label="Admin navigation">
         <a href="/admin/dashboard">
             <svg class="ui-icon" aria-hidden="true">
                 <use href="#icon-dashboard"></use>
@@ -47,91 +49,188 @@
         </a>
     </nav>
 
-    {% include "adminlogout.html" %}
+    <div class="sidebar-bottom">
+        <div class="sidebar-help">
+            <span class="sidebar-help-icon">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-users"></use>
+                </svg>
+            </span>
+            <div>
+                <strong>Admin Console</strong>
+                <p>System &amp; account control.</p>
+            </div>
+        </div>
+
+        {% include "adminlogout.html" %}
+    </div>
 </aside>
 
 <!-- MAIN CONTENT -->
-<main class="main-content">
+<main class="main-content dashboard-main">
 
     <!-- PAGE HEADER -->
-    <header class="admin-user-header">
-        <div>
-            <p class="admin-page-eyebrow">Administration / Accounts</p>
+    <header class="dashboard-header admin-header">
+        <div class="dashboard-heading">
+            <div class="dashboard-eyebrow">
+                <span class="eyebrow-dot"></span>
+                ADMINISTRATION &bull; ACCOUNTS
+            </div>
             <h1>User Management</h1>
             <p class="admin-header-description">
                 Manage user accounts, roles, permissions, and account status.
             </p>
         </div>
 
-        <button class="admin-add-user" type="button" id="open-add-user">
-            <svg class="ui-icon" aria-hidden="true">
-                <use href="#icon-plus"></use>
-            </svg>
-            Add User
-        </button>
+        <div class="header-info dashboard-header-info">
+            <button class="dashboard-submit-button admin-add-user-btn" type="button" id="open-add-user">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-plus"></use>
+                </svg>
+                <span>Add User</span>
+            </button>
+
+            <button
+                id="notification-button"
+                class="notification-button"
+                type="button"
+                aria-label="View notifications"
+                title="View notifications">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-bell"></use>
+                </svg>
+            </button>
+
+            <div class="dashboard-date-time">
+                <span class="date-time-label">LOCAL TIME</span>
+                <span id="time" class="time-value">Loading time...</span>
+            </div>
+        </div>
     </header>
-
-    <!-- SUMMARY CARDS -->
-    <section class="admin-overview" aria-label="User and system overview">
-
-        <article class="admin-metric">
-            <div class="admin-metric-top">
-                <span class="admin-metric-label">Total Users</span>
-                <span class="admin-metric-icon" aria-hidden="true">
-                    <svg class="ui-icon"><use href="#icon-users"></use></svg>
-                </span>
-            </div>
-            <strong class="admin-metric-value">{{ total_users }}</strong>
-            <p class="admin-metric-note">Registered accounts</p>
-        </article>
-
-        <article class="admin-metric">
-            <div class="admin-metric-top">
-                <span class="admin-metric-label">Active Users</span>
-                <span class="admin-metric-icon" aria-hidden="true">
-                    <svg class="ui-icon"><use href="#icon-check-circle"></use></svg>
-                </span>
-            </div>
-            <strong class="admin-metric-value">{{ active_users }}</strong>
-            <p class="admin-metric-note">Currently active accounts</p>
-        </article>
-
-        <article class="admin-metric">
-            <div class="admin-metric-top">
-                <span class="admin-metric-label">Inactive Users</span>
-                <span class="admin-metric-icon" aria-hidden="true">
-                    <svg class="ui-icon"><use href="#icon-clock"></use></svg>
-                </span>
-            </div>
-            <strong class="admin-metric-value">{{ inactive_users }}</strong>
-            <p class="admin-metric-note">Inactive accounts</p>
-        </article>
-
-        <article class="admin-metric">
-            <div class="admin-metric-top">
-                <span class="admin-metric-label">System Status</span>
-                <span class="admin-metric-icon" aria-hidden="true">
-                    <svg class="ui-icon"><use href="#icon-activity"></use></svg>
-                </span>
-            </div>
-            <strong class="admin-metric-value admin-system-value{% if not system_online %} offline{% endif %}">
-                {{ "Operational" if system_online else "Unavailable" }}
-            </strong>
-            <p class="admin-metric-note">Database connection</p>
-        </article>
-
-    </section>
 
     <!-- FLASH MESSAGES -->
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-    <div class="admin-user-notices" role="status">
+    <div class="settings-notices" role="status" aria-live="polite">
         {% for category, message in messages %}
-        <p class="admin-user-notice {{ category }}">{{ message }}</p>
+        <p class="settings-notice {{ category }}">
+            <svg class="ui-icon settings-notice-icon" aria-hidden="true">
+                <use href="#icon-check-circle"></use>
+            </svg>
+            <span>{{ message }}</span>
+        </p>
         {% endfor %}
     </div>
     {% endif %}
     {% endwith %}
+
+    <!-- SUMMARY CARDS -->
+    <section class="dashboard-section" aria-labelledby="admin-metrics-title">
+        <div class="section-heading-row">
+            <div>
+                <span class="section-eyebrow">SYSTEM &amp; ACCOUNT METRICS</span>
+                <h2 id="admin-metrics-title">System Overview</h2>
+            </div>
+
+            <span class="section-count">4 indicators</span>
+        </div>
+
+        <div class="cards dashboard-metric-cards">
+
+            <article class="card dashboard-metric-card users-card">
+                <div class="metric-card-top">
+                    <div class="metric-icon users-icon">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-users"></use>
+                        </svg>
+                    </div>
+                    <span class="metric-type">ACCOUNTS</span>
+                </div>
+                <div class="metric-card-content">
+                    <h3>Total Users</h3>
+                    <div class="metric-reading">
+                        <h2>{{ total_users }}</h2>
+                    </div>
+                    <p class="metric-status good">Registered accounts</p>
+                </div>
+                <div class="metric-card-footer">
+                    <span class="metric-footer-dot"></span>
+                    <span>ShrimpGuard user directory</span>
+                </div>
+            </article>
+
+            <article class="card dashboard-metric-card active-card">
+                <div class="metric-card-top">
+                    <div class="metric-icon active-icon">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-check-circle"></use>
+                        </svg>
+                    </div>
+                    <span class="metric-type">ACCOUNT STATUS</span>
+                </div>
+                <div class="metric-card-content">
+                    <h3>Active Users</h3>
+                    <div class="metric-reading">
+                        <h2>{{ active_users }}</h2>
+                    </div>
+                    <p class="metric-status good">Currently active accounts</p>
+                </div>
+                <div class="metric-card-footer">
+                    <span class="metric-footer-dot"></span>
+                    <span>Accounts ready to sign in</span>
+                </div>
+            </article>
+
+            <article class="card dashboard-metric-card inactive-card">
+                <div class="metric-card-top">
+                    <div class="metric-icon inactive-icon">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-clock"></use>
+                        </svg>
+                    </div>
+                    <span class="metric-type">ACCOUNT STATUS</span>
+                </div>
+                <div class="metric-card-content">
+                    <h3>Inactive Users</h3>
+                    <div class="metric-reading">
+                        <h2>{{ inactive_users }}</h2>
+                    </div>
+                    <p class="metric-status {% if inactive_users > 0 %}warning{% else %}good{% endif %}">
+                        {% if inactive_users > 0 %}Pending review or disabled{% else %}No inactive accounts{% endif %}
+                    </p>
+                </div>
+                <div class="metric-card-footer">
+                    <span class="metric-footer-dot"></span>
+                    <span>Inactive accounts</span>
+                </div>
+            </article>
+
+            <article class="card dashboard-metric-card system-card">
+                <div class="metric-card-top">
+                    <div class="metric-icon {% if system_online %}system-icon-online{% else %}system-icon-offline{% endif %}">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-activity"></use>
+                        </svg>
+                    </div>
+                    <span class="metric-type">DATABASE CONNECTION</span>
+                </div>
+                <div class="metric-card-content">
+                    <h3>System Status</h3>
+                    <div class="metric-reading">
+                        <h2 class="{% if not system_online %}text-danger{% endif %}">{{ "Operational" if system_online else "Unavailable" }}</h2>
+                    </div>
+                    <p class="metric-status {% if system_online %}good{% else %}danger{% endif %}">
+                        {{ "Database connected &amp; responding" if system_online else "Database service offline" }}
+                    </p>
+                </div>
+                <div class="metric-card-footer">
+                    <span class="metric-footer-dot"></span>
+                    <span>Core service connection</span>
+                </div>
+            </article>
+
+        </div>
+    </section>
 
 
     <!-- ADD USER DIALOG -->
@@ -957,56 +1056,78 @@
 </dialog>
 
 
-    <!-- USER TABLE -->
-    <section class="admin-content-grid"
-             aria-label="User account management">
+    <!-- USER TABLE SECTION -->
+    <section class="dashboard-section admin-directory-section"
+             aria-labelledby="user-directory-title">
 
-        <article class="panel admin-panel admin-user-panel">
-            <div class="admin-panel-heading">
-                <h2>Registered Accounts</h2>
-                <span>Account directory</span>
+        <div class="section-heading-row">
+            <div>
+                <span class="section-eyebrow">ACCOUNTS DIRECTORY</span>
+                <h2 id="user-directory-title">Registered Accounts</h2>
+            </div>
+
+            <span id="user-count" class="section-count" aria-live="polite">
+                <strong>{{ users|length }}</strong> account{% if users|length != 1 %}s{% endif %}
+            </span>
+        </div>
+
+        <article class="panel dashboard-panel admin-user-panel">
+            <div class="panel-heading">
+                <div class="panel-heading-icon users-heading-icon">
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-users"></use>
+                    </svg>
+                </div>
+                <div>
+                    <h2>Account Directory</h2>
+                    <p>Filter, search, view, edit, and manage user permissions across the system.</p>
+                </div>
             </div>
 
             <!-- SEARCH AND FILTERS -->
             <div class="admin-user-toolbar">
-                <label class="admin-search">
-                    <span aria-hidden="true">⌕</span>
+                <div class="admin-search">
+                    <span class="admin-search-icon" aria-hidden="true">
+                        <svg class="ui-icon"><use href="#icon-dashboard"></use></svg>
+                    </span>
                     <input id="user-search"
                            type="search"
                            placeholder="Search name, email, or role..."
                            autocomplete="off">
-                </label>
+                </div>
 
-                <label class="admin-filter-label">
-                    <span class="sr-only">Filter by role</span>
-                    <select id="user-role-filter" aria-label="Filter by role">
-                        <option value="all">All Roles</option>
-                        <option value="admin">Admin</option>
-                        <option value="client">Client</option>
-                    </select>
-                </label>
+                <div class="admin-toolbar-filters">
+                    <label class="admin-filter-label">
+                        <span class="sr-only">Filter by role</span>
+                        <select id="user-role-filter" aria-label="Filter by role">
+                            <option value="all">All Roles</option>
+                            <option value="admin">Admin</option>
+                            <option value="client">Client</option>
+                        </select>
+                    </label>
 
-                <label class="admin-filter-label">
-                    <span class="sr-only">Filter by status</span>
-                    <select id="user-status-filter" aria-label="Filter by status">
-                        <option value="all">All Statuses</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                    </select>
-                </label>
+                    <label class="admin-filter-label">
+                        <span class="sr-only">Filter by status</span>
+                        <select id="user-status-filter" aria-label="Filter by status">
+                            <option value="all">All Statuses</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </label>
+                </div>
             </div>
 
             <!-- TABLE -->
-            <div class="admin-table-wrap">
-                <table class="admin-table">
+            <div class="table-wrap admin-table-wrap">
+                <table class="uniform-table admin-table">
                     <thead>
                         <tr>
-                            <th scope="col">Name</th>
-                            <th scope="col">Email</th>
-                            <th scope="col">Role</th>
-                            <th scope="col">Status</th>
-                            <th scope="col">Last Login</th>
-                            <th scope="col">Actions</th>
+                            <th scope="col">NAME</th>
+                            <th scope="col">EMAIL</th>
+                            <th scope="col">ROLE</th>
+                            <th scope="col">STATUS</th>
+                            <th scope="col">LAST LOGIN</th>
+                            <th scope="col" class="text-right">ACTIONS</th>
                         </tr>
                     </thead>
 
@@ -1018,33 +1139,48 @@
                             data-role="{{ user.role|lower }}"
                             data-status="{{ user.status|lower }}">
 
-                            <td>{{ user.user_name }}</td>
-                            <td>{{ user.email }}</td>
+                            <td>
+                                <div class="admin-user-cell">
+                                    <span class="user-avatar-circle" aria-hidden="true">
+                                        {{ user.user_name[:1].upper() if user.user_name else '?' }}
+                                    </span>
+                                    <strong class="user-cell-name">{{ user.user_name }}</strong>
+                                </div>
+                            </td>
 
                             <td>
-                                <span class="admin-user-role {{ user.role|lower }}">
+                                <span class="admin-email-text">{{ user.email }}</span>
+                            </td>
+
+                            <td>
+                                <span class="table-status {% if user.role|lower == 'admin' %}admin-role-badge{% else %}client-role-badge{% endif %}">
                                     {{ user.role }}
                                 </span>
                             </td>
 
                             <td>
-                                <span class="admin-user-status {{ user.status|lower }}">
+                                <span class="table-status {% if user.status|lower == 'active' %}good{% else %}warning{% endif %}">
+                                    <span class="status-dot"></span>
                                     {{ user.status }}
                                 </span>
                             </td>
 
                             <td>
                                 {% if user.last_login %}
-                                <time datetime="{{ user.last_login.isoformat() }}">
-                                    {{ user.last_login.strftime("%b %d, %Y") }}<br>
-                                    {{ user.last_login.strftime("%I:%M %p") }}
-                                </time>
+                                    {% if user.last_login.isoformat is defined %}
+                                    <time datetime="{{ user.last_login.isoformat() }}">
+                                        {{ user.last_login.strftime("%b %d, %Y") }}
+                                        <span class="time-sub">{{ user.last_login.strftime("%I:%M %p") }}</span>
+                                    </time>
+                                    {% else %}
+                                    <span>{{ user.last_login }}</span>
+                                    {% endif %}
                                 {% else %}
-                                Never
+                                <span class="text-muted">Never</span>
                                 {% endif %}
                             </td>
 
-                            <td>
+                            <td class="text-right">
                                 <div class="admin-action-group">
 
                                     <button class="admin-action-btn view-btn admin-view-user"
@@ -1055,18 +1191,9 @@
                                             data-name="{{ user.user_name }}"
                                             data-role="{{ user.role }}"
                                             data-status="{{ user.status }}"
-                                            data-last-login="{% if user.last_login %}{{ user.last_login.strftime('%b %d, %Y %I:%M %p') }}{% else %}Never{% endif %}">
-                                        <svg class="ui-icon"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            stroke-width="1.8"
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            aria-hidden="true">
-                                            <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/>
-                                            <circle cx="12" cy="12" r="3"/>
+                                            data-last-login="{% if user.last_login %}{% if user.last_login.strftime is defined %}{{ user.last_login.strftime('%b %d, %Y %I:%M %p') }}{% else %}{{ user.last_login }}{% endif %}{% else %}Never{% endif %}">
+                                        <svg class="ui-icon" aria-hidden="true">
+                                            <use href="#icon-monitor"></use>
                                         </svg>
                                     </button>
 
@@ -1078,17 +1205,8 @@
                                             data-name="{{ user.user_name }}"
                                             data-role="{{ user.role }}"
                                             data-status="{{ user.status }}">
-                                        <svg class="ui-icon"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            stroke-width="1.8"
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            aria-hidden="true">
-                                            <path d="M12 20h9"/>
-                                            <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"/>
+                                        <svg class="ui-icon" aria-hidden="true">
+                                            <use href="#icon-settings"></use>
                                         </svg>
                                     </button>
 
@@ -1103,20 +1221,8 @@
                                             title="Cannot delete your own account"
                                             aria-disabled="true"
                                             {% endif %}>
-                                        <svg class="ui-icon"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            stroke-width="1.8"
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            aria-hidden="true">
-                                            <path d="M3 6h18"/>
-                                            <path d="M8 6V4h8v2"/>
-                                            <path d="M19 6l-1 14H6L5 6"/>
-                                            <path d="M10 11v5"/>
-                                            <path d="M14 11v5"/>
+                                        <svg class="ui-icon" aria-hidden="true">
+                                            <use href="#icon-x"></use>
                                         </svg>
                                     </button>
 
@@ -1126,7 +1232,7 @@
                         {% else %}
                         <tr id="no-users-row">
                             <td class="admin-empty" colspan="6">
-                                No user accounts have been added yet.
+                                No user accounts have been added yet. Click &quot;Add User&quot; to create the first account.
                             </td>
                         </tr>
                         {% endfor %}
@@ -1140,36 +1246,41 @@
                 </table>
             </div>
 
-            <div class="admin-user-footer">
-                <span id="user-count" aria-live="polite">
-                    <strong>{{ users|length }}</strong>
-                    account{% if users|length != 1 %}s{% endif %}
-                </span>
-                <span>Use the action buttons to manage accounts.</span>
-            </div>
-        </article>
-
-        <!-- RECENT ACTIVITY -->
-        <article class="panel admin-panel">
-            <div class="admin-panel-heading">
-                <h2>Recent Activity</h2>
-                <span>Latest events</span>
-            </div>
-
-            <div class="admin-activity-empty">
-                <span class="admin-activity-mark" aria-hidden="true">↻</span>
-                <p>
-                    No activity to show yet.<br>
-                    Recent account events can appear here when activity
-                    logging is implemented.
-                </p>
+            <div class="panel-card-footer">
+                <span class="metric-footer-dot"></span>
+                <span>Use the action buttons to view, edit, or delete registered user accounts</span>
             </div>
         </article>
 
     </section>
+
+    <!-- FOOTER -->
+    <footer class="dashboard-footer">
+        <span>
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-shrimp"></use>
+            </svg>
+            ShrimpGuard
+        </span>
+        <span>Administration Console &bull; Security &amp; Operations</span>
+    </footer>
+
 </main>
 
+</div>
+
 <script src="{{ url_for('static', filename='js/admindashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+<script>
+    function updateDeviceTime() {
+        const timeEl = document.getElementById("time");
+        if (timeEl) {
+            timeEl.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        }
+    }
+    updateDeviceTime();
+    setInterval(updateDeviceTime, 1000);
+</script>
 
 </body>
 </html>

@@ -1,344 +1,477 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#f4f8f7">
+    <meta name="theme-color" content="#126b4f">
 
     <title>Admin Dashboard | ShrimpGuard</title>
 
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/style.css') }}">
-
-    <style>
-      
-    </style>
 </head>
 
-<body class="admin-page">
+<body class="dashboard-page admin-page">
 
     {% include "_icon_sprite.html" %}
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="logo">
-            <svg class="ui-icon brand-icon" aria-hidden="true">
-                <use href="#icon-shrimp"></use>
-            </svg>
-            <span>ShrimpGuard</span>
-        </div>
+    <div class="dashboard-layout">
 
-        <p class="subtitle">Administration</p>
+        <!-- SIDEBAR -->
+        <aside class="sidebar dashboard-sidebar">
 
-        <nav aria-label="Admin navigation">
-            <a href="/admin/dashboard" class="active" aria-current="page">
-                <svg class="ui-icon" aria-hidden="true">
-                    <use href="#icon-dashboard"></use>
-                </svg>
-                <span>Admin Dashboard</span>
+            <a href="/admin/dashboard" class="logo dashboard-logo" aria-label="ShrimpGuard administration">
+                <span class="dashboard-logo-mark">
+                    <svg class="ui-icon brand-icon" aria-hidden="true">
+                        <use href="#icon-shrimp"></use>
+                    </svg>
+                </span>
+                <span>ShrimpGuard</span>
             </a>
 
-            <a href="/admin">
-                <svg class="ui-icon" aria-hidden="true">
-                    <use href="#icon-users"></use>
-                </svg>
-                <span>User Management</span>
-            </a>
-        </nav>
+            <p class="subtitle">Administration</p>
 
-        {% include "adminlogout.html" %}
-    </aside>
+            <div class="sidebar-section-label">ADMIN MENU</div>
 
-    <!-- MAIN CONTENT -->
-    <main class="main-content">
+            <nav class="dashboard-nav" aria-label="Admin navigation">
+                <a href="/admin/dashboard" class="active" aria-current="page">
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-dashboard"></use>
+                    </svg>
+                    <span>Admin Dashboard</span>
+                </a>
 
-        <!-- PAGE HEADER -->
-        <header>
-            <div>
-                <p class="eyebrow">Administration / Overview</p>
-                <h1>Admin Dashboard</h1>
-                <p>
-                    Monitor account activity and check your system's
-                    database connection at a glance.
-                </p>
-            </div>
-        </header>
+                <a href="/admin">
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-users"></use>
+                    </svg>
+                    <span>User Management</span>
+                </a>
+            </nav>
 
-        <!-- SUMMARY METRICS -->
-        <section class="admin-overview"
-                 aria-label="User and system overview">
-
-            <!-- Total users -->
-            <article class="admin-metric">
-                <div class="admin-metric-top">
-                    <span class="admin-metric-label">Total Users</span>
-
-                    <span class="admin-metric-icon" aria-hidden="true">
-                        <svg class="ui-icon">
+            <div class="sidebar-bottom">
+                <div class="sidebar-help">
+                    <span class="sidebar-help-icon">
+                        <svg class="ui-icon" aria-hidden="true">
                             <use href="#icon-users"></use>
                         </svg>
                     </span>
+                    <div>
+                        <strong>Admin Console</strong>
+                        <p>System &amp; account control.</p>
+                    </div>
                 </div>
 
-                <strong class="admin-metric-value">
-                    {{ total_users }}
-                </strong>
-
-                <p class="admin-metric-note">
-                    Registered accounts
-                </p>
-            </article>
-
-            <!-- Active users -->
-            <article class="admin-metric">
-                <div class="admin-metric-top">
-                    <span class="admin-metric-label">Active Users</span>
-
-                    <span class="admin-metric-icon" aria-hidden="true">
-                        <svg class="ui-icon">
-                            <use href="#icon-check-circle"></use>
-                        </svg>
-                    </span>
-                </div>
-
-                <strong class="admin-metric-value">
-                    {{ active_users }}
-                </strong>
-
-                <p class="admin-metric-note">
-                    Currently active accounts
-                </p>
-            </article>
-
-            <!-- Inactive users -->
-            <article class="admin-metric">
-                <div class="admin-metric-top">
-                    <span class="admin-metric-label">Inactive Users</span>
-
-                    <span class="admin-metric-icon" aria-hidden="true">
-                        <svg class="ui-icon">
-                            <use href="#icon-clock"></use>
-                        </svg>
-                    </span>
-                </div>
-
-                <strong class="admin-metric-value">
-                    {{ inactive_users }}
-                </strong>
-
-                <p class="admin-metric-note">
-                    Inactive accounts
-                </p>
-            </article>
-
-            <!-- System status -->
-            <article class="admin-metric">
-                <div class="admin-metric-top">
-                    <span class="admin-metric-label">System Status</span>
-
-                    <span class="admin-metric-icon" aria-hidden="true">
-                        <svg class="ui-icon">
-                            <use href="#icon-activity"></use>
-                        </svg>
-                    </span>
-                </div>
-
-                <strong class="admin-metric-value admin-system-value{% if not system_online %} offline{% endif %}">
-                    {{ "Operational" if system_online else "Unavailable" }}
-                </strong>
-
-                <p class="admin-metric-note">
-                    Database connection
-                </p>
-            </article>
-
-        </section>
-
-        <!-- USER ACTIVITY OVERVIEW -->
-        <section class="panel admin-panel admin-activity-overview"
-                 aria-label="Users activity overview">
-
-            <div class="admin-panel-heading">
-                <h2>Users Activity Overview</h2>
-                <span>Account activity</span>
+                {% include "adminlogout.html" %}
             </div>
 
-            <div class="admin-activity-chart">
-                <p>
-                    User activity data will appear here once
-                    activity tracking is available.
-                </p>
-            </div>
+        </aside>
 
-        </section>
 
-        <!-- LOWER DASHBOARD PANELS -->
-        <section class="admin-dashboard-lower"
-                 aria-label="User and activity summaries">
+        <!-- MAIN CONTENT -->
+        <main class="main-content dashboard-main">
 
-                    
+            <!-- TOP HEADER -->
+            <header class="dashboard-header">
 
-        <!-- ROLE SUMMARY -->
-        <article class="panel admin-panel admin-role-summary">
+                <div class="dashboard-heading">
+                    <div class="dashboard-eyebrow">
+                        <span class="eyebrow-dot"></span>
+                        ADMINISTRATION &bull; OVERVIEW
+                    </div>
 
-            <div class="admin-panel-heading admin-role-heading">
-                <div class="admin-role-heading-info">
-                    <div class="admin-role-heading-icon" aria-hidden="true">
-                        <svg xmlns="http://www.w3.org/2000/svg"
-                            width="21" height="21" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor"
-                            stroke-width="1.8" stroke-linecap="round"
-                            stroke-linejoin="round">
-                            <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                            <circle cx="10" cy="7" r="4"/>
-                            <path d="M20 21v-2a4 4 0 0 0-3-3.87"/>
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    <h1>Admin Dashboard</h1>
+
+                    <p>
+                        Monitor account activity and check your system's database connection at a glance.
+                    </p>
+                </div>
+
+                <div class="header-info dashboard-header-info">
+
+                    <button
+                        id="notification-button"
+                        class="notification-button"
+                        type="button"
+                        aria-label="View notifications"
+                        title="View notifications">
+
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-bell"></use>
+                        </svg>
+
+                    </button>
+
+                    <div class="dashboard-date-time">
+                        <span class="date-time-label">LOCAL TIME</span>
+                        <span id="time" class="time-value">Loading time...</span>
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <!-- SYSTEM STATUS INTRO PANEL -->
+            <section class="input-panel dashboard-input-panel"
+                     aria-labelledby="system-status-title">
+
+                <div class="input-panel-heading">
+
+                    <div class="input-panel-icon">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-dashboard"></use>
                         </svg>
                     </div>
 
                     <div>
-                        <h2>User &amp; Role Summary</h2>
-                        <p class="admin-role-subtitle">
-                            Overview of registered users by role and status
+                        <span class="section-eyebrow">OPERATIONAL HEALTH</span>
+                        <h2 id="system-status-title">System &amp; Database Health</h2>
+                        <p>
+                            Real-time status of database connectivity, services, and registered user accounts.
                         </p>
+                    </div>
+
+                </div>
+
+                <div class="admin-quick-stats-row">
+                    <div class="admin-quick-stat">
+                        <span class="quick-stat-label">Database Status</span>
+                        <span class="quick-stat-badge {% if system_online %}online{% else %}offline{% endif %}">
+                            <span class="status-pulse-dot"></span>
+                            {{ "Operational & Connected" if system_online else "Service Offline" }}
+                        </span>
+                    </div>
+                    <div class="admin-quick-stat">
+                        <span class="quick-stat-label">System Mode</span>
+                        <span class="quick-stat-badge info">
+                            Live Aquaculture Telemetry
+                        </span>
+                    </div>
+                    <div class="admin-quick-stat">
+                        <span class="quick-stat-label">Privilege Level</span>
+                        <span class="quick-stat-badge admin">
+                            System Administrator
+                        </span>
                     </div>
                 </div>
 
-                <span class="admin-role-total">
-                    <strong>{{ role_summary | sum(attribute='user_count') }}</strong>
-                    <span>total users</span>
+                <div class="input-panel-footnote">
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-alert"></use>
+                    </svg>
+                    <span>
+                        Administrative actions, user roles, and account permissions are updated instantly across all client sessions.
+                    </span>
+                </div>
+
+            </section>
+
+
+            <!-- SUMMARY METRICS -->
+            <section class="dashboard-section"
+                     aria-labelledby="admin-metrics-title">
+
+                <div class="section-heading-row">
+                    <div>
+                        <span class="section-eyebrow">SYSTEM INDICATORS</span>
+                        <h2 id="admin-metrics-title">System Overview</h2>
+                    </div>
+
+                    <span class="section-count">4 indicators</span>
+                </div>
+
+                <div class="cards dashboard-metric-cards">
+
+                    <!-- TOTAL USERS -->
+                    <article class="card dashboard-metric-card users-card">
+
+                        <div class="metric-card-top">
+                            <div class="metric-icon users-icon">
+                                <svg class="ui-icon" aria-hidden="true">
+                                    <use href="#icon-users"></use>
+                                </svg>
+                            </div>
+
+                            <span class="metric-type">ACCOUNTS</span>
+                        </div>
+
+                        <div class="metric-card-content">
+                            <h3>Total Users</h3>
+
+                            <div class="metric-reading">
+                                <h2>{{ total_users }}</h2>
+                            </div>
+
+                            <p class="metric-status good">
+                                Registered accounts
+                            </p>
+                        </div>
+
+                        <div class="metric-card-footer">
+                            <span class="metric-footer-dot"></span>
+                            <span>ShrimpGuard user directory</span>
+                        </div>
+
+                    </article>
+
+
+                    <!-- ACTIVE USERS -->
+                    <article class="card dashboard-metric-card active-card">
+
+                        <div class="metric-card-top">
+                            <div class="metric-icon active-icon">
+                                <svg class="ui-icon" aria-hidden="true">
+                                    <use href="#icon-check-circle"></use>
+                                </svg>
+                            </div>
+
+                            <span class="metric-type">ACCOUNT STATUS</span>
+                        </div>
+
+                        <div class="metric-card-content">
+                            <h3>Active Users</h3>
+
+                            <div class="metric-reading">
+                                <h2>{{ active_users }}</h2>
+                            </div>
+
+                            <p class="metric-status good">
+                                Active system access
+                            </p>
+                        </div>
+
+                        <div class="metric-card-footer">
+                            <span class="metric-footer-dot"></span>
+                            <span>Accounts ready to sign in</span>
+                        </div>
+
+                    </article>
+
+
+                    <!-- INACTIVE USERS -->
+                    <article class="card dashboard-metric-card inactive-card">
+
+                        <div class="metric-card-top">
+                            <div class="metric-icon inactive-icon">
+                                <svg class="ui-icon" aria-hidden="true">
+                                    <use href="#icon-clock"></use>
+                                </svg>
+                            </div>
+
+                            <span class="metric-type">ACCOUNT STATUS</span>
+                        </div>
+
+                        <div class="metric-card-content">
+                            <h3>Inactive Users</h3>
+
+                            <div class="metric-reading">
+                                <h2>{{ inactive_users }}</h2>
+                            </div>
+
+                            <p class="metric-status {% if inactive_users > 0 %}warning{% else %}good{% endif %}">
+                                {% if inactive_users > 0 %}Pending review or disabled{% else %}No inactive accounts{% endif %}
+                            </p>
+                        </div>
+
+                        <div class="metric-card-footer">
+                            <span class="metric-footer-dot"></span>
+                            <span>Inactive accounts</span>
+                        </div>
+
+                    </article>
+
+
+                    <!-- SYSTEM STATUS -->
+                    <article class="card dashboard-metric-card system-card">
+
+                        <div class="metric-card-top">
+                            <div class="metric-icon {% if system_online %}system-icon-online{% else %}system-icon-offline{% endif %}">
+                                <svg class="ui-icon" aria-hidden="true">
+                                    <use href="#icon-activity"></use>
+                                </svg>
+                            </div>
+
+                            <span class="metric-type">DATABASE CONNECTION</span>
+                        </div>
+
+                        <div class="metric-card-content">
+                            <h3>System Status</h3>
+
+                            <div class="metric-reading">
+                                <h2 class="{% if not system_online %}text-danger{% endif %}">{{ "Operational" if system_online else "Unavailable" }}</h2>
+                            </div>
+
+                            <p class="metric-status {% if system_online %}good{% else %}danger{% endif %}">
+                                {{ "Database connected &amp; responding" if system_online else "Database service offline" }}
+                            </p>
+                        </div>
+
+                        <div class="metric-card-footer">
+                            <span class="metric-footer-dot"></span>
+                            <span>Database connection</span>
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <!-- LOWER DASHBOARD PANELS (2-COLUMN GRID) -->
+            <section class="dashboard-grid admin-dashboard-grid"
+                     aria-label="Role and activity summaries">
+
+                <!-- ROLE SUMMARY -->
+                <article class="panel dashboard-panel admin-role-panel">
+
+                    <div class="panel-heading">
+                        <div class="panel-heading-icon users-heading-icon">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-users"></use>
+                            </svg>
+                        </div>
+
+                        <div>
+                            <h2>User &amp; Role Summary</h2>
+                            <p>Overview of registered users categorized by role and status.</p>
+                        </div>
+
+                        <span class="admin-role-total-pill">
+                            <strong>{{ role_summary | sum(attribute='user_count') }}</strong>
+                            <span>total</span>
+                        </span>
+                    </div>
+
+                    <div class="table-wrap admin-role-table-wrap">
+                        <table class="uniform-table admin-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">USER ROLE</th>
+                                    <th scope="col">TOTAL USERS</th>
+                                    <th scope="col">ACCOUNT STATUS</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {% if role_summary %}
+                                    {% for item in role_summary %}
+                                    <tr>
+                                        <td>
+                                            <div class="admin-role-cell">
+                                                <div class="admin-role-avatar" aria-hidden="true">
+                                                    <svg class="ui-icon"><use href="#icon-user"></use></svg>
+                                                </div>
+                                                <div class="admin-role-details">
+                                                    <strong class="admin-role-name">{{ item.role }}</strong>
+                                                    <span class="admin-role-desc">System access role</span>
+                                                </div>
+                                            </div>
+                                        </td>
+
+                                        <td>
+                                            <span class="admin-role-count-badge">
+                                                {{ item.user_count }}
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <div class="admin-status-badges-group">
+                                                <span class="table-status good">
+                                                    <span class="status-dot"></span>
+                                                    {{ item.active_count }} active
+                                                </span>
+                                                {% if item.inactive_count > 0 %}
+                                                <span class="table-status warning">
+                                                    <span class="status-dot"></span>
+                                                    {{ item.inactive_count }} inactive
+                                                </span>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="3" class="table-empty">
+                                            No role data available yet.
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="panel-card-footer">
+                        <span class="metric-footer-dot"></span>
+                        <span>Summary based on registered user accounts</span>
+                    </div>
+
+                </article>
+
+
+                <!-- RECENT ACTIVITY -->
+                <article class="panel dashboard-panel admin-activity-panel">
+
+                    <div class="panel-heading">
+                        <div class="panel-heading-icon activity-heading-icon">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-history"></use>
+                            </svg>
+                        </div>
+
+                        <div>
+                            <h2>Recent Activity</h2>
+                            <p>Latest administrative events and security alerts.</p>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-empty-panel">
+                        <span class="dashboard-empty-icon" aria-hidden="true">
+                            <svg class="ui-icon"><use href="#icon-clock"></use></svg>
+                        </span>
+                        <h3>No recent activity to display</h3>
+                        <p>Recent account events and administrative logins will appear here in real time.</p>
+                    </div>
+
+                    <div class="panel-card-footer">
+                        <span class="metric-footer-dot"></span>
+                        <span>Security &amp; audit logging</span>
+                    </div>
+
+                </article>
+
+            </section>
+
+
+            <!-- FOOTER -->
+            <footer class="dashboard-footer">
+                <span>
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-shrimp"></use>
+                    </svg>
+                    ShrimpGuard
                 </span>
-            </div>
+                <span>Administration Console &bull; Security &amp; Operations</span>
+            </footer>
 
-            <div class="admin-role-table-container">
-                <table class="admin-table admin-role-table">
-                    <thead>
-                        <tr>
-                            <th scope="col">USER ROLE</th>
-                            <th scope="col">TOTAL USERS</th>
-                            <th scope="col">ACCOUNT STATUS</th>
-                        </tr>
-                    </thead>
+        </main>
 
-                    <tbody>
-                        {% if role_summary %}
-                            {% for item in role_summary %}
-                            <tr>
-                                <td>
-                                    <div class="admin-role-cell">
-                                        <div class="admin-role-avatar" aria-hidden="true">
-                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                width="18" height="18"
-                                                viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="1.8"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round">
-                                                <circle cx="12" cy="8" r="4"/>
-                                                <path d="M5 21v-2a7 7 0 0 1 14 0v2"/>
-                                            </svg>
-                                        </div>
+    </div>
 
-                                        <div class="admin-role-details">
-                                            <span class="admin-role-name">
-                                                {{ item.role }}
-                                            </span>
-                                            <span class="admin-role-description">
-                                                System access role
-                                            </span>
-                                        </div>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <span class="admin-role-user-count">
-                                        {{ item.user_count }}
-                                    </span>
-                                </td>
-
-                                <td>
-                                    <div class="admin-role-status-group">
-                                        <span class="admin-role-status">
-                                            <span class="admin-status-dot"></span>
-                                            {{ item.active_count }} active
-                                        </span>
-
-                                        {% if item.inactive_count > 0 %}
-                                            <span class="admin-role-inactive">
-                                                <span class="admin-inactive-dot"></span>
-                                                {{ item.inactive_count }} inactive
-                                            </span>
-                                        {% endif %}
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="3">
-                                    <div class="admin-role-empty">
-                                        <div class="admin-role-empty-icon" aria-hidden="true">
-                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                width="28" height="28"
-                                                viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="1.5"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round">
-                                                <circle cx="9" cy="8" r="3"/>
-                                                <path d="M3 20v-1a6 6 0 0 1 12 0v1"/>
-                                                <path d="M16 11a3 3 0 1 0 0-6"/>
-                                                <path d="M18 14a5 5 0 0 1 3 4.58V20"/>
-                                            </svg>
-                                        </div>
-
-                                        <strong>No role data available</strong>
-                                        <p>
-                                            Registered users and their role summaries
-                                            will appear here.
-                                        </p>
-                                    </div>
-                                </td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="admin-role-footer">
-                <span class="admin-role-footer-indicator"></span>
-                Summary based on registered user accounts
-            </div>
-
-        </article>
-
-            <!-- RECENT ACTIVITY -->
-            <article class="panel admin-panel">
-
-                <div class="admin-panel-heading">
-                    <h2>Recent Activity</h2>
-                    <span>Latest events</span>
-                </div>
-
-                <div class="admin-activity-empty">
-
-                    <span class="admin-activity-mark"
-                          aria-hidden="true">↻</span>
-
-                    <p>
-                        No activity to show yet.
-                        Recent events will appear here when available.
-                    </p>
-
-                </div>
-
-            </article>
-
-        </section>
-
-    </main>
+    <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+    <script>
+        function updateDeviceTime() {
+            const timeEl = document.getElementById("time");
+            if (timeEl) {
+                timeEl.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+            }
+        }
+        updateDeviceTime();
+        setInterval(updateDeviceTime, 1000);
+    </script>
 
 </body>
 </html>
