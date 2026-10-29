@@ -2,91 +2,249 @@
 <html lang="en">
 
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="description" content="Keep an eye on shrimp pond water quality with ShrimpGuard monitoring and insights.">
-	<title>ShrimpGuard | Smarter Pond Care</title>
-	<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Monitor shrimp pond water temperature and pH with ShrimpGuard. View readings, explore trends, and receive helpful water quality alerts.">
+    <meta name="theme-color" content="#f1faff">
+    <title>ShrimpGuard | Smarter Pond Care</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
 <body class="landing-page">
-	{% include "_icon_sprite.html" %}
-	<header class="landing-header">
-		<a class="landing-brand" href="{{ url_for('landing') }}" aria-label="ShrimpGuard home">
-			<span class="landing-brand-mark" aria-hidden="true"><svg class="ui-icon brand-icon"><use href="#icon-shrimp"></use></svg></span>
-			<span>ShrimpGuard</span>
-		</a>
-		<nav class="landing-nav" aria-label="Main navigation">
-			<a href="#features">What you can track</a>
-			<a class="landing-nav-login" href="{{ url_for('login') }}">Sign in</a>
-			<a class="landing-button landing-button-small" href="{{ url_for('signup') }}">Get started</a>
-		</nav>
-	</header>
+    {% include "_icon_sprite.html" %}
 
-	<main>
-		<section class="landing-hero">
-			<div class="landing-copy">
-				<p class="landing-eyebrow"><span aria-hidden="true"></span> Pond care, made clearer</p>
-				<h1>Healthy water.<br><span>Stronger harvests.</span></h1>
-				<p class="landing-description">
-					Know what is happening in your shrimp pond. Bring water readings, trends, and alerts together in one simple place.
-				</p>
-				<div class="landing-actions">
-					<a class="landing-button" href="{{ url_for('signup') }}">Create your account <svg class="ui-icon"><use href="#icon-arrow"></use></svg></a>
-					<a class="landing-text-link" href="#features">Explore ShrimpGuard</a>
-				</div>
-				<div class="landing-reading-note">
-					<span class="landing-reading-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-activity"></use></svg></span>
-					<p><strong>See the conditions that matter</strong><br>Temperature and pH at a glance.</p>
-				</div>
-			</div>
+    <header class="landing-header">
+        <div class="landing-header-inner">
+            <a class="landing-brand" href="{{ url_for('landing') }}" aria-label="ShrimpGuard home">
+                <span class="landing-brand-mark" aria-hidden="true">
+                    <svg class="ui-icon brand-icon">
+                        <use href="#icon-shrimp"></use>
+                    </svg>
+                </span>
+                <span class="landing-brand-name">Shrimp<span>Guard</span></span>
+            </a>
 
-			<div class="landing-visual-placeholder" role="img" aria-label="Placeholder for a shrimp pond photo">
-				<div class="landing-placeholder-label">
-					<svg class="ui-icon" aria-hidden="true"><use href="#icon-plus"></use></svg>
-					<span>Pond photo goes here</span>
-				</div>
-				<div class="landing-visual-caption">
-					<span class="landing-caption-dot" aria-hidden="true"></span>
-					<span>A clearer view of your pond</span>
-				</div>
-			</div>
-			<div class="landing-orbit landing-orbit-one" aria-hidden="true"></div>
-			<div class="landing-orbit landing-orbit-two" aria-hidden="true"></div>
-		</section>
+            <button class="landing-menu-toggle"
+                    type="button"
+                    aria-label="Open navigation menu"
+                    aria-expanded="false"
+                    aria-controls="landing-navigation">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-menu"></use>
+                </svg>
+            </button>
 
-		<section class="landing-features" id="features" aria-labelledby="features-title">
-			<div class="landing-section-heading">
-				<p class="landing-eyebrow">Everything in one view</p>
-				<h2 id="features-title">Spend less time guessing.</h2>
-				<p>Keep the essentials close, from today’s pond conditions to the patterns that develop over time.</p>
-			</div>
-			<div class="landing-feature-grid">
-				<article class="landing-feature-card">
-					<span class="landing-feature-icon landing-icon-aqua" aria-hidden="true"><svg class="ui-icon"><use href="#icon-monitor"></use></svg></span>
-					<h3>Current conditions</h3>
-					<p>Review key water quality readings together on your dashboard.</p>
-				</article>
-				<article class="landing-feature-card">
-					<span class="landing-feature-icon landing-icon-sand" aria-hidden="true"><svg class="ui-icon"><use href="#icon-chart"></use></svg></span>
-					<h3>Trends over time</h3>
-					<p>Look back through pond history and make changes with more context.</p>
-				</article>
-				<article class="landing-feature-card">
-					<span class="landing-feature-icon landing-icon-green" aria-hidden="true"><svg class="ui-icon"><use href="#icon-bell"></use></svg></span>
-					<h3>Helpful alerts</h3>
-					<p>Keep important water quality notices and updates easy to find.</p>
-				</article>
-			</div>
-		</section>
-	</main>
+            <nav class="landing-nav" id="landing-navigation" aria-label="Main navigation">
+                <a class="landing-nav-link" href="#features">What you can track</a>
+                <a class="landing-nav-login" href="{{ url_for('login') }}">Sign in</a>
+                <a class="landing-button landing-button-small" href="{{ url_for('signup') }}">
+                    Get started
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-arrow"></use>
+                    </svg>
+                </a>
+            </nav>
+        </div>
+    </header>
 
-	<footer class="landing-footer">
-		<a class="landing-brand" href="{{ url_for('landing') }}">
-			<span class="landing-brand-mark" aria-hidden="true"><svg class="ui-icon brand-icon"><use href="#icon-shrimp"></use></svg></span>
-			<span>ShrimpGuard</span>
-		</a>
-		<p>Thoughtful monitoring for better pond care.</p>
-	</footer>
+    <main>
+        <section class="landing-hero">
+            <div class="landing-hero-inner">
+                <div class="landing-copy">
+                    <p class="landing-eyebrow">
+                        <span class="landing-eyebrow-icon" aria-hidden="true">
+                            <svg class="ui-icon"><use href="#icon-activity"></use></svg>
+                        </span>
+                        Pond care, made clearer
+                    </p>
+
+                    <h1>
+                        Healthy water.
+                        <span>Stronger harvests.</span>
+                    </h1>
+
+                    <p class="landing-description">
+                        Know what is happening in your shrimp pond.
+                        Bring water readings, trends, and alerts together
+                        in one simple place.
+                    </p>
+
+                    <div class="landing-actions">
+                        <a class="landing-button" href="{{ url_for('signup') }}">
+                            Create your account
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-arrow"></use>
+                            </svg>
+                        </a>
+
+                        <a class="landing-text-link" href="#features">
+                            Explore ShrimpGuard
+                        </a>
+                    </div>
+
+                    <div class="landing-reading-note">
+                        <span class="landing-reading-icon" aria-hidden="true">
+                            <svg class="ui-icon"><use href="#icon-activity"></use></svg>
+                        </span>
+
+                        <div>
+                            <p class="landing-reading-title">See the conditions that matter</p>
+                            <p class="landing-reading-description">
+                                Temperature and pH at a glance.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="landing-visual">
+                    <div class="landing-orbit landing-orbit-one" aria-hidden="true"></div>
+                    <div class="landing-orbit landing-orbit-two" aria-hidden="true"></div>
+
+                    <div class="landing-visual-placeholder"
+                         role="img"
+                         aria-label="Shrimp pond photo placeholder">
+                        <div class="landing-placeholder-overlay"></div>
+
+                        <div class="landing-placeholder-content">
+                            <span class="landing-placeholder-plus" aria-hidden="true">
+                                <svg class="ui-icon"><use href="#icon-plus"></use></svg>
+                            </span>
+                            <span class="landing-placeholder-label">Pond photo goes here</span>
+                            <span class="landing-placeholder-hint">
+                                Replace this area with a photo of your shrimp pond.
+                            </span>
+                        </div>
+
+                        <div class="landing-visual-caption">
+                            <span class="landing-caption-dot" aria-hidden="true"></span>
+                            <span>A clearer view of your pond</span>
+                        </div>
+                    </div>
+
+                    <span class="landing-orbit-dot landing-orbit-dot-one" aria-hidden="true"></span>
+                    <span class="landing-orbit-dot landing-orbit-dot-two" aria-hidden="true"></span>
+                </div>
+            </div>
+        </section>
+
+        <section class="landing-features" id="features" aria-labelledby="features-title">
+            <div class="landing-section-heading">
+                <p class="landing-eyebrow">
+                    <span class="landing-eyebrow-icon" aria-hidden="true">
+                        <svg class="ui-icon"><use href="#icon-activity"></use></svg>
+                    </span>
+                    Everything in one view
+                </p>
+
+                <h2 id="features-title">Spend less time guessing.</h2>
+
+                <p>
+                    Keep the essentials close, from today’s pond conditions
+                    to the patterns that develop over time.
+                </p>
+            </div>
+
+            <div class="landing-feature-grid">
+                <article class="landing-feature-card landing-feature-card-aqua">
+                    <span class="landing-feature-icon" aria-hidden="true">
+                        <svg class="ui-icon"><use href="#icon-monitor"></use></svg>
+                    </span>
+
+                    <h3>Current conditions</h3>
+
+                    <p>
+                        Review water temperature and pH readings together
+                        on your monitoring dashboard.
+                    </p>
+                </article>
+
+                <article class="landing-feature-card landing-feature-card-sand">
+                    <span class="landing-feature-icon" aria-hidden="true">
+                        <svg class="ui-icon"><use href="#icon-chart"></use></svg>
+                    </span>
+
+                    <h3>Trends over time</h3>
+
+                    <p>
+                        Explore historical readings and understand how
+                        your pond conditions change.
+                    </p>
+                </article>
+
+                <article class="landing-feature-card landing-feature-card-green">
+                    <span class="landing-feature-icon" aria-hidden="true">
+                        <svg class="ui-icon"><use href="#icon-bell"></use></svg>
+                    </span>
+
+                    <h3>Helpful alerts</h3>
+
+                    <p>
+                        Find important water quality notifications and
+                        identify conditions that may need attention.
+                    </p>
+                </article>
+            </div>
+
+            <div class="landing-bottom-cta">
+                <div>
+                    <h3>Make pond monitoring clearer.</h3>
+                    <p>Bring your water readings and insights into one place.</p>
+                </div>
+
+                <a class="landing-button" href="{{ url_for('signup') }}">
+                    Get started
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-arrow"></use>
+                    </svg>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="landing-footer">
+        <a class="landing-brand" href="{{ url_for('landing') }}" aria-label="ShrimpGuard home">
+            <span class="landing-brand-mark" aria-hidden="true">
+                <svg class="ui-icon brand-icon">
+                    <use href="#icon-shrimp"></use>
+                </svg>
+            </span>
+            <span class="landing-brand-name">Shrimp<span>Guard</span></span>
+        </a>
+
+        <p>Thoughtful monitoring for better pond care.</p>
+
+        <span class="landing-footer-copy">
+            &copy; {{ current_year if current_year is defined else 2026 }} ShrimpGuard
+        </span>
+    </footer>
+
+    <script>
+        (() => {
+            const menuToggle = document.querySelector('.landing-menu-toggle');
+            const navigation = document.querySelector('#landing-navigation');
+
+            if (!menuToggle || !navigation) return;
+
+            menuToggle.addEventListener('click', () => {
+                const isOpen = menuToggle.getAttribute('aria-expanded') === 'true';
+
+                menuToggle.setAttribute('aria-expanded', String(!isOpen));
+                menuToggle.setAttribute(
+                    'aria-label',
+                    isOpen ? 'Open navigation menu' : 'Close navigation menu'
+                );
+                navigation.classList.toggle('landing-nav-open', !isOpen);
+            });
+
+            navigation.querySelectorAll('a').forEach((link) => {
+                link.addEventListener('click', () => {
+                    menuToggle.setAttribute('aria-expanded', 'false');
+                    menuToggle.setAttribute('aria-label', 'Open navigation menu');
+                    navigation.classList.remove('landing-nav-open');
+                });
+            });
+        })();
+    </script>
 </body>
 </html>
