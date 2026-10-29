@@ -1,119 +1,899 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f4f8f7">
+
     <title>Admin Dashboard | ShrimpGuard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        /* =========================================
+           SHRIMPGUARD ADMIN DASHBOARD
+           Dashboard-specific design enhancements
+        ========================================= */
+
+        .admin-page {
+            --admin-primary: #087f70;
+            --admin-primary-dark: #066558;
+            --admin-primary-light: #e5f5f1;
+            --admin-background: #f4f8f7;
+            --admin-surface: #ffffff;
+            --admin-text: #172b32;
+            --admin-muted: #75858a;
+            --admin-border: #e6eeec;
+            --admin-success: #16845b;
+            --admin-danger: #c53d48;
+            --admin-warning: #b7791f;
+
+            min-height: 100vh;
+            background: var(--admin-background);
+            color: var(--admin-text);
+            font-family: Inter, -apple-system, BlinkMacSystemFont,
+                         "Segoe UI", sans-serif;
+        }
+
+        .admin-page,
+        .admin-page * {
+            box-sizing: border-box;
+        }
+
+        .admin-page .ui-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        /* SIDEBAR */
+
+        .admin-page .sidebar {
+            position: fixed;
+            inset: 0 auto 0 0;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            width: 258px;
+            min-height: 100vh;
+            padding: 28px 18px 20px;
+            overflow-y: auto;
+            background: #103c3a;
+            color: #ffffff;
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .admin-page .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 12px;
+            color: #ffffff;
+            font-size: 21px;
+            font-weight: 750;
+            letter-spacing: -0.7px;
+        }
+
+        .admin-page .logo .brand-icon {
+            width: 39px;
+            height: 39px;
+            padding: 8px;
+            border-radius: 12px;
+            background: #1a8b79;
+            color: #ffffff;
+        }
+
+        .admin-page .subtitle {
+            margin: 10px 12px 34px;
+            color: #a8c8c2;
+            font-size: 11px;
+            font-weight: 650;
+            letter-spacing: 1.7px;
+            text-transform: uppercase;
+        }
+
+        .admin-page .sidebar nav {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .admin-page .sidebar nav a {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            min-height: 48px;
+            padding: 12px 14px;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            color: #c0d7d2;
+            font-size: 13px;
+            font-weight: 550;
+            text-decoration: none;
+            transition: background 0.2s ease,
+                        color 0.2s ease,
+                        border-color 0.2s ease;
+        }
+
+        .admin-page .sidebar nav a .ui-icon {
+            opacity: 0.85;
+        }
+
+        .admin-page .sidebar nav a:hover {
+            background: rgba(255, 255, 255, 0.07);
+            color: #ffffff;
+        }
+
+        .admin-page .sidebar nav a.active {
+            background: #1c7167;
+            border-color: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            box-shadow: inset 3px 0 #6ee7c5;
+        }
+
+        .admin-page .sidebar .sidebar-logout {
+            margin-top: auto;
+            padding-top: 24px;
+        }
+
+        .admin-page .sidebar .sidebar-logout button {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 12px;
+            width: 100%;
+            min-height: 46px;
+            padding: 12px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.045);
+            color: #e1eeeb;
+            font: inherit;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.2s ease,
+                        color 0.2s ease;
+        }
+
+        .admin-page .sidebar .sidebar-logout button:hover {
+            background: rgba(239, 68, 68, 0.14);
+            color: #fecaca;
+        }
+
+        /* MAIN CONTENT */
+
+        .admin-page .main-content {
+            width: calc(100% - 258px);
+            min-height: 100vh;
+            margin-left: 258px;
+            padding: 36px 40px 48px;
+        }
+
+        .admin-page .main-content > header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 32px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid var(--admin-border);
+        }
+
+        .admin-page .eyebrow {
+            margin: 0 0 8px;
+            color: var(--admin-primary);
+            font-size: 11px;
+            font-weight: 750;
+            letter-spacing: 1.7px;
+            text-transform: uppercase;
+        }
+
+        .admin-page .main-content header h1 {
+            margin: 0;
+            color: var(--admin-text);
+            font-size: clamp(27px, 3vw, 35px);
+            font-weight: 750;
+            letter-spacing: -1.3px;
+            line-height: 1.2;
+        }
+
+        .admin-page .main-content header > div > p:last-child {
+            margin: 10px 0 0;
+            color: var(--admin-muted);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* METRIC CARDS */
+
+        .admin-page .admin-overview {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 27px;
+        }
+
+        .admin-page .admin-metric {
+            position: relative;
+            min-width: 0;
+            padding: 23px 22px 21px;
+            overflow: hidden;
+            border: 1px solid var(--admin-border);
+            border-radius: 15px;
+            background: var(--admin-surface);
+            box-shadow: 0 3px 12px rgba(24, 59, 53, 0.025);
+            transition: transform 0.2s ease,
+                        box-shadow 0.2s ease;
+        }
+
+        .admin-page .admin-metric:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(24, 59, 53, 0.07);
+        }
+
+        .admin-page .admin-metric-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 23px;
+        }
+
+        .admin-page .admin-metric-label {
+            color: #627579;
+            font-size: 12px;
+            font-weight: 650;
+        }
+
+        .admin-page .admin-metric-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 43px;
+            height: 43px;
+            flex-shrink: 0;
+            border-radius: 12px;
+            background: var(--admin-primary-light);
+            color: var(--admin-primary);
+        }
+
+        .admin-page .admin-metric:nth-child(2) .admin-metric-icon {
+            background: #e6f6ec;
+            color: #16845b;
+        }
+
+        .admin-page .admin-metric:nth-child(3) .admin-metric-icon {
+            background: #fff4df;
+            color: #b7791f;
+        }
+
+        .admin-page .admin-metric:nth-child(4) .admin-metric-icon {
+            background: #edf0ff;
+            color: #5866ba;
+        }
+
+        .admin-page .admin-metric-value {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--admin-text);
+            font-size: clamp(27px, 2.5vw, 35px);
+            font-weight: 750;
+            letter-spacing: -1.2px;
+            line-height: 1.1;
+            overflow-wrap: anywhere;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .admin-page .admin-metric-note {
+            margin: 0;
+            color: var(--admin-muted);
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        .admin-page .admin-system-value {
+            font-size: clamp(20px, 1.9vw, 27px);
+            letter-spacing: -0.7px;
+            color: var(--admin-success);
+        }
+
+        .admin-page .admin-system-value.offline {
+            color: var(--admin-danger);
+        }
+
+        /* PANELS */
+
+        .admin-page .panel {
+            min-width: 0;
+            border: 1px solid var(--admin-border);
+            border-radius: 15px;
+            background: var(--admin-surface);
+            box-shadow: 0 3px 12px rgba(24, 59, 53, 0.025);
+        }
+
+        .admin-page .admin-panel {
+            padding: 24px;
+        }
+
+        .admin-page .admin-panel-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 23px;
+        }
+
+        .admin-page .admin-panel-heading h2 {
+            margin: 0;
+            color: var(--admin-text);
+            font-size: 15px;
+            font-weight: 750;
+            letter-spacing: -0.25px;
+        }
+
+        .admin-page .admin-panel-heading > span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            max-width: 50%;
+            padding: 6px 10px;
+            border: 1px solid #e8efed;
+            border-radius: 7px;
+            background: #f7faf9;
+            color: #75858a;
+            font-size: 10px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* ACTIVITY OVERVIEW */
+
+        .admin-page .admin-activity-overview {
+            margin-bottom: 25px;
+        }
+
+        .admin-page .admin-activity-chart {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 205px;
+            padding: 30px;
+            border: 1px dashed #dce8e4;
+            border-radius: 11px;
+            background:
+                linear-gradient(
+                    to bottom,
+                    rgba(8, 127, 112, 0.025),
+                    rgba(8, 127, 112, 0)
+                );
+            text-align: center;
+        }
+
+        .admin-page .admin-activity-chart p {
+            max-width: 300px;
+            margin: 0;
+            color: var(--admin-muted);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        /* LOWER DASHBOARD */
+
+        .admin-page .admin-dashboard-lower {
+            display: grid;
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+            align-items: stretch;
+            gap: 24px;
+        }
+
+        .admin-page .admin-dashboard-lower > .admin-panel {
+            min-width: 0;
+        }
+
+        /* TABLE */
+
+        .admin-page .admin-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .admin-page .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .admin-page .admin-table thead {
+            background: #f7faf9;
+        }
+
+        .admin-page .admin-table th {
+            padding: 13px 12px;
+            border-bottom: 1px solid var(--admin-border);
+            color: #738489;
+            font-size: 10px;
+            font-weight: 750;
+            letter-spacing: 0.7px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .admin-page .admin-table td {
+            padding: 17px 12px;
+            border-bottom: 1px solid #eef2f1;
+            color: #53666b;
+            font-size: 12px;
+        }
+
+        .admin-page .admin-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .admin-page .admin-role-empty {
+            padding: 30px 12px !important;
+            color: var(--admin-muted) !important;
+            text-align: center;
+            line-height: 1.7;
+        }
+
+        /* RECENT ACTIVITY EMPTY STATE */
+
+        .admin-page .admin-activity-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 150px;
+            padding: 24px;
+            border: 1px dashed #dce8e4;
+            border-radius: 11px;
+            background: #fbfdfc;
+            text-align: center;
+        }
+
+        .admin-page .admin-activity-mark {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            margin-bottom: 13px;
+            border: 1px solid #dcefe9;
+            border-radius: 50%;
+            background: var(--admin-primary-light);
+            color: var(--admin-primary);
+            font-size: 25px;
+        }
+
+        .admin-page .admin-activity-empty p {
+            margin: 0;
+            color: var(--admin-muted);
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        /* RESPONSIVE: TABLETS */
+
+        @media (max-width: 1200px) {
+            .admin-page .main-content {
+                padding: 30px 25px 40px;
+            }
+
+            .admin-page .admin-overview {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .admin-page .admin-dashboard-lower {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* RESPONSIVE: SMALL TABLETS */
+
+        @media (max-width: 760px) {
+            .admin-page .sidebar {
+                width: 210px;
+                padding: 22px 13px 16px;
+            }
+
+            .admin-page .logo {
+                gap: 9px;
+                padding: 0 8px;
+                font-size: 18px;
+            }
+
+            .admin-page .subtitle {
+                margin-left: 8px;
+                margin-bottom: 25px;
+                font-size: 10px;
+            }
+
+            .admin-page .sidebar nav a {
+                gap: 10px;
+                padding: 11px;
+                font-size: 12px;
+            }
+
+            .admin-page .main-content {
+                width: calc(100% - 210px);
+                margin-left: 210px;
+                padding: 25px 18px 35px;
+            }
+
+            .admin-page .admin-metric {
+                padding: 18px;
+            }
+
+            .admin-page .admin-panel {
+                padding: 19px;
+            }
+        }
+
+        /* RESPONSIVE: MOBILE */
+
+        @media (max-width: 520px) {
+            .admin-page .sidebar {
+                position: relative;
+                inset: auto;
+                width: 100%;
+                min-height: auto;
+                padding: 17px;
+                overflow: visible;
+            }
+
+            .admin-page .logo {
+                font-size: 20px;
+            }
+
+            .admin-page .subtitle {
+                margin: 8px 8px 16px;
+            }
+
+            .admin-page .sidebar nav {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 8px;
+            }
+
+            .admin-page .sidebar nav a {
+                min-width: 0;
+                min-height: 44px;
+                padding: 10px;
+                font-size: 11px;
+            }
+
+            .admin-page .sidebar .sidebar-logout {
+                margin-top: 13px;
+                padding-top: 0;
+            }
+
+            .admin-page .sidebar .sidebar-logout button {
+                min-height: 42px;
+                padding: 10px;
+            }
+
+            .admin-page .main-content {
+                width: 100%;
+                margin-left: 0;
+                padding: 25px 16px 32px;
+            }
+
+            .admin-page .main-content > header {
+                margin-bottom: 23px;
+                padding-bottom: 21px;
+            }
+
+            .admin-page .main-content header h1 {
+                font-size: 28px;
+            }
+
+            .admin-page .main-content header > div > p:last-child {
+                font-size: 12px;
+            }
+
+            .admin-page .admin-overview {
+                gap: 12px;
+                margin-bottom: 20px;
+            }
+
+            .admin-page .admin-metric {
+                padding: 15px;
+                border-radius: 12px;
+            }
+
+            .admin-page .admin-metric-top {
+                align-items: flex-start;
+                flex-direction: column-reverse;
+                gap: 12px;
+                margin-bottom: 17px;
+            }
+
+            .admin-page .admin-metric-icon {
+                width: 37px;
+                height: 37px;
+            }
+
+            .admin-page .admin-metric-label {
+                font-size: 11px;
+            }
+
+            .admin-page .admin-metric-value {
+                font-size: 28px;
+            }
+
+            .admin-page .admin-system-value {
+                font-size: 19px;
+            }
+
+            .admin-page .admin-metric-note {
+                font-size: 10px;
+            }
+
+            .admin-page .admin-panel {
+                padding: 17px 14px;
+            }
+
+            .admin-page .admin-panel-heading {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 10px;
+                margin-bottom: 18px;
+            }
+
+            .admin-page .admin-panel-heading > span {
+                max-width: 100%;
+            }
+
+            .admin-page .admin-activity-chart {
+                min-height: 160px;
+                padding: 20px;
+            }
+
+            .admin-page .admin-dashboard-lower {
+                gap: 16px;
+            }
+
+            .admin-page .admin-table th,
+            .admin-page .admin-table td {
+                padding: 12px 8px;
+            }
+        }
+
+        /* ACCESSIBILITY */
+
+        @media (prefers-reduced-motion: reduce) {
+            .admin-page *,
+            .admin-page *::before,
+            .admin-page *::after {
+                scroll-behavior: auto !important;
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
 </head>
 
 <body class="admin-page">
-{% include "_icon_sprite.html" %}
-<div class="sidebar">
-    <div class="logo"><svg class="ui-icon brand-icon"><use href="#icon-shrimp"></use></svg> <span>ShrimpGuard</span></div>
-    <p class="subtitle">Administration</p>
-    <nav>
-        <a href="/admin/dashboard" class="active"><svg class="ui-icon"><use href="#icon-dashboard"></use></svg> Admin Dashboard</a>
-        <a href="/admin"><svg class="ui-icon"><use href="#icon-users"></use></svg> User Management</a>
-    </nav>
-    {% include "_logout_form.html" %}
-</div>
 
-<main class="main-content">
-    <header>
-        <div>
-            <p class="eyebrow">Administration</p>
-            <h1>Admin Dashboard</h1>
-            <p>Account activity and access at a glance.</p>
+    {% include "_icon_sprite.html" %}
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="logo">
+            <svg class="ui-icon brand-icon" aria-hidden="true">
+                <use href="#icon-shrimp"></use>
+            </svg>
+            <span>ShrimpGuard</span>
         </div>
-    </header>
 
-    <section class="admin-overview" aria-label="User and system overview">
-        <article class="admin-metric">
-            <div class="admin-metric-top">
-                <span class="admin-metric-label">Total Users</span>
-                <span class="admin-metric-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-users"></use></svg></span>
+        <p class="subtitle">Administration</p>
+
+        <nav aria-label="Admin navigation">
+            <a href="/admin/dashboard" class="active" aria-current="page">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-dashboard"></use>
+                </svg>
+                <span>Admin Dashboard</span>
+            </a>
+
+            <a href="/admin">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-users"></use>
+                </svg>
+                <span>User Management</span>
+            </a>
+        </nav>
+
+        {% include "_logout_form.html" %}
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+        <!-- PAGE HEADER -->
+        <header>
+            <div>
+                <p class="eyebrow">Administration / Overview</p>
+                <h1>Admin Dashboard</h1>
+                <p>
+                    Monitor account activity and check your system's
+                    database connection at a glance.
+                </p>
             </div>
-            <strong class="admin-metric-value">{{ total_users }}</strong>
-            <p class="admin-metric-note">Registered accounts</p>
-        </article>
+        </header>
 
-        <article class="admin-metric">
-            <div class="admin-metric-top">
-                <span class="admin-metric-label">Active Users</span>
-                <span class="admin-metric-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-check-circle"></use></svg></span>
-            </div>
-            <strong class="admin-metric-value">{{ active_users }}</strong>
-            <p class="admin-metric-note">Currently active accounts</p>
-        </article>
+        <!-- SUMMARY METRICS -->
+        <section class="admin-overview"
+                 aria-label="User and system overview">
 
-        <article class="admin-metric">
-            <div class="admin-metric-top">
-                <span class="admin-metric-label">Inactive Users</span>
-                <span class="admin-metric-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-clock"></use></svg></span>
-            </div>
-            <strong class="admin-metric-value">{{ inactive_users }}</strong>
-            <p class="admin-metric-note">Inactive accounts</p>
-        </article>
+            <!-- Total users -->
+            <article class="admin-metric">
+                <div class="admin-metric-top">
+                    <span class="admin-metric-label">Total Users</span>
 
-        <article class="admin-metric">
-            <div class="admin-metric-top">
-                <span class="admin-metric-label">System Status</span>
-                <span class="admin-metric-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-activity"></use></svg></span>
-            </div>
-            <strong class="admin-metric-value admin-system-value{% if not system_online %} offline{% endif %}">
-                {{ "Operational" if system_online else "Unavailable" }}
-            </strong>
-            <p class="admin-metric-note">Database connection</p>
-        </article>
-    </section>
+                    <span class="admin-metric-icon" aria-hidden="true">
+                        <svg class="ui-icon">
+                            <use href="#icon-users"></use>
+                        </svg>
+                    </span>
+                </div>
 
-    <section class="panel admin-panel admin-activity-overview" aria-label="Users Activity Overview">
-        <div class="admin-panel-heading">
-            <h2>Users Activity Overview</h2>
-            <span>Account activity</span>
-        </div>
-        <div class="admin-activity-chart">
-            <p>No user activity data is available yet.</p>
-        </div>
-    </section>
+                <strong class="admin-metric-value">
+                    {{ total_users }}
+                </strong>
 
-    <section class="admin-dashboard-lower" aria-label="User and activity summaries">
-        <article class="panel admin-panel">
+                <p class="admin-metric-note">
+                    Registered accounts
+                </p>
+            </article>
+
+            <!-- Active users -->
+            <article class="admin-metric">
+                <div class="admin-metric-top">
+                    <span class="admin-metric-label">Active Users</span>
+
+                    <span class="admin-metric-icon" aria-hidden="true">
+                        <svg class="ui-icon">
+                            <use href="#icon-check-circle"></use>
+                        </svg>
+                    </span>
+                </div>
+
+                <strong class="admin-metric-value">
+                    {{ active_users }}
+                </strong>
+
+                <p class="admin-metric-note">
+                    Currently active accounts
+                </p>
+            </article>
+
+            <!-- Inactive users -->
+            <article class="admin-metric">
+                <div class="admin-metric-top">
+                    <span class="admin-metric-label">Inactive Users</span>
+
+                    <span class="admin-metric-icon" aria-hidden="true">
+                        <svg class="ui-icon">
+                            <use href="#icon-clock"></use>
+                        </svg>
+                    </span>
+                </div>
+
+                <strong class="admin-metric-value">
+                    {{ inactive_users }}
+                </strong>
+
+                <p class="admin-metric-note">
+                    Inactive accounts
+                </p>
+            </article>
+
+            <!-- System status -->
+            <article class="admin-metric">
+                <div class="admin-metric-top">
+                    <span class="admin-metric-label">System Status</span>
+
+                    <span class="admin-metric-icon" aria-hidden="true">
+                        <svg class="ui-icon">
+                            <use href="#icon-activity"></use>
+                        </svg>
+                    </span>
+                </div>
+
+                <strong class="admin-metric-value admin-system-value{% if not system_online %} offline{% endif %}">
+                    {{ "Operational" if system_online else "Unavailable" }}
+                </strong>
+
+                <p class="admin-metric-note">
+                    Database connection
+                </p>
+            </article>
+
+        </section>
+
+        <!-- USER ACTIVITY OVERVIEW -->
+        <section class="panel admin-panel admin-activity-overview"
+                 aria-label="Users activity overview">
+
             <div class="admin-panel-heading">
-                <h2>User &amp; Role summary</h2>
-                <span>0 users</span>
+                <h2>Users Activity Overview</h2>
+                <span>Account activity</span>
             </div>
-            <div class="admin-table-wrap">
-                <table class="admin-table admin-role-table">
-                    <thead>
-                        <tr>
-                            <th scope="col">Role</th>
-                            <th scope="col">Users</th>
-                            <th scope="col">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="admin-role-empty" colspan="3">No role data to summarize yet.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </article>
 
-        <article class="panel admin-panel">
-            <div class="admin-panel-heading">
-                <h2>Recent Activity</h2>
-                <span>Latest events</span>
+            <div class="admin-activity-chart">
+                <p>
+                    User activity data will appear here once
+                    activity tracking is available.
+                </p>
             </div>
-            <div class="admin-activity-empty">
-                <span class="admin-activity-mark" aria-hidden="true">↻</span>
-                <p>No activity to show yet.</p>
-            </div>
-        </article>
-    </section>
-</main>
+
+        </section>
+
+        <!-- LOWER DASHBOARD PANELS -->
+        <section class="admin-dashboard-lower"
+                 aria-label="User and activity summaries">
+
+            <!-- ROLE SUMMARY -->
+            <article class="panel admin-panel">
+
+                <div class="admin-panel-heading">
+                    <h2>User &amp; Role Summary</h2>
+                    <span>0 users</span>
+                </div>
+
+                <div class="admin-table-wrap">
+                    <table class="admin-table admin-role-table">
+
+                        <thead>
+                            <tr>
+                                <th scope="col">Role</th>
+                                <th scope="col">Users</th>
+                                <th scope="col">Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td class="admin-role-empty" colspan="3">
+                                    No role data to summarize yet.
+                                </td>
+                            </tr>
+                        </tbody>
+
+                    </table>
+                </div>
+
+            </article>
+
+            <!-- RECENT ACTIVITY -->
+            <article class="panel admin-panel">
+
+                <div class="admin-panel-heading">
+                    <h2>Recent Activity</h2>
+                    <span>Latest events</span>
+                </div>
+
+                <div class="admin-activity-empty">
+
+                    <span class="admin-activity-mark"
+                          aria-hidden="true">↻</span>
+
+                    <p>
+                        No activity to show yet.
+                        Recent events will appear here when available.
+                    </p>
+
+                </div>
+
+            </article>
+
+        </section>
+
+    </main>
+
 </body>
 </html>
