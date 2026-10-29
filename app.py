@@ -571,20 +571,63 @@ def edit_user():
     return redirect(url_for("admin_dashboard"))
 
 
+
 @app.route("/admin/dashboard")
 @role_required("Admin")
 def admin_home():
     try:
         users = User.query.all()
+
         total_users = len(users)
-        active_users = sum(user.status.strip().casefold() == "active" for user in users)
-        inactive_users = sum(user.status.strip().casefold() == "inactive" for user in users)
+
+        active_users = sum(
+            (user.status or "").strip().casefold() == "active"
+            for user in users
+        )
+
+        inactive_users = sum(
+            (user.status or "").strip().casefold() == "inactive"
+            for user in users
+        )
+
+        # Group users by role
+        role_groups = {}
+
+        for user in users:
+            role = (user.role or "Unassigned").strip() or "Unassigned"
+            role_key = role.casefold()
+
+            if role_key not in role_groups:
+                role_groups[role_key] = {
+                    "role": role,
+                    "user_count": 0,
+                    "active_count": 0,
+                    "inactive_count": 0,
+                }
+
+            role_groups[role_key]["user_count"] += 1
+
+            status = (user.status or "").strip().casefold()
+
+            if status == "active":
+                role_groups[role_key]["active_count"] += 1
+            elif status == "inactive":
+                role_groups[role_key]["inactive_count"] += 1
+
+        role_summary = sorted(
+            role_groups.values(),
+            key=lambda item: item["role"].casefold()
+        )
+
         system_online = True
+
     except SQLAlchemyError:
         db.session.rollback()
+
         total_users = 0
         active_users = 0
         inactive_users = 0
+        role_summary = []
         system_online = False
 
     return render_template(
@@ -592,8 +635,10 @@ def admin_home():
         total_users=total_users,
         active_users=active_users,
         inactive_users=inactive_users,
+        role_summary=role_summary,
         system_online=system_online,
     )
+
 
 
 @app.route("/login", methods=["GET", "POST"])
