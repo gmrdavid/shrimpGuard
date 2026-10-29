@@ -12,12 +12,19 @@
 <body class="analytics-page">
 {% include "_icon_sprite.html" %}
 
-<div class="sidebar analytics-sidebar">
-    <div class="logo">
-        <svg class="ui-icon brand-icon"><use href="#icon-shrimp"></use></svg>
-        <span>ShrimpGuard</span>
-    </div>
-    <p class="subtitle">Water Quality Monitoring</p>
+<aside class="sidebar analytics-sidebar">
+            <a href="/" class="logo dashboard-logo" aria-label="ShrimpGuard dashboard">
+            <span class="dashboard-logo-mark">
+                <svg class="ui-icon brand-icon" aria-hidden="true">
+                    <use href="#icon-shrimp"></use>
+                </svg>
+            </span>
+            <span>ShrimpGuard</span>
+        </a>
+
+        <p class="subtitle">Water Quality Monitoring</p>
+
+        <div class="sidebar-section-label">MAIN MENU</div>
 
     <nav>
         <a href="/">
@@ -57,7 +64,7 @@
             <p>Track water conditions and review actionable insights.</p>
         </div>
     </div>
-</div>
+</aside>
 
 <main class="main-content analytics-main">
     <header class="analytics-header">
