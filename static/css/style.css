@@ -11367,13 +11367,6 @@ nav a {
     content: "";
 }
 
-.analytics-page .sidebar-bottom {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: auto;
-    padding-top: 24px;
-}
 
 .analytics-page .sidebar-help {
     display: flex;
@@ -12392,13 +12385,6 @@ nav a {
     content: "";
 }
 
-.alerts-page .sidebar-bottom {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: auto;
-    padding-top: 24px;
-}
 
 .alerts-page .sidebar-help {
     display: flex;
@@ -13539,13 +13525,6 @@ nav a {
     content: "";
 }
 
-.settings-page .sidebar-bottom {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: auto;
-    padding-top: 24px;
-}
 
 .settings-page .sidebar-help {
     display: flex;
