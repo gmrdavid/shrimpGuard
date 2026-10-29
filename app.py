@@ -485,6 +485,38 @@ def create_user():
 
     return redirect(url_for("admin_dashboard"))
 
+@app.route("/admin/users/delete", methods=["POST"])
+@role_required("Admin")
+def delete_user():
+    expected_token = session.get("admin_csrf_token", "")
+    submitted_token = request.form.get("csrf_token", "")
+    if not expected_token or not hmac.compare_digest(expected_token, submitted_token):
+        flash("Your request expired. Please try again.", "error")
+        return redirect(url_for("admin_dashboard"))
+
+    email = request.form.get("email", "").strip().lower()
+    current_email = session.get("user_id", "").strip().lower()
+
+    if email == current_email:
+        flash("You cannot delete your own active administrator account.", "error")
+        return redirect(url_for("admin_dashboard"))
+
+    user = db.session.get(User, email)
+    if user is None:
+        flash("User not found.", "error")
+        return redirect(url_for("admin_dashboard"))
+
+    try:
+        db.session.delete(user)
+        db.session.commit()
+        session["admin_csrf_token"] = secrets.token_urlsafe(32)
+        flash(f"User {user.user_name} ({user.email}) was successfully deleted.", "success")
+    except SQLAlchemyError:
+        db.session.rollback()
+        flash("Unable to delete user. Please try again.", "error")
+
+    return redirect(url_for("admin_dashboard"))
+
 
 @app.route("/admin/users/edit", methods=["POST"])
 @role_required("Admin")
