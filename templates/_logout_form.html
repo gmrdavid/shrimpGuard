@@ -1,4 +1,15 @@
-<form class="sidebar-logout" method="post" action="{{ url_for('logout') }}">
+
+<form class="sidebar-logout"
+      method="post"
+      action="{{ url_for('logout') }}"
+      onsubmit="return confirm('Are you sure you want to log out?');">
+
     <input type="hidden" name="csrf_token" value="{{ logout_csrf_token }}">
-    <button type="submit"><svg class="ui-icon" aria-hidden="true"><use href="#icon-logout"></use></svg> Log Out</button>
+
+    <button type="submit">
+        <svg class="ui-icon" aria-hidden="true">
+            <use href="#icon-logout"></use>
+        </svg>
+        Log Out
+    </button>
 </form>
