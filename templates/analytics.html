@@ -4,325 +4,561 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#f5f8f4">
+    <meta name="theme-color" content="#126b4f">
+
     <title>Analytics &amp; Reports | ShrimpGuard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
 <body class="analytics-page">
+
 {% include "_icon_sprite.html" %}
 
-<div class="sidebar analytics-sidebar">
-    <div class="logo">
-        <svg class="ui-icon brand-icon"><use href="#icon-shrimp"></use></svg>
-        <span>ShrimpGuard</span>
-    </div>
-    <p class="subtitle">Water Quality Monitoring</p>
+<div class="analytics-layout">
 
-    <nav>
-        <a href="/">
-            <svg class="ui-icon"><use href="#icon-dashboard"></use></svg>
-            <span>Dashboard</span>
-        </a>
-        <a href="/monitoring">
-            <svg class="ui-icon"><use href="#icon-monitor"></use></svg>
-            <span>Real-time Monitoring</span>
-        </a>
-        <a href="/historical">
-            <svg class="ui-icon"><use href="#icon-history"></use></svg>
-            <span>Historical Data</span>
-        </a>
-        <a href="/analytics" class="active" aria-current="page">
-            <svg class="ui-icon"><use href="#icon-chart"></use></svg>
-            <span>Analytics &amp; Reports</span>
-        </a>
-        <a href="/alerts">
-            <svg class="ui-icon"><use href="#icon-alert"></use></svg>
-            <span>Alerts and Notifications</span>
-        </a>
-        <a href="/settings">
-            <svg class="ui-icon"><use href="#icon-settings"></use></svg>
-            <span>Settings</span>
-        </a>
-    </nav>
+    <!-- SIDEBAR -->
+    <aside class="sidebar analytics-sidebar">
 
-    {% include "adminlogout.html" %}
-
-    <div class="analytics-sidebar-note">
-        <span class="analytics-sidebar-note-icon">
-            <svg class="ui-icon"><use href="#icon-shrimp"></use></svg>
-        </span>
-        <div>
-            <strong>Farm monitoring</strong>
-            <p>Track water conditions and review actionable insights.</p>
-        </div>
-    </div>
-</div>
-
-<main class="main-content analytics-main">
-    <header class="analytics-header">
-        <div class="analytics-page-heading">
-            <span class="analytics-eyebrow">FARM INTELLIGENCE</span>
-            <h1>Analytics &amp; Reports</h1>
-            <p>Review water quality indicators, farm health, and recommended operations.</p>
-        </div>
-
-        <div class="header-info analytics-header-info">
-            <div class="analytics-header-label">
-                <span class="analytics-header-dot"></span>
-                <span>Water quality overview</span>
-            </div>
-            <button id="notification-button"
-                    class="notification-button"
-                    type="button"
-                    aria-label="View notifications">
-                <svg class="ui-icon"><use href="#icon-bell"></use></svg>
-            </button>
-            <div class="time analytics-clock">
-                <span id="time"></span>
-            </div>
-        </div>
-    </header>
-
-    <p id="analytics-demo-note" class="demo-data-note analytics-demo-note" hidden>
-        Demo readings are illustrative sample data, not live pond measurements.
-    </p>
-
-    <section class="analytics-section" aria-label="Water quality overview">
-        <div class="analytics-section-heading">
-            <div>
-                <h2>Overview</h2>
-                <p>A quick summary of your current monitoring data.</p>
-            </div>
-            <span class="analytics-section-tag">
-                <svg class="ui-icon"><use href="#icon-chart"></use></svg>
-                Summary
+        <a href="/" class="logo analytics-logo" aria-label="ShrimpGuard dashboard">
+            <span class="analytics-logo-mark">
+                <svg class="ui-icon brand-icon" aria-hidden="true">
+                    <use href="#icon-shrimp"></use>
+                </svg>
             </span>
-        </div>
+            <span>ShrimpGuard</span>
+        </a>
 
-        <div class="cards analytics-metric-grid">
-            <article class="card analytics-metric-card analytics-quality-card">
-                <div class="analytics-metric-top">
-                    <span class="analytics-metric-icon">
-                        <svg class="ui-icon"><use href="#icon-chart"></use></svg>
-                    </span>
-                    <span class="analytics-metric-label">WATER QUALITY</span>
-                </div>
-                <div class="analytics-metric-content">
-                    <h3>Average Water Quality</h3>
-                    <h2 id="analytics-average-quality">--</h2>
-                    <p id="analytics-quality-summary">Waiting for sensor readings</p>
-                </div>
-            </article>
+        <p class="subtitle">Water Quality Monitoring</p>
 
-            <article class="card analytics-metric-card analytics-alert-card">
-                <div class="analytics-metric-top">
-                    <span class="analytics-metric-icon">
-                        <svg class="ui-icon"><use href="#icon-alert"></use></svg>
-                    </span>
-                    <span class="analytics-metric-label">ATTENTION</span>
-                </div>
-                <div class="analytics-metric-content">
-                    <h3>Active Alerts</h3>
-                    <h2 id="analytics-active-alerts">--</h2>
-                    <p id="analytics-alert-summary">Waiting for sensor readings</p>
-                </div>
-            </article>
+        <div class="sidebar-section-label">MAIN MENU</div>
 
-            <article class="card analytics-metric-card analytics-action-card">
-                <div class="analytics-metric-top">
-                    <span class="analytics-metric-icon">
-                        <svg class="ui-icon"><use href="#icon-lightbulb"></use></svg>
-                    </span>
-                    <span class="analytics-metric-label">NEXT STEP</span>
-                </div>
-                <div class="analytics-metric-content">
-                    <h3>Recommended Action</h3>
-                    <h2 id="analytics-recommended-action">--</h2>
-                    <p id="analytics-action-summary">Based on the latest sensor reading</p>
-                </div>
-            </article>
+        <nav class="analytics-nav" aria-label="Main navigation">
 
-            <article class="card analytics-metric-card analytics-monitoring-card">
-                <div class="analytics-metric-top">
-                    <span class="analytics-metric-icon">
-                        <svg class="ui-icon"><use href="#icon-clock"></use></svg>
-                    </span>
-                    <span class="analytics-metric-label">SYSTEM STATUS</span>
-                </div>
-                <div class="analytics-metric-content">
-                    <h3>Monitoring Status</h3>
-                    <h2 id="analytics-monitoring-status">--</h2>
-                    <p id="analytics-last-update">Waiting for sensor readings</p>
-                </div>
-            </article>
-        </div>
-    </section>
+            <a href="/">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-dashboard"></use>
+                </svg>
+                <span>Dashboard</span>
+            </a>
 
-    <section class="panel analytics-adjustment-panel">
-        <div class="analytics-panel-heading">
-            <div class="analytics-panel-title-group">
-                <span class="analytics-panel-icon">
-                    <svg class="ui-icon"><use href="#icon-lightbulb"></use></svg>
+            <a href="/monitoring">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-monitor"></use>
+                </svg>
+                <span>Real-time Monitoring</span>
+            </a>
+
+            <a href="/historical">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-history"></use>
+                </svg>
+                <span>Historical Data</span>
+            </a>
+
+            <a href="/analytics" class="active" aria-current="page">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-chart"></use>
+                </svg>
+                <span>Analytics &amp; Reports</span>
+            </a>
+
+            <a href="/alerts">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-alert"></use>
+                </svg>
+                <span>Alerts and Notifications</span>
+            </a>
+
+            <a href="/settings">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-settings"></use>
+                </svg>
+                <span>Settings</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="sidebar-help">
+                <span class="sidebar-help-icon">
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-chart"></use>
+                    </svg>
                 </span>
                 <div>
-                    <h2>Sensor Adjustment Guide</h2>
-                    <p>Review the latest temperature and pH readings and their corresponding status.</p>
+                    <strong>Analytics Hub</strong>
+                    <p>Water quality &amp; health insights.</p>
                 </div>
             </div>
-            <span class="analytics-small-tag">2 PARAMETERS</span>
+
+            {% include "adminlogout.html" %}
         </div>
 
-        <div class="analytics-sensor-grid">
-            <article class="analytics-sensor-card analytics-temperature-card">
-                <div class="analytics-sensor-heading">
-                    <span class="analytics-sensor-symbol">°C</span>
-                    <div>
-                        <h3>Water Temperature</h3>
-                        <p>Current water temperature</p>
-                    </div>
-                </div>
-                <div id="temp-adjustment" class="sensor-value analytics-sensor-value">--</div>
-                <div class="analytics-sensor-status-row">
-                    <span class="analytics-status-indicator"></span>
-                    <small id="temp-status" class="sensor-status">Waiting for reading</small>
-                </div>
-            </article>
+    </aside>
 
-            <article class="analytics-sensor-card analytics-ph-card">
-                <div class="analytics-sensor-heading">
-                    <span class="analytics-sensor-symbol">pH</span>
-                    <div>
-                        <h3>Water pH</h3>
-                        <p>Current acidity or alkalinity</p>
-                    </div>
-                </div>
-                <div id="ph-adjustment" class="sensor-value analytics-sensor-value">--</div>
-                <div class="analytics-sensor-status-row">
-                    <span class="analytics-status-indicator"></span>
-                    <small id="ph-status" class="sensor-status">Waiting for reading</small>
-                </div>
-            </article>
-        </div>
 
-        <p class="analytics-guide-note">
-            <svg class="ui-icon"><use href="#icon-alert"></use></svg>
-            Check the sensor status and follow verified farm-management procedures before making adjustments.
+    <!-- MAIN CONTENT -->
+    <main class="main-content analytics-main">
+
+        <!-- TOP HEADER -->
+        <header class="analytics-header">
+
+            <div class="analytics-heading">
+                <div class="analytics-eyebrow">
+                    <span class="eyebrow-dot"></span>
+                    FARM INTELLIGENCE &amp; ANALYTICS
+                </div>
+
+                <h1>Analytics &amp; Reports</h1>
+
+                <p>
+                    Review water quality indicators, farm health, and recommended operations.
+                </p>
+            </div>
+
+            <div class="header-info analytics-header-info">
+
+                <button
+                    id="notification-button"
+                    class="notification-button"
+                    type="button"
+                    aria-label="View notifications"
+                    title="View notifications">
+
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-bell"></use>
+                    </svg>
+
+                </button>
+
+                <div class="analytics-date-time">
+                    <span class="date-time-label">LOCAL TIME</span>
+                    <span id="time" class="time-value">Loading time...</span>
+                </div>
+
+            </div>
+
+        </header>
+
+        <p id="analytics-demo-note"
+           class="demo-data-note"
+           hidden>
+            Demo readings are illustrative sample data, not live pond measurements.
         </p>
-    </section>
 
-    <section class="analytics-section" aria-label="Farm health and findings">
-        <div class="analytics-section-heading">
-            <div>
-                <h2>Farm Insights</h2>
-                <p>Review the system's assessment and the findings that may require attention.</p>
+
+        <!-- OVERVIEW METRICS -->
+        <section class="analytics-section"
+                 aria-labelledby="analytics-overview-title">
+
+            <div class="section-heading-row">
+                <div>
+                    <span class="section-eyebrow">SYSTEM SUMMARY</span>
+                    <h2 id="analytics-overview-title">Water Quality Overview</h2>
+                </div>
+
+                <span class="section-count">4 metrics</span>
             </div>
-        </div>
 
-        <div class="dashboard-grid analytics-insights-grid">
-            <article class="panel analytics-insight-panel analytics-health-panel">
-                <div class="analytics-panel-heading">
-                    <div class="analytics-panel-title-group">
-                        <span class="analytics-panel-icon analytics-health-icon">
-                            <svg class="ui-icon"><use href="#icon-shrimp"></use></svg>
-                        </span>
+            <div class="cards analytics-metric-cards">
+
+                <!-- AVERAGE WATER QUALITY -->
+                <article class="card analytics-metric-card analytics-quality-card">
+
+                    <div class="metric-card-top">
+                        <div class="metric-icon quality-icon">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-chart"></use>
+                            </svg>
+                        </div>
+
+                        <span class="metric-type">WATER QUALITY</span>
+                    </div>
+
+                    <div class="metric-card-content">
+                        <h3>Average Water Quality</h3>
+
+                        <div class="metric-reading">
+                            <h2 id="analytics-average-quality">--</h2>
+                        </div>
+
+                        <p id="analytics-quality-summary" class="metric-status">
+                            Waiting for sensor readings
+                        </p>
+                    </div>
+
+                    <div class="metric-card-footer">
+                        <span class="metric-footer-dot"></span>
+                        <span>Overall score assessment</span>
+                    </div>
+
+                </article>
+
+
+                <!-- ACTIVE ALERTS -->
+                <article class="card analytics-metric-card analytics-alert-card">
+
+                    <div class="metric-card-top">
+                        <div class="metric-icon alert-icon">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-alert"></use>
+                            </svg>
+                        </div>
+
+                        <span class="metric-type">ATTENTION</span>
+                    </div>
+
+                    <div class="metric-card-content">
+                        <h3>Active Alerts</h3>
+
+                        <div class="metric-reading">
+                            <h2 id="analytics-active-alerts">--</h2>
+                        </div>
+
+                        <p id="analytics-alert-summary" class="metric-status">
+                            Waiting for sensor readings
+                        </p>
+                    </div>
+
+                    <div class="metric-card-footer">
+                        <span class="metric-footer-dot"></span>
+                        <span>Condition alert monitor</span>
+                    </div>
+
+                </article>
+
+
+                <!-- RECOMMENDED ACTION -->
+                <article class="card analytics-metric-card analytics-action-card">
+
+                    <div class="metric-card-top">
+                        <div class="metric-icon action-icon">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-lightbulb"></use>
+                            </svg>
+                        </div>
+
+                        <span class="metric-type">NEXT STEP</span>
+                    </div>
+
+                    <div class="metric-card-content">
+                        <h3>Recommended Action</h3>
+
+                        <div class="metric-reading">
+                            <h2 id="analytics-recommended-action">--</h2>
+                        </div>
+
+                        <p id="analytics-action-summary" class="metric-status">
+                            Based on the latest sensor reading
+                        </p>
+                    </div>
+
+                    <div class="metric-card-footer">
+                        <span class="metric-footer-dot"></span>
+                        <span>Decision support system</span>
+                    </div>
+
+                </article>
+
+
+                <!-- MONITORING STATUS -->
+                <article class="card analytics-metric-card analytics-monitoring-card">
+
+                    <div class="metric-card-top">
+                        <div class="metric-icon monitoring-icon">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-monitor"></use>
+                            </svg>
+                        </div>
+
+                        <span class="metric-type">SYSTEM STATUS</span>
+                    </div>
+
+                    <div class="metric-card-content">
+                        <h3>Monitoring Status</h3>
+
+                        <div class="metric-reading">
+                            <h2 id="analytics-monitoring-status">--</h2>
+                        </div>
+
+                        <p id="analytics-last-update" class="metric-status">
+                            Waiting for sensor readings
+                        </p>
+                    </div>
+
+                    <div class="metric-card-footer">
+                        <span class="metric-footer-dot"></span>
+                        <span>Latest database sync</span>
+                    </div>
+
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- SENSOR ADJUSTMENT GUIDE -->
+        <section class="panel analytics-panel analytics-adjustment-panel"
+                 aria-labelledby="adjustment-guide-title">
+
+            <div class="analytics-panel-heading">
+
+                <div class="analytics-panel-heading-left">
+                    <div class="analytics-panel-icon">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-lightbulb"></use>
+                        </svg>
+                    </div>
+
+                    <div>
+                        <span class="section-eyebrow">OPERATIONAL GUIDANCE</span>
+                        <h2 id="adjustment-guide-title">Sensor Adjustment Guide</h2>
+                        <p>
+                            Review the latest temperature and pH readings and their corresponding adjustments.
+                        </p>
+                    </div>
+                </div>
+
+                <span class="section-count">2 parameters</span>
+
+            </div>
+
+            <div class="analytics-sensor-grid">
+
+                <!-- TEMPERATURE ADJUSTMENT -->
+                <article class="card analytics-sensor-card analytics-temperature-card">
+
+                    <div class="metric-card-top">
+                        <div class="metric-icon temperature-icon">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-thermometer"></use>
+                            </svg>
+                        </div>
+
+                        <span class="metric-type">TEMPERATURE OFFSET</span>
+                    </div>
+
+                    <div class="metric-card-content">
+                        <h3>Water Temperature</h3>
+
+                        <div class="metric-reading">
+                            <h2 id="temp-adjustment">--</h2>
+                        </div>
+
+                        <p class="metric-status">
+                            <span id="temp-status">Waiting for reading</span>
+                        </p>
+                    </div>
+
+                    <div class="metric-card-footer">
+                        <span class="metric-footer-dot"></span>
+                        <span>Optimal range: 26.0°C – 32.0°C</span>
+                    </div>
+
+                </article>
+
+
+                <!-- PH ADJUSTMENT -->
+                <article class="card analytics-sensor-card analytics-ph-card">
+
+                    <div class="metric-card-top">
+                        <div class="metric-icon ph-icon">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-droplet"></use>
+                            </svg>
+                        </div>
+
+                        <span class="metric-type">pH OFFSET</span>
+                    </div>
+
+                    <div class="metric-card-content">
+                        <h3>Water pH</h3>
+
+                        <div class="metric-reading">
+                            <h2 id="ph-adjustment">--</h2>
+                        </div>
+
+                        <p class="metric-status">
+                            <span id="ph-status">Waiting for reading</span>
+                        </p>
+                    </div>
+
+                    <div class="metric-card-footer">
+                        <span class="metric-footer-dot"></span>
+                        <span>Optimal range: 7.50 – 8.50 pH</span>
+                    </div>
+
+                </article>
+
+            </div>
+
+            <div class="input-panel-footnote">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-alert"></use>
+                </svg>
+                <span>
+                    Check the sensor status and follow verified farm-management procedures before making adjustments.
+                </span>
+            </div>
+
+        </section>
+
+
+        <!-- FARM INSIGHTS -->
+        <section class="analytics-section"
+                 aria-labelledby="analytics-insights-title">
+
+            <div class="section-heading-row">
+                <div>
+                    <span class="section-eyebrow">DECISION SUPPORT</span>
+                    <h2 id="analytics-insights-title">Farm Insights &amp; Findings</h2>
+                </div>
+
+                <span class="section-count">4 reports</span>
+            </div>
+
+            <div class="dashboard-grid analytics-insights-grid">
+
+                <!-- HEALTH SUMMARY -->
+                <article class="panel dashboard-panel analytics-panel analytics-health-panel">
+
+                    <div class="panel-heading">
+                        <div class="panel-heading-icon status-heading-icon">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-shrimp"></use>
+                            </svg>
+                        </div>
+
                         <div>
                             <h2>Farm Health Summary</h2>
                             <p>Overall water condition assessment</p>
                         </div>
                     </div>
-                </div>
 
-                <div class="status-box analytics-health-box">
-                    <div class="analytics-health-indicator">
-                        <span class="analytics-health-indicator-dot"></span>
-                        <span>ASSESSMENT</span>
+                    <div class="status-box dashboard-status-box">
+                        <div class="status-indicator">
+                            <span class="status-indicator-dot"></span>
+                            <span class="status-indicator-label">CURRENT ASSESSMENT</span>
+                        </div>
+
+                        <h3 id="analytics-health-heading">Waiting for sensor readings</h3>
+
+                        <p id="analytics-health-detail" class="last-updated">
+                            Sensor readings from the database will appear here.
+                        </p>
                     </div>
-                    <h3 id="analytics-health-heading">Waiting for sensor readings</h3>
-                    <p id="analytics-health-detail">
-                        Sensor readings from the database will appear here.
-                    </p>
-                </div>
-            </article>
 
-            <article class="panel analytics-insight-panel">
-                <div class="analytics-panel-heading">
-                    <div class="analytics-panel-title-group">
-                        <span class="analytics-panel-icon analytics-findings-icon">
-                            <svg class="ui-icon"><use href="#icon-chart"></use></svg>
-                        </span>
+                </article>
+
+
+                <!-- KEY FINDINGS -->
+                <article class="panel dashboard-panel analytics-panel analytics-findings-panel">
+
+                    <div class="panel-heading">
+                        <div class="panel-heading-icon findings-heading-icon">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-chart"></use>
+                            </svg>
+                        </div>
+
                         <div>
                             <h2>Key Findings</h2>
                             <p>Important observations from monitoring</p>
                         </div>
                     </div>
-                </div>
 
-                <ul id="analytics-key-findings" class="recommendations analytics-list">
-                    <li>Loading sensor data...</li>
-                </ul>
-            </article>
+                    <ul id="analytics-key-findings" class="analytics-list">
+                        <li>Loading sensor data...</li>
+                    </ul>
 
-            <article class="panel analytics-insight-panel">
-                <div class="analytics-panel-heading">
-                    <div class="analytics-panel-title-group">
-                        <span class="analytics-panel-icon analytics-operations-icon">
-                            <svg class="ui-icon"><use href="#icon-lightbulb"></use></svg>
-                        </span>
+                </article>
+
+
+                <!-- RECOMMENDED OPERATIONS -->
+                <article class="panel dashboard-panel analytics-panel analytics-operations-panel">
+
+                    <div class="panel-heading">
+                        <div class="panel-heading-icon operations-heading-icon">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-lightbulb"></use>
+                            </svg>
+                        </div>
+
                         <div>
                             <h2>Recommended Operations</h2>
                             <p>Suggested next steps for farm management</p>
                         </div>
                     </div>
-                </div>
 
-                <ul id="analytics-recommended-operations" class="recommendations analytics-list">
-                    <li>Loading sensor data...</li>
-                </ul>
-            </article>
+                    <ul id="analytics-recommended-operations" class="analytics-list">
+                        <li>Loading sensor data...</li>
+                    </ul>
 
-            <article class="panel analytics-insight-panel analytics-report-panel">
-                <div class="analytics-panel-heading">
-                    <div class="analytics-panel-title-group">
-                        <span class="analytics-panel-icon analytics-report-icon">
-                            <svg class="ui-icon"><use href="#icon-history"></use></svg>
-                        </span>
+                </article>
+
+
+                <!-- REPORT SNAPSHOT -->
+                <article class="panel dashboard-panel analytics-panel analytics-report-panel">
+
+                    <div class="panel-heading">
+                        <div class="panel-heading-icon report-heading-icon">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-history"></use>
+                            </svg>
+                        </div>
+
                         <div>
                             <h2>Report Snapshot</h2>
                             <p>Quick reference for the current report</p>
                         </div>
                     </div>
-                </div>
 
-                <ul class="recommendations analytics-report-list">
-                    <li>
-                        <span>Water Quality Index</span>
-                        <strong id="analytics-report-quality">--</strong>
-                    </li>
-                    <li>
-                        <span>Critical Alerts</span>
-                        <strong id="analytics-report-critical">--</strong>
-                    </li>
-                    <li>
-                        <span>Warnings</span>
-                        <strong id="analytics-report-warnings">--</strong>
-                    </li>
-                    <li>
-                        <span>Last Update</span>
-                        <strong id="analytics-report-updated">--</strong>
-                    </li>
-                </ul>
-            </article>
-        </div>
-    </section>
+                    <ul class="analytics-report-list">
+                        <li>
+                            <span>Water Quality Index</span>
+                            <strong id="analytics-report-quality">--</strong>
+                        </li>
+                        <li>
+                            <span>Critical Alerts</span>
+                            <strong id="analytics-report-critical">--</strong>
+                        </li>
+                        <li>
+                            <span>Warnings</span>
+                            <strong id="analytics-report-warnings">--</strong>
+                        </li>
+                        <li>
+                            <span>Last Update</span>
+                            <strong id="analytics-report-updated">--</strong>
+                        </li>
+                    </ul>
 
-    <footer class="analytics-footer">
-        <span>ShrimpGuard · Water Quality Monitoring</span>
-        <span>Insights are based on available sensor data.</span>
-    </footer>
-</main>
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- FOOTER -->
+        <footer class="dashboard-footer analytics-footer">
+            <span>
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-shrimp"></use>
+                </svg>
+                ShrimpGuard
+            </span>
+            <span>Water Quality Monitoring &amp; Decision Support</span>
+        </footer>
+
+    </main>
+
+</div>
 
 <script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
 <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+
 </body>
 </html>
