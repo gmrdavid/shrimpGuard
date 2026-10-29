@@ -59,6 +59,311 @@
             color: #111827;
             word-break: break-word;
         }
+
+                /* --- Dialog Base & Backdrop --- */
+        .admin-modal {
+            border: none;
+            background: transparent;
+            padding: 0;
+            max-width: 520px;
+            width: 90vw;
+            margin: auto;
+            overflow: visible;
+        }
+
+        .admin-modal::backdrop {
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        /* Entrance Animation */
+        .admin-modal[open] .admin-modal-card {
+            animation: modalScaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes modalScaleIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px) scale(0.97);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .admin-modal-card {
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- Header --- */
+        .admin-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .admin-modal-title-group {
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+        }
+
+        .admin-modal-header h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin: 0;
+        }
+
+        .admin-modal-subtitle {
+            font-size: 0.8125rem;
+            color: #64748b;
+            margin: 2px 0 0;
+        }
+
+        .admin-modal-icon-badge {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .admin-modal-icon-badge.view { background: #eff6ff; color: #2563eb; }
+        .admin-modal-icon-badge.edit { background: #f0fdf4; color: #16a34a; }
+        .admin-modal-icon-badge.danger { background: #fef2f2; color: #dc2626; }
+        .admin-modal-icon-badge .ui-icon { width: 20px; height: 20px; }
+
+        .admin-modal-close {
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            padding: 6px;
+            cursor: pointer;
+            color: #94a3b8;
+            display: flex;
+            transition: background-color 0.15s, color 0.15s;
+        }
+
+        .admin-modal-close:hover {
+            background: #f1f5f9;
+            color: #334155;
+        }
+
+        /* --- Modal Body & Details Layout --- */
+        .admin-modal-body {
+            padding: 1.5rem;
+        }
+
+        .user-hero-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            margin-bottom: 1.25rem;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            background: #e2e8f0;
+            color: #334155;
+            font-weight: 700;
+            font-size: 1.25rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-transform: uppercase;
+        }
+
+        .user-hero-meta h3 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .user-hero-meta p {
+            margin: 2px 0 0;
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .user-detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.875rem;
+        }
+
+        .user-detail-item {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.875rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .user-detail-item.full-width {
+            grid-column: span 2;
+        }
+
+        .detail-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #64748b;
+        }
+
+        .detail-value {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #1e293b;
+        }
+
+        /* Status & Role Badges in View Modal */
+        .detail-badge {
+            align-self: flex-start;
+            padding: 3px 8px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+        .detail-badge.active { background: #dcfce7; color: #15803d; }
+        .detail-badge.inactive { background: #f1f5f9; color: #475569; }
+        .detail-badge.admin { background: #f3e8ff; color: #7e22ce; }
+        .detail-badge.client { background: #e0f2fe; color: #0369a1; }
+
+        /* --- Forms & Inputs --- */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.375rem;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        .form-group label {
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.55rem 0.75rem;
+            font-size: 0.875rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: #ffffff;
+            color: #0f172a;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        /* --- Danger Callout --- */
+        .danger-callout {
+            background: #fef2f2;
+            border: 1px solid #fee2e2;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .danger-callout p {
+            margin: 0;
+            font-size: 0.95rem;
+            color: #991b1b;
+        }
+
+        .danger-subtext {
+            margin-top: 0.5rem !important;
+            font-size: 0.8125rem !important;
+            color: #b91c1c;
+            line-height: 1.4;
+        }
+
+        /* --- Footer & Action Buttons --- */
+        .admin-modal-footer {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            padding: 1rem 1.5rem;
+            background: #f8fafc;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .btn {
+            padding: 0.55rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border: 1px solid transparent;
+        }
+
+        .btn-secondary {
+            background: #ffffff;
+            border-color: #cbd5e1;
+            color: #475569;
+        }
+
+        .btn-secondary:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: #ffffff;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
     </style>
 </head>
 
@@ -166,81 +471,155 @@
     </dialog>
 
     <!-- VIEW USER DIALOG -->
-    <dialog class="admin-user-dialog" id="view-user-dialog" aria-labelledby="view-user-title">
-        <div class="admin-user-dialog-heading">
-            <h2 id="view-user-title">User Details</h2>
+    <!-- VIEW USER DIALOG -->
+<dialog class="admin-modal" id="view-user-dialog" aria-labelledby="view-user-title">
+    <div class="admin-modal-card">
+        <header class="admin-modal-header">
+            <div class="admin-modal-title-group">
+                <span class="admin-modal-icon-badge view"><svg class="ui-icon"><use href="#icon-users"></use></svg></span>
+                <div>
+                    <h2 id="view-user-title">User Profile</h2>
+                    <p class="admin-modal-subtitle">Detailed account summary</p>
+                </div>
+            </div>
             <form method="dialog">
-                <button class="admin-dialog-close" type="submit" aria-label="Close"><svg class="ui-icon"><use href="#icon-x"></use></svg></button>
+                <button class="admin-modal-close" type="submit" aria-label="Close">
+                    <svg class="ui-icon"><use href="#icon-x"></use></svg>
+                </button>
             </form>
-        </div>
-        <dl class="admin-details-list">
-            <dt>Name:</dt>
-            <dd id="view-user-name">-</dd>
-            <dt>Email:</dt>
-            <dd id="view-user-email">-</dd>
-            <dt>Role:</dt>
-            <dd id="view-user-role">-</dd>
-            <dt>Status:</dt>
-            <dd id="view-user-status">-</dd>
-            <dt>Last Login:</dt>
-            <dd id="view-user-last-login">-</dd>
-        </dl>
-        <div class="admin-user-form-actions">
-            <button class="admin-user-submit" type="button" id="close-view-user">Close</button>
-        </div>
-    </dialog>
+        </header>
 
-    <!-- EDIT USER DIALOG -->
-    <dialog class="admin-user-dialog" id="edit-user-dialog" aria-labelledby="edit-user-title">
-        <div class="admin-user-dialog-heading">
-            <h2 id="edit-user-title">Edit User</h2>
-            <form method="dialog">
-                <button class="admin-dialog-close" type="submit" aria-label="Close"><svg class="ui-icon"><use href="#icon-x"></use></svg></button>
-            </form>
+        <div class="admin-modal-body">
+            <!-- User Avatar & Quick Info Hero -->
+            <div class="user-hero-card">
+                <div class="user-avatar" id="view-user-avatar">?</div>
+                <div class="user-hero-meta">
+                    <h3 id="view-user-name">-</h3>
+                    <p id="view-user-email">-</p>
+                </div>
+            </div>
+
+            <!-- Detailed Grid Items -->
+            <div class="user-detail-grid">
+                <div class="user-detail-item">
+                    <span class="detail-label">Account Role</span>
+                    <span class="detail-badge role" id="view-user-role">-</span>
+                </div>
+                <div class="user-detail-item">
+                    <span class="detail-label">Status</span>
+                    <span class="detail-badge status" id="view-user-status">-</span>
+                </div>
+                <div class="user-detail-item full-width">
+                    <span class="detail-label">Last Active Session</span>
+                    <span class="detail-value" id="view-user-last-login">-</span>
+                </div>
+            </div>
         </div>
-        <form id="edit-user-form" class="admin-user-form" method="post" action="{{ url_for('edit_user') }}">
+
+        <footer class="admin-modal-footer">
+            <button class="btn btn-secondary" type="button" id="close-view-user">Close</button>
+        </footer>
+    </div>
+</dialog>
+
+<!-- EDIT USER DIALOG -->
+<dialog class="admin-modal" id="edit-user-dialog" aria-labelledby="edit-user-title">
+    <div class="admin-modal-card">
+        <header class="admin-modal-header">
+            <div class="admin-modal-title-group">
+                <span class="admin-modal-icon-badge edit"><svg class="ui-icon"><use href="#icon-edit"></use></svg></span>
+                <div>
+                    <h2 id="edit-user-title">Edit Account</h2>
+                    <p class="admin-modal-subtitle">Update identity and system privileges</p>
+                </div>
+            </div>
+            <form method="dialog">
+                <button class="admin-modal-close" type="submit" aria-label="Close">
+                    <svg class="ui-icon"><use href="#icon-x"></use></svg>
+                </button>
+            </form>
+        </header>
+
+        <form id="edit-user-form" class="admin-modal-form" method="post" action="{{ url_for('edit_user') }}">
             <input type="hidden" name="csrf_token" value="{{ admin_csrf_token }}">
             <input id="edit-user-current-email" name="current_email" type="hidden">
-            <label for="edit-user-name">Name</label>
-            <input id="edit-user-name" name="name" type="text" maxlength="80" required>
-            <label for="edit-user-email">Email</label>
-            <input id="edit-user-email" name="email" type="email" maxlength="255" required>
-            <label for="edit-user-role">Role</label>
-            <select id="edit-user-role" name="role" required>
-                <option value="Client">Client</option>
-                <option value="Admin">Admin</option>
-            </select>
-            <label for="edit-user-status">Status</label>
-            <select id="edit-user-status" name="status" required>
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-            </select>
-            <div class="admin-user-form-actions">
-                <button class="admin-user-cancel" type="button" id="cancel-edit-user">Cancel</button>
-                <button class="admin-user-submit" type="submit">Save Changes</button>
-            </div>
-        </form>
-    </dialog>
 
-    <!-- DELETE USER DIALOG -->
-    <dialog class="admin-user-dialog" id="delete-user-dialog" aria-labelledby="delete-user-title">
-        <div class="admin-user-dialog-heading">
-            <h2 id="delete-user-title">Delete User</h2>
+            <div class="admin-modal-body form-grid">
+                <div class="form-group full-width">
+                    <label for="edit-user-name">Full Name</label>
+                    <input id="edit-user-name" name="name" type="text" maxlength="80" placeholder="e.g. John Doe" required>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="edit-user-email">Email Address</label>
+                    <input id="edit-user-email" name="email" type="email" maxlength="255" placeholder="user@shrimpguard.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-user-role">Role</label>
+                    <div class="select-wrapper">
+                        <select id="edit-user-role" name="role" required>
+                            <option value="Client">Client</option>
+                            <option value="Admin">Admin</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-user-status">Account Status</label>
+                    <div class="select-wrapper">
+                        <select id="edit-user-status" name="status" required>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="admin-modal-footer">
+                <button class="btn btn-secondary" type="button" id="cancel-edit-user">Cancel</button>
+                <button class="btn btn-primary" type="submit">Save Changes</button>
+            </footer>
+        </form>
+    </div>
+</dialog>
+
+<!-- DELETE USER DIALOG -->
+<dialog class="admin-modal admin-modal-danger" id="delete-user-dialog" aria-labelledby="delete-user-title">
+    <div class="admin-modal-card">
+        <header class="admin-modal-header">
+            <div class="admin-modal-title-group">
+                <span class="admin-modal-icon-badge danger"><svg class="ui-icon"><use href="#icon-alert-triangle"></use></svg></span>
+                <div>
+                    <h2 id="delete-user-title">Delete Account</h2>
+                    <p class="admin-modal-subtitle">Permanent action</p>
+                </div>
+            </div>
             <form method="dialog">
-                <button class="admin-dialog-close" type="submit" aria-label="Close"><svg class="ui-icon"><use href="#icon-x"></use></svg></button>
+                <button class="admin-modal-close" type="submit" aria-label="Close">
+                    <svg class="ui-icon"><use href="#icon-x"></use></svg>
+                </button>
             </form>
+        </header>
+
+        <div class="admin-modal-body">
+            <div class="danger-callout">
+                <p>Are you sure you want to delete <strong id="delete-user-target-name"></strong>?</p>
+                <p class="danger-subtext">All associated preferences, access permissions, and activity logs will be permanently deleted. This cannot be undone.</p>
+            </div>
         </div>
-        <p style="margin: 1rem 0; color: #374151;">Are you sure you want to permanently delete <strong id="delete-user-target-name"></strong>?</p>
-        <p style="margin: 0 0 1.25rem 0; color: #dc2626; font-size: 0.875rem;">This action cannot be undone.</p>
+
         <form id="delete-user-form" method="post" action="{{ url_for('delete_user') }}">
             <input type="hidden" name="csrf_token" value="{{ admin_csrf_token }}">
             <input type="hidden" id="delete-user-email" name="email">
-            <div class="admin-user-form-actions">
-                <button class="admin-user-cancel" type="button" id="cancel-delete-user">Cancel</button>
-                <button class="admin-user-submit" type="submit" style="background-color: #dc2626; border-color: #dc2626; color: #fff;">Confirm Delete</button>
-            </div>
+
+            <footer class="admin-modal-footer">
+                <button class="btn btn-secondary" type="button" id="cancel-delete-user">Cancel</button>
+                <button class="btn btn-danger" type="submit">Confirm Deletion</button>
+            </footer>
         </form>
-    </dialog>
+    </div>
+</dialog>
 
     <section class="admin-content-grid" aria-label="Administration details">
         <article class="panel admin-panel admin-user-panel">
@@ -374,11 +753,30 @@
 
         document.querySelectorAll(".admin-view-user").forEach((button) => {
             button.addEventListener("click", () => {
-                document.getElementById("view-user-name").textContent = button.dataset.name;
-                document.getElementById("view-user-email").textContent = button.dataset.email;
-                document.getElementById("view-user-role").textContent = button.dataset.role;
-                document.getElementById("view-user-status").textContent = button.dataset.status;
-                document.getElementById("view-user-last-login").textContent = button.dataset.lastLogin;
+                const name = button.dataset.name || "Unknown";
+                const email = button.dataset.email || "-";
+                const role = button.dataset.role || "-";
+                const status = button.dataset.status || "-";
+                const lastLogin = button.dataset.lastLogin || "Never";
+
+                // Fill data
+                document.getElementById("view-user-name").textContent = name;
+                document.getElementById("view-user-email").textContent = email;
+                document.getElementById("view-user-last-login").textContent = lastLogin;
+                
+                // Avatar Initial
+                document.getElementById("view-user-avatar").textContent = name.charAt(0).toUpperCase();
+
+                // Styled Role Badge
+                const roleEl = document.getElementById("view-user-role");
+                roleEl.textContent = role;
+                roleEl.className = `detail-badge role ${role.toLowerCase()}`;
+
+                // Styled Status Badge
+                const statusEl = document.getElementById("view-user-status");
+                statusEl.textContent = status;
+                statusEl.className = `detail-badge status ${status.toLowerCase()}`;
+
                 viewUserDialog.showModal();
             });
         });
