@@ -5,6 +5,7 @@
       method="post"
       action="{{ url_for('logout') }}">
 
+    <!-- CSRF Protection -->
     <input type="hidden"
            name="csrf_token"
            value="{{ logout_csrf_token }}">
@@ -47,7 +48,7 @@
          aria-describedby="logoutModalMessage"
          tabindex="-1">
 
-        <!-- Decorative icon -->
+        <!-- Logout Icon -->
         <div class="logout-modal-icon" aria-hidden="true">
             <svg width="29"
                  height="29"
@@ -63,22 +64,26 @@
             </svg>
         </div>
 
-        <!-- Heading -->
-        <h2 id="logoutModalTitle">Ready to leave?</h2>
+        <!-- Modal Heading -->
+        <h2 id="logoutModalTitle">
+            Ready to leave?
+        </h2>
 
-        <!-- Description -->
+        <!-- Modal Message -->
         <p id="logoutModalMessage">
             Are you sure you want to log out of your
             <strong>ShrimpGuard</strong> account?
             You will need to sign in again to access your dashboard.
         </p>
 
-        <!-- Actions -->
+        <!-- Modal Actions -->
         <div class="logout-modal-actions">
 
+            <!-- Cancel Logout -->
             <button type="button"
                     class="logout-cancel-btn"
                     id="cancelLogout">
+
                 <svg width="17"
                      height="17"
                      viewBox="0 0 24 24"
@@ -90,12 +95,15 @@
                     <path d="M18 6 6 18"/>
                     <path d="m6 6 12 12"/>
                 </svg>
+
                 <span>Stay Logged In</span>
             </button>
 
+            <!-- Confirm Logout -->
             <button type="button"
                     class="logout-confirm-btn"
                     id="confirmLogout">
+
                 <svg width="17"
                      height="17"
                      viewBox="0 0 24 24"
@@ -109,12 +117,15 @@
                     <path d="M15 12H3"/>
                     <path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/>
                 </svg>
+
                 <span>Yes, Log Out</span>
             </button>
 
         </div>
 
+        <!-- Security Note -->
         <div class="logout-modal-security">
+
             <svg width="14"
                  height="14"
                  viewBox="0 0 24 24"
@@ -127,10 +138,15 @@
                 <rect x="4" y="10" width="16" height="11" rx="2"/>
                 <path d="M8 10V7a4 4 0 1 1 8 0v3"/>
             </svg>
+
             <span>Your session will end securely.</span>
         </div>
 
     </div>
 </div>
 
+ <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+<!-- ==================== LOGOUT JAVASCRIPT ==================== -->
 <script src="{{ url_for('static', filename='js/adminlogout.js') }}"></script>
