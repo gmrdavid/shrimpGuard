@@ -1794,6 +1794,405 @@
 }
 
 
+/* ========================================
+   SHRIMPGUARD — VIEW USER DIALOG
+======================================== */
+
+.admin-view-dialog {
+    width: min(560px, calc(100% - 32px));
+    max-width: 560px;
+    max-height: 90vh;
+    padding: 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    background: #ffffff;
+    color: #1e293b;
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.admin-view-dialog::backdrop {
+    background: rgba(15, 23, 42, 0.58);
+    backdrop-filter: blur(3px);
+}
+
+.admin-view-dialog .admin-modal-card {
+    width: 100%;
+    background: #ffffff;
+}
+
+.admin-view-dialog .admin-modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 22px 24px;
+    border-bottom: 1px solid #edf0f4;
+    background: #ffffff;
+}
+
+.admin-view-dialog .admin-modal-title-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.admin-view-dialog .admin-modal-icon-badge.view {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+    border-radius: 13px;
+    color: #087f8c;
+    background: #e4f7f6;
+}
+
+.admin-view-dialog .admin-modal-icon-badge .ui-icon {
+    width: 23px;
+    height: 23px;
+}
+
+.admin-view-dialog .admin-modal-heading-text h2 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 20px;
+    font-weight: 750;
+    line-height: 1.35;
+}
+
+.admin-view-dialog .admin-modal-subtitle {
+    margin: 5px 0 0;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.admin-view-dialog .admin-modal-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    padding: 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #64748b;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.admin-view-dialog .admin-modal-close:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.admin-view-dialog .admin-modal-close .ui-icon {
+    width: 18px;
+    height: 18px;
+}
+
+/* Body */
+.admin-view-dialog .admin-modal-body {
+    padding: 24px;
+}
+
+/* Profile hero */
+.admin-view-dialog .user-hero-card {
+    display: flex;
+    align-items: center;
+    gap: 17px;
+    padding: 22px;
+    border: 1px solid #d9eeec;
+    border-radius: 15px;
+    background: linear-gradient(135deg, #f0fdfa 0%, #f8fafc 100%);
+}
+
+.admin-view-dialog .user-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 66px;
+    height: 66px;
+    flex-shrink: 0;
+    border: 3px solid #ffffff;
+    border-radius: 20px;
+    background: #087f8c;
+    color: #ffffff;
+    font-size: 25px;
+    font-weight: 750;
+    box-shadow: 0 3px 12px rgba(8, 127, 140, 0.18);
+}
+
+.admin-view-dialog .user-hero-meta {
+    min-width: 0;
+}
+
+.admin-view-dialog .user-profile-eyebrow {
+    display: block;
+    margin-bottom: 5px;
+    color: #087f8c;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.admin-view-dialog .user-hero-meta h3 {
+    margin: 0;
+    overflow-wrap: anywhere;
+    color: #0f172a;
+    font-size: 18px;
+    font-weight: 750;
+    line-height: 1.4;
+}
+
+.admin-view-dialog .user-profile-email {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    margin: 6px 0 0;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.admin-view-dialog .user-profile-email .ui-icon {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+/* Details section */
+.admin-view-dialog .user-details-section {
+    margin-top: 25px;
+}
+
+.admin-view-dialog .user-details-heading {
+    margin-bottom: 15px;
+}
+
+.admin-view-dialog .user-details-heading h3 {
+    margin: 0;
+    color: #1e293b;
+    font-size: 14px;
+    font-weight: 750;
+}
+
+.admin-view-dialog .user-details-heading p {
+    margin: 4px 0 0;
+    color: #94a3b8;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.admin-view-dialog .user-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.admin-view-dialog .user-detail-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid #e8edf3;
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.admin-view-dialog .user-detail-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.admin-view-dialog .user-detail-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: 10px;
+}
+
+.admin-view-dialog .user-detail-icon .ui-icon {
+    width: 18px;
+    height: 18px;
+}
+
+.admin-view-dialog .role-icon {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.admin-view-dialog .status-icon {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.admin-view-dialog .login-icon {
+    background: #fff7ed;
+    color: #c2410c;
+}
+
+.admin-view-dialog .user-detail-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 7px;
+    min-width: 0;
+}
+
+.admin-view-dialog .detail-label {
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.admin-view-dialog .detail-badge {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    padding: 5px 9px;
+    border-radius: 7px;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 750;
+    overflow-wrap: anywhere;
+}
+
+.admin-view-dialog .detail-value {
+    color: #1e293b;
+    font-size: 13px;
+    font-weight: 650;
+    overflow-wrap: anywhere;
+}
+
+.admin-view-dialog .user-detail-hint {
+    color: #94a3b8;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+/* Information note */
+.admin-view-dialog .user-profile-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 20px;
+    padding: 12px 14px;
+    border: 1px solid #dbeafe;
+    border-radius: 10px;
+    background: #f8fbff;
+    color: #64748b;
+}
+
+.admin-view-dialog .user-profile-note .ui-icon {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+    color: #3b82f6;
+}
+
+.admin-view-dialog .user-profile-note p {
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+/* Footer */
+.admin-view-dialog .admin-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 16px 24px 22px;
+    border-top: 1px solid #edf0f4;
+    background: #ffffff;
+}
+
+.admin-view-dialog .admin-view-close-btn {
+    min-width: 100px;
+    min-height: 40px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.admin-view-dialog .admin-modal-close:focus-visible,
+.admin-view-dialog .admin-view-close-btn:focus-visible {
+    outline: 2px solid #0d9488;
+    outline-offset: 3px;
+}
+
+/* Responsive */
+@media (max-width: 520px) {
+    .admin-view-dialog {
+        width: calc(100% - 20px);
+        max-height: 92vh;
+        border-radius: 14px;
+    }
+
+    .admin-view-dialog .admin-modal-header {
+        padding: 17px;
+        gap: 10px;
+    }
+
+    .admin-view-dialog .admin-modal-icon-badge.view {
+        width: 40px;
+        height: 40px;
+    }
+
+    .admin-view-dialog .admin-modal-heading-text h2 {
+        font-size: 17px;
+    }
+
+    .admin-view-dialog .admin-modal-body {
+        padding: 18px 17px;
+    }
+
+    .admin-view-dialog .user-hero-card {
+        gap: 13px;
+        padding: 16px;
+    }
+
+    .admin-view-dialog .user-avatar {
+        width: 54px;
+        height: 54px;
+        border-radius: 16px;
+        font-size: 21px;
+    }
+
+    .admin-view-dialog .user-hero-meta h3 {
+        font-size: 16px;
+    }
+
+    .admin-view-dialog .user-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-view-dialog .user-detail-item.full-width {
+        grid-column: auto;
+    }
+
+    .admin-view-dialog .admin-modal-footer {
+        padding: 14px 17px 17px;
+    }
+}
+G
+
+
     </style>
 </head>
 
