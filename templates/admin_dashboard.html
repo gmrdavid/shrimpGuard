@@ -346,12 +346,12 @@
                     </div>
 
                     <div class="table-wrap admin-role-table-wrap">
-                        <table class="uniform-table admin-table">
+                        <table class="uniform-table admin-table admin-role-table">
                             <thead>
                                 <tr>
-                                    <th scope="col">USER ROLE</th>
-                                    <th scope="col">TOTAL USERS</th>
-                                    <th scope="col">ACCOUNT STATUS</th>
+                                    <th scope="col" class="col-role">USER ROLE</th>
+                                    <th scope="col" class="col-total">TOTAL USERS</th>
+                                    <th scope="col" class="col-status">ACCOUNT STATUS</th>
                                 </tr>
                             </thead>
 
@@ -359,7 +359,7 @@
                                 {% if role_summary %}
                                     {% for item in role_summary %}
                                     <tr>
-                                        <td>
+                                        <td class="col-role">
                                             <div class="admin-role-cell">
                                                 <div class="admin-role-avatar" aria-hidden="true">
                                                     <svg class="ui-icon"><use href="#icon-user"></use></svg>
@@ -371,13 +371,13 @@
                                             </div>
                                         </td>
 
-                                        <td>
+                                        <td class="col-total">
                                             <span class="admin-role-count-badge">
                                                 {{ item.user_count }}
                                             </span>
                                         </td>
 
-                                        <td>
+                                        <td class="col-status">
                                             <div class="admin-status-badges-group">
                                                 <span class="table-status good">
                                                     <span class="status-dot"></span>

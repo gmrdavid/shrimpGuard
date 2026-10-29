@@ -6683,33 +6683,34 @@ nav a {
 .admin-role-table {
     table-layout: fixed;
     width: 100%;
+    min-width: 0 !important;
 }
 
 .admin-role-table thead th:nth-child(1),
-.admin-role-table tbody td:nth-child(1) {
-    width: 38%;
+.admin-role-table tbody td:nth-child(1),
+.admin-role-table th.col-role,
+.admin-role-table td.col-role {
+    width: auto;
 }
 
 .admin-role-table thead th:nth-child(2),
-.admin-role-table tbody td:nth-child(2) {
-    width: 22%;
-}
-
-.admin-role-table thead th:nth-child(3),
-.admin-role-table tbody td:nth-child(3) {
-    width: 40%;
-}
-
-/* Keep account status closer to total users */
-.admin-role-table thead th:nth-child(3),
-.admin-role-table tbody td:nth-child(3) {
-    padding-left: 12px;
-}
-
-/* Keep total user count compact */
-.admin-role-table thead th:nth-child(2),
-.admin-role-table tbody td:nth-child(2) {
+.admin-role-table tbody td:nth-child(2),
+.admin-role-table th.col-total,
+.admin-role-table td.col-total {
+    width: 110px;
+    padding-left: 8px;
     padding-right: 8px;
+    white-space: nowrap;
+}
+
+.admin-role-table thead th:nth-child(3),
+.admin-role-table tbody td:nth-child(3),
+.admin-role-table th.col-status,
+.admin-role-table td.col-status {
+    width: 200px;
+    padding-left: 10px;
+    padding-right: 12px;
+    white-space: nowrap;
 }
 
 
@@ -15884,6 +15885,40 @@ nav a {
     align-items: center;
     gap: 8px;
     flex-wrap: wrap;
+}
+
+/* Role Summary Table — tight column spacing between Total Users and Account Status */
+.admin-page .admin-role-table {
+    table-layout: fixed;
+    width: 100%;
+    min-width: 0 !important;
+}
+
+.admin-page .admin-role-table th.col-role,
+.admin-page .admin-role-table td.col-role,
+.admin-page .admin-role-table th:nth-child(1),
+.admin-page .admin-role-table td:nth-child(1) {
+    width: auto;
+}
+
+.admin-page .admin-role-table th.col-total,
+.admin-page .admin-role-table td.col-total,
+.admin-page .admin-role-table th:nth-child(2),
+.admin-page .admin-role-table td:nth-child(2) {
+    width: 110px;
+    padding-left: 8px;
+    padding-right: 8px;
+    white-space: nowrap;
+}
+
+.admin-page .admin-role-table th.col-status,
+.admin-page .admin-role-table td.col-status,
+.admin-page .admin-role-table th:nth-child(3),
+.admin-page .admin-role-table td:nth-child(3) {
+    width: 200px;
+    padding-left: 10px;
+    padding-right: 12px;
+    white-space: nowrap;
 }
 
 /* User Directory Toolbar & Search */
