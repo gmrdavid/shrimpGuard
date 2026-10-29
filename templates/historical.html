@@ -4,128 +4,443 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#126b4f">
+
     <title>Historical Data | ShrimpGuard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
-<body>
+<body class="historical-page">
+
 {% include "_icon_sprite.html" %}
 
-<div class="sidebar">
-    <div class="logo"><svg class="ui-icon brand-icon"><use href="#icon-shrimp"></use></svg> <span>ShrimpGuard</span></div>
-    <p class="subtitle">Water Quality Monitoring</p>
-    <nav>
-        <a href="/"><svg class="ui-icon"><use href="#icon-dashboard"></use></svg> Dashboard</a>
-        <a href="/monitoring"><svg class="ui-icon"><use href="#icon-monitor"></use></svg> Real-time Monitoring</a>
-        <a href="/historical" class="active"><svg class="ui-icon"><use href="#icon-history"></use></svg> Historical Data</a>
-        <a href="/analytics"><svg class="ui-icon"><use href="#icon-chart"></use></svg> Analytics &amp; Reports</a>
-        <a href="/alerts"><svg class="ui-icon"><use href="#icon-alert"></use></svg> Alerts and Notifications</a>
-        <a href="/settings"><svg class="ui-icon"><use href="#icon-settings"></use></svg> Settings</a>
-    </nav>
-    {% include "_logout_form.html" %}
-</div>
+<div class="historical-layout-page">
 
-<div class="main-content">
-    <header>
-        <div>
-            <h1>Historical Data</h1>
-            <p>Review previous water quality readings and identify changes over time.</p>
-        </div>
-        <div class="header-info">
-            <button id="notification-button" class="notification-button" type="button" aria-label="View notifications"><svg class="ui-icon"><use href="#icon-bell"></use></svg></button>
-            <div class="time"><span id="time"></span></div>
-        </div>
-    </header>
+    <!-- SIDEBAR -->
+    <aside class="sidebar historical-sidebar">
 
-    <section class="filter-panel">
-        <form id="history-filter" class="history-filter">
-            <label>
-                Date
-                <input id="history-date" type="date">
-            </label>
-            <label>
-                Parameter
-                <select id="history-parameter">
-                    <option value="all">All parameters</option>
-                    <option value="temperature">Temperature</option>
-                    <option value="ph">pH Level</option>
-                </select>
-            </label>
-            <label>
-                Time interval
-                <select id="history-interval">
-                    <option value="all">All available</option>
-                    <option value="1">Last hour</option>
-                    <option value="6">Last 6 hours</option>
-                    <option value="12">Last 12 hours</option>
-                    <option value="24">Last 24 hours</option>
-                    <option value="168">Last 7 days</option>
-                </select>
-            </label>
-            <button type="submit">Apply</button>
-        </form>
-    </section>
+        <a href="/" class="logo historical-logo" aria-label="ShrimpGuard dashboard">
+            <span class="historical-logo-mark">
+                <svg class="ui-icon brand-icon" aria-hidden="true">
+                    <use href="#icon-shrimp"></use>
+                </svg>
+            </span>
+            <span>ShrimpGuard</span>
+        </a>
 
-    <section class="historical-layout">
-        <aside class="panel history-review">
-            <p class="eyebrow">Summary</p>
-            <h2 id="summary-title">No data selected</h2>
-            <div class="summary-stat"><span>Readings</span><strong id="summary-count">0</strong></div>
-            <div class="summary-stat"><span>Average</span><strong id="summary-average">--</strong></div>
-            <div class="summary-stat"><span>Minimum</span><strong id="summary-minimum">--</strong></div>
-            <div class="summary-stat"><span>Maximum</span><strong id="summary-maximum">--</strong></div>
-            <div class="review-divider"></div>
-            <p class="eyebrow">Data review</p>
-            <p id="data-review">Apply a filter to review your saved readings.</p>
-            <div id="review-status" class="review-status">Waiting for data</div>
-        </aside>
+        <p class="subtitle">Water Quality Monitoring</p>
 
-        <section class="panel historical-chart-panel">
-            <div class="panel-heading">
+        <div class="historical-nav-label">MAIN MENU</div>
+
+        <nav class="historical-nav" aria-label="Main navigation">
+
+            <a href="/">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-dashboard"></use>
+                </svg>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="/monitoring">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-monitor"></use>
+                </svg>
+                <span>Real-time Monitoring</span>
+            </a>
+
+            <a href="/historical" class="active" aria-current="page">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-history"></use>
+                </svg>
+                <span>Historical Data</span>
+            </a>
+
+            <a href="/analytics">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-chart"></use>
+                </svg>
+                <span>Analytics &amp; Reports</span>
+            </a>
+
+            <a href="/alerts">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-alert"></use>
+                </svg>
+                <span>Alerts and Notifications</span>
+            </a>
+
+            <a href="/settings">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-settings"></use>
+                </svg>
+                <span>Settings</span>
+            </a>
+
+        </nav>
+
+        <div class="historical-sidebar-bottom">
+
+            <div class="historical-sidebar-help">
+                <span class="historical-help-icon">
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-history"></use>
+                    </svg>
+                </span>
+
                 <div>
-                    <p class="eyebrow">Visual history</p>
-                    <h2 id="chart-title">Water Quality Trend</h2>
-                </div>
-                <div class="history-export-actions">
-                    <span id="history-count">0 readings</span>
-                    <button id="history-export-button" class="history-export-button" type="button">
-                        <svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M5 17v4h14v-4" /></svg>
-                        Download
-                    </button>
+                    <strong>Historical Records</strong>
+                    <p>Review saved pond readings.</p>
                 </div>
             </div>
-            <div class="historical-chart-wrap">
-                <canvas id="historical-chart" aria-label="Historical water quality trend graph"></canvas>
-                <p id="history-empty">No readings match these filters.</p>
-            </div>
-            <div id="historical-legend" class="chart-legend"></div>
-        </section>
-    </section>
 
-    <section class="panel readings-panel">
-        <div class="panel-heading">
-            <div>
-                <p class="eyebrow">Records</p>
-                <h2>Historical Readings</h2>
+            {% include "_logout_form.html" %}
+
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content historical-main">
+
+        <!-- PAGE HEADER -->
+        <header class="historical-header">
+
+            <div class="historical-page-heading">
+
+                <div class="historical-eyebrow">
+                    <span class="historical-eyebrow-dot"></span>
+                    AQUACULTURE DATA CENTER
+                </div>
+
+                <h1>Historical Data</h1>
+
+                <p>
+                    Review previous water quality readings, compare parameters,
+                    and identify changes in your shrimp pond over time.
+                </p>
+
             </div>
-        </div>
-        <p id="demo-data-note" class="demo-data-note" hidden>
-            Demo readings are illustrative sample data, not live pond measurements.
-        </p>
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr><th>Date</th><th>Time</th><th>Temperature</th><th>pH</th><th>Status</th></tr>
-                </thead>
-                <tbody id="readings-body"></tbody>
-            </table>
-            <p id="table-empty" class="table-empty">No saved readings available.</p>
-        </div>
-        <nav id="readings-pagination" class="readings-pagination" aria-label="Historical readings pages" hidden></nav>
-    </section>
+
+            <div class="historical-header-info">
+
+                <button
+                    id="notification-button"
+                    class="notification-button historical-notification-button"
+                    type="button"
+                    aria-label="View notifications"
+                    title="View notifications">
+
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-bell"></use>
+                    </svg>
+
+                </button>
+
+                <div class="historical-clock">
+                    <span>LOCAL TIME</span>
+                    <strong id="time">Loading time...</strong>
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- FILTERS -->
+        <section class="filter-panel historical-filter-panel"
+                 aria-labelledby="history-filter-title">
+
+            <div class="historical-filter-heading">
+
+                <span class="historical-filter-icon">
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-settings"></use>
+                    </svg>
+                </span>
+
+                <div>
+                    <span class="historical-section-eyebrow">RECORD SEARCH</span>
+                    <h2 id="history-filter-title">Filter Historical Records</h2>
+                    <p>Choose the date, parameter, and time range to review.</p>
+                </div>
+
+            </div>
+
+            <form id="history-filter" class="history-filter historical-filter-form">
+
+                <label for="history-date" class="historical-filter-label">
+                    <span>Date</span>
+                    <input id="history-date" type="date">
+                </label>
+
+                <label for="history-parameter" class="historical-filter-label">
+                    <span>Water Parameter</span>
+                    <select id="history-parameter">
+                        <option value="all">All parameters</option>
+                        <option value="temperature">Temperature</option>
+                        <option value="ph">pH Level</option>
+                    </select>
+                </label>
+
+                <label for="history-interval" class="historical-filter-label">
+                    <span>Time Interval</span>
+                    <select id="history-interval">
+                        <option value="all">All available</option>
+                        <option value="1">Last hour</option>
+                        <option value="6">Last 6 hours</option>
+                        <option value="12">Last 12 hours</option>
+                        <option value="24">Last 24 hours</option>
+                        <option value="168">Last 7 days</option>
+                    </select>
+                </label>
+
+                <button type="submit" class="historical-apply-button">
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-history"></use>
+                    </svg>
+                    <span>Apply Filters</span>
+                </button>
+
+            </form>
+
+        </section>
+
+
+        <!-- SUMMARY AND CHART -->
+        <section class="historical-content-grid">
+
+            <!-- DATA SUMMARY -->
+            <aside class="panel history-review historical-review-panel">
+
+                <div class="historical-card-heading">
+
+                    <span class="historical-card-icon summary-icon">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-chart"></use>
+                        </svg>
+                    </span>
+
+                    <div>
+                        <span class="historical-section-eyebrow">OVERVIEW</span>
+                        <h2>Data Summary</h2>
+                    </div>
+
+                </div>
+
+                <div class="historical-summary-intro">
+                    <h3 id="summary-title">No data selected</h3>
+                    <p>Statistics for the selected records</p>
+                </div>
+
+                <div class="historical-summary-stats">
+
+                    <div class="summary-stat historical-summary-stat">
+                        <span>Readings</span>
+                        <strong id="summary-count">0</strong>
+                    </div>
+
+                    <div class="summary-stat historical-summary-stat">
+                        <span>Average</span>
+                        <strong id="summary-average">--</strong>
+                    </div>
+
+                    <div class="summary-stat historical-summary-stat">
+                        <span>Minimum</span>
+                        <strong id="summary-minimum">--</strong>
+                    </div>
+
+                    <div class="summary-stat historical-summary-stat">
+                        <span>Maximum</span>
+                        <strong id="summary-maximum">--</strong>
+                    </div>
+
+                </div>
+
+                <div class="review-divider historical-review-divider"></div>
+
+                <div class="historical-review-notes">
+                    <span class="historical-section-eyebrow">DATA REVIEW</span>
+
+                    <p id="data-review">
+                        Apply a filter to review your saved readings.
+                    </p>
+
+                    <div id="review-status" class="review-status historical-review-status">
+                        Waiting for data
+                    </div>
+                </div>
+
+            </aside>
+
+
+            <!-- TREND CHART -->
+            <section class="panel historical-chart-panel">
+
+                <div class="historical-chart-heading">
+
+                    <div class="historical-card-heading">
+
+                        <span class="historical-card-icon chart-icon">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-chart"></use>
+                            </svg>
+                        </span>
+
+                        <div>
+                            <span class="historical-section-eyebrow">VISUAL HISTORY</span>
+                            <h2 id="chart-title">Water Quality Trend</h2>
+                            <p>Explore changes across your saved readings.</p>
+                        </div>
+
+                    </div>
+
+                    <div class="history-export-actions historical-export-actions">
+
+                        <span id="history-count" class="historical-count-badge">
+                            0 readings
+                        </span>
+
+                        <button
+                            id="history-export-button"
+                            class="history-export-button historical-export-button"
+                            type="button">
+
+                            <svg class="ui-icon"
+                                 aria-hidden="true"
+                                 viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="1.8"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round">
+
+                                <path d="M12 3v12"></path>
+                                <path d="m7 10 5 5 5-5"></path>
+                                <path d="M5 17v4h14v-4"></path>
+
+                            </svg>
+
+                            <span>Download</span>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div class="historical-chart-wrap">
+
+                    <canvas
+                        id="historical-chart"
+                        role="img"
+                        aria-label="Historical water quality trend graph">
+                        Your browser does not support the canvas element.
+                    </canvas>
+
+                    <p id="history-empty">
+                        No readings match these filters.
+                    </p>
+
+                </div>
+
+                <div id="historical-legend"
+                     class="chart-legend historical-legend"
+                     aria-label="Chart legend">
+                </div>
+
+            </section>
+
+        </section>
+
+
+        <!-- READINGS TABLE -->
+        <section class="panel readings-panel historical-records-panel">
+
+            <div class="historical-records-heading">
+
+                <div class="historical-card-heading">
+
+                    <span class="historical-card-icon records-icon">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-history"></use>
+                        </svg>
+                    </span>
+
+                    <div>
+                        <span class="historical-section-eyebrow">SAVED RECORDS</span>
+                        <h2>Historical Readings</h2>
+                        <p>Detailed records of temperature, pH, and water quality status.</p>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <p id="demo-data-note"
+               class="demo-data-note historical-demo-note"
+               hidden>
+                Demo readings are illustrative sample data, not live pond measurements.
+            </p>
+
+            <div class="table-wrap historical-table-wrap">
+
+                <table class="historical-table">
+
+                    <thead>
+                        <tr>
+                            <th scope="col">Date</th>
+                            <th scope="col">Time</th>
+                            <th scope="col">Temperature</th>
+                            <th scope="col">pH Level</th>
+                            <th scope="col">Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="readings-body"></tbody>
+
+                </table>
+
+                <p id="table-empty" class="table-empty historical-table-empty">
+                    No saved readings available.
+                </p>
+
+            </div>
+
+            <nav
+                id="readings-pagination"
+                class="readings-pagination historical-pagination"
+                aria-label="Historical readings pages"
+                hidden>
+            </nav>
+
+        </section>
+
+
+        <!-- FOOTER -->
+        <footer class="historical-footer">
+
+            <span class="historical-footer-brand">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-shrimp"></use>
+                </svg>
+                ShrimpGuard
+            </span>
+
+            <span>
+                Water Quality Monitoring &amp; Decision Support
+            </span>
+
+        </footer>
+
+    </main>
+
 </div>
 
 <script src="{{ url_for('static', filename='js/historical.js') }}"></script>
 <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+
 </body>
 </html>
