@@ -8,15 +8,61 @@ const parameterLabels = {
 const units = { temperature: "°C", ph: "pH" };
 const colors = { temperature: "#2f6fbd", ph: "#2f8a57" };
 
+let currentFilteredHistory = [];
+let currentFilteredParameters = [];
+let currentHistoricalPoints = {};
+let historicalHoverIndex = null;
+let historicalHoveredParam = null;
+let historicalChartEventsInitialized = false;
+
 function updateDeviceTime() {
-    document.getElementById("time").textContent = new Date().toLocaleTimeString([], {
-        hour: "2-digit", minute: "2-digit", second: "2-digit"
-    });
+    const timeEl = document.getElementById("time");
+    if (timeEl) {
+        timeEl.textContent = new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+        });
+    }
 }
 
 function statusFor(reading) {
     return reading.temperature < 26 || reading.temperature > 32 || reading.ph < 7.5 ||
         reading.ph > 8.5 ? "Needs attention" : "Good";
+}
+
+function getTemperatureStatus(temperature) {
+    const temp = Number(temperature);
+    if (temp < 24) {
+        return { label: "Critically Low", level: "critical", badgeClass: "status-critical" };
+    }
+    if (temp < 26) {
+        return { label: "Too Cold", level: "warning", badgeClass: "status-warning" };
+    }
+    if (temp > 34) {
+        return { label: "Critically High", level: "critical", badgeClass: "status-critical" };
+    }
+    if (temp > 32) {
+        return { label: "Too Hot", level: "warning", badgeClass: "status-warning" };
+    }
+    return { label: "Optimal", level: "optimal", badgeClass: "status-optimal" };
+}
+
+function getPhStatus(phLevel) {
+    const ph = Number(phLevel);
+    if (ph < 7.0) {
+        return { label: "Critically Acidic", level: "critical", badgeClass: "status-critical" };
+    }
+    if (ph < 7.5) {
+        return { label: "Too Acidic", level: "warning", badgeClass: "status-warning" };
+    }
+    if (ph > 9.0) {
+        return { label: "Critically Alkaline", level: "critical", badgeClass: "status-critical" };
+    }
+    if (ph > 8.5) {
+        return { label: "Too Alkaline", level: "warning", badgeClass: "status-warning" };
+    }
+    return { label: "Optimal", level: "optimal", badgeClass: "status-optimal" };
 }
 
 function localDate(reading) {
@@ -42,38 +88,298 @@ function selectedParameters() {
 }
 
 function drawChart(history, parameters) {
+    if (!Array.isArray(history) || history.length === 0) return;
+    currentFilteredHistory = history;
+    currentFilteredParameters = parameters;
+
     const canvas = document.getElementById("historical-chart");
+    if (!canvas) return;
     const context = canvas.getContext("2d");
-    const width = canvas.clientWidth;
-    const height = canvas.clientHeight;
+    const width = canvas.clientWidth || 600;
+    const height = canvas.clientHeight || 300;
     const scale = window.devicePixelRatio || 1;
-    const allValues = parameters.flatMap((key) => history.map((reading) => reading[key]));
+
+    const allValues = parameters.flatMap((key) => history.map((reading) => Number(reading[key])));
     const minimum = Math.min(...allValues);
     const maximum = Math.max(...allValues);
     const range = maximum - minimum || 1;
-    const padding = { top: 20, right: 20, bottom: 28, left: 42 };
+    const padding = { top: 26, right: 30, bottom: 32, left: 44 };
 
-    canvas.width = width * scale;
-    canvas.height = height * scale;
+    canvas.width = Math.round(width * scale);
+    canvas.height = Math.round(height * scale);
     context.scale(scale, scale);
     context.clearRect(0, 0, width, height);
-    context.strokeStyle = "#e2e8f0";
-    context.fillStyle = "#667085";
-    context.font = "12px Arial";
-    for (let index = 0; index < 4; index += 1) {
-        const y = padding.top + ((height - padding.top - padding.bottom) / 3) * index;
-        context.beginPath(); context.moveTo(padding.left, y); context.lineTo(width - padding.right, y); context.stroke();
-        context.fillText((maximum - (range / 3) * index).toFixed(1), 5, y + 4);
-    }
-    parameters.forEach((key) => {
+
+    // Horizontal grid lines and Y-axis scale
+    context.strokeStyle = "#e8edea";
+    context.fillStyle = "#8a978f";
+    context.font = "600 11px Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+    context.lineWidth = 1;
+
+    const gridSteps = 4;
+    for (let index = 0; index < gridSteps; index += 1) {
+        const y = padding.top + ((height - padding.top - padding.bottom) / (gridSteps - 1)) * index;
         context.beginPath();
-        history.forEach((reading, index) => {
-            const x = history.length === 1 ? width / 2 : padding.left + index / (history.length - 1) * (width - padding.left - padding.right);
-            const y = padding.top + (1 - (reading[key] - minimum) / range) * (height - padding.top - padding.bottom);
-            index === 0 ? context.moveTo(x, y) : context.lineTo(x, y);
+        context.moveTo(padding.left, y);
+        context.lineTo(width - padding.right, y);
+        context.stroke();
+        const labelVal = (maximum - (range / (gridSteps - 1)) * index).toFixed(1);
+        context.fillText(labelVal, 6, y + 4);
+    }
+
+    // Compute coordinate points per parameter
+    currentHistoricalPoints = {};
+    parameters.forEach((key) => {
+        currentHistoricalPoints[key] = history.map((reading, index) => {
+            const val = Number(reading[key]);
+            const x = history.length === 1
+                ? padding.left + (width - padding.left - padding.right) / 2
+                : padding.left + (index / (history.length - 1)) * (width - padding.left - padding.right);
+            const y = padding.top + (1 - (val - minimum) / range) * (height - padding.top - padding.bottom);
+            return { x, y, value: val, key, reading, index };
         });
-        context.strokeStyle = colors[key]; context.lineWidth = 2.5; context.stroke();
     });
+
+    // Vertical dashed guide line when hovering
+    if (historicalHoverIndex !== null && historicalHoverIndex >= 0 && historicalHoverIndex < history.length) {
+        const firstKey = parameters[0];
+        if (currentHistoricalPoints[firstKey] && currentHistoricalPoints[firstKey][historicalHoverIndex]) {
+            const hoverX = currentHistoricalPoints[firstKey][historicalHoverIndex].x;
+            context.save();
+            context.beginPath();
+            context.setLineDash([4, 4]);
+            context.strokeStyle = "rgba(18, 107, 79, 0.45)";
+            context.lineWidth = 1.5;
+            context.moveTo(hoverX, padding.top - 6);
+            context.lineTo(hoverX, height - padding.bottom + 6);
+            context.stroke();
+            context.restore();
+        }
+    }
+
+    // Draw lines and points for each selected parameter
+    parameters.forEach((key) => {
+        const pts = currentHistoricalPoints[key];
+        if (!pts || !pts.length) return;
+
+        // Line
+        context.beginPath();
+        pts.forEach((pt, index) => {
+            if (index === 0) context.moveTo(pt.x, pt.y);
+            else context.lineTo(pt.x, pt.y);
+        });
+        context.strokeStyle = colors[key];
+        context.lineWidth = 2.5;
+        context.lineCap = "round";
+        context.lineJoin = "round";
+        context.stroke();
+
+        // Points
+        pts.forEach((pt, index) => {
+            const isHovered = historicalHoverIndex === index;
+            const isFocused = isHovered && (historicalHoveredParam === key || historicalHoveredParam === null);
+
+            // Halo glow for hovered point
+            if (isHovered) {
+                context.beginPath();
+                context.arc(pt.x, pt.y, isFocused ? 11 : 7, 0, Math.PI * 2);
+                context.fillStyle = key === "temperature"
+                    ? "rgba(47, 111, 189, 0.22)"
+                    : "rgba(47, 138, 87, 0.22)";
+                context.fill();
+            }
+
+            // Outer point ring & dot
+            context.beginPath();
+            context.arc(pt.x, pt.y, isHovered ? (isFocused ? 5.5 : 4.5) : 3.5, 0, Math.PI * 2);
+            context.fillStyle = isHovered ? "#ffffff" : colors[key];
+            context.fill();
+            context.strokeStyle = colors[key];
+            context.lineWidth = isHovered ? 2.5 : 1.5;
+            context.stroke();
+        });
+    });
+}
+
+function renderHistoricalTooltip(reading, index, pointX, mouseY, focusedParam, containerWidth, containerHeight) {
+    let tooltip = document.getElementById("historical-chart-tooltip");
+    if (!tooltip) {
+        const wrap = document.querySelector(".historical-chart-wrap");
+        if (!wrap) return;
+        tooltip = document.createElement("div");
+        tooltip.id = "historical-chart-tooltip";
+        tooltip.className = "historical-chart-tooltip";
+        wrap.appendChild(tooltip);
+    }
+
+    const tempVal = Number(reading.temperature);
+    const phVal = Number(reading.ph);
+    const tempStatus = getTemperatureStatus(tempVal);
+    const phStatus = getPhStatus(phVal);
+    const overallStatus = statusFor(reading);
+    const isGood = overallStatus === "Good";
+
+    const dateObj = reading.recorded_at ? new Date(reading.recorded_at) : null;
+    const timeDisplay = dateObj && !isNaN(dateObj)
+        ? dateObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+        : `Reading #${index + 1}`;
+    const dateDisplay = dateObj && !isNaN(dateObj)
+        ? dateObj.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })
+        : "";
+
+    const showTemp = currentFilteredParameters.length === 0 || currentFilteredParameters.includes("temperature");
+    const showPh = currentFilteredParameters.length === 0 || currentFilteredParameters.includes("ph");
+
+    let itemsHtml = "";
+    if (showTemp) {
+        itemsHtml += `
+            <div class="tooltip-item ${focusedParam === 'temperature' ? 'tooltip-item-focused' : ''}">
+                <div class="tooltip-item-left">
+                    <span class="tooltip-dot" style="background:#2f6fbd;"></span>
+                    <span class="tooltip-param-label">Temperature:</span>
+                </div>
+                <div class="tooltip-item-right">
+                    <span class="tooltip-param-value">${tempVal.toFixed(1)} °C</span>
+                    <span class="tooltip-param-status ${tempStatus.badgeClass}">${tempStatus.label}</span>
+                </div>
+            </div>
+        `;
+    }
+    if (showPh) {
+        itemsHtml += `
+            <div class="tooltip-item ${focusedParam === 'ph' ? 'tooltip-item-focused' : ''}">
+                <div class="tooltip-item-left">
+                    <span class="tooltip-dot" style="background:#2f8a57;"></span>
+                    <span class="tooltip-param-label">pH Level:</span>
+                </div>
+                <div class="tooltip-item-right">
+                    <span class="tooltip-param-value">${phVal.toFixed(2)}</span>
+                    <span class="tooltip-param-status ${phStatus.badgeClass}">${phStatus.label}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    tooltip.innerHTML = `
+        <div class="tooltip-header">
+            <span class="tooltip-time-badge">${dateDisplay ? dateDisplay + ' • ' : ''}${timeDisplay}</span>
+            <span class="tooltip-status-pill ${isGood ? 'pill-good' : 'pill-warn'}">
+                ${isGood ? '✓ Optimal Quality' : '! Needs Attention'}
+            </span>
+        </div>
+        <div class="tooltip-content">
+            ${itemsHtml}
+        </div>
+    `;
+
+    tooltip.hidden = false;
+    tooltip.classList.add("visible");
+
+    const tooltipWidth = tooltip.offsetWidth || 250;
+    const tooltipHeight = tooltip.offsetHeight || 110;
+
+    let leftPos = pointX + 16;
+    if (leftPos + tooltipWidth > containerWidth - 12) {
+        leftPos = pointX - tooltipWidth - 16;
+    }
+    if (leftPos < 12) leftPos = 12;
+
+    let topPos = mouseY - (tooltipHeight / 2);
+    topPos = Math.max(10, Math.min(containerHeight - tooltipHeight - 10, topPos));
+
+    tooltip.style.left = `${leftPos}px`;
+    tooltip.style.top = `${topPos}px`;
+}
+
+function handleHistoricalPointerMove(event) {
+    if (!currentFilteredHistory || currentFilteredHistory.length === 0 || !currentHistoricalPoints) return;
+    const canvas = document.getElementById("historical-chart");
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+    const padding = { top: 26, right: 30, bottom: 32, left: 42 };
+
+    if (
+        mouseX < padding.left - 15 ||
+        mouseX > width - padding.right + 15 ||
+        mouseY < padding.top - 15 ||
+        mouseY > height - padding.bottom + 15
+    ) {
+        handleHistoricalPointerLeave();
+        return;
+    }
+
+    let nearestIndex = 0;
+    if (currentFilteredHistory.length > 1) {
+        const plotWidth = width - padding.left - padding.right;
+        const ratio = (mouseX - padding.left) / plotWidth;
+        nearestIndex = Math.round(ratio * (currentFilteredHistory.length - 1));
+        nearestIndex = Math.max(0, Math.min(currentFilteredHistory.length - 1, nearestIndex));
+    }
+
+    const reading = currentFilteredHistory[nearestIndex];
+    if (!reading) {
+        handleHistoricalPointerLeave();
+        return;
+    }
+
+    let closestParam = null;
+    let pointX = mouseX;
+
+    const availableKeys = currentFilteredParameters.filter((k) => currentHistoricalPoints[k] && currentHistoricalPoints[k][nearestIndex]);
+    if (availableKeys.length > 0) {
+        pointX = currentHistoricalPoints[availableKeys[0]][nearestIndex].x;
+
+        let minDistance = Infinity;
+        availableKeys.forEach((key) => {
+            const pt = currentHistoricalPoints[key][nearestIndex];
+            if (pt) {
+                const dist = Math.hypot(mouseX - pt.x, mouseY - pt.y);
+                if (dist < minDistance) {
+                    minDistance = dist;
+                    closestParam = key;
+                }
+            }
+        });
+
+        if (minDistance >= 36) {
+            closestParam = null;
+        }
+    }
+
+    historicalHoverIndex = nearestIndex;
+    historicalHoveredParam = closestParam;
+    drawChart(currentFilteredHistory, currentFilteredParameters);
+    renderHistoricalTooltip(reading, nearestIndex, pointX, mouseY, closestParam, width, height);
+}
+
+function handleHistoricalPointerLeave() {
+    const tooltip = document.getElementById("historical-chart-tooltip");
+    if (tooltip) {
+        tooltip.classList.remove("visible");
+        tooltip.hidden = true;
+    }
+    if (historicalHoverIndex !== null || historicalHoveredParam !== null) {
+        historicalHoverIndex = null;
+        historicalHoveredParam = null;
+        if (currentFilteredHistory && currentFilteredHistory.length) {
+            drawChart(currentFilteredHistory, currentFilteredParameters);
+        }
+    }
+}
+
+function initHistoricalChartEvents() {
+    if (historicalChartEventsInitialized) return;
+    const canvas = document.getElementById("historical-chart");
+    if (!canvas) return;
+
+    canvas.addEventListener("pointermove", handleHistoricalPointerMove);
+    canvas.addEventListener("pointerleave", handleHistoricalPointerLeave);
+    historicalChartEventsInitialized = true;
 }
 
 function updateLegend(parameters) {
@@ -178,12 +484,21 @@ function updateTable(history) {
 function applyFilters() {
     const history = filterHistory(sensorHistory);
     const parameters = selectedParameters();
+    currentFilteredHistory = history;
+    currentFilteredParameters = parameters;
     const hasData = history.length > 0;
     document.getElementById("history-count").textContent = `${history.length} reading${history.length === 1 ? "" : "s"}`;
     document.getElementById("history-export-button").disabled = sensorHistory.length === 0;
     document.getElementById("history-empty").hidden = hasData;
-    if (hasData) drawChart(history, parameters);
-    updateLegend(parameters); updateSummary(history, parameters); updateTable(history);
+    if (hasData) {
+        initHistoricalChartEvents();
+        drawChart(history, parameters);
+    } else {
+        handleHistoricalPointerLeave();
+    }
+    updateLegend(parameters);
+    updateSummary(history, parameters);
+    updateTable(history);
 }
 
 document.getElementById("history-export-button").addEventListener("click", async (event) => {
@@ -229,6 +544,7 @@ document.getElementById("history-filter").addEventListener("submit", (event) => 
     historyPage = 1;
     applyFilters();
 });
+
 async function loadHistory() {
     try {
         const response = await fetch("/api/readings/history");
@@ -252,12 +568,19 @@ async function loadHistory() {
         document.getElementById("table-empty").hidden = false;
         document.getElementById("readings-body").replaceChildren();
         document.getElementById("readings-pagination").hidden = true;
+        handleHistoricalPointerLeave();
         return;
     }
 
     applyFilters();
 }
 
-updateDeviceTime(); setInterval(updateDeviceTime, 1000); loadHistory();
+updateDeviceTime();
+setInterval(updateDeviceTime, 1000);
+loadHistory();
 setInterval(loadHistory, 10000);
-window.addEventListener("resize", applyFilters);
+window.addEventListener("resize", () => {
+    if (currentFilteredHistory && currentFilteredHistory.length) {
+        drawChart(currentFilteredHistory, currentFilteredParameters);
+    }
+});

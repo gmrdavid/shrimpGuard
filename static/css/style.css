@@ -9536,7 +9536,8 @@ nav a {
     height: 100%;
 }
 
-/* Water Quality Trends Interactive Hover Tooltip */
+/* Interactive Hover Tooltip for Monitoring & Historical Charts */
+.historical-chart-tooltip,
 .monitoring-chart-tooltip {
     position: absolute;
     z-index: 60;
@@ -9559,11 +9560,13 @@ nav a {
     transition: opacity 120ms ease, transform 120ms ease;
 }
 
+.historical-chart-tooltip.visible,
 .monitoring-chart-tooltip.visible {
     opacity: 1;
     transform: translateY(0);
 }
 
+.historical-chart-tooltip .tooltip-header,
 .monitoring-chart-tooltip .tooltip-header {
     display: flex;
     align-items: center;
@@ -9574,12 +9577,14 @@ nav a {
     border-bottom: 1px solid #edf2ee;
 }
 
+.historical-chart-tooltip .tooltip-time-badge,
 .monitoring-chart-tooltip .tooltip-time-badge {
     color: #69786f;
     font-size: 10px;
     font-weight: 600;
 }
 
+.historical-chart-tooltip .tooltip-status-pill,
 .monitoring-chart-tooltip .tooltip-status-pill {
     display: inline-flex;
     align-items: center;
@@ -9590,24 +9595,28 @@ nav a {
     letter-spacing: 0.2px;
 }
 
+.historical-chart-tooltip .tooltip-status-pill.pill-good,
 .monitoring-chart-tooltip .tooltip-status-pill.pill-good {
     background: #eaf6ef;
     color: #126b4f;
     border: 1px solid #cce8d7;
 }
 
+.historical-chart-tooltip .tooltip-status-pill.pill-warn,
 .monitoring-chart-tooltip .tooltip-status-pill.pill-warn {
     background: #fff4e5;
     color: #b45309;
     border: 1px solid #fde68a;
 }
 
+.historical-chart-tooltip .tooltip-content,
 .monitoring-chart-tooltip .tooltip-content {
     display: flex;
     flex-direction: column;
     gap: 6px;
 }
 
+.historical-chart-tooltip .tooltip-item,
 .monitoring-chart-tooltip .tooltip-item {
     display: flex;
     align-items: center;
@@ -9619,17 +9628,20 @@ nav a {
     transition: background-color 140ms ease, border-color 140ms ease;
 }
 
+.historical-chart-tooltip .tooltip-item-focused,
 .monitoring-chart-tooltip .tooltip-item-focused {
     background: #f4f8f5;
     border-color: #dbe8df;
 }
 
+.historical-chart-tooltip .tooltip-item-left,
 .monitoring-chart-tooltip .tooltip-item-left {
     display: flex;
     align-items: center;
     gap: 7px;
 }
 
+.historical-chart-tooltip .tooltip-dot,
 .monitoring-chart-tooltip .tooltip-dot {
     width: 8px;
     height: 8px;
@@ -9637,24 +9649,28 @@ nav a {
     flex-shrink: 0;
 }
 
+.historical-chart-tooltip .tooltip-param-label,
 .monitoring-chart-tooltip .tooltip-param-label {
     color: #495a50;
     font-size: 11px;
     font-weight: 600;
 }
 
+.historical-chart-tooltip .tooltip-item-right,
 .monitoring-chart-tooltip .tooltip-item-right {
     display: flex;
     align-items: center;
     gap: 7px;
 }
 
+.historical-chart-tooltip .tooltip-param-value,
 .monitoring-chart-tooltip .tooltip-param-value {
     color: #172b1f;
     font-size: 12px;
     font-weight: 750;
 }
 
+.historical-chart-tooltip .tooltip-param-status,
 .monitoring-chart-tooltip .tooltip-param-status {
     display: inline-block;
     padding: 2px 6px;
@@ -9664,18 +9680,21 @@ nav a {
     line-height: 1.2;
 }
 
+.historical-chart-tooltip .tooltip-param-status.status-optimal,
 .monitoring-chart-tooltip .tooltip-param-status.status-optimal {
     background: #e8f5ee;
     color: #126b4f;
     border: 1px solid #bce1cd;
 }
 
+.historical-chart-tooltip .tooltip-param-status.status-warning,
 .monitoring-chart-tooltip .tooltip-param-status.status-warning {
     background: #fff8eb;
     color: #b45309;
     border: 1px solid #fde68a;
 }
 
+.historical-chart-tooltip .tooltip-param-status.status-critical,
 .monitoring-chart-tooltip .tooltip-param-status.status-critical {
     background: #fef2f2;
     color: #b91c1c;
@@ -10664,6 +10683,7 @@ nav a {
     border: 1px solid #edf1ee;
     border-radius: 12px;
     background: #fcfdfc;
+    cursor: crosshair;
 }
 
 .historical-page #historical-chart {
