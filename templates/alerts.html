@@ -347,15 +347,56 @@
                     </div>
 
                     <div class="alert-history-controls">
-                        <button type="button" class="history-filter-button">All Types</button>
-                        <button type="button" class="history-filter-button">All Ponds</button>
-                        <button type="button" class="history-filter-button active">Today</button>
-                        <button type="button" class="history-filter-button">
+                        <select id="alert-type-select" class="history-filter-button history-filter-select" aria-label="Filter by alert type">
+                            <option value="all">All Types</option>
+                            <option value="critical">Critical</option>
+                            <option value="warning">Warning</option>
+                            <option value="temperature">Temperature</option>
+                            <option value="ph">pH Level</option>
+                            <option value="resolved">Resolved</option>
+                        </select>
+
+                        <button type="button" id="alert-today-button" class="history-filter-button active" aria-pressed="true">
+                            Today
+                        </button>
+
+                        <button type="button" id="alert-filter-toggle" class="history-filter-button" aria-expanded="false" aria-controls="alert-filter-drawer">
                             <svg class="ui-icon" aria-hidden="true">
                                 <use href="#icon-settings"></use>
                             </svg>
-                            Filter
+                            <span>Filter</span>
+                            <span id="active-filter-badge" class="filter-badge" hidden>0</span>
                         </button>
+                    </div>
+
+                    <!-- Expandable Filter Drawer -->
+                    <div id="alert-filter-drawer" class="alert-filter-drawer" hidden>
+                        <div class="filter-drawer-grid">
+                            <div class="filter-group">
+                                <label for="alert-custom-date">Specific Date</label>
+                                <input type="date" id="alert-custom-date" class="filter-input">
+                            </div>
+
+                            <div class="filter-group">
+                                <label for="alert-status-select">Status</label>
+                                <select id="alert-status-select" class="filter-select">
+                                    <option value="all">All Statuses</option>
+                                    <option value="Active">Active Alerts</option>
+                                    <option value="Resolved">Resolved</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group search-group">
+                                <label for="alert-search-input">Search Keywords</label>
+                                <input type="search" id="alert-search-input" class="filter-input" placeholder="Search alerts or details...">
+                            </div>
+
+                            <div class="filter-actions">
+                                <button type="button" id="alert-reset-filters" class="filter-reset-button">
+                                    Clear Filters
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="table-wrap alerts-table-wrap">

@@ -12864,6 +12864,178 @@ nav a {
     height: 14px;
 }
 
+.alerts-page .history-filter-select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 26px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364776b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 9px center;
+    cursor: pointer;
+}
+
+.alerts-page .filter-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 8px;
+    background: #126b4f;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+}
+
+/* Alert History Filter Drawer */
+.alerts-page .alert-filter-drawer {
+    box-sizing: border-box;
+    width: 100%;
+    margin-bottom: 16px;
+    padding: 14px 16px;
+    border: 1px solid #e0e9e2;
+    border-radius: 12px;
+    background: #f9fbf9;
+    animation: filterDrawerSlide 160ms ease-out;
+}
+
+@keyframes filterDrawerSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.alerts-page .filter-drawer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+    align-items: flex-end;
+}
+
+.alerts-page .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.alerts-page .filter-group label {
+    color: #556b5e;
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.alerts-page .filter-input,
+.alerts-page .filter-select {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 35px;
+    padding: 6px 10px;
+    border: 1px solid #dbe5de;
+    border-radius: 8px;
+    background: #fff;
+    color: #21352a;
+    font-family: inherit;
+    font-size: 11.5px;
+    font-weight: 600;
+    outline: none;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.alerts-page .filter-input:focus,
+.alerts-page .filter-select:focus {
+    border-color: #126b4f;
+    box-shadow: 0 0 0 3px rgba(18, 107, 79, 0.12);
+}
+
+.alerts-page .filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.alerts-page .filter-reset-button {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 35px;
+    padding: 6px 14px;
+    border: 1px solid #dce6df;
+    border-radius: 8px;
+    background: #fff;
+    color: #64776b;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+.alerts-page .filter-reset-button:hover {
+    border-color: #fca5a5;
+    background: #fff5f5;
+    color: #b91c1c;
+}
+
+/* Alert History Table Badges */
+.alerts-page .severity-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 750;
+    line-height: 1.2;
+}
+
+.alerts-page .severity-badge.severity-critical {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+.alerts-page .severity-badge.severity-warning {
+    background: #fff8eb;
+    color: #b45309;
+    border: 1px solid #fde68a;
+}
+
+.alerts-page .severity-badge.severity-none {
+    background: #f4f6f4;
+    color: #6a7b70;
+    border: 1px solid #e2e8e3;
+}
+
+.alerts-page .status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 750;
+    line-height: 1.2;
+}
+
+.alerts-page .status-pill.status-active {
+    background: #fff1f2;
+    color: #be123c;
+    border: 1px solid #fecdd3;
+}
+
+.alerts-page .status-pill.status-resolved {
+    background: #eaf6ef;
+    color: #126b4f;
+    border: 1px solid #cce8d7;
+}
+
 /* ALERT HISTORY TABLE */
 
 .alerts-page .alerts-table-wrap {
