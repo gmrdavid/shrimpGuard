@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Monitor shrimp pond water temperature and pH with ShrimpGuard. View readings, explore trends, and receive helpful water quality alerts.">
-    <meta name="theme-color" content="#f1faff">
+    <meta name="theme-color" content="#143d34">
     <title>ShrimpGuard | Smarter Pond Care</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
@@ -101,24 +101,69 @@
                     <div class="landing-orbit landing-orbit-one" aria-hidden="true"></div>
                     <div class="landing-orbit landing-orbit-two" aria-hidden="true"></div>
 
-                    <div class="landing-visual-placeholder"
-                         role="img"
-                         aria-label="Shrimp pond photo placeholder">
-                        <div class="landing-placeholder-overlay"></div>
+                    <div class="landing-telemetry-card"
+                         role="region"
+                         aria-label="ShrimpGuard water quality monitoring preview">
 
-                        <div class="landing-placeholder-content">
-                            <span class="landing-placeholder-plus" aria-hidden="true">
-                                <svg class="ui-icon"><use href="#icon-plus"></use></svg>
+                        <div class="telemetry-card-header">
+                            <div class="telemetry-pond-info">
+                                <span class="telemetry-pond-icon" aria-hidden="true">
+                                    <svg class="ui-icon brand-icon"><use href="#icon-shrimp"></use></svg>
+                                </span>
+                                <div>
+                                    <span class="telemetry-pond-eyebrow">LIVE TELEMETRY</span>
+                                    <h3 class="telemetry-pond-title">Pond 01 &bull; Vannamei</h3>
+                                </div>
+                            </div>
+                            <span class="telemetry-status-badge">
+                                <span class="telemetry-live-pulse" aria-hidden="true"></span>
+                                Optimal Quality
                             </span>
-                            <span class="landing-placeholder-label">Pond photo goes here</span>
-                            <span class="landing-placeholder-hint">
-                                Replace this area with a photo of your shrimp pond.
-                            </span>
+                        </div>
+
+                        <div class="telemetry-metrics-grid">
+                            <div class="telemetry-metric-item">
+                                <div class="telemetry-metric-top">
+                                    <span class="telemetry-metric-label">TEMPERATURE</span>
+                                    <span class="telemetry-metric-icon temp" aria-hidden="true">
+                                        <svg class="ui-icon"><use href="#icon-thermometer"></use></svg>
+                                    </span>
+                                </div>
+                                <div class="telemetry-metric-val">28.5 <span class="unit">&deg;C</span></div>
+                                <div class="telemetry-metric-sub">
+                                    <span class="metric-pill good">Normal</span>
+                                    <span>Target: 26&ndash;32 &deg;C</span>
+                                </div>
+                            </div>
+
+                            <div class="telemetry-metric-item">
+                                <div class="telemetry-metric-top">
+                                    <span class="telemetry-metric-label">PH LEVEL</span>
+                                    <span class="telemetry-metric-icon ph" aria-hidden="true">
+                                        <svg class="ui-icon"><use href="#icon-droplet"></use></svg>
+                                    </span>
+                                </div>
+                                <div class="telemetry-metric-val">7.84 <span class="unit">pH</span></div>
+                                <div class="telemetry-metric-sub">
+                                    <span class="metric-pill good">Optimal</span>
+                                    <span>Target: 7.5&ndash;8.5</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="telemetry-wqi-box">
+                            <div class="telemetry-wqi-top">
+                                <span class="wqi-label">Water Quality Index (WQI)</span>
+                                <strong class="wqi-score">96 / 100 &bull; Good</strong>
+                            </div>
+                            <div class="telemetry-wqi-bar" role="progressbar" aria-valuenow="96" aria-valuemin="0" aria-valuemax="100">
+                                <div class="telemetry-wqi-fill" style="width: 96%;"></div>
+                            </div>
                         </div>
 
                         <div class="landing-visual-caption">
                             <span class="landing-caption-dot" aria-hidden="true"></span>
-                            <span>A clearer view of your pond</span>
+                            <span>A clearer, real-time view of your shrimp pond</span>
                         </div>
                     </div>
 
