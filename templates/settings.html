@@ -4,301 +4,419 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#f5f8f4">
+    <meta name="theme-color" content="#126b4f">
+
     <title>Settings | ShrimpGuard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
 <body class="settings-page">
+
 {% include "_icon_sprite.html" %}
 
-<div class="sidebar settings-sidebar">
-    <div class="logo">
-        <svg class="ui-icon brand-icon"><use href="#icon-shrimp"></use></svg>
-        <span>ShrimpGuard</span>
-    </div>
+<div class="settings-layout-page">
 
-    <p class="subtitle">Water Quality Monitoring</p>
+    <!-- SIDEBAR -->
+    <aside class="sidebar settings-sidebar">
 
-    <nav>
-        <a href="/">
-            <svg class="ui-icon"><use href="#icon-dashboard"></use></svg>
-            <span>Dashboard</span>
-        </a>
-        <a href="/monitoring">
-            <svg class="ui-icon"><use href="#icon-monitor"></use></svg>
-            <span>Real-time Monitoring</span>
-        </a>
-        <a href="/historical">
-            <svg class="ui-icon"><use href="#icon-history"></use></svg>
-            <span>Historical Data</span>
-        </a>
-        <a href="/analytics">
-            <svg class="ui-icon"><use href="#icon-chart"></use></svg>
-            <span>Analytics &amp; Reports</span>
-        </a>
-        <a href="/alerts">
-            <svg class="ui-icon"><use href="#icon-alert"></use></svg>
-            <span>Alerts and Notifications</span>
-        </a>
-        <a href="/settings" class="active" aria-current="page">
-            <svg class="ui-icon"><use href="#icon-settings"></use></svg>
-            <span>Settings</span>
-        </a>
-    </nav>
-
-    {% include "adminlogout.html" %}
-
-    <div class="settings-sidebar-note">
-        <span class="settings-sidebar-note-icon">
-            <svg class="ui-icon"><use href="#icon-settings"></use></svg>
-        </span>
-        <div>
-            <strong>Account preferences</strong>
-            <p>Manage your personal information and sign-in security.</p>
-        </div>
-    </div>
-</div>
-
-<main class="main-content settings-main">
-    <header class="settings-header">
-        <div>
-            <span class="settings-eyebrow">ACCOUNT MANAGEMENT</span>
-            <h1>Settings</h1>
-            <p>Manage your profile information and keep your account secure.</p>
-        </div>
-
-        <div class="settings-header-badge">
-            <span class="settings-header-badge-icon">
-                <svg class="ui-icon"><use href="#icon-check-circle"></use></svg>
+        <a href="/" class="logo settings-logo" aria-label="ShrimpGuard dashboard">
+            <span class="settings-logo-mark">
+                <svg class="ui-icon brand-icon" aria-hidden="true">
+                    <use href="#icon-shrimp"></use>
+                </svg>
             </span>
-            <div>
-                <strong>Account settings</strong>
-                <span>Personal information and security</span>
-            </div>
-        </div>
-    </header>
+            <span>ShrimpGuard</span>
+        </a>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    <div class="settings-notices" role="status" aria-live="polite">
-        {% for category, message in messages %}
-        <p class="settings-notice {{ category }}">
-            <svg class="ui-icon settings-notice-icon">
-                <use href="#icon-check-circle"></use>
-            </svg>
-            <span>{{ message }}</span>
-        </p>
-        {% endfor %}
-    </div>
-    {% endif %}
-    {% endwith %}
+        <p class="subtitle">Water Quality Monitoring</p>
 
-    <section class="settings-intro">
-        <div class="settings-intro-icon">
-            <svg class="ui-icon"><use href="#icon-settings"></use></svg>
-        </div>
-        <div>
-            <h2>Account preferences</h2>
-            <p>Changes to your profile and password will be submitted to ShrimpGuard for validation.</p>
-        </div>
-    </section>
+        <div class="sidebar-section-label">MAIN MENU</div>
 
-    <section class="settings-grid" aria-label="Account settings">
+        <nav class="settings-nav" aria-label="Main navigation">
 
-        <!-- Profile information -->
-        <article class="settings-panel">
-            <div class="settings-panel-heading">
-                <div class="settings-panel-icon settings-profile-icon">
-                    <svg class="ui-icon"><use href="#icon-dashboard"></use></svg>
-                </div>
-                <div>
-                    <h2>Profile Information</h2>
-                    <p>Update the name and email address associated with your account.</p>
-                </div>
-            </div>
+            <a href="/">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-dashboard"></use>
+                </svg>
+                <span>Dashboard</span>
+            </a>
 
-            <div class="settings-panel-divider"></div>
+            <a href="/monitoring">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-monitor"></use>
+                </svg>
+                <span>Real-time Monitoring</span>
+            </a>
 
-            <form id="profile-update-form"
-                  class="settings-form"
-                  method="post"
-                  action="{{ url_for('settings') }}">
+            <a href="/historical">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-history"></use>
+                </svg>
+                <span>Historical Data</span>
+            </a>
 
-                <input type="hidden" name="csrf_token" value="{{ settings_csrf_token }}">
-                <input type="hidden" name="action" value="profile">
+            <a href="/analytics">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-chart"></use>
+                </svg>
+                <span>Analytics &amp; Reports</span>
+            </a>
 
-                <div class="settings-field">
-                    <label for="profile-name">Full name</label>
-                    <input
-                        id="profile-name"
-                        name="name"
-                        type="text"
-                        maxlength="80"
-                        value="{{ user.user_name }}"
-                        autocomplete="name"
-                        placeholder="Enter your name"
-                        required>
-                    <small>This name identifies your account in ShrimpGuard.</small>
-                </div>
+            <a href="/alerts">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-alert"></use>
+                </svg>
+                <span>Alerts and Notifications</span>
+            </a>
 
-                <div class="settings-field">
-                    <label for="profile-email">Email address</label>
-                    <input
-                        id="profile-email"
-                        name="email"
-                        type="email"
-                        maxlength="255"
-                        value="{{ user.email }}"
-                        autocomplete="email"
-                        placeholder="Enter your email address"
-                        required>
-                    <small>Use an email address you can access.</small>
-                </div>
+            <a href="/settings" class="active" aria-current="page">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-settings"></use>
+                </svg>
+                <span>Settings</span>
+            </a>
 
-                <div class="settings-field">
-                    <label for="profile-role">Account role</label>
-                    <div class="settings-readonly-wrap">
-                        <span class="settings-readonly-icon">
-                            <svg class="ui-icon"><use href="#icon-check-circle"></use></svg>
-                        </span>
-                        <input
-                            id="profile-role"
-                            type="text"
-                            value="{{ user.role }}"
-                            readonly
-                            aria-describedby="profile-role-help">
-                        <span class="settings-role-badge">Assigned</span>
-                    </div>
-                    <small id="profile-role-help">Your account role cannot be changed here.</small>
-                </div>
+        </nav>
 
-                <div class="settings-form-actions">
-                    <button id="save-profile-button" class="settings-submit" type="button">
-                        <svg class="ui-icon"><use href="#icon-check-circle"></use></svg>
-                        <span>Save Profile</span>
-                    </button>
-                </div>
-            </form>
-        </article>
-
-        <!-- Password security -->
-        <article class="settings-panel">
-            <div class="settings-panel-heading">
-                <div class="settings-panel-icon settings-security-icon">
-                    <svg class="ui-icon"><use href="#icon-settings"></use></svg>
-                </div>
-                <div>
-                    <h2>Password &amp; Security</h2>
-                    <p>Change your password to help protect access to your account.</p>
-                </div>
-            </div>
-
-            <div class="settings-panel-divider"></div>
-
-            <div class="settings-security-notice">
-                <span class="settings-security-notice-icon">
-                    <svg class="ui-icon"><use href="#icon-alert"></use></svg>
+        <div class="sidebar-bottom">
+            <div class="sidebar-help">
+                <span class="sidebar-help-icon">
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-settings"></use>
+                    </svg>
                 </span>
-                <p>Choose a password with at least 8 characters. You must provide your current password to make this change.</p>
+                <div>
+                    <strong>Preferences</strong>
+                    <p>Manage account &amp; security.</p>
+                </div>
             </div>
 
-            <form id="password-update-form"
-                  class="settings-form"
-                  method="post"
-                  action="{{ url_for('settings') }}">
+            {% include "adminlogout.html" %}
+        </div>
 
-                <input type="hidden" name="csrf_token" value="{{ settings_csrf_token }}">
-                <input type="hidden" name="action" value="password">
+    </aside>
 
-                <div class="settings-field">
-                    <label for="current-password">Current password</label>
-                    <div class="settings-password-wrap">
-                        <input
-                            id="current-password"
-                            name="current_password"
-                            type="password"
-                            autocomplete="current-password"
-                            placeholder="Enter current password"
-                            required>
-                        <button type="button"
-                                class="settings-password-toggle"
-                                data-password-target="current-password"
-                                aria-label="Show current password"
-                                aria-pressed="false">
-                            <svg class="ui-icon"><use href="#icon-eye"></use></svg>
-                        </button>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content settings-main">
+
+        <!-- TOP HEADER -->
+        <header class="settings-header">
+
+            <div class="settings-heading">
+                <div class="settings-eyebrow">
+                    <span class="eyebrow-dot"></span>
+                    ACCOUNT MANAGEMENT
+                </div>
+
+                <h1>Settings</h1>
+
+                <p>
+                    Manage your profile information and keep your account secure.
+                </p>
+            </div>
+
+            <div class="header-info settings-header-info">
+
+                <button
+                    id="notification-button"
+                    class="notification-button"
+                    type="button"
+                    aria-label="View notifications"
+                    title="View notifications">
+
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-bell"></use>
+                    </svg>
+
+                </button>
+
+                <div class="settings-date-time">
+                    <span class="date-time-label">LOCAL TIME</span>
+                    <span id="time" class="time-value">Loading time...</span>
+                </div>
+
+            </div>
+
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="settings-notices" role="status" aria-live="polite">
+            {% for category, message in messages %}
+            <p class="settings-notice {{ category }}">
+                <svg class="ui-icon settings-notice-icon" aria-hidden="true">
+                    <use href="#icon-check-circle"></use>
+                </svg>
+                <span>{{ message }}</span>
+            </p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+
+        <!-- SETTINGS INTRO PANEL -->
+        <section class="input-panel settings-intro-panel" aria-labelledby="settings-intro-title">
+
+            <div class="input-panel-heading">
+
+                <div class="input-panel-icon">
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-settings"></use>
+                    </svg>
+                </div>
+
+                <div>
+                    <span class="section-eyebrow">PREFERENCES</span>
+                    <h2 id="settings-intro-title">Account Preferences</h2>
+                    <p>
+                        Changes to your profile and password will be submitted to ShrimpGuard for validation.
+                    </p>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- SETTINGS PANELS (2-column grid) -->
+        <section class="dashboard-grid settings-grid" aria-label="Account settings">
+
+            <!-- PROFILE INFORMATION -->
+            <article class="panel dashboard-panel settings-panel">
+
+                <div class="panel-heading">
+                    <div class="panel-heading-icon profile-heading-icon">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-dashboard"></use>
+                        </svg>
+                    </div>
+
+                    <div>
+                        <h2>Profile Information</h2>
+                        <p>Update the name and email address associated with your account.</p>
                     </div>
                 </div>
 
-                <div class="settings-field">
-                    <label for="new-password">New password</label>
-                    <div class="settings-password-wrap">
+                <div class="settings-panel-divider"></div>
+
+                <form id="profile-update-form"
+                      class="settings-form"
+                      method="post"
+                      action="{{ url_for('settings') }}">
+
+                    <input type="hidden" name="csrf_token" value="{{ settings_csrf_token }}">
+                    <input type="hidden" name="action" value="profile">
+
+                    <div class="settings-field">
+                        <label for="profile-name">Full Name</label>
                         <input
-                            id="new-password"
-                            name="new_password"
-                            type="password"
-                            minlength="8"
-                            autocomplete="new-password"
-                            placeholder="Enter new password"
-                            aria-describedby="new-password-help"
+                            id="profile-name"
+                            name="name"
+                            type="text"
+                            maxlength="80"
+                            value="{{ user.user_name }}"
+                            autocomplete="name"
+                            placeholder="Enter your name"
                             required>
-                        <button type="button"
-                                class="settings-password-toggle"
-                                data-password-target="new-password"
-                                aria-label="Show new password"
-                                aria-pressed="false">
-                            <svg class="ui-icon"><use href="#icon-eye"></use></svg>
+                        <small>This name identifies your account in ShrimpGuard.</small>
+                    </div>
+
+                    <div class="settings-field">
+                        <label for="profile-email">Email Address</label>
+                        <input
+                            id="profile-email"
+                            name="email"
+                            type="email"
+                            maxlength="255"
+                            value="{{ user.email }}"
+                            autocomplete="email"
+                            placeholder="Enter your email address"
+                            required>
+                        <small>Use an email address you can access.</small>
+                    </div>
+
+                    <div class="settings-field">
+                        <label for="profile-role">Account Role</label>
+                        <div class="settings-readonly-wrap">
+                            <span class="settings-readonly-icon">
+                                <svg class="ui-icon" aria-hidden="true">
+                                    <use href="#icon-check-circle"></use>
+                                </svg>
+                            </span>
+                            <input
+                                id="profile-role"
+                                type="text"
+                                value="{{ user.role }}"
+                                readonly
+                                aria-describedby="profile-role-help">
+                            <span class="settings-role-badge">Assigned</span>
+                        </div>
+                        <small id="profile-role-help">Your account role cannot be changed here.</small>
+                    </div>
+
+                    <div class="settings-form-actions">
+                        <button id="save-profile-button" class="settings-submit" type="button">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-check-circle"></use>
+                            </svg>
+                            <span>Save Profile</span>
                         </button>
                     </div>
-                    <small id="new-password-help">Use at least 8 characters.</small>
+
+                </form>
+
+            </article>
+
+
+            <!-- PASSWORD SECURITY -->
+            <article class="panel dashboard-panel settings-panel">
+
+                <div class="panel-heading">
+                    <div class="panel-heading-icon security-heading-icon">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-settings"></use>
+                        </svg>
+                    </div>
+
+                    <div>
+                        <h2>Password &amp; Security</h2>
+                        <p>Change your password to help protect access to your account.</p>
+                    </div>
                 </div>
 
-                <div class="settings-field">
-                    <label for="confirm-password">Confirm new password</label>
-                    <div class="settings-password-wrap">
-                        <input
-                            id="confirm-password"
-                            name="confirm_password"
-                            type="password"
-                            minlength="8"
-                            autocomplete="new-password"
-                            placeholder="Re-enter new password"
-                            required>
-                        <button type="button"
-                                class="settings-password-toggle"
-                                data-password-target="confirm-password"
-                                aria-label="Show confirmation password"
-                                aria-pressed="false">
-                            <svg class="ui-icon"><use href="#icon-eye"></use></svg>
+                <div class="settings-panel-divider"></div>
+
+                <div class="settings-security-notice">
+                    <span class="settings-security-notice-icon">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-alert"></use>
+                        </svg>
+                    </span>
+                    <p>Choose a password with at least 8 characters. You must provide your current password to make this change.</p>
+                </div>
+
+                <form id="password-update-form"
+                      class="settings-form"
+                      method="post"
+                      action="{{ url_for('settings') }}">
+
+                    <input type="hidden" name="csrf_token" value="{{ settings_csrf_token }}">
+                    <input type="hidden" name="action" value="password">
+
+                    <div class="settings-field">
+                        <label for="current-password">Current Password</label>
+                        <div class="settings-password-wrap">
+                            <input
+                                id="current-password"
+                                name="current_password"
+                                type="password"
+                                autocomplete="current-password"
+                                placeholder="Enter current password"
+                                required>
+                            <button type="button"
+                                    class="settings-password-toggle"
+                                    data-password-target="current-password"
+                                    aria-label="Show current password"
+                                    aria-pressed="false">
+                                <svg class="ui-icon" aria-hidden="true">
+                                    <use href="#icon-eye"></use>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="settings-field">
+                        <label for="new-password">New Password</label>
+                        <div class="settings-password-wrap">
+                            <input
+                                id="new-password"
+                                name="new_password"
+                                type="password"
+                                minlength="8"
+                                autocomplete="new-password"
+                                placeholder="Enter new password"
+                                aria-describedby="new-password-help"
+                                required>
+                            <button type="button"
+                                    class="settings-password-toggle"
+                                    data-password-target="new-password"
+                                    aria-label="Show new password"
+                                    aria-pressed="false">
+                                <svg class="ui-icon" aria-hidden="true">
+                                    <use href="#icon-eye"></use>
+                                </svg>
+                            </button>
+                        </div>
+                        <small id="new-password-help">Use at least 8 characters.</small>
+                    </div>
+
+                    <div class="settings-field">
+                        <label for="confirm-password">Confirm New Password</label>
+                        <div class="settings-password-wrap">
+                            <input
+                                id="confirm-password"
+                                name="confirm_password"
+                                type="password"
+                                minlength="8"
+                                autocomplete="new-password"
+                                placeholder="Re-enter new password"
+                                required>
+                            <button type="button"
+                                    class="settings-password-toggle"
+                                    data-password-target="confirm-password"
+                                    aria-label="Show confirmation password"
+                                    aria-pressed="false">
+                                <svg class="ui-icon" aria-hidden="true">
+                                    <use href="#icon-eye"></use>
+                                </svg>
+                            </button>
+                        </div>
+                        <small id="confirm-password-help" class="settings-password-match-message" aria-live="polite">
+                            Re-enter your new password to confirm it.
+                        </small>
+                    </div>
+
+                    <div class="input-panel-footnote">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-check-circle"></use>
+                        </svg>
+                        <span>For better security, avoid reusing passwords from other accounts.</span>
+                    </div>
+
+                    <div class="settings-form-actions">
+                        <button class="settings-submit settings-password-submit" type="submit">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-settings"></use>
+                            </svg>
+                            <span>Update Password</span>
                         </button>
                     </div>
-                    <small id="confirm-password-help" class="settings-password-match-message" aria-live="polite">
-                        Re-enter your new password to confirm it.
-                    </small>
-                </div>
 
-                <div class="settings-password-tip">
-                    <svg class="ui-icon"><use href="#icon-check-circle"></use></svg>
-                    <p>For better security, avoid reusing passwords from other accounts.</p>
-                </div>
+                </form>
 
-                <div class="settings-form-actions">
-                    <button class="settings-submit settings-password-submit" type="submit">
-                        <svg class="ui-icon"><use href="#icon-settings"></use></svg>
-                        <span>Update Password</span>
-                    </button>
-                </div>
-            </form>
-        </article>
+            </article>
 
-    </section>
+        </section>
 
-    <footer class="settings-footer">
-        <span>ShrimpGuard · Account Settings</span>
-        <span>Keep your account information up to date.</span>
-    </footer>
-</main>
+
+        <!-- FOOTER -->
+        <footer class="dashboard-footer settings-footer">
+            <span>
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-shrimp"></use>
+                </svg>
+                ShrimpGuard
+            </span>
+            <span>Water Quality Monitoring &amp; Decision Support</span>
+        </footer>
+
+    </main>
+
+</div>
 
 <dialog id="profile-confirmation-dialog"
         class="admin-user-dialog settings-confirmation-dialog"
@@ -306,10 +424,12 @@
 
     <div class="admin-user-dialog-heading">
         <span class="settings-dialog-icon">
-            <svg class="ui-icon"><use href="#icon-check-circle"></use></svg>
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-check-circle"></use>
+            </svg>
         </span>
         <div>
-            <h2 id="profile-confirmation-title">Save profile changes?</h2>
+            <h2 id="profile-confirmation-title">Save Profile Changes?</h2>
             <p>Confirm your account information update.</p>
         </div>
     </div>
@@ -327,7 +447,17 @@
     </div>
 </dialog>
 
+<script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
 <script>
+    function updateDeviceTime() {
+        const timeEl = document.getElementById("time");
+        if (timeEl) {
+            timeEl.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        }
+    }
+    updateDeviceTime();
+    setInterval(updateDeviceTime, 1000);
+
     const profileForm = document.getElementById("profile-update-form");
     const confirmationDialog = document.getElementById("profile-confirmation-dialog");
     const saveProfileButton = document.getElementById("save-profile-button");
