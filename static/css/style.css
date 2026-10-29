@@ -6750,7 +6750,7 @@ nav a {
     box-sizing: border-box;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     width: 200%;
     min-height: 46px;
     padding: 12px 15px;
