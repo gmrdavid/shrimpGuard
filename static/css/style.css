@@ -8164,33 +8164,26 @@ nav a {
     content: "";
 }
 
-.dashboard-page .sidebar-bottom {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    margin-top: auto;
-    padding-top: 28px;
-}
-
 .dashboard-page .sidebar-help {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 10px;
+    margin: 30px 2px 0;
     padding: 13px 11px;
-    border: 1px solid #e3eee6;
+    border: 1px solid #e5eee6;
     border-radius: 12px;
-    background: #f7faf8;
+    background: #f7faf6;
 }
 
 .dashboard-page .sidebar-help-icon {
     display: grid;
-    width: 32px;
-    height: 32px;
+    width: 31px;
+    height: 31px;
     flex-shrink: 0;
     place-items: center;
     border-radius: 9px;
-    background: #e4f3e9;
-    color: var(--dash-green);
+    background: #e7f3e9;
+    color: #337b4d;
 }
 
 .dashboard-page .sidebar-help-icon .ui-icon {
@@ -8200,15 +8193,16 @@ nav a {
 
 .dashboard-page .sidebar-help strong {
     display: block;
-    color: #315442;
+    margin: 1px 0 5px;
+    color: #345641;
     font-size: 11px;
 }
 
 .dashboard-page .sidebar-help p {
-    margin: 4px 0 0;
-    color: var(--dash-muted);
+    margin: 0;
+    color: #849187;
     font-size: 10px;
-    line-height: 1.5;
+    line-height: 1.6;
 }
 
 /* MAIN CONTENT */
