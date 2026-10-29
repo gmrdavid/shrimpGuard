@@ -435,29 +435,7 @@ body {
 
 }
 
-.sidebar-logout {
-    bottom: 18px;
-    left: 15px;
-    position: absolute;
-    right: 15px;
-}
-
-.sidebar-logout button {
-    background: transparent;
-    border: 1px solid rgb(217 226 237 / 28%);
-    border-radius: 8px;
-    color: #d9e2ec;
-    cursor: pointer;
-    font: inherit;
-    padding: 12px 14px;
-    text-align: left;
-    width: 100%;
-}
-
-.sidebar-logout button:hover {
-    background: rgb(217 226 237 / 10%);
-    color: #fff;
-}
+/* Legacy sidebar logout styles moved to unified logout component */
 
 .settings-page {
     background: #f4f7f9;
@@ -2809,9 +2787,7 @@ body {
 .sidebar .subtitle,
 nav a,
 nav a:hover,
-nav .active,
-.sidebar-logout button,
-.sidebar-logout button:hover {
+nav .active {
     color: #f2faf7;
 }
 
@@ -6738,51 +6714,144 @@ nav a {
 
 
 /* =========================================
-   SIDEBAR LOGOUT BUTTON
+   SIDEBAR BOTTOM & LOGOUT COMPONENT
 ========================================= */
 
-.sidebar-logout {
+.sidebar-bottom,
+.dashboard-page .sidebar-bottom,
+.monitoring-page .monitoring-sidebar-bottom,
+.historical-page .historical-sidebar-bottom,
+.analytics-page .sidebar-bottom,
+.alerts-page .sidebar-bottom,
+.settings-page .sidebar-bottom {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 16px;
     width: 100%;
+    box-sizing: border-box;
+}
+
+.sidebar-help,
+.monitoring-sidebar-help,
+.historical-sidebar-help {
     margin: 0;
 }
 
-.sidebar-logout-button {
+.sidebar-logout {
+    position: static;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.sidebar-logout-button,
+.sidebar-logout button,
+#logoutButton {
     box-sizing: border-box;
     display: flex;
     align-items: center;
-    gap: 10px;
-    width: 200%;
-    min-height: 46px;
-    padding: 12px 15px;
-    border: 1px solid transparent;
+    gap: 11px;
+    width: 100%;
+    min-height: 44px;
+    padding: 11px 14px;
+    border: 1px solid #fecdd3;
     border-radius: 10px;
-    background: transparent;
-    color: #c64b4b;
+    background: #fff5f5;
+    color: #b91c1c !important;
     font: inherit;
-    font-size: 14px;
+    font-size: 13.5px;
     font-weight: 600;
     text-align: left;
     cursor: pointer;
-    transition:
-        background-color 180ms ease,
-        color 180ms ease,
-        border-color 180ms ease;
+    transition: background-color 180ms ease,
+                color 180ms ease,
+                border-color 180ms ease,
+                box-shadow 180ms ease,
+                transform 120ms ease;
 }
 
-.sidebar-logout-button .ui-icon {
+.sidebar-logout-button .ui-icon,
+.sidebar-logout button .ui-icon,
+#logoutButton .ui-icon {
     display: block;
+    width: 19px;
+    height: 19px;
     flex-shrink: 0;
+    color: #b91c1c !important;
+    stroke: currentColor;
 }
 
-.sidebar-logout-button:hover {
-    border-color: #f4dada;
-    background: #fff0f0;
-    color: #b42323;
+.sidebar-logout-button span,
+.sidebar-logout button span,
+#logoutButton span {
+    color: #b91c1c !important;
+    font-size: 13.5px;
+    font-weight: 600;
 }
 
-.sidebar-logout-button:focus-visible {
-    outline: 3px solid #e7aaaa;
-    outline-offset: 3px;
+.sidebar-logout-button:hover,
+.sidebar-logout button:hover,
+#logoutButton:hover {
+    border-color: #fca5a5;
+    background: #fee2e2;
+    color: #991b1b !important;
+}
+
+.sidebar-logout-button:hover .ui-icon,
+.sidebar-logout button:hover .ui-icon,
+#logoutButton:hover .ui-icon,
+.sidebar-logout-button:hover span,
+.sidebar-logout button:hover span,
+#logoutButton:hover span {
+    color: #991b1b !important;
+}
+
+.sidebar-logout-button:focus-visible,
+.sidebar-logout button:focus-visible,
+#logoutButton:focus-visible {
+    outline: 3px solid rgba(239, 68, 68, 0.35);
+    outline-offset: 2px;
+}
+
+.sidebar-logout-button:active,
+.sidebar-logout button:active,
+#logoutButton:active {
+    transform: translateY(1px);
+}
+
+/* Specific styling for Admin's dark teal sidebar */
+.admin-page .sidebar .sidebar-logout button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 46px;
+    padding: 12px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.045);
+    color: #e1eeeb !important;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.admin-page .sidebar .sidebar-logout button .ui-icon,
+.admin-page .sidebar .sidebar-logout button span {
+    color: #e1eeeb !important;
+}
+
+.admin-page .sidebar .sidebar-logout button:hover {
+    background: rgba(239, 68, 68, 0.14);
+    color: #fecaca !important;
+}
+
+.admin-page .sidebar .sidebar-logout button:hover .ui-icon,
+.admin-page .sidebar .sidebar-logout button:hover span {
+    color: #fecaca !important;
 }
 
 
@@ -6790,323 +6859,6 @@ nav a {
    LOGOUT MODAL OVERLAY
 ========================================= */
 
-.logout-modal-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
-    padding: 24px;
-    overflow-y: auto;
-    background: rgba(15, 29, 23, 0.58);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-}
-
-.logout-modal-overlay[hidden] {
-    display: none;
-}
-
-
-/* =========================================
-   MODAL CARD
-========================================= */
-
-.logout-modal {
-    position: relative;
-    box-sizing: border-box;
-    width: 100%;
-    max-width: 420px;
-    margin: auto;
-    padding: 34px 30px 24px;
-    border: 1px solid rgba(230, 237, 232, 0.95);
-    border-radius: 20px;
-    background: #ffffff;
-    color: #1e3026;
-    text-align: center;
-    box-shadow:
-        0 28px 80px rgba(0, 0, 0, 0.18),
-        0 4px 16px rgba(0, 0, 0, 0.05);
-    animation: logoutModalEnter 220ms ease-out;
-}
-
-.logout-modal:focus {
-    outline: none;
-}
-
-
-/* =========================================
-   LOGOUT ICON
-========================================= */
-
-.logout-modal-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 66px;
-    height: 66px;
-    margin: 0 auto 21px;
-    border: 1px solid #f5dada;
-    border-radius: 20px;
-    background: #fff1f0;
-    color: #c63d3d;
-}
-
-.logout-modal-icon svg {
-    display: block;
-}
-
-
-/* =========================================
-   MODAL TEXT
-========================================= */
-
-.logout-modal h2 {
-    margin: 0 0 11px;
-    color: #21352a;
-    font-size: 23px;
-    font-weight: 750;
-    line-height: 1.3;
-    letter-spacing: -0.55px;
-}
-
-.logout-modal p {
-    margin: 0 auto 27px;
-    max-width: 330px;
-    color: #758078;
-    font-size: 13.5px;
-    font-weight: 400;
-    line-height: 1.8;
-}
-
-.logout-modal p strong {
-    color: #45634f;
-    font-weight: 700;
-}
-
-
-/* =========================================
-   ACTION BUTTONS
-========================================= */
-
-.logout-modal-actions {
-    display: flex;
-    align-items: stretch;
-    gap: 11px;
-    width: 100%;
-}
-
-.logout-modal-actions button {
-    box-sizing: border-box;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    flex: 1 1 0;
-    min-width: 0;
-    min-height: 47px;
-    padding: 11px 13px;
-    border: 1px solid transparent;
-    border-radius: 10px;
-    font-family: inherit;
-    font-size: 12.5px;
-    font-weight: 700;
-    line-height: 1.4;
-    cursor: pointer;
-    transition:
-        background-color 180ms ease,
-        border-color 180ms ease,
-        box-shadow 180ms ease,
-        transform 180ms ease;
-}
-
-.logout-modal-actions button svg {
-    flex-shrink: 0;
-}
-
-.logout-modal-actions button:active {
-    transform: translateY(1px);
-}
-
-.logout-modal-actions button:focus-visible {
-    outline: 3px solid #a8c9b1;
-    outline-offset: 3px;
-}
-
-
-/* Cancel */
-.logout-cancel-btn {
-    border-color: #e4eae5 !important;
-    background: #ffffff;
-    color: #53645a;
-}
-
-.logout-cancel-btn:hover {
-    border-color: #cfdcd2 !important;
-    background: #f5f8f5;
-    color: #2d4636;
-}
-
-
-/* Confirm logout */
-.logout-confirm-btn {
-    background: #c83e3e;
-    color: #ffffff;
-    box-shadow: 0 3px 8px rgba(200, 62, 62, 0.13);
-}
-
-.logout-confirm-btn:hover {
-    background: #ae2f2f;
-    box-shadow: 0 5px 12px rgba(174, 47, 47, 0.19);
-}
-
-.logout-modal-actions button:disabled {
-    opacity: 0.65;
-    cursor: not-allowed;
-    transform: none;
-}
-
-
-/* =========================================
-   SECURITY NOTE
-========================================= */
-
-.logout-modal-security {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    margin-top: 22px;
-    padding-top: 17px;
-    border-top: 1px solid #edf1ed;
-    color: #929c94;
-    font-size: 11px;
-    line-height: 1.5;
-}
-
-.logout-modal-security svg {
-    flex-shrink: 0;
-    color: #73917c;
-}
-
-
-/* =========================================
-   ANIMATION
-========================================= */
-
-@keyframes logoutModalEnter {
-    from {
-        opacity: 0;
-        transform: translateY(12px) scale(0.98);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-
-/* =========================================
-   RESPONSIVE
-========================================= */
-
-@media (max-width: 480px) {
-    .logout-modal-overlay {
-        padding: 16px;
-    }
-
-    .logout-modal {
-        max-width: 360px;
-        padding: 28px 20px 21px;
-        border-radius: 17px;
-    }
-
-    .logout-modal-icon {
-        width: 58px;
-        height: 58px;
-        margin-bottom: 18px;
-        border-radius: 17px;
-    }
-
-    .logout-modal h2 {
-        font-size: 21px;
-    }
-
-    .logout-modal p {
-        font-size: 13px;
-    }
-
-    .logout-modal-actions {
-        flex-direction: column-reverse;
-        gap: 9px;
-    }
-
-    .logout-modal-actions button {
-        width: 100%;
-        min-height: 46px;
-        font-size: 13px;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .logout-modal {
-        animation: none;
-    }
-
-    .logout-modal-actions button,
-    .sidebar-logout-button {
-        transition: none;
-    }
-}
-
-.sidebar-logout {
-    width: 100%;
-    margin: 0;
-}
-
-.sidebar-logout-button {
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-    min-height: 46px;
-    padding: 12px 15px;
-    border: 1px solid transparent;
-    border-radius: 10px;
-    background: transparent;
-    color: #c64b4b;
-    font: inherit;
-    font-size: 14px;
-    font-weight: 600;
-    text-align: left;
-    cursor: pointer;
-    transition: background-color 180ms ease,
-                color 180ms ease,
-                border-color 180ms ease;
-}
-
-.sidebar-logout-button .ui-icon {
-    display: block;
-    flex-shrink: 0;
-}
-
-.sidebar-logout-button:hover {
-    border-color: #f4dada;
-    background: #fff0f0;
-    color: #b42323;
-}
-
-.sidebar-logout-button:focus-visible {
-    outline: 3px solid #e7aaaa;
-    outline-offset: 3px;
-}
-
-
-/* Modal overlay */
 .logout-modal-overlay {
     position: fixed;
     inset: 0;
@@ -7357,7 +7109,6 @@ nav a {
         transition: none;
     }
 }
-
 
 /* =========================================
    SHRIMPGUARD LOGIN PAGE
@@ -9775,6 +9526,7 @@ nav a {
     border: 1px solid #edf1ee;
     border-radius: 12px;
     background: #fcfdfc;
+    cursor: crosshair;
 }
 
 .monitoring-page #trend-chart {
@@ -9782,6 +9534,152 @@ nav a {
     width: 100%;
     max-width: 100%;
     height: 100%;
+}
+
+/* Water Quality Trends Interactive Hover Tooltip */
+.monitoring-chart-tooltip {
+    position: absolute;
+    z-index: 60;
+    pointer-events: none;
+    box-sizing: border-box;
+    width: 250px;
+    padding: 10px 13px;
+    border: 1px solid #dce4de;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 12px 30px rgba(18, 107, 79, 0.14),
+                0 3px 8px rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    font-family: inherit;
+    font-size: 11.5px;
+    color: #1f3326;
+    opacity: 0;
+    transform: translateY(3px);
+    transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.monitoring-chart-tooltip.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.monitoring-chart-tooltip .tooltip-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding-bottom: 7px;
+    border-bottom: 1px solid #edf2ee;
+}
+
+.monitoring-chart-tooltip .tooltip-time-badge {
+    color: #69786f;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.monitoring-chart-tooltip .tooltip-status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-size: 9.5px;
+    font-weight: 750;
+    letter-spacing: 0.2px;
+}
+
+.monitoring-chart-tooltip .tooltip-status-pill.pill-good {
+    background: #eaf6ef;
+    color: #126b4f;
+    border: 1px solid #cce8d7;
+}
+
+.monitoring-chart-tooltip .tooltip-status-pill.pill-warn {
+    background: #fff4e5;
+    color: #b45309;
+    border: 1px solid #fde68a;
+}
+
+.monitoring-chart-tooltip .tooltip-content {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.monitoring-chart-tooltip .tooltip-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 5px 6px;
+    border-radius: 7px;
+    border: 1px solid transparent;
+    transition: background-color 140ms ease, border-color 140ms ease;
+}
+
+.monitoring-chart-tooltip .tooltip-item-focused {
+    background: #f4f8f5;
+    border-color: #dbe8df;
+}
+
+.monitoring-chart-tooltip .tooltip-item-left {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.monitoring-chart-tooltip .tooltip-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.monitoring-chart-tooltip .tooltip-param-label {
+    color: #495a50;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.monitoring-chart-tooltip .tooltip-item-right {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.monitoring-chart-tooltip .tooltip-param-value {
+    color: #172b1f;
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.monitoring-chart-tooltip .tooltip-param-status {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 5px;
+    font-size: 9.5px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.monitoring-chart-tooltip .tooltip-param-status.status-optimal {
+    background: #e8f5ee;
+    color: #126b4f;
+    border: 1px solid #bce1cd;
+}
+
+.monitoring-chart-tooltip .tooltip-param-status.status-warning {
+    background: #fff8eb;
+    color: #b45309;
+    border: 1px solid #fde68a;
+}
+
+.monitoring-chart-tooltip .tooltip-param-status.status-critical {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
 }
 
 .monitoring-page #chart-empty {
@@ -9829,11 +9727,11 @@ nav a {
 }
 
 .monitoring-page .monitoring-chart-legend .legend-temperature {
-    background: #d99a54;
+    background: #2f6fbd;
 }
 
 .monitoring-page .monitoring-chart-legend .legend-ph {
-    background: #5489d5;
+    background: #2f8a57;
 }
 
 /* AI RECOMMENDATIONS */
