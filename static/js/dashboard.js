@@ -41,8 +41,26 @@ async function saveReading(data) {
 
 
 function updateDeviceTime() {
-    document.getElementById("time").textContent =
-        new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    const timeEl = document.getElementById("time");
+    if (timeEl) {
+        timeEl.textContent =
+            new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    }
+}
+
+
+function updateGreeting() {
+    const greetingEl = document.getElementById("dashboard-greeting");
+    if (!greetingEl) return;
+    const hour = new Date().getHours();
+    let timeGreeting = "Good evening";
+    if (hour >= 5 && hour < 12) {
+        timeGreeting = "Good morning";
+    } else if (hour >= 12 && hour < 18) {
+        timeGreeting = "Good afternoon";
+    }
+    const userName = greetingEl.dataset.userName || "Admin";
+    greetingEl.textContent = `${timeGreeting}, ${userName}!`;
 }
 
 
@@ -212,6 +230,12 @@ async function loadLatestReading() {
         document.getElementById("overall-status").textContent = "Unable to load sensor data. Please refresh or retry.";
     }
 }
+
+updateDeviceTime();
+setInterval(updateDeviceTime, 1000);
+
+updateGreeting();
+setInterval(updateGreeting, 60000);
 
 loadLatestReading();
 setInterval(loadLatestReading, 10000);

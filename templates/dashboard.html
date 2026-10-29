@@ -111,7 +111,7 @@
                     AQUACULTURE MONITORING
                 </div>
 
-                <h1>Good morning, Admin!</h1>
+                <h1 id="dashboard-greeting" data-user-name="{{ user.name if user and user.name else (user.user_name if user and user.user_name else 'Admin') }}">{{ greeting or 'Good day' }}, {{ user.name if user and user.name else (user.user_name if user and user.user_name else 'Admin') }}!</h1>
 
                 <p>
                     Here's an overview of your shrimp farm's water quality.

@@ -89,6 +89,10 @@ class User(db.Model):
     status = db.Column(db.String(20), nullable=False, default="Active")
     last_login = db.Column(db.DateTime, nullable=True)
 
+    @property
+    def name(self):
+        return self.user_name
+
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
@@ -412,7 +416,16 @@ def landing():
 @app.route("/dashboard")
 @role_required("Client")
 def dashboard():
-    return render_template("dashboard.html")
+    user_email = session.get("user_id")
+    user = db.session.get(User, user_email) if user_email else None
+    hour = datetime.now().hour
+    if 5 <= hour < 12:
+        greeting = "Good morning"
+    elif 12 <= hour < 18:
+        greeting = "Good afternoon"
+    else:
+        greeting = "Good evening"
+    return render_template("dashboard.html", user=user, greeting=greeting)
 
 
 @app.route("/admin")
