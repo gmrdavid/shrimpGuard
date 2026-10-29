@@ -1,11 +1,11 @@
 -- ShrimpGuard MySQL schema
 -- Import this file with a MySQL account that can create databases.
 
-CREATE DATABASE IF NOT EXISTS shrimpguard_users
+CREATE DATABASE IF NOT EXISTS shrimpguard
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
 
-USE shrimpguard_users;
+USE shrimpguard;
 
 CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(80) NOT NULL,
