@@ -45,6 +45,7 @@ app.config["SECRET_KEY"] = load_secret_key()
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=30)
 app.config["SESSION_REFRESH_EACH_REQUEST"] = True
 
+
 def get_database_uri():
     configured_database_url = os.getenv("DATABASE_URL")
     if configured_database_url:
@@ -67,71 +68,19 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
 
 db = SQLAlchemy(app)
 
+# --- TABLE 1: SENSORS ---
 sensor_readings = db.Table(
     "sensors",
     db.metadata,
     db.Column("ph_level", db.Float, nullable=False),
     db.Column("temperature", db.Float, nullable=False),
-    db.Column("date", db.String(45), nullable=False),
+    db.Column("date", db.String(45), primary_key=True, nullable=False),
     db.Column("status", db.String(45), nullable=False),
-    schema=(
-        None
-        if str(app.config["SQLALCHEMY_DATABASE_URI"]).startswith("sqlite")
-        else "shrimpguard_users"
-    ),
 )
 
-
-@app.context_processor
-def inject_logout_csrf_token():
-    if session.get("user_id") is None:
-        return {"logout_csrf_token": ""}
-    return {
-        "logout_csrf_token": session.setdefault(
-            "logout_csrf_token", secrets.token_urlsafe(32)
-        )
-    }
-
-
-def table_args_for_schema(schema_name):
-    database_url = str(app.config["SQLALCHEMY_DATABASE_URI"])
-    if database_url.startswith("sqlite"):
-        return {}
-    return {"schema": schema_name}
-
-
-def serialize_sensor_reading(reading):
-    return {
-        "temperature": reading["temperature"],
-        "ph": reading["ph_level"],
-        "recorded_at": reading["date"],
-        "status": reading["status"],
-    }
-
-
-class AlertLog(db.Model):
-    __tablename__ = "alert_logs"
-    __table_args__ = table_args_for_schema("shrimpguard_sensors")
-
-    id = db.Column(db.Integer, primary_key=True)
-    alert_type = db.Column(db.String(100), nullable=False)
-    severity = db.Column(db.String(50), nullable=False)
-    message = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "alert_type": self.alert_type,
-            "severity": self.severity,
-            "message": self.message,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-        }
-
-
+# --- TABLE 2: USERS ---
 class User(db.Model):
     __tablename__ = "users"
-    __table_args__ = table_args_for_schema("shrimpguard_users")
 
     email = db.Column(db.String(255), primary_key=True)
     user_name = db.Column("name", db.String(80), nullable=False, unique=True)
@@ -150,6 +99,26 @@ class User(db.Model):
 
     def password_needs_rehash(self):
         return not self.password_hash.startswith(("scrypt:", "pbkdf2:"))
+
+
+@app.context_processor
+def inject_logout_csrf_token():
+    if session.get("user_id") is None:
+        return {"logout_csrf_token": ""}
+    return {
+        "logout_csrf_token": session.setdefault(
+            "logout_csrf_token", secrets.token_urlsafe(32)
+        )
+    }
+
+
+def serialize_sensor_reading(reading):
+    return {
+        "temperature": reading["temperature"],
+        "ph": reading["ph_level"],
+        "recorded_at": reading["date"],
+        "status": reading["status"],
+    }
 
 
 def role_required(required_role):
@@ -443,11 +412,6 @@ def landing():
 @app.route("/dashboard")
 @role_required("Client")
 def dashboard():
-    try:
-        with db.engine.connect() as connection:
-            connection.execute(text("SELECT 1"))
-    except Exception:
-        pass
     return render_template("dashboard.html")
 
 
@@ -455,8 +419,6 @@ def dashboard():
 @role_required("Admin")
 def admin_dashboard():
     try:
-        with db.engine.connect() as connection:
-            connection.execute(text("SELECT 1"))
         users = User.query.order_by(User.email.asc()).all()
         active_users = sum(user.status.strip().casefold() == "active" for user in users)
         inactive_users = sum(user.status.strip().casefold() == "inactive" for user in users)
@@ -581,8 +543,6 @@ def edit_user():
 @role_required("Admin")
 def admin_home():
     try:
-        with db.engine.connect() as connection:
-            connection.execute(text("SELECT 1"))
         users = User.query.all()
         total_users = len(users)
         active_users = sum(user.status.strip().casefold() == "active" for user in users)
