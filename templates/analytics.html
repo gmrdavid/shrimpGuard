@@ -12,59 +12,90 @@
 <body class="analytics-page">
 {% include "_icon_sprite.html" %}
 
+
+<!-- SIDEBAR -->
 <aside class="sidebar analytics-sidebar">
-            <a href="/" class="logo dashboard-logo" aria-label="ShrimpGuard dashboard">
-            <span class="dashboard-logo-mark">
-                <svg class="ui-icon brand-icon" aria-hidden="true">
+
+    <a href="/" class="logo dashboard-logo" aria-label="ShrimpGuard dashboard">
+        <span class="dashboard-logo-mark">
+            <svg class="ui-icon brand-icon" aria-hidden="true">
+                <use href="#icon-shrimp"></use>
+            </svg>
+        </span>
+        <span>ShrimpGuard</span>
+    </a>
+
+    <p class="subtitle">Water Quality Monitoring</p>
+
+    <div class="sidebar-section-label">MAIN MENU</div>
+
+    <nav class="dashboard-nav" aria-label="Main navigation">
+
+        <a href="/">
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-dashboard"></use>
+            </svg>
+            <span>Dashboard</span>
+        </a>
+
+        <a href="/monitoring">
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-monitor"></use>
+            </svg>
+            <span>Real-time Monitoring</span>
+        </a>
+
+        <a href="/historical">
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-history"></use>
+            </svg>
+            <span>Historical Data</span>
+        </a>
+
+        <a href="/analytics" class="active" aria-current="page">
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-chart"></use>
+            </svg>
+            <span>Analytics &amp; Reports</span>
+        </a>
+
+        <a href="/alerts">
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-alert"></use>
+            </svg>
+            <span>Alerts and Notifications</span>
+        </a>
+
+        <a href="/settings">
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-settings"></use>
+            </svg>
+            <span>Settings</span>
+        </a>
+
+    </nav>
+
+    <div class="sidebar-bottom">
+
+        <div class="sidebar-help">
+            <span class="sidebar-help-icon">
+                <svg class="ui-icon" aria-hidden="true">
                     <use href="#icon-shrimp"></use>
                 </svg>
             </span>
-            <span>ShrimpGuard</span>
-        </a>
 
-        <p class="subtitle">Water Quality Monitoring</p>
-
-        <div class="sidebar-section-label">MAIN MENU</div>
-
-    <nav>
-        <a href="/">
-            <svg class="ui-icon"><use href="#icon-dashboard"></use></svg>
-            <span>Dashboard</span>
-        </a>
-        <a href="/monitoring">
-            <svg class="ui-icon"><use href="#icon-monitor"></use></svg>
-            <span>Real-time Monitoring</span>
-        </a>
-        <a href="/historical">
-            <svg class="ui-icon"><use href="#icon-history"></use></svg>
-            <span>Historical Data</span>
-        </a>
-        <a href="/analytics" class="active" aria-current="page">
-            <svg class="ui-icon"><use href="#icon-chart"></use></svg>
-            <span>Analytics &amp; Reports</span>
-        </a>
-        <a href="/alerts">
-            <svg class="ui-icon"><use href="#icon-alert"></use></svg>
-            <span>Alerts and Notifications</span>
-        </a>
-        <a href="/settings">
-            <svg class="ui-icon"><use href="#icon-settings"></use></svg>
-            <span>Settings</span>
-        </a>
-    </nav>
-
-    {% include "adminlogout.html" %}
-
-    <div class="analytics-sidebar-note">
-        <span class="analytics-sidebar-note-icon">
-            <svg class="ui-icon"><use href="#icon-shrimp"></use></svg>
-        </span>
-        <div>
-            <strong>Farm monitoring</strong>
-            <p>Track water conditions and review actionable insights.</p>
+            <div>
+                <strong>Farm monitoring</strong>
+                <p>Track water conditions and review actionable insights.</p>
+            </div>
         </div>
+
+        {% include "adminlogout.html" %}
+
     </div>
+
 </aside>
+
 
 <main class="main-content analytics-main">
     <header class="analytics-header">
