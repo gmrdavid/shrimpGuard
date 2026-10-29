@@ -28,34 +28,24 @@ function getQualityStatus(reading) {
 
 function getTemperatureStatus(temperature) {
     const temp = Number(temperature);
-    if (temp < 24) {
-        return { label: "Critically Low", level: "critical", badgeClass: "status-critical" };
+    // ML model ranges: <= 25 or > 32 is Critical; 25 < temp < 28 is Warning; 28 <= temp <= 32 is Optimal
+    if (temp <= 25.0 || temp > 32.0) {
+        return { label: "Critical", level: "critical", badgeClass: "status-critical" };
     }
-    if (temp < 26) {
-        return { label: "Too Cold", level: "warning", badgeClass: "status-warning" };
-    }
-    if (temp > 34) {
-        return { label: "Critically High", level: "critical", badgeClass: "status-critical" };
-    }
-    if (temp > 32) {
-        return { label: "Too Hot", level: "warning", badgeClass: "status-warning" };
+    if (temp < 28.0) {
+        return { label: "Warning", level: "warning", badgeClass: "status-warning" };
     }
     return { label: "Optimal", level: "optimal", badgeClass: "status-optimal" };
 }
 
 function getPhStatus(phLevel) {
     const ph = Number(phLevel);
-    if (ph < 7.0) {
-        return { label: "Critically Acidic", level: "critical", badgeClass: "status-critical" };
+    // ML model ranges: <= 6.49 or > 9.0 is Critical; 6.50-7.49 or 8.51-9.0 is Warning; 7.50-8.50 is Optimal
+    if (ph <= 6.49 || ph > 9.0) {
+        return { label: "Critical", level: "critical", badgeClass: "status-critical" };
     }
-    if (ph < 7.5) {
-        return { label: "Too Acidic", level: "warning", badgeClass: "status-warning" };
-    }
-    if (ph > 9.0) {
-        return { label: "Critically Alkaline", level: "critical", badgeClass: "status-critical" };
-    }
-    if (ph > 8.5) {
-        return { label: "Too Alkaline", level: "warning", badgeClass: "status-warning" };
+    if (ph < 7.5 || ph > 8.5) {
+        return { label: "Warning", level: "warning", badgeClass: "status-warning" };
     }
     return { label: "Optimal", level: "optimal", badgeClass: "status-optimal" };
 }
@@ -205,7 +195,17 @@ function renderTooltip(reading, index, pointX, mouseY, focusedParam, containerWi
     const tempStatus = getTemperatureStatus(tempVal);
     const phStatus = getPhStatus(phVal);
     const overallStatus = getQualityStatus(reading);
-    const isGood = overallStatus.toLowerCase().includes("good");
+    const statusLower = overallStatus.toLowerCase();
+    const pillClass = statusLower.includes("critical")
+        ? "pill-critical"
+        : statusLower.includes("warning")
+        ? "pill-warning"
+        : "pill-optimal";
+    const statusLabel = statusLower.includes("critical")
+        ? "Critical"
+        : statusLower.includes("warning")
+        ? "Warning"
+        : "Optimal";
 
     const dateObj = reading.recorded_at ? new Date(reading.recorded_at) : null;
     const timeDisplay = dateObj && !isNaN(dateObj)
@@ -218,8 +218,8 @@ function renderTooltip(reading, index, pointX, mouseY, focusedParam, containerWi
     tooltip.innerHTML = `
         <div class="tooltip-header">
             <span class="tooltip-time-badge">${dateDisplay ? dateDisplay + ' • ' : ''}${timeDisplay}</span>
-            <span class="tooltip-status-pill ${isGood ? 'pill-good' : 'pill-warn'}">
-                ${isGood ? '✓ Optimal Quality' : '! Needs Attention'}
+            <span class="tooltip-status-pill ${pillClass}">
+                ${statusLabel}
             </span>
         </div>
         <div class="tooltip-content">

@@ -379,6 +379,89 @@
 
                 </div>
 
+                <div class="historical-table-toolbar">
+
+                    <div class="historical-limit-wrap">
+                        <label for="table-limit-select" class="historical-limit-label">Show:</label>
+                        <select id="table-limit-select" class="historical-limit-select" aria-label="Readings per page">
+                            <option value="5">5 rows</option>
+                            <option value="10" selected>10 rows</option>
+                            <option value="25">25 rows</option>
+                            <option value="50">50 rows</option>
+                            <option value="all">All rows</option>
+                        </select>
+                    </div>
+
+                    <!-- FILTER DATE BUTTON & POPUP CALENDAR -->
+                    <div class="calendar-picker-anchor">
+                        <button id="filter-date-btn" class="historical-toolbar-btn" type="button" aria-expanded="false" aria-haspopup="dialog" aria-label="Filter by date calendar" title="Select a date to filter readings">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg>
+                            <span id="filter-date-text">Filter Date: All</span>
+                            <span class="toolbar-arrow">▾</span>
+                        </button>
+
+                        <div id="calendar-popup" class="calendar-popup" hidden style="display: none;" role="dialog" aria-label="Readings Date Picker">
+                            <div class="calendar-popup-header">
+                                <button type="button" id="cal-prev-month" class="cal-nav-btn" aria-label="Previous month">‹</button>
+                                <span id="cal-month-title" class="cal-month-title">October 2026</span>
+                                <button type="button" id="cal-next-month" class="cal-nav-btn" aria-label="Next month">›</button>
+                            </div>
+
+                            <div class="calendar-weekdays">
+                                <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+                            </div>
+
+                            <div id="calendar-days-grid" class="calendar-days-grid"></div>
+
+                            <div class="calendar-popup-footer">
+                                <div class="calendar-legend">
+                                    <span class="cal-legend-item">
+                                        <span class="cal-dot cal-dot-green"></span> With readings
+                                    </span>
+                                    <span class="cal-legend-item">
+                                        <span class="cal-dot cal-dot-red"></span> No readings
+                                    </span>
+                                </div>
+                                <button type="button" id="cal-clear-btn" class="cal-clear-btn">Show All Dates</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FILTER STATUS DROPDOWN -->
+                    <div class="status-picker-anchor">
+                        <button id="filter-status-btn" class="historical-toolbar-btn" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="Filter by status" title="Filter by status">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
+                            <span id="filter-status-text">Status: All</span>
+                            <span class="toolbar-arrow">▾</span>
+                        </button>
+
+                        <div id="status-dropdown-menu" class="status-dropdown-menu" hidden style="display: none;" role="menu">
+                            <button type="button" class="status-menu-item active" data-status="all" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> All Statuses
+                            </button>
+                            <button type="button" class="status-menu-item" data-status="optimal" role="menuitem">
+                                <span class="status-menu-dot dot-optimal"></span> Optimal
+                            </button>
+                            <button type="button" class="status-menu-item" data-status="warning" role="menuitem">
+                                <span class="status-menu-dot dot-warning"></span> Warning
+                            </button>
+                            <button type="button" class="status-menu-item" data-status="critical" role="menuitem">
+                                <span class="status-menu-dot dot-critical"></span> Critical
+                            </button>
+                        </div>
+                    </div>
+
+                    <button id="table-export-button" class="historical-toolbar-btn historical-download-btn" type="button" aria-label="Download readings in Excel format" title="Export to Excel (.xlsx)">
+                        <svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 3v12"></path>
+                            <path d="m7 10 5 5 5-5"></path>
+                            <path d="M5 17v4h14v-4"></path>
+                        </svg>
+                        <span>Download Excel</span>
+                    </button>
+
+                </div>
+
             </div>
 
             <p id="demo-data-note"
@@ -411,12 +494,19 @@
 
             </div>
 
-            <nav
-                id="readings-pagination"
-                class="readings-pagination historical-pagination"
-                aria-label="Historical readings pages"
-                hidden>
-            </nav>
+            <div class="historical-table-footer">
+
+                <span id="table-page-info" class="table-page-info" aria-live="polite">
+                    Showing 0 readings
+                </span>
+
+                <nav
+                    id="readings-pagination"
+                    class="readings-pagination historical-pagination"
+                    aria-label="Historical readings pages">
+                </nav>
+
+            </div>
 
         </section>
 

@@ -9155,17 +9155,28 @@ nav a {
 }
 
 .historical-chart-tooltip .tooltip-status-pill.pill-good,
-.monitoring-chart-tooltip .tooltip-status-pill.pill-good {
+.monitoring-chart-tooltip .tooltip-status-pill.pill-good,
+.historical-chart-tooltip .tooltip-status-pill.pill-optimal,
+.monitoring-chart-tooltip .tooltip-status-pill.pill-optimal {
     background: #eaf6ef;
     color: #126b4f;
     border: 1px solid #cce8d7;
 }
 
 .historical-chart-tooltip .tooltip-status-pill.pill-warn,
-.monitoring-chart-tooltip .tooltip-status-pill.pill-warn {
+.monitoring-chart-tooltip .tooltip-status-pill.pill-warn,
+.historical-chart-tooltip .tooltip-status-pill.pill-warning,
+.monitoring-chart-tooltip .tooltip-status-pill.pill-warning {
     background: #fff4e5;
     color: #b45309;
     border: 1px solid #fde68a;
+}
+
+.historical-chart-tooltip .tooltip-status-pill.pill-critical,
+.monitoring-chart-tooltip .tooltip-status-pill.pill-critical {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
 }
 
 .historical-chart-tooltip .tooltip-content,
@@ -15979,4 +15990,469 @@ nav a {
     border-color: var(--dash-green);
     color: #ffffff;
     cursor: default;
+}
+
+/* =========================================
+   HISTORICAL READINGS TABLE CONTROLS & TOOLBAR
+   ========================================= */
+
+.historical-page .historical-table-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.historical-page .historical-limit-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-right: 4px;
+}
+
+.historical-page .historical-limit-label {
+    color: #61776a;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.historical-page .historical-limit-select {
+    height: 34px;
+    padding: 0 26px 0 10px;
+    border: 1px solid #dce7df;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #334e3d;
+    font-size: 11px;
+    font-weight: 650;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.historical-page .historical-limit-select:focus {
+    border-color: #24744d;
+    box-shadow: 0 0 0 3px rgba(36, 116, 77, 0.12);
+}
+
+.historical-page .historical-toolbar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 34px;
+    padding: 6px 12px;
+    border: 1px solid #dce7df;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #334e3d;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 150ms ease;
+    text-decoration: none;
+    box-shadow: 0 1px 3px rgba(20, 61, 52, 0.05);
+}
+
+.historical-page .historical-toolbar-btn:hover {
+    border-color: #24744d;
+    background: #f0f7f3;
+    color: #143d34;
+    transform: translateY(-1px);
+}
+
+.historical-page .historical-toolbar-btn .sort-arrow {
+    font-size: 12px;
+    font-weight: 800;
+    color: #24744d;
+}
+
+.historical-page .historical-toolbar-btn.historical-download-btn {
+    background: #1b5145 !important;
+    border-color: #1b5145 !important;
+    color: #ffffff !important;
+    box-shadow: 0 3px 10px rgba(27, 81, 69, 0.18);
+}
+
+.historical-page .historical-toolbar-btn.historical-download-btn:hover {
+    background: #143d34 !important;
+    border-color: #143d34 !important;
+    color: #ffffff !important;
+    box-shadow: 0 5px 14px rgba(20, 61, 52, 0.25);
+}
+
+.historical-page .historical-toolbar-btn.historical-download-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Sortable Table Headers */
+.historical-page .historical-table th.sortable-header {
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 150ms ease, color 150ms ease;
+}
+
+.historical-page .historical-table th.sortable-header:hover {
+    background: #eaf3ed;
+    color: #1b5145;
+}
+
+.historical-page .th-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.historical-page .th-sort-icon {
+    font-size: 11px;
+    font-weight: 800;
+    color: #24744d;
+}
+
+/* Historical Table Footer & Pagination */
+.historical-page .historical-table-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 18px;
+    padding-top: 6px;
+}
+
+.historical-page .table-page-info {
+    color: #69786f;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+@media (max-width: 860px) {
+    .historical-page .historical-records-heading {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+
+    .historical-page .historical-table-toolbar {
+        justify-content: flex-start;
+    }
+}
+
+/* =========================================
+   HISTORICAL FILTER DATE CALENDAR & STATUS DROPDOWN
+   ========================================= */
+
+.historical-page .calendar-picker-anchor,
+.historical-page .status-picker-anchor {
+    position: relative;
+    display: inline-block;
+}
+
+.historical-page .historical-toolbar-btn .toolbar-arrow {
+    display: inline-block;
+    font-size: 11px;
+    margin-left: 2px;
+    color: #61776a;
+    transition: transform 150ms ease;
+}
+
+.historical-page .historical-toolbar-btn[aria-expanded="true"] .toolbar-arrow {
+    transform: rotate(180deg);
+}
+
+/* Calendar Popup */
+.historical-page .calendar-popup[hidden] {
+    display: none !important;
+}
+
+.historical-page .calendar-popup {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 290px;
+    background: #ffffff;
+    border: 1px solid #dce7df;
+    border-radius: 14px;
+    box-shadow: 0 12px 30px -4px rgba(20, 61, 52, 0.18), 0 4px 12px -2px rgba(20, 61, 52, 0.08);
+    padding: 14px;
+    z-index: 100;
+    animation: histFadeDown 150ms ease-out;
+}
+
+@keyframes histFadeDown {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.historical-page .calendar-popup-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding: 0 2px;
+}
+
+.historical-page .cal-month-title {
+    font-size: 13px;
+    font-weight: 750;
+    color: #143d34;
+    letter-spacing: -0.01em;
+}
+
+.historical-page .cal-nav-btn {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #dce7df;
+    border-radius: 7px;
+    background: #f7faf8;
+    color: #1b5145;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 120ms ease;
+    padding: 0;
+    line-height: 1;
+}
+
+.historical-page .cal-nav-btn:hover {
+    background: #eaf5ee;
+    border-color: #24744d;
+    color: #143d34;
+}
+
+.historical-page .calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    gap: 4px;
+    margin-bottom: 6px;
+}
+
+.historical-page .calendar-weekdays span {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #889e92;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 2px 0;
+}
+
+.historical-page .calendar-days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+
+.historical-page .cal-day-empty {
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: #cbd5e1;
+    opacity: 0.35;
+    user-select: none;
+}
+
+.historical-page .cal-day-btn {
+    position: relative;
+    height: 34px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    background: transparent;
+    cursor: pointer;
+    transition: all 120ms ease;
+    padding: 2px;
+}
+
+.historical-page .cal-day-btn:hover {
+    background: #eaf5ee;
+    border-color: #bad3c3;
+}
+
+.historical-page .cal-day-btn.selected {
+    background: #1b5145 !important;
+    border-color: #1b5145 !important;
+}
+
+.historical-page .cal-day-btn.selected .cal-day-num {
+    color: #ffffff !important;
+    font-weight: 800;
+}
+
+.historical-page .cal-day-num {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #213529;
+    line-height: 1;
+}
+
+.historical-page .cal-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    margin-top: 3px;
+    display: inline-block;
+}
+
+.historical-page .cal-dot-green {
+    background-color: #16a34a;
+    box-shadow: 0 0 0 1.5px #dcfce7;
+}
+
+.historical-page .cal-dot-red {
+    background-color: #dc2626;
+    box-shadow: 0 0 0 1.5px #fee2e2;
+}
+
+.historical-page .cal-day-btn.selected .cal-dot-green {
+    box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.4);
+}
+
+.historical-page .cal-day-btn.selected .cal-dot-red {
+    box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.4);
+}
+
+.historical-page .calendar-popup-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #eef3ef;
+}
+
+.historical-page .calendar-legend {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    font-size: 10.5px;
+    color: #526b5d;
+    font-weight: 600;
+    padding: 0 4px;
+}
+
+.historical-page .cal-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.historical-page .cal-legend-item .cal-dot {
+    margin: 0;
+    width: 6px;
+    height: 6px;
+}
+
+.historical-page .cal-clear-btn {
+    width: 100%;
+    padding: 7px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #1b5145;
+    background: #eaf6ef;
+    border: 1px solid #bad3c3;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 150ms ease;
+}
+
+.historical-page .cal-clear-btn:hover {
+    background: #d7ebe0;
+    border-color: #1b5145;
+    color: #143d34;
+}
+
+.historical-page .cal-clear-btn.active {
+    background: #1b5145;
+    border-color: #1b5145;
+    color: #ffffff;
+}
+
+/* Status Dropdown Menu */
+.historical-page .status-dropdown-menu[hidden] {
+    display: none !important;
+}
+
+.historical-page .status-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 165px;
+    background: #ffffff;
+    border: 1px solid #dce7df;
+    border-radius: 12px;
+    box-shadow: 0 12px 30px -4px rgba(20, 61, 52, 0.18), 0 4px 12px -2px rgba(20, 61, 52, 0.08);
+    padding: 6px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    animation: histFadeDown 150ms ease-out;
+}
+
+.historical-page .status-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 7px 10px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: #334e3d;
+    font-size: 11px;
+    font-weight: 650;
+    text-align: left;
+    cursor: pointer;
+    transition: all 120ms ease;
+}
+
+.historical-page .status-menu-item:hover {
+    background: #f0f7f3;
+    color: #143d34;
+}
+
+.historical-page .status-menu-item.active {
+    background: #eaf6ef;
+    color: #1b5145;
+    font-weight: 800;
+}
+
+.historical-page .status-menu-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.historical-page .status-menu-dot.dot-all {
+    background: #94a3b8;
+}
+
+.historical-page .status-menu-dot.dot-optimal {
+    background: #16a34a;
+}
+
+.historical-page .status-menu-dot.dot-warning {
+    background: #eab308;
+}
+
+.historical-page .status-menu-dot.dot-critical {
+    background: #dc2626;
 }

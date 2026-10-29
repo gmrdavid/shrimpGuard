@@ -1,6 +1,11 @@
 let sensorHistory = [];
 let historyPage = 1;
-const readingsPerPage = 10;
+let readingsPerPage = "10";
+let tableFilterDate = null; // null or 'YYYY-MM-DD'
+let tableFilterStatus = "all"; // 'all', 'optimal', 'warning', 'critical'
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let calInitialized = false;
 const parameterLabels = {
     temperature: "Temperature",
     ph: "pH Level"
@@ -37,34 +42,24 @@ function statusFor(reading) {
 
 function getTemperatureStatus(temperature) {
     const temp = Number(temperature);
-    if (temp < 24) {
-        return { label: "Critically Low", level: "critical", badgeClass: "status-critical" };
+    // ML model ranges: <= 25 or > 32 is Critical; 25 < temp < 28 is Warning; 28 <= temp <= 32 is Optimal
+    if (temp <= 25.0 || temp > 32.0) {
+        return { label: "Critical", level: "critical", badgeClass: "status-critical" };
     }
-    if (temp < 26) {
-        return { label: "Too Cold", level: "warning", badgeClass: "status-warning" };
-    }
-    if (temp > 34) {
-        return { label: "Critically High", level: "critical", badgeClass: "status-critical" };
-    }
-    if (temp > 32) {
-        return { label: "Too Hot", level: "warning", badgeClass: "status-warning" };
+    if (temp < 28.0) {
+        return { label: "Warning", level: "warning", badgeClass: "status-warning" };
     }
     return { label: "Optimal", level: "optimal", badgeClass: "status-optimal" };
 }
 
 function getPhStatus(phLevel) {
     const ph = Number(phLevel);
-    if (ph < 7.0) {
-        return { label: "Critically Acidic", level: "critical", badgeClass: "status-critical" };
+    // ML model ranges: <= 6.49 or > 9.0 is Critical; 6.50-7.49 or 8.51-9.0 is Warning; 7.50-8.50 is Optimal
+    if (ph <= 6.49 || ph > 9.0) {
+        return { label: "Critical", level: "critical", badgeClass: "status-critical" };
     }
-    if (ph < 7.5) {
-        return { label: "Too Acidic", level: "warning", badgeClass: "status-warning" };
-    }
-    if (ph > 9.0) {
-        return { label: "Critically Alkaline", level: "critical", badgeClass: "status-critical" };
-    }
-    if (ph > 8.5) {
-        return { label: "Too Alkaline", level: "warning", badgeClass: "status-warning" };
+    if (ph < 7.5 || ph > 8.5) {
+        return { label: "Warning", level: "warning", badgeClass: "status-warning" };
     }
     return { label: "Optimal", level: "optimal", badgeClass: "status-optimal" };
 }
@@ -75,7 +70,7 @@ function localDate(reading) {
 }
 
 function filterHistory(history) {
-    const selectedDate = document.getElementById("history-date").value;
+    const selectedDate = tableFilterDate || document.getElementById("history-date").value;
     const interval = document.getElementById("history-interval").value;
     const now = Date.now();
     return history.filter((reading) => {
@@ -221,7 +216,17 @@ function renderHistoricalTooltip(reading, index, pointX, mouseY, focusedParam, c
     const tempStatus = getTemperatureStatus(tempVal);
     const phStatus = getPhStatus(phVal);
     const overallStatus = statusFor(reading);
-    const isGood = overallStatus === "Optimal";
+    const statusLower = overallStatus.toLowerCase();
+    const pillClass = statusLower.includes("critical")
+        ? "pill-critical"
+        : statusLower.includes("warning")
+        ? "pill-warning"
+        : "pill-optimal";
+    const statusLabel = statusLower.includes("critical")
+        ? "Critical"
+        : statusLower.includes("warning")
+        ? "Warning"
+        : "Optimal";
 
     const dateObj = reading.recorded_at ? new Date(reading.recorded_at) : null;
     const timeDisplay = dateObj && !isNaN(dateObj)
@@ -267,8 +272,8 @@ function renderHistoricalTooltip(reading, index, pointX, mouseY, focusedParam, c
     tooltip.innerHTML = `
         <div class="tooltip-header">
             <span class="tooltip-time-badge">${dateDisplay ? dateDisplay + ' • ' : ''}${timeDisplay}</span>
-            <span class="tooltip-status-pill ${isGood ? 'pill-good' : 'pill-warn'}">
-                ${isGood ? '✓ Optimal Quality' : '! Needs Attention'}
+            <span class="tooltip-status-pill ${pillClass}">
+                ${statusLabel}
             </span>
         </div>
         <div class="tooltip-content">
@@ -412,26 +417,304 @@ function updateSummary(history, parameters) {
     reviewStatus.className = attentionCount ? "review-status review-warning" : "review-status";
 }
 
+const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+];
+
+function getDatesWithReadingsSet() {
+    const set = new Set();
+    sensorHistory.forEach((r) => {
+        if (r && r.recorded_at) {
+            set.add(localDate(r));
+        }
+    });
+    return set;
+}
+
+function renderCalendar() {
+    const titleEl = document.getElementById("cal-month-title");
+    const gridEl = document.getElementById("calendar-days-grid");
+    if (!titleEl || !gridEl) return;
+
+    titleEl.textContent = `${monthNames[calMonth]} ${calYear}`;
+    gridEl.innerHTML = "";
+
+    const datesWithReadings = getDatesWithReadingsSet();
+
+    const firstDayIndex = new Date(calYear, calMonth, 1).getDay();
+    const totalDays = new Date(calYear, calMonth + 1, 0).getDate();
+    const prevMonthDays = new Date(calYear, calMonth, 0).getDate();
+
+    for (let i = firstDayIndex - 1; i >= 0; i--) {
+        const filler = document.createElement("div");
+        filler.className = "cal-day cal-day-empty";
+        filler.textContent = String(prevMonthDays - i);
+        gridEl.appendChild(filler);
+    }
+
+    for (let day = 1; day <= totalDays; day++) {
+        const dayStr = `${calYear}-${String(calMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+        const hasData = datesWithReadings.has(dayStr);
+        const isSelected = tableFilterDate === dayStr;
+
+        const dayBtn = document.createElement("button");
+        dayBtn.type = "button";
+        dayBtn.className = `cal-day-btn ${hasData ? "has-data" : "no-data"}${isSelected ? " selected" : ""}`;
+        dayBtn.setAttribute("data-date", dayStr);
+        dayBtn.setAttribute("title", `${dayStr}: ${hasData ? "Readings available" : "No readings"}`);
+
+        const dayNum = document.createElement("span");
+        dayNum.className = "cal-day-num";
+        dayNum.textContent = String(day);
+
+        const dot = document.createElement("span");
+        dot.className = `cal-dot ${hasData ? "cal-dot-green" : "cal-dot-red"}`;
+
+        dayBtn.appendChild(dayNum);
+        dayBtn.appendChild(dot);
+
+        dayBtn.addEventListener("click", () => {
+            selectDateFilter(dayStr);
+        });
+
+        gridEl.appendChild(dayBtn);
+    }
+}
+
+function selectDateFilter(dateStr) {
+    if (tableFilterDate === dateStr) {
+        tableFilterDate = null;
+    } else {
+        tableFilterDate = dateStr;
+    }
+    const historyDateInput = document.getElementById("history-date");
+    if (historyDateInput) {
+        historyDateInput.value = tableFilterDate || "";
+    }
+    updateDateFilterUI();
+    closeCalendarPopup();
+    historyPage = 1;
+    applyFilters();
+}
+
+function updateDateFilterUI() {
+    const textEl = document.getElementById("filter-date-text");
+    const clearBtn = document.getElementById("cal-clear-btn");
+    if (!textEl) return;
+
+    if (!tableFilterDate) {
+        textEl.textContent = "Filter Date: All";
+        if (clearBtn) clearBtn.classList.remove("active");
+    } else {
+        const parts = tableFilterDate.split("-");
+        const y = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10) - 1;
+        const d = parseInt(parts[2], 10);
+        const dateObj = new Date(y, m, d);
+        const formatted = isNaN(dateObj.getTime())
+            ? tableFilterDate
+            : dateObj.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+        textEl.textContent = `Date: ${formatted}`;
+        if (clearBtn) clearBtn.classList.add("active");
+    }
+    renderCalendar();
+}
+
+function clearDateFilter() {
+    tableFilterDate = null;
+    const historyDateInput = document.getElementById("history-date");
+    if (historyDateInput) historyDateInput.value = "";
+    updateDateFilterUI();
+    closeCalendarPopup();
+    historyPage = 1;
+    applyFilters();
+}
+
+function prevMonth() {
+    calMonth--;
+    if (calMonth < 0) {
+        calMonth = 11;
+        calYear--;
+    }
+    renderCalendar();
+}
+
+function nextMonth() {
+    calMonth++;
+    if (calMonth > 11) {
+        calMonth = 0;
+        calYear++;
+    }
+    renderCalendar();
+}
+
+function selectStatusFilter(status) {
+    tableFilterStatus = String(status).toLowerCase();
+    const textEl = document.getElementById("filter-status-text");
+    if (textEl) {
+        const labels = {
+            all: "Status: All",
+            optimal: "Status: Optimal",
+            warning: "Status: Warning",
+            critical: "Status: Critical",
+        };
+        textEl.textContent = labels[tableFilterStatus] || "Status: All";
+    }
+
+    const items = document.querySelectorAll(".status-menu-item");
+    items.forEach((btn) => {
+        if (btn.getAttribute("data-status") === tableFilterStatus) {
+            btn.classList.add("active");
+        } else {
+            btn.classList.remove("active");
+        }
+    });
+
+    closeStatusDropdown();
+    historyPage = 1;
+    updateTable(currentFilteredHistory);
+}
+
+function openCalendarPopup() {
+    const popup = document.getElementById("calendar-popup");
+    const btn = document.getElementById("filter-date-btn");
+    if (!popup) return;
+    closeStatusDropdown();
+    popup.hidden = false;
+    popup.style.display = "block";
+    if (btn) btn.setAttribute("aria-expanded", "true");
+    renderCalendar();
+}
+
+function closeCalendarPopup() {
+    const popup = document.getElementById("calendar-popup");
+    const btn = document.getElementById("filter-date-btn");
+    if (!popup) return;
+    popup.hidden = true;
+    popup.style.display = "none";
+    if (btn) btn.setAttribute("aria-expanded", "false");
+}
+
+function toggleCalendarPopup() {
+    const popup = document.getElementById("calendar-popup");
+    if (popup && (!popup.hidden && popup.style.display !== "none")) {
+        closeCalendarPopup();
+    } else {
+        openCalendarPopup();
+    }
+}
+
+function openStatusDropdown() {
+    const menu = document.getElementById("status-dropdown-menu");
+    const btn = document.getElementById("filter-status-btn");
+    if (!menu) return;
+    closeCalendarPopup();
+    menu.hidden = false;
+    menu.style.display = "flex";
+    if (btn) btn.setAttribute("aria-expanded", "true");
+}
+
+function closeStatusDropdown() {
+    const menu = document.getElementById("status-dropdown-menu");
+    const btn = document.getElementById("filter-status-btn");
+    if (!menu) return;
+    menu.hidden = true;
+    menu.style.display = "none";
+    if (btn) btn.setAttribute("aria-expanded", "false");
+}
+
+function toggleStatusDropdown() {
+    const menu = document.getElementById("status-dropdown-menu");
+    if (menu && (!menu.hidden && menu.style.display !== "none")) {
+        closeStatusDropdown();
+    } else {
+        openStatusDropdown();
+    }
+}
+
 function updateTable(history) {
     const body = document.getElementById("readings-body");
     const pagination = document.getElementById("readings-pagination");
     const hasDemoData = history.some((reading) => reading.status === "Demo");
-    const sortedHistory = history.slice().reverse();
-    const pageCount = Math.ceil(sortedHistory.length / readingsPerPage);
+
+    let filteredItems = Array.isArray(history) ? history.slice() : [];
+
+    // Table-level date filter
+    if (tableFilterDate) {
+        filteredItems = filteredItems.filter((r) => localDate(r) === tableFilterDate);
+    }
+
+    // Table-level status filter
+    if (tableFilterStatus && tableFilterStatus !== "all") {
+        filteredItems = filteredItems.filter((r) => statusFor(r).toLowerCase() === tableFilterStatus);
+    }
+
+    // Sort by recorded_at descending (newest first)
+    filteredItems.sort((a, b) => new Date(b.recorded_at).getTime() - new Date(a.recorded_at).getTime());
+
+    // 2. Limit and Pagination calculation
+    const total = filteredItems.length;
+    const limit = readingsPerPage === "all" ? Math.max(total, 1) : parseInt(readingsPerPage, 10);
+    const pageCount = Math.ceil(total / limit) || 1;
     historyPage = Math.min(historyPage, Math.max(pageCount, 1));
+    const startIndex = (historyPage - 1) * limit;
+    const endIndex = Math.min(startIndex + limit, total);
+    const pagedItems = filteredItems.slice(startIndex, endIndex);
+
+    // 3. Update table page info text
+    const pageInfoEl = document.getElementById("table-page-info");
+    if (pageInfoEl) {
+        if (total === 0) {
+            pageInfoEl.textContent = "Showing 0 readings";
+        } else if (readingsPerPage === "all") {
+            pageInfoEl.textContent = `Showing all ${total} reading${total === 1 ? "" : "s"}`;
+        } else {
+            pageInfoEl.textContent = `Showing ${startIndex + 1}–${endIndex} of ${total} reading${total === 1 ? "" : "s"}`;
+        }
+    }
+
+    // 4. Update Toolbar indicators
+    const filterDateText = document.getElementById("filter-date-text");
+    if (filterDateText) {
+        if (!tableFilterDate) {
+            filterDateText.textContent = "Filter Date: All";
+        } else {
+            const parts = tableFilterDate.split("-");
+            const y = parseInt(parts[0], 10);
+            const m = parseInt(parts[1], 10) - 1;
+            const d = parseInt(parts[2], 10);
+            const dateObj = new Date(y, m, d);
+            const formatted = isNaN(dateObj.getTime())
+                ? tableFilterDate
+                : dateObj.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+            filterDateText.textContent = `Date: ${formatted}`;
+        }
+    }
+
+    const filterStatusText = document.getElementById("filter-status-text");
+    if (filterStatusText) {
+        const labels = {
+            all: "Status: All",
+            optimal: "Status: Optimal",
+            warning: "Status: Warning",
+            critical: "Status: Critical",
+        };
+        filterStatusText.textContent = labels[tableFilterStatus] || "Status: All";
+    }
+
     document.getElementById("demo-data-note").hidden = !hasDemoData;
-    body.innerHTML = sortedHistory.slice(
-        (historyPage - 1) * readingsPerPage,
-        historyPage * readingsPerPage
-    ).map((reading) => {
+    body.innerHTML = pagedItems.map((reading) => {
         const date = new Date(reading.recorded_at);
         const qualityStatus = statusFor(reading);
-        const isDemo = reading.status === "Demo";
+        const isDemo = reading.status && reading.status.toLowerCase().includes("demo");
         const statusLabel = isDemo ? `Demo · ${qualityStatus}` : qualityStatus;
         const statusClass = isDemo ? "demo" : qualityStatus.toLowerCase();
         return `<tr><td>${date.toLocaleDateString()}</td><td>${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</td><td>${reading.temperature} °C</td><td>${reading.ph}</td><td><span class="table-status ${statusClass}">${statusLabel}</span></td></tr>`;
     }).join("");
-    document.getElementById("table-empty").hidden = history.length > 0;
+    document.getElementById("table-empty").hidden = total > 0;
+
+    // 5. Render Pagination controls
     pagination.replaceChildren();
     pagination.hidden = pageCount <= 1;
     if (pageCount <= 1) return;
@@ -505,10 +788,14 @@ function applyFilters() {
     updateTable(history);
 }
 
-document.getElementById("history-export-button").addEventListener("click", async (event) => {
-    const button = event.currentTarget;
+async function downloadHistoricalExcel(button) {
+    if (!button) return;
+    const originalText = button.querySelector("span") ? button.querySelector("span").textContent : "";
     button.disabled = true;
     button.setAttribute("aria-busy", "true");
+    if (button.querySelector("span")) {
+        button.querySelector("span").textContent = "Exporting...";
+    }
 
     try {
         const response = await fetch("/historical/export");
@@ -540,15 +827,118 @@ document.getElementById("history-export-button").addEventListener("click", async
     } finally {
         button.disabled = sensorHistory.length === 0;
         button.removeAttribute("aria-busy");
+        if (button.querySelector("span")) {
+            button.querySelector("span").textContent = originalText;
+        }
+    }
+}
+
+// Bind Chart and Table export buttons
+const chartExportBtn = document.getElementById("history-export-button");
+if (chartExportBtn) {
+    chartExportBtn.addEventListener("click", (e) => downloadHistoricalExcel(e.currentTarget));
+}
+
+const tableExportBtn = document.getElementById("table-export-button");
+if (tableExportBtn) {
+    tableExportBtn.addEventListener("click", (e) => downloadHistoricalExcel(e.currentTarget));
+}
+
+// Bind Limit selector
+const tableLimitSelect = document.getElementById("table-limit-select");
+if (tableLimitSelect) {
+    tableLimitSelect.addEventListener("change", (e) => {
+        readingsPerPage = e.target.value;
+        historyPage = 1;
+        updateTable(currentFilteredHistory);
+    });
+}
+
+// Bind Date Filter button & Calendar nav
+const filterDateBtn = document.getElementById("filter-date-btn");
+if (filterDateBtn) {
+    filterDateBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleCalendarPopup();
+    });
+}
+
+const calPrevBtn = document.getElementById("cal-prev-month");
+if (calPrevBtn) {
+    calPrevBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        prevMonth();
+    });
+}
+
+const calNextBtn = document.getElementById("cal-next-month");
+if (calNextBtn) {
+    calNextBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        nextMonth();
+    });
+}
+
+const calClearBtn = document.getElementById("cal-clear-btn");
+if (calClearBtn) {
+    calClearBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        clearDateFilter();
+    });
+}
+
+// Bind Status Filter button & Dropdown
+const filterStatusBtn = document.getElementById("filter-status-btn");
+if (filterStatusBtn) {
+    filterStatusBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleStatusDropdown();
+    });
+}
+
+const statusMenuItems = document.querySelectorAll(".status-menu-item");
+statusMenuItems.forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const status = btn.getAttribute("data-status");
+        selectStatusFilter(status);
+    });
+});
+
+// Close popup/dropdown when clicking outside
+document.addEventListener("click", (e) => {
+    const calAnchor = document.querySelector(".calendar-picker-anchor");
+    if (calAnchor && !calAnchor.contains(e.target)) {
+        closeCalendarPopup();
+    }
+    const statusAnchor = document.querySelector(".status-picker-anchor");
+    if (statusAnchor && !statusAnchor.contains(e.target)) {
+        closeStatusDropdown();
     }
 });
 
-document.getElementById("history-filter").addEventListener("submit", (event) => {
-    event.preventDefault();
-    historyPage = 1;
-    applyFilters();
+// Close on Escape key
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+        closeCalendarPopup();
+        closeStatusDropdown();
+    }
 });
 
+// Filter form submit listener
+const historyFilterForm = document.getElementById("history-filter");
+if (historyFilterForm) {
+    historyFilterForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        historyPage = 1;
+        const formDate = document.getElementById("history-date").value;
+        tableFilterDate = formDate || null;
+        updateDateFilterUI();
+        applyFilters();
+    });
+}
+
+// Fetch historical readings from API
 async function loadHistory() {
     try {
         const response = await fetch("/api/readings/history");
@@ -562,23 +952,44 @@ async function loadHistory() {
         }
 
         sensorHistory = history;
+        if (!calInitialized && sensorHistory.length > 0) {
+            const latestDate = new Date(sensorHistory[0].recorded_at);
+            if (!isNaN(latestDate.getTime())) {
+                calYear = latestDate.getFullYear();
+                calMonth = latestDate.getMonth();
+                calInitialized = true;
+            }
+        }
+        renderCalendar();
     } catch (error) {
         console.error("Unable to load saved sensor history:", error);
         sensorHistory = [];
-        document.getElementById("history-count").textContent = "Data unavailable";
-        document.getElementById("history-empty").textContent = "Unable to load sensor data. Please refresh or retry.";
-        document.getElementById("history-empty").hidden = false;
-        document.getElementById("table-empty").textContent = "Unable to load sensor data from the database.";
-        document.getElementById("table-empty").hidden = false;
-        document.getElementById("readings-body").replaceChildren();
-        document.getElementById("readings-pagination").hidden = true;
-        handleHistoricalPointerLeave();
+        const countBadge = document.getElementById("history-count");
+        if (countBadge) countBadge.textContent = "Data unavailable";
+        const historyEmpty = document.getElementById("history-empty");
+        if (historyEmpty) {
+            historyEmpty.textContent = "Unable to load sensor data. Please refresh or retry.";
+            historyEmpty.hidden = false;
+        }
+        const tableEmpty = document.getElementById("table-empty");
+        if (tableEmpty) {
+            tableEmpty.textContent = "Unable to load sensor data from the database.";
+            tableEmpty.hidden = false;
+        }
+        const readingsBody = document.getElementById("readings-body");
+        if (readingsBody) readingsBody.replaceChildren();
+        const paginationNav = document.getElementById("readings-pagination");
+        if (paginationNav) paginationNav.hidden = true;
+        const pageInfo = document.getElementById("table-page-info");
+        if (pageInfo) pageInfo.textContent = "Showing 0 readings";
         return;
     }
 
     applyFilters();
 }
 
+closeCalendarPopup();
+closeStatusDropdown();
 updateDeviceTime();
 setInterval(updateDeviceTime, 1000);
 loadHistory();
