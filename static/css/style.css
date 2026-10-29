@@ -6751,7 +6751,7 @@ nav a {
     display: flex;
     align-items: center;
     gap: 12px;
-    width: 100%;
+    width: 90%;
     min-height: 46px;
     padding: 12px 15px;
     border: 1px solid transparent;
