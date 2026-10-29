@@ -7903,3 +7903,111 @@ nav a {
     }
 }
 
+
+/* =========================================
+   SIGNUP PAGE ENHANCEMENTS
+========================================= */
+
+.signup-shell {
+    padding-top: 35px;
+    padding-bottom: 24px;
+}
+
+.signup-panel {
+    max-width: 470px;
+    padding-top: 31px;
+    padding-bottom: 25px;
+}
+
+.signup-panel .login-brand {
+    margin-bottom: 25px;
+}
+
+.signup-heading {
+    margin-bottom: 23px;
+}
+
+.signup-heading h1 {
+    font-size: clamp(26px, 5vw, 31px);
+}
+
+.signup-form {
+    gap: 16px;
+}
+
+.signup-form .login-field {
+    gap: 7px;
+}
+
+.signup-form .login-input-wrap input {
+    height: 46px;
+}
+
+.signup-field-hint {
+    margin: 0;
+    color: #8a988e;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.signup-match-message {
+    min-height: 0;
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.signup-match-message:empty {
+    display: none;
+}
+
+.signup-match-error {
+    color: #bd3535;
+}
+
+.signup-match-success {
+    color: #287b49;
+}
+
+.signup-submit-btn {
+    margin-top: 3px;
+}
+
+.signup-panel .login-signup-link {
+    margin-top: 20px;
+}
+
+.signup-panel .login-footer {
+    margin-top: 22px;
+}
+
+/* Smaller screens */
+@media (max-width: 520px) {
+    .signup-shell {
+        padding: 22px 14px;
+    }
+
+    .signup-panel {
+        padding: 25px 21px 22px;
+    }
+
+    .signup-panel .login-brand {
+        margin-bottom: 23px;
+    }
+
+    .signup-form {
+        gap: 15px;
+    }
+
+    .signup-form .login-input-wrap input {
+        height: 45px;
+    }
+}
+
+@media (max-width: 360px) {
+    .signup-panel {
+        padding-right: 17px;
+        padding-left: 17px;
+    }
+}
+
