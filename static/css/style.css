@@ -6741,8 +6741,6 @@ nav a {
    SIDEBAR LOGOUT BUTTON
 ========================================= */
 
-
-/* Compact Sidebar Logout Button */
 .sidebar-logout {
     width: 100%;
     margin: 0;
@@ -6750,30 +6748,29 @@ nav a {
 
 .sidebar-logout-button {
     box-sizing: border-box;
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 9px;
-    width: auto;
-    min-height: 36px;
-    padding: 8px 12px;
+    gap: 12px;
+    width: 100%;
+    min-height: 46px;
+    padding: 12px 15px;
     border: 1px solid transparent;
-    border-radius: 8px;
+    border-radius: 10px;
     background: transparent;
     color: #c64b4b;
     font: inherit;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     text-align: left;
     cursor: pointer;
-    transition: background-color 180ms ease,
-                color 180ms ease,
-                border-color 180ms ease;
+    transition:
+        background-color 180ms ease,
+        color 180ms ease,
+        border-color 180ms ease;
 }
 
 .sidebar-logout-button .ui-icon {
     display: block;
-    width: 17px;
-    height: 17px;
     flex-shrink: 0;
 }
 
@@ -6784,10 +6781,9 @@ nav a {
 }
 
 .sidebar-logout-button:focus-visible {
-    outline: 2px solid #e7aaaa;
-    outline-offset: 2px;
+    outline: 3px solid #e7aaaa;
+    outline-offset: 3px;
 }
-
 
 
 /* =========================================
