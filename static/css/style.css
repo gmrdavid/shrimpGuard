@@ -6701,3 +6701,38 @@ nav a {
         transition: none;
     }
 }
+
+
+/* Reduce spacing between role summary columns */
+.admin-role-table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.admin-role-table thead th:nth-child(1),
+.admin-role-table tbody td:nth-child(1) {
+    width: 38%;
+}
+
+.admin-role-table thead th:nth-child(2),
+.admin-role-table tbody td:nth-child(2) {
+    width: 22%;
+}
+
+.admin-role-table thead th:nth-child(3),
+.admin-role-table tbody td:nth-child(3) {
+    width: 40%;
+}
+
+/* Keep account status closer to total users */
+.admin-role-table thead th:nth-child(3),
+.admin-role-table tbody td:nth-child(3) {
+    padding-left: 12px;
+}
+
+/* Keep total user count compact */
+.admin-role-table thead th:nth-child(2),
+.admin-role-table tbody td:nth-child(2) {
+    padding-right: 8px;
+}
+
