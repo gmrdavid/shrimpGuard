@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from functools import wraps
 from xml.sax.saxutils import escape
 
-from flask import Flask, flash, jsonify, redirect, render_template, request, send_file, session, url_for
+from flask import Flask, flash, has_request_context, jsonify, redirect, render_template, request, send_file, session, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import insert, select, text
 from sqlalchemy.engine import URL
@@ -105,6 +105,67 @@ class User(db.Model):
         return not self.password_hash.startswith(("scrypt:", "pbkdf2:"))
 
 
+# --- TABLE 3: ACTIVITY LOGS ---
+class ActivityLog(db.Model):
+    __tablename__ = "activity_logs"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_email = db.Column(db.String(255), nullable=True, index=True)
+    user_name = db.Column(db.String(80), nullable=True)
+    role = db.Column(db.String(50), nullable=True)
+    action = db.Column(db.String(100), nullable=False)
+    details = db.Column(db.Text, nullable=True)
+    ip_address = db.Column(db.String(45), nullable=True)
+    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.now, index=True)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_email": self.user_email,
+            "user_name": self.user_name,
+            "role": self.role,
+            "action": self.action,
+            "details": self.details,
+            "ip_address": self.ip_address,
+            "timestamp": self.timestamp.isoformat() if self.timestamp else None,
+        }
+
+
+def log_activity(action, details=None, user_email=None, user_name=None, role=None, ip_address=None):
+    try:
+        if not user_email and has_request_context():
+            user_email = session.get("user_id")
+        if not role and has_request_context():
+            role = session.get("user_role")
+
+        if not user_name and user_email:
+            user = db.session.get(User, user_email)
+            if user:
+                user_name = user.name
+                if not role:
+                    role = user.role
+
+        if not ip_address and has_request_context():
+            ip_address = request.headers.get("X-Forwarded-For", request.remote_addr)
+            if ip_address and "," in ip_address:
+                ip_address = ip_address.split(",")[0].strip()
+
+        log_entry = ActivityLog(
+            user_email=user_email,
+            user_name=user_name or "System",
+            role=role or "System",
+            action=action,
+            details=details or "",
+            ip_address=ip_address,
+            timestamp=datetime.now(),
+        )
+        db.session.add(log_entry)
+        db.session.commit()
+    except Exception as exc:
+        db.session.rollback()
+        app.logger.warning("Failed to record activity log: %s", exc)
+
+
 @app.context_processor
 def inject_logout_csrf_token():
     if session.get("user_id") is None:
@@ -189,7 +250,7 @@ def create_reading():
         recorded_at = (
             datetime.fromisoformat(payload["recorded_at"])
             if payload.get("recorded_at")
-            else datetime.utcnow()
+            else datetime.now()
         )
     except (TypeError, ValueError):
         return jsonify({"error": "Reading values must be valid numbers and date."}), 400
@@ -494,6 +555,12 @@ def create_user():
             flash("The user could not be saved. Please try again.", "error")
         else:
             session["admin_csrf_token"] = secrets.token_urlsafe(32)
+            log_activity(
+                action="USER_CREATE",
+                details=f"Created {role} account for {user_name} ({email}).",
+                user_email=session.get("user_id"),
+                role="Admin",
+            )
             flash("User added successfully.", "success")
 
     return redirect(url_for("admin_dashboard"))
@@ -520,10 +587,18 @@ def delete_user():
         return redirect(url_for("admin_dashboard"))
 
     try:
+        deleted_name = user.user_name
+        deleted_email = user.email
         db.session.delete(user)
         db.session.commit()
         session["admin_csrf_token"] = secrets.token_urlsafe(32)
-        flash(f"User {user.user_name} ({user.email}) was successfully deleted.", "success")
+        log_activity(
+            action="USER_DELETE",
+            details=f"Deleted user account: {deleted_name} ({deleted_email}).",
+            user_email=session.get("user_id"),
+            role="Admin",
+        )
+        flash(f"User {deleted_name} ({deleted_email}) was successfully deleted.", "success")
     except SQLAlchemyError:
         db.session.rollback()
         flash("Unable to delete user. Please try again.", "error")
@@ -579,6 +654,12 @@ def edit_user():
             if session.get("user_id") == current_email:
                 session["user_id"] = email
             session["admin_csrf_token"] = secrets.token_urlsafe(32)
+            log_activity(
+                action="USER_EDIT",
+                details=f"Updated account {user_name} ({email}) - Role: {role}, Status: {status}.",
+                user_email=session.get("user_id"),
+                role="Admin",
+            )
             flash("User updated successfully.", "success")
 
     return redirect(url_for("admin_dashboard"))
@@ -632,6 +713,16 @@ def admin_home():
             key=lambda item: item["role"].casefold()
         )
 
+        try:
+            recent_activities = (
+                ActivityLog.query.order_by(ActivityLog.timestamp.desc())
+                .limit(20)
+                .all()
+            )
+        except SQLAlchemyError:
+            db.session.rollback()
+            recent_activities = []
+
         system_online = True
 
     except SQLAlchemyError:
@@ -641,6 +732,7 @@ def admin_home():
         active_users = 0
         inactive_users = 0
         role_summary = []
+        recent_activities = []
         system_online = False
 
     return render_template(
@@ -649,6 +741,7 @@ def admin_home():
         active_users=active_users,
         inactive_users=inactive_users,
         role_summary=role_summary,
+        recent_activities=recent_activities,
         system_online=system_online,
     )
 
@@ -714,7 +807,7 @@ def login():
                     if role not in {"admin", "client"}:
                         error = "This account does not have an authorized role."
                     else:
-                        user.last_login = datetime.utcnow()
+                        user.last_login = datetime.now()
                         if user.password_needs_rehash():
                             user.set_password(password)
 
@@ -728,6 +821,15 @@ def login():
                             session.clear()
                             session.permanent = True
                             session["user_id"] = user.email
+                            session["user_role"] = user.role
+                            session["user_name"] = user.name
+                            log_activity(
+                                action="LOGIN",
+                                details=f"User signed in successfully ({user.role}).",
+                                user_email=user.email,
+                                user_name=user.name,
+                                role=user.role,
+                            )
                             destination = "admin_home" if role == "admin" else "dashboard"
                             return redirect(url_for(destination))
 
@@ -788,6 +890,13 @@ def signup():
                         error = "Sign-up is temporarily unavailable. Please try again."
                     else:
                         session.pop("signup_csrf_token", None)
+                        log_activity(
+                            action="SIGNUP",
+                            details=f"New client account registered: {user_name} ({email}).",
+                            user_email=email,
+                            user_name=user_name,
+                            role="Client",
+                        )
                         flash("Your account was created. Please sign in.", "success")
                         return redirect(url_for("login"))
 
@@ -802,6 +911,18 @@ def logout():
     submitted_token = request.form.get("csrf_token", "")
     if not expected_token or not hmac.compare_digest(expected_token, submitted_token):
         return "Invalid logout request.", 400
+
+    user_email = session.get("user_id")
+    user_role = session.get("user_role")
+    user_name = session.get("user_name")
+    if user_email:
+        log_activity(
+            action="LOGOUT",
+            details="User signed out of the system.",
+            user_email=user_email,
+            user_name=user_name,
+            role=user_role,
+        )
 
     session.clear()
     return redirect(url_for("login"))
@@ -867,7 +988,15 @@ def settings():
                     flash("Your profile could not be saved. Please try again.", "error")
                 else:
                     session["user_id"] = email
+                    session["user_name"] = user_name
                     session["settings_csrf_token"] = secrets.token_urlsafe(32)
+                    log_activity(
+                        action="PROFILE_UPDATE",
+                        details=f"Updated profile details (Name: {user_name}, Email: {email}).",
+                        user_email=email,
+                        user_name=user_name,
+                        role=user.role,
+                    )
                     flash("Profile updated successfully.", "success")
         elif action == "password":
             current_password = request.form.get("current_password", "")
@@ -888,6 +1017,13 @@ def settings():
                     flash("Your password could not be updated. Please try again.", "error")
                 else:
                     session["settings_csrf_token"] = secrets.token_urlsafe(32)
+                    log_activity(
+                        action="PASSWORD_CHANGE",
+                        details="Account password changed successfully.",
+                        user_email=user.email,
+                        user_name=user.name,
+                        role=user.role,
+                    )
                     flash("Password updated successfully.", "success")
         else:
             flash("Choose a valid settings action.", "error")
@@ -895,6 +1031,21 @@ def settings():
         return redirect(url_for("settings"))
 
     return render_template("settings.html", user=user, settings_csrf_token=csrf_token)
+
+
+@app.route("/api/activity-logs")
+@role_required("Admin")
+def api_activity_logs():
+    try:
+        logs = ActivityLog.query.order_by(ActivityLog.timestamp.desc()).limit(50).all()
+        return jsonify({
+            "status": "success",
+            "count": len(logs),
+            "logs": [l.to_dict() for l in logs],
+        })
+    except SQLAlchemyError as exc:
+        db.session.rollback()
+        return jsonify({"status": "error", "message": str(exc)}), 500
 
 
 if __name__ == "__main__":

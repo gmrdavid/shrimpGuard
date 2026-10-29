@@ -426,8 +426,59 @@
                             <h2>Recent Activity</h2>
                             <p>Latest administrative events and security alerts.</p>
                         </div>
+
+                        {% if recent_activities %}
+                        <span class="admin-role-total-pill">
+                            <strong>{{ recent_activities|length }}</strong>
+                            <span>events</span>
+                        </span>
+                        {% endif %}
                     </div>
 
+                    {% if recent_activities %}
+                    <div class="admin-activity-timeline">
+                        {% for act in recent_activities %}
+                        <div class="activity-timeline-item">
+                            <div class="activity-timeline-icon {% if act.action in ['LOGIN', 'SIGNUP'] %}act-login{% elif act.action == 'LOGOUT' %}act-logout{% elif act.action in ['USER_CREATE', 'PROFILE_UPDATE'] %}act-create{% elif act.action in ['USER_EDIT', 'PASSWORD_CHANGE'] %}act-edit{% elif act.action == 'USER_DELETE' %}act-delete{% else %}act-default{% endif %}">
+                                <svg class="ui-icon" aria-hidden="true">
+                                    {% if act.action in ['LOGIN', 'SIGNUP'] %}
+                                        <use href="#icon-check-circle"></use>
+                                    {% elif act.action == 'LOGOUT' %}
+                                        <use href="#icon-logout"></use>
+                                    {% elif act.action == 'USER_CREATE' %}
+                                        <use href="#icon-plus"></use>
+                                    {% elif act.action in ['USER_EDIT', 'PROFILE_UPDATE', 'PASSWORD_CHANGE'] %}
+                                        <use href="#icon-settings"></use>
+                                    {% elif act.action == 'USER_DELETE' %}
+                                        <use href="#icon-x"></use>
+                                    {% else %}
+                                        <use href="#icon-activity"></use>
+                                    {% endif %}
+                                </svg>
+                            </div>
+
+                            <div class="activity-timeline-body">
+                                <div class="activity-timeline-header">
+                                    <div class="activity-user-group">
+                                        <strong class="activity-user-name">{{ act.user_name or act.user_email or 'System' }}</strong>
+                                        <span class="table-status {% if act.role|lower == 'admin' %}admin-role-badge{% else %}client-role-badge{% endif %} activity-role-pill">
+                                            {{ act.role or 'User' }}
+                                        </span>
+                                    </div>
+                                    <time class="activity-timestamp" datetime="{% if act.timestamp and act.timestamp.isoformat is defined %}{{ act.timestamp.isoformat() }}{% else %}{{ act.timestamp }}{% endif %}">
+                                        {% if act.timestamp and act.timestamp.strftime is defined %}
+                                            {{ act.timestamp.strftime("%b %d, %Y • %I:%M %p") }}
+                                        {% else %}
+                                            {{ act.timestamp }}
+                                        {% endif %}
+                                    </time>
+                                </div>
+                                <p class="activity-timeline-desc">{{ act.details }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
                     <div class="dashboard-empty-panel">
                         <span class="dashboard-empty-icon" aria-hidden="true">
                             <svg class="ui-icon"><use href="#icon-clock"></use></svg>
@@ -435,6 +486,7 @@
                         <h3>No recent activity to display</h3>
                         <p>Recent account events and administrative logins will appear here in real time.</p>
                     </div>
+                    {% endif %}
 
                     <div class="panel-card-footer">
                         <span class="metric-footer-dot"></span>

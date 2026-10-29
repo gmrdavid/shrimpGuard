@@ -32,3 +32,17 @@ CREATE TABLE IF NOT EXISTS sensors (
     `date` VARCHAR(45) NOT NULL,
     status VARCHAR(45) NOT NULL
 ) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS activity_logs (
+    id INT NOT NULL AUTO_INCREMENT,
+    user_email VARCHAR(255) NULL,
+    user_name VARCHAR(80) NULL,
+    role VARCHAR(50) NULL,
+    action VARCHAR(100) NOT NULL,
+    details TEXT NULL,
+    ip_address VARCHAR(45) NULL,
+    timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    KEY idx_activity_logs_timestamp (timestamp),
+    KEY idx_activity_logs_user_email (user_email)
+) ENGINE=InnoDB;
