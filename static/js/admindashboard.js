@@ -136,7 +136,7 @@
     const noUsersRow = get("no-users-row");
 
     function filterUsers() {
-        const query = search.value.trim().toLowerCase();
+        const query = search ? search.value.trim().toLowerCase() : "";
         let visibleCount = 0;
 
         rows.forEach((row) => {
@@ -151,10 +151,12 @@
                 role.includes(query);
 
             const matchesRole =
+                !roleFilter ||
                 roleFilter.value === "all" ||
                 role === roleFilter.value;
 
             const matchesStatus =
+                !statusFilter ||
                 statusFilter.value === "all" ||
                 status === statusFilter.value;
 
@@ -177,13 +179,21 @@
             noUsersRow.hidden = rows.length > 0;
         }
 
-        userCount.innerHTML =
-            `<strong>${visibleCount}</strong> account${visibleCount === 1 ? "" : "s"}`;
+        if (userCount) {
+            userCount.innerHTML =
+                `<strong>${visibleCount}</strong> account${visibleCount === 1 ? "" : "s"}`;
+        }
     }
 
-    search.addEventListener("input", filterUsers);
-    roleFilter.addEventListener("change", filterUsers);
-    statusFilter.addEventListener("change", filterUsers);
+    if (search) {
+        search.addEventListener("input", filterUsers);
+    }
+    if (roleFilter) {
+        roleFilter.addEventListener("change", filterUsers);
+    }
+    if (statusFilter) {
+        statusFilter.addEventListener("change", filterUsers);
+    }
 
     filterUsers();
 })();
