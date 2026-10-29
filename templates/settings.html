@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f5f8f4">
     <title>Settings | ShrimpGuard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
@@ -11,107 +12,422 @@
 <body class="settings-page">
 {% include "_icon_sprite.html" %}
 
-<div class="sidebar">
-    <div class="logo"><svg class="ui-icon brand-icon"><use href="#icon-shrimp"></use></svg> <span>ShrimpGuard</span></div>
+<div class="sidebar settings-sidebar">
+    <div class="logo">
+        <svg class="ui-icon brand-icon"><use href="#icon-shrimp"></use></svg>
+        <span>ShrimpGuard</span>
+    </div>
+
     <p class="subtitle">Water Quality Monitoring</p>
+
     <nav>
-        <a href="/"><svg class="ui-icon"><use href="#icon-dashboard"></use></svg> Dashboard</a>
-        <a href="/monitoring"><svg class="ui-icon"><use href="#icon-monitor"></use></svg> Real-time Monitoring</a>
-        <a href="/historical"><svg class="ui-icon"><use href="#icon-history"></use></svg> Historical Data</a>
-        <a href="/analytics"><svg class="ui-icon"><use href="#icon-chart"></use></svg> Analytics &amp; Reports</a>
-        <a href="/alerts"><svg class="ui-icon"><use href="#icon-alert"></use></svg> Alerts and Notifications</a>
-        <a href="/settings" class="active"><svg class="ui-icon"><use href="#icon-settings"></use></svg> Settings</a>
+        <a href="/">
+            <svg class="ui-icon"><use href="#icon-dashboard"></use></svg>
+            <span>Dashboard</span>
+        </a>
+        <a href="/monitoring">
+            <svg class="ui-icon"><use href="#icon-monitor"></use></svg>
+            <span>Real-time Monitoring</span>
+        </a>
+        <a href="/historical">
+            <svg class="ui-icon"><use href="#icon-history"></use></svg>
+            <span>Historical Data</span>
+        </a>
+        <a href="/analytics">
+            <svg class="ui-icon"><use href="#icon-chart"></use></svg>
+            <span>Analytics &amp; Reports</span>
+        </a>
+        <a href="/alerts">
+            <svg class="ui-icon"><use href="#icon-alert"></use></svg>
+            <span>Alerts and Notifications</span>
+        </a>
+        <a href="/settings" class="active" aria-current="page">
+            <svg class="ui-icon"><use href="#icon-settings"></use></svg>
+            <span>Settings</span>
+        </a>
     </nav>
+
     {% include "_logout_form.html" %}
+
+    <div class="settings-sidebar-note">
+        <span class="settings-sidebar-note-icon">
+            <svg class="ui-icon"><use href="#icon-settings"></use></svg>
+        </span>
+        <div>
+            <strong>Account preferences</strong>
+            <p>Manage your personal information and sign-in security.</p>
+        </div>
+    </div>
 </div>
 
-<main class="main-content">
-    <header>
+<main class="main-content settings-main">
+    <header class="settings-header">
         <div>
-            <p class="eyebrow">Account</p>
+            <span class="settings-eyebrow">ACCOUNT MANAGEMENT</span>
             <h1>Settings</h1>
-            <p>Update your profile and sign-in details.</p>
+            <p>Manage your profile information and keep your account secure.</p>
+        </div>
+
+        <div class="settings-header-badge">
+            <span class="settings-header-badge-icon">
+                <svg class="ui-icon"><use href="#icon-check-circle"></use></svg>
+            </span>
+            <div>
+                <strong>Account settings</strong>
+                <span>Personal information and security</span>
+            </div>
         </div>
     </header>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-    <div class="settings-notices" role="status">
+    <div class="settings-notices" role="status" aria-live="polite">
         {% for category, message in messages %}
-        <p class="settings-notice {{ category }}">{{ message }}</p>
+        <p class="settings-notice {{ category }}">
+            <svg class="ui-icon settings-notice-icon">
+                <use href="#icon-check-circle"></use>
+            </svg>
+            <span>{{ message }}</span>
+        </p>
         {% endfor %}
     </div>
     {% endif %}
     {% endwith %}
 
+    <section class="settings-intro">
+        <div class="settings-intro-icon">
+            <svg class="ui-icon"><use href="#icon-settings"></use></svg>
+        </div>
+        <div>
+            <h2>Account preferences</h2>
+            <p>Changes to your profile and password will be submitted to ShrimpGuard for validation.</p>
+        </div>
+    </section>
+
     <section class="settings-grid" aria-label="Account settings">
+
+        <!-- Profile information -->
         <article class="settings-panel">
             <div class="settings-panel-heading">
-                <h2>Profile information</h2>
-                <p>Change the name and email associated with your account.</p>
+                <div class="settings-panel-icon settings-profile-icon">
+                    <svg class="ui-icon"><use href="#icon-dashboard"></use></svg>
+                </div>
+                <div>
+                    <h2>Profile Information</h2>
+                    <p>Update the name and email address associated with your account.</p>
+                </div>
             </div>
-            <form id="profile-update-form" class="settings-form" method="post" action="{{ url_for('settings') }}">
+
+            <div class="settings-panel-divider"></div>
+
+            <form id="profile-update-form"
+                  class="settings-form"
+                  method="post"
+                  action="{{ url_for('settings') }}">
+
                 <input type="hidden" name="csrf_token" value="{{ settings_csrf_token }}">
                 <input type="hidden" name="action" value="profile">
-                <label for="profile-name">Name</label>
-                <input id="profile-name" name="name" type="text" maxlength="80" value="{{ user.user_name }}" required>
-                <label for="profile-email">Email</label>
-                <input id="profile-email" name="email" type="email" maxlength="255" value="{{ user.email }}" required>
-                <label for="profile-role">Role</label>
-                <input id="profile-role" type="text" value="{{ user.role }}" readonly>
-                <button id="save-profile-button" class="settings-submit" type="button">Save Profile</button>
+
+                <div class="settings-field">
+                    <label for="profile-name">Full name</label>
+                    <input
+                        id="profile-name"
+                        name="name"
+                        type="text"
+                        maxlength="80"
+                        value="{{ user.user_name }}"
+                        autocomplete="name"
+                        placeholder="Enter your name"
+                        required>
+                    <small>This name identifies your account in ShrimpGuard.</small>
+                </div>
+
+                <div class="settings-field">
+                    <label for="profile-email">Email address</label>
+                    <input
+                        id="profile-email"
+                        name="email"
+                        type="email"
+                        maxlength="255"
+                        value="{{ user.email }}"
+                        autocomplete="email"
+                        placeholder="Enter your email address"
+                        required>
+                    <small>Use an email address you can access.</small>
+                </div>
+
+                <div class="settings-field">
+                    <label for="profile-role">Account role</label>
+                    <div class="settings-readonly-wrap">
+                        <span class="settings-readonly-icon">
+                            <svg class="ui-icon"><use href="#icon-check-circle"></use></svg>
+                        </span>
+                        <input
+                            id="profile-role"
+                            type="text"
+                            value="{{ user.role }}"
+                            readonly
+                            aria-describedby="profile-role-help">
+                        <span class="settings-role-badge">Assigned</span>
+                    </div>
+                    <small id="profile-role-help">Your account role cannot be changed here.</small>
+                </div>
+
+                <div class="settings-form-actions">
+                    <button id="save-profile-button" class="settings-submit" type="button">
+                        <svg class="ui-icon"><use href="#icon-check-circle"></use></svg>
+                        <span>Save Profile</span>
+                    </button>
+                </div>
             </form>
         </article>
 
+        <!-- Password security -->
         <article class="settings-panel">
             <div class="settings-panel-heading">
-                <h2>Change password</h2>
-                <p>Use at least 8 characters. Your current password is required.</p>
+                <div class="settings-panel-icon settings-security-icon">
+                    <svg class="ui-icon"><use href="#icon-settings"></use></svg>
+                </div>
+                <div>
+                    <h2>Password &amp; Security</h2>
+                    <p>Change your password to help protect access to your account.</p>
+                </div>
             </div>
-            <form class="settings-form" method="post" action="{{ url_for('settings') }}">
+
+            <div class="settings-panel-divider"></div>
+
+            <div class="settings-security-notice">
+                <span class="settings-security-notice-icon">
+                    <svg class="ui-icon"><use href="#icon-alert"></use></svg>
+                </span>
+                <p>Choose a password with at least 8 characters. You must provide your current password to make this change.</p>
+            </div>
+
+            <form id="password-update-form"
+                  class="settings-form"
+                  method="post"
+                  action="{{ url_for('settings') }}">
+
                 <input type="hidden" name="csrf_token" value="{{ settings_csrf_token }}">
                 <input type="hidden" name="action" value="password">
-                <label for="current-password">Current password</label>
-                <input id="current-password" name="current_password" type="password" autocomplete="current-password" required>
-                <label for="new-password">New password</label>
-                <input id="new-password" name="new_password" type="password" minlength="8" autocomplete="new-password" required>
-                <label for="confirm-password">Confirm new password</label>
-                <input id="confirm-password" name="confirm_password" type="password" minlength="8" autocomplete="new-password" required>
-                <button class="settings-submit" type="submit">Update Password</button>
+
+                <div class="settings-field">
+                    <label for="current-password">Current password</label>
+                    <div class="settings-password-wrap">
+                        <input
+                            id="current-password"
+                            name="current_password"
+                            type="password"
+                            autocomplete="current-password"
+                            placeholder="Enter current password"
+                            required>
+                        <button type="button"
+                                class="settings-password-toggle"
+                                data-password-target="current-password"
+                                aria-label="Show current password"
+                                aria-pressed="false">
+                            <svg class="ui-icon"><use href="#icon-eye"></use></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="settings-field">
+                    <label for="new-password">New password</label>
+                    <div class="settings-password-wrap">
+                        <input
+                            id="new-password"
+                            name="new_password"
+                            type="password"
+                            minlength="8"
+                            autocomplete="new-password"
+                            placeholder="Enter new password"
+                            aria-describedby="new-password-help"
+                            required>
+                        <button type="button"
+                                class="settings-password-toggle"
+                                data-password-target="new-password"
+                                aria-label="Show new password"
+                                aria-pressed="false">
+                            <svg class="ui-icon"><use href="#icon-eye"></use></svg>
+                        </button>
+                    </div>
+                    <small id="new-password-help">Use at least 8 characters.</small>
+                </div>
+
+                <div class="settings-field">
+                    <label for="confirm-password">Confirm new password</label>
+                    <div class="settings-password-wrap">
+                        <input
+                            id="confirm-password"
+                            name="confirm_password"
+                            type="password"
+                            minlength="8"
+                            autocomplete="new-password"
+                            placeholder="Re-enter new password"
+                            required>
+                        <button type="button"
+                                class="settings-password-toggle"
+                                data-password-target="confirm-password"
+                                aria-label="Show confirmation password"
+                                aria-pressed="false">
+                            <svg class="ui-icon"><use href="#icon-eye"></use></svg>
+                        </button>
+                    </div>
+                    <small id="confirm-password-help" class="settings-password-match-message" aria-live="polite">
+                        Re-enter your new password to confirm it.
+                    </small>
+                </div>
+
+                <div class="settings-password-tip">
+                    <svg class="ui-icon"><use href="#icon-check-circle"></use></svg>
+                    <p>For better security, avoid reusing passwords from other accounts.</p>
+                </div>
+
+                <div class="settings-form-actions">
+                    <button class="settings-submit settings-password-submit" type="submit">
+                        <svg class="ui-icon"><use href="#icon-settings"></use></svg>
+                        <span>Update Password</span>
+                    </button>
+                </div>
             </form>
         </article>
+
     </section>
+
+    <footer class="settings-footer">
+        <span>ShrimpGuard · Account Settings</span>
+        <span>Keep your account information up to date.</span>
+    </footer>
 </main>
-<dialog id="profile-confirmation-dialog" class="admin-user-dialog" aria-labelledby="profile-confirmation-title">
+
+<dialog id="profile-confirmation-dialog"
+        class="admin-user-dialog settings-confirmation-dialog"
+        aria-labelledby="profile-confirmation-title">
+
     <div class="admin-user-dialog-heading">
-        <h2 id="profile-confirmation-title">Update information?</h2>
+        <span class="settings-dialog-icon">
+            <svg class="ui-icon"><use href="#icon-check-circle"></use></svg>
+        </span>
+        <div>
+            <h2 id="profile-confirmation-title">Save profile changes?</h2>
+            <p>Confirm your account information update.</p>
+        </div>
     </div>
+
     <div class="profile-confirmation-content">
-        <p>Do you want to save your profile changes?</p>
+        <p>Do you want to save your updated name and email address?</p>
         <div class="profile-confirmation-actions">
-            <button id="cancel-profile-update" class="admin-user-cancel" type="button">No</button>
-            <button id="confirm-profile-update" class="admin-user-submit" type="button">Yes</button>
+            <button id="cancel-profile-update" class="admin-user-cancel" type="button">
+                Cancel
+            </button>
+            <button id="confirm-profile-update" class="admin-user-submit" type="button">
+                Yes, Save Changes
+            </button>
         </div>
     </div>
 </dialog>
+
 <script>
     const profileForm = document.getElementById("profile-update-form");
     const confirmationDialog = document.getElementById("profile-confirmation-dialog");
+    const saveProfileButton = document.getElementById("save-profile-button");
+    const cancelProfileButton = document.getElementById("cancel-profile-update");
+    const confirmProfileButton = document.getElementById("confirm-profile-update");
 
-    document.getElementById("save-profile-button").addEventListener("click", () => {
-        confirmationDialog.showModal();
+    saveProfileButton.addEventListener("click", () => {
+        if (typeof confirmationDialog.showModal === "function") {
+            confirmationDialog.showModal();
+        } else if (profileForm.reportValidity()) {
+            profileForm.requestSubmit();
+        }
     });
 
-    document.getElementById("confirm-profile-update").addEventListener("click", () => {
+    confirmProfileButton.addEventListener("click", () => {
         if (profileForm.reportValidity()) {
             confirmationDialog.close();
             profileForm.requestSubmit();
         }
     });
 
-    document.getElementById("cancel-profile-update").addEventListener("click", () => {
+    cancelProfileButton.addEventListener("click", () => {
         confirmationDialog.close();
-        document.getElementById("save-profile-button").focus();
+        saveProfileButton.focus();
+    });
+
+    confirmationDialog.addEventListener("click", (event) => {
+        if (event.target === confirmationDialog) {
+            confirmationDialog.close();
+            saveProfileButton.focus();
+        }
+    });
+
+    // Show or hide password fields.
+    document.querySelectorAll(".settings-password-toggle").forEach((button) => {
+        button.addEventListener("click", () => {
+            const input = document.getElementById(button.dataset.passwordTarget);
+            if (!input) return;
+
+            const showPassword = input.type === "password";
+            input.type = showPassword ? "text" : "password";
+            button.setAttribute("aria-pressed", String(showPassword));
+
+            const labels = {
+                "current-password": ["Show current password", "Hide current password"],
+                "new-password": ["Show new password", "Hide new password"],
+                "confirm-password": ["Show confirmation password", "Hide confirmation password"]
+            };
+
+            const labelPair = labels[input.id];
+            if (labelPair) {
+                button.setAttribute("aria-label", showPassword ? labelPair[1] : labelPair[0]);
+            }
+
+            const iconUse = button.querySelector("use");
+            if (iconUse) {
+                iconUse.setAttribute("href", showPassword ? "#icon-eye" : "#icon-eye");
+            }
+        });
+    });
+
+    // Check that the new password and confirmation match.
+    const newPasswordInput = document.getElementById("new-password");
+    const confirmPasswordInput = document.getElementById("confirm-password");
+    const passwordMatchMessage = document.getElementById("confirm-password-help");
+    const passwordForm = document.getElementById("password-update-form");
+
+    function validatePasswordMatch() {
+        const newPassword = newPasswordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+
+        confirmPasswordInput.setCustomValidity("");
+
+        if (!confirmPassword) {
+            passwordMatchMessage.textContent = "Re-enter your new password to confirm it.";
+            passwordMatchMessage.classList.remove("is-match", "is-mismatch");
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            confirmPasswordInput.setCustomValidity("The new passwords do not match.");
+            passwordMatchMessage.textContent = "The passwords do not match.";
+            passwordMatchMessage.classList.add("is-mismatch");
+            passwordMatchMessage.classList.remove("is-match");
+        } else {
+            passwordMatchMessage.textContent = "The passwords match.";
+            passwordMatchMessage.classList.add("is-match");
+            passwordMatchMessage.classList.remove("is-mismatch");
+        }
+    }
+
+    newPasswordInput.addEventListener("input", validatePasswordMatch);
+    confirmPasswordInput.addEventListener("input", validatePasswordMatch);
+
+    passwordForm.addEventListener("submit", (event) => {
+        validatePasswordMatch();
+
+        if (!passwordForm.reportValidity()) {
+            event.preventDefault();
+        }
     });
 </script>
 </body>
