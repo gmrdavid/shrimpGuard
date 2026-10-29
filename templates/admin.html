@@ -2190,7 +2190,385 @@
         padding: 14px 17px 17px;
     }
 }
-G
+
+/* ========================================
+   SHRIMPGUARD — EDIT USER DIALOG
+======================================== */
+
+.admin-edit-dialog {
+    width: min(600px, calc(100% - 32px));
+    max-width: 600px;
+    max-height: 90vh;
+    padding: 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    background: #ffffff;
+    color: #1e293b;
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.admin-edit-dialog::backdrop {
+    background: rgba(15, 23, 42, 0.58);
+    backdrop-filter: blur(3px);
+}
+
+.admin-edit-dialog .admin-modal-card {
+    width: 100%;
+    background: #ffffff;
+}
+
+/* Header */
+.admin-edit-dialog .admin-modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 22px 24px;
+    border-bottom: 1px solid #edf0f4;
+    background: #ffffff;
+}
+
+.admin-edit-dialog .admin-modal-title-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.admin-edit-dialog .admin-modal-icon-badge.edit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+    border-radius: 13px;
+    background: #fff4d6;
+    color: #b7791f;
+}
+
+.admin-edit-dialog .admin-modal-icon-badge .ui-icon {
+    width: 23px;
+    height: 23px;
+}
+
+.admin-edit-dialog .admin-modal-heading-text h2 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 20px;
+    font-weight: 750;
+    line-height: 1.35;
+}
+
+.admin-edit-dialog .admin-modal-subtitle {
+    margin: 5px 0 0;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.admin-edit-dialog .admin-modal-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    padding: 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #64748b;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.admin-edit-dialog .admin-modal-close:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.admin-edit-dialog .admin-modal-close .ui-icon {
+    width: 18px;
+    height: 18px;
+}
+
+/* Form body */
+.admin-edit-dialog .admin-modal-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-edit-dialog .admin-modal-body {
+    padding: 22px 24px;
+}
+
+.admin-edit-dialog .admin-edit-intro {
+    margin: 0 0 18px;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.admin-edit-dialog .admin-edit-intro span,
+.admin-edit-dialog .admin-edit-field label span {
+    color: #dc3545;
+    font-weight: 750;
+}
+
+/* Sections */
+.admin-edit-dialog .admin-edit-section {
+    padding: 19px 0;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.admin-edit-dialog .admin-edit-section:first-of-type {
+    padding-top: 0;
+}
+
+.admin-edit-dialog .admin-edit-section:last-of-type {
+    border-bottom: none;
+    padding-bottom: 10px;
+}
+
+.admin-edit-dialog .admin-edit-section-heading {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin-bottom: 18px;
+}
+
+.admin-edit-dialog .admin-edit-section-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    background: #f0fdfa;
+    color: #0f8b83;
+}
+
+.admin-edit-dialog .admin-edit-section-icon .ui-icon {
+    width: 19px;
+    height: 19px;
+}
+
+.admin-edit-dialog .admin-edit-section-heading h3 {
+    margin: 0;
+    color: #1e293b;
+    font-size: 14px;
+    font-weight: 750;
+}
+
+.admin-edit-dialog .admin-edit-section-heading p {
+    margin: 4px 0 0;
+    color: #94a3b8;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* Input fields */
+.admin-edit-dialog .admin-edit-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+    margin-bottom: 17px;
+}
+
+.admin-edit-dialog .admin-edit-field:last-child {
+    margin-bottom: 0;
+}
+
+.admin-edit-dialog .admin-edit-field label {
+    color: #334155;
+    font-size: 13px;
+    font-weight: 650;
+}
+
+.admin-edit-dialog .admin-edit-field input,
+.admin-edit-dialog .admin-edit-field select {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid #dbe2ea;
+    border-radius: 10px;
+    outline: none;
+    background: #ffffff;
+    color: #1e293b;
+    font: inherit;
+    font-size: 13px;
+    transition: border-color 0.2s ease,
+                box-shadow 0.2s ease;
+}
+
+.admin-edit-dialog .admin-edit-field input::placeholder {
+    color: #a0acba;
+}
+
+.admin-edit-dialog .admin-edit-field input:focus,
+.admin-edit-dialog .admin-edit-field select:focus {
+    border-color: #0d9488;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
+}
+
+.admin-edit-dialog .admin-edit-field small {
+    color: #94a3b8;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+/* Two-column role/status layout */
+.admin-edit-dialog .admin-edit-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+/* Security note */
+.admin-edit-dialog .admin-edit-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 8px;
+    padding: 13px 14px;
+    border: 1px solid #dbeafe;
+    border-radius: 10px;
+    background: #f8fbff;
+    color: #64748b;
+}
+
+.admin-edit-dialog .admin-edit-notice .ui-icon {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    color: #3b82f6;
+}
+
+.admin-edit-dialog .admin-edit-notice p {
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+/* Footer */
+.admin-edit-dialog .admin-modal-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px 22px;
+    border-top: 1px solid #edf0f4;
+    background: #ffffff;
+}
+
+.admin-edit-dialog .admin-edit-cancel,
+.admin-edit-dialog .admin-edit-save {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 110px;
+    min-height: 42px;
+    padding: 0 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 650;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.admin-edit-dialog .admin-edit-cancel {
+    border: 1px solid #dbe2ea;
+    background: #ffffff;
+    color: #475569;
+}
+
+.admin-edit-dialog .admin-edit-cancel:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.admin-edit-dialog .admin-edit-save {
+    border: 1px solid #087f8c;
+    background: #087f8c;
+    color: #ffffff;
+    box-shadow: 0 3px 8px rgba(8, 127, 140, 0.16);
+}
+
+.admin-edit-dialog .admin-edit-save:hover {
+    transform: translateY(-1px);
+    border-color: #066b76;
+    background: #066b76;
+}
+
+.admin-edit-dialog .admin-edit-save .ui-icon {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+}
+
+.admin-edit-dialog .admin-modal-close:focus-visible,
+.admin-edit-dialog .admin-edit-cancel:focus-visible,
+.admin-edit-dialog .admin-edit-save:focus-visible {
+    outline: 2px solid #0d9488;
+    outline-offset: 3px;
+}
+
+/* Responsive */
+@media (max-width: 520px) {
+    .admin-edit-dialog {
+        width: calc(100% - 20px);
+        max-height: 92vh;
+        border-radius: 14px;
+    }
+
+    .admin-edit-dialog .admin-modal-header {
+        padding: 17px;
+        gap: 10px;
+    }
+
+    .admin-edit-dialog .admin-modal-icon-badge.edit {
+        width: 40px;
+        height: 40px;
+    }
+
+    .admin-edit-dialog .admin-modal-heading-text h2 {
+        font-size: 17px;
+    }
+
+    .admin-edit-dialog .admin-modal-body {
+        padding: 18px 17px;
+    }
+
+    .admin-edit-dialog .admin-edit-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .admin-edit-dialog .admin-modal-footer {
+        padding: 14px 17px 17px;
+    }
+
+    .admin-edit-dialog .admin-edit-cancel,
+    .admin-edit-dialog .admin-edit-save {
+        flex: 1;
+        min-width: 0;
+        padding: 0 10px;
+    }
+}
+
 
 
     </style>
