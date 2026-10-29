@@ -16,7 +16,11 @@ from sqlalchemy.engine import URL
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from recommendations import RecommendationModelError, predict_recommendation
+from recommendations import (
+    RecommendationModelError,
+    classify_water_quality,
+    predict_recommendation,
+)
 
 app = Flask(__name__)
 
@@ -178,11 +182,17 @@ def inject_logout_csrf_token():
 
 
 def serialize_sensor_reading(reading):
+    status = reading["status"]
+    if not status or status.strip() in ("Normal", "Good"):
+        try:
+            status = classify_water_quality(float(reading["temperature"]), float(reading["ph_level"]))
+        except Exception:
+            status = "Optimal"
     return {
         "temperature": reading["temperature"],
         "ph": reading["ph_level"],
         "recorded_at": reading["date"],
-        "status": reading["status"],
+        "status": status,
     }
 
 
@@ -257,11 +267,12 @@ def create_reading():
     if not math.isfinite(temperature) or not math.isfinite(ph):
         return jsonify({"error": "Reading values must be finite numbers."}), 400
 
-    status = (
-        "Critical"
-        if temperature < 26 or temperature > 32 or ph < 7.5 or ph > 8.5
-        else "Normal"
-    )
+    # ML-based classification: solely determined by the DecisionTreeClassifier model
+    try:
+        status = classify_water_quality(temperature, ph)
+    except RecommendationModelError:
+        app.logger.exception("Unable to classify reading using ML model.")
+        status = "Warning" 
     try:
         db.session.execute(
             insert(sensor_readings).values(
@@ -367,14 +378,13 @@ def export_historical_data():
         if not math.isfinite(temperature) or not math.isfinite(ph):
             app.logger.error("A stored sensor reading contains non-finite values.")
             return jsonify({"error": "A stored sensor reading contains invalid numeric values."}), 500
-        status = (
-            "Critical"
-            if temperature < 26
-            or temperature > 32
-            or ph < 7.5
-            or ph > 8.5
-            else "Normal"
-        )
+        # ML-based classification: retrieve from reading or classify using ML model
+        status = reading["status"]
+        if not status or status.strip() in ("Normal", "Good"):
+            try:
+                status = classify_water_quality(temperature, ph)
+            except Exception:
+                status = "Optimal" 
         if reading["status"].strip().casefold() == "demo":
             status = f"Demo - {status}"
         rows.append(

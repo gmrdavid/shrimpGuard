@@ -27,8 +27,12 @@ function updateDeviceTime() {
 }
 
 function statusFor(reading) {
-    return reading.temperature < 26 || reading.temperature > 32 || reading.ph < 7.5 ||
-        reading.ph > 8.5 ? "Needs attention" : "Good";
+    if (!reading || !reading.status) return "Optimal";
+    const status = String(reading.status).trim();
+    if (status.toLowerCase().includes("critical")) return "Critical";
+    if (status.toLowerCase().includes("warning")) return "Warning";
+    if (status.toLowerCase().includes("optimal") || status.toLowerCase().includes("normal") || status.toLowerCase().includes("good")) return "Optimal";
+    return status;
 }
 
 function getTemperatureStatus(temperature) {
@@ -217,7 +221,7 @@ function renderHistoricalTooltip(reading, index, pointX, mouseY, focusedParam, c
     const tempStatus = getTemperatureStatus(tempVal);
     const phStatus = getPhStatus(phVal);
     const overallStatus = statusFor(reading);
-    const isGood = overallStatus === "Good";
+    const isGood = overallStatus === "Optimal";
 
     const dateObj = reading.recorded_at ? new Date(reading.recorded_at) : null;
     const timeDisplay = dateObj && !isNaN(dateObj)
@@ -402,7 +406,7 @@ function updateSummary(history, parameters) {
     document.getElementById("data-review").textContent = history.length
         ? `Showing ${history.length} saved reading${history.length === 1 ? "" : "s"} for the selected filters.`
         : "No saved readings match the selected filters.";
-    const attentionCount = history.filter((reading) => statusFor(reading) === "Needs attention").length;
+    const attentionCount = history.filter((reading) => statusFor(reading) !== "Optimal").length;
     const reviewStatus = document.getElementById("review-status");
     reviewStatus.textContent = attentionCount ? `${attentionCount} reading${attentionCount === 1 ? "" : "s"} need attention` : "All readings look good";
     reviewStatus.className = attentionCount ? "review-status review-warning" : "review-status";
@@ -424,7 +428,7 @@ function updateTable(history) {
         const qualityStatus = statusFor(reading);
         const isDemo = reading.status === "Demo";
         const statusLabel = isDemo ? `Demo · ${qualityStatus}` : qualityStatus;
-        const statusClass = isDemo ? "demo" : qualityStatus === "Good" ? "good" : "warning";
+        const statusClass = isDemo ? "demo" : qualityStatus.toLowerCase();
         return `<tr><td>${date.toLocaleDateString()}</td><td>${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</td><td>${reading.temperature} °C</td><td>${reading.ph}</td><td><span class="table-status ${statusClass}">${statusLabel}</span></td></tr>`;
     }).join("");
     document.getElementById("table-empty").hidden = history.length > 0;

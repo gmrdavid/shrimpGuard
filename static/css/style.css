@@ -92,9 +92,39 @@ th, td { border-bottom: 1px solid #edf0f4; padding: 14px 10px; text-align: left;
 th { color: #667085; font-size: 12px; text-transform: uppercase; }
 td { color: #344054; font-size: 14px; }
 .table-status { border-radius: 20px; font-size: 12px; font-weight: bold; padding: 5px 9px; }
-.table-status.good { background: #edf8f1; color: #286542; }
+.table-status.good, .table-status.optimal { background: #edf8f1; color: #286542; }
 .table-status.warning { background: #fff4e5; color: #9a5810; }
+.table-status.critical { background: #fef2f2; color: #b91c1c; }
 .table-status.demo { background: #edf2ff; color: #344b83; }
+
+/* ML-based overall status indicator dots & headings */
+.dashboard-page .status-indicator-dot.dot-optimal,
+.monitoring-page .monitoring-status-dot.dot-optimal {
+    background: #126b4f;
+    box-shadow: 0 0 0 3px rgba(18, 107, 79, 0.2);
+}
+.dashboard-page .status-indicator-dot.dot-warning,
+.monitoring-page .monitoring-status-dot.dot-warning {
+    background: #d97706;
+    box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.2);
+}
+.dashboard-page .status-indicator-dot.dot-critical,
+.monitoring-page .monitoring-status-dot.dot-critical {
+    background: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
+}
+.dashboard-page .dashboard-status-box h3.status-optimal,
+.monitoring-page #monitoring-status.status-optimal {
+    color: #126b4f;
+}
+.dashboard-page .dashboard-status-box h3.status-warning,
+.monitoring-page #monitoring-status.status-warning {
+    color: #b45309;
+}
+.dashboard-page .dashboard-status-box h3.status-critical,
+.monitoring-page #monitoring-status.status-critical {
+    color: #b91c1c;
+}
 .demo-data-note {
     background: #edf2ff;
     border-radius: 7px;

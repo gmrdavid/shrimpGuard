@@ -65,20 +65,27 @@ function updateGreeting() {
 
 
 function updateStatus(data) {
+    const rawStatus = (data && data.status) ? String(data.status).trim() : "";
+    let classification = "Optimal";
 
-    let status =
-        "Overall water quality is GOOD.";
-
-    if (data.temperature < 26 || data.temperature > 32 || data.ph < 7.5 || data.ph > 8.5) {
-
-        status =
-            "Overall water quality needs attention.";
-
+    if (rawStatus.toLowerCase().includes("critical")) {
+        classification = "Critical";
+    } else if (rawStatus.toLowerCase().includes("warning")) {
+        classification = "Warning";
+    } else if (rawStatus.toLowerCase().includes("optimal") || rawStatus.toLowerCase().includes("normal") || rawStatus.toLowerCase().includes("good")) {
+        classification = "Optimal";
     }
 
-    document.getElementById("overall-status").textContent =
-        status;
+    const overallStatusEl = document.getElementById("overall-status");
+    if (overallStatusEl) {
+        overallStatusEl.textContent = classification;
+        overallStatusEl.className = `status-heading status-${classification.toLowerCase()}`;
+    }
 
+    const indicatorDot = document.querySelector(".status-indicator-dot");
+    if (indicatorDot) {
+        indicatorDot.className = `status-indicator-dot dot-${classification.toLowerCase()}`;
+    }
 }
 
 

@@ -18,13 +18,12 @@ function updateDeviceTime() {
 }
 
 function getQualityStatus(reading) {
-    const needsAttention =
-        reading.temperature < 26 ||
-        reading.temperature > 32 ||
-        reading.ph < 7.5 ||
-        reading.ph > 8.5;
-
-    return needsAttention ? "Needs attention" : "Water quality is GOOD";
+    if (!reading || !reading.status) return "Waiting for a reading";
+    const status = String(reading.status).trim();
+    if (status.toLowerCase().includes("critical")) return "Critical";
+    if (status.toLowerCase().includes("warning")) return "Warning";
+    if (status.toLowerCase().includes("optimal") || status.toLowerCase().includes("normal") || status.toLowerCase().includes("good")) return "Optimal";
+    return status;
 }
 
 function getTemperatureStatus(temperature) {
@@ -64,7 +63,16 @@ function getPhStatus(phLevel) {
 function updateSummary(reading) {
     document.getElementById("monitor-temperature").textContent = reading.temperature;
     document.getElementById("monitor-ph").textContent = reading.ph;
-    document.getElementById("monitoring-status").textContent = getQualityStatus(reading);
+    const status = getQualityStatus(reading);
+    const statusEl = document.getElementById("monitoring-status");
+    if (statusEl) {
+        statusEl.textContent = status;
+        statusEl.className = `status-${status.toLowerCase()}`;
+    }
+    const statusDot = document.querySelector(".monitoring-status-dot");
+    if (statusDot) {
+        statusDot.className = `monitoring-status-dot dot-${status.toLowerCase()}`;
+    }
     document.getElementById("monitoring-updated").textContent =
         "Last updated " + new Date(reading.recorded_at).toLocaleString();
     document.getElementById("monitoring-demo-note").hidden = reading.status !== "Demo";

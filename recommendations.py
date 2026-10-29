@@ -1,8 +1,13 @@
 from functools import lru_cache
 from pathlib import Path
+import warnings
 
 import joblib
 import pandas as pd
+from sklearn.exceptions import InconsistentVersionWarning
+
+# Suppress unpickling version warnings across different scikit-learn minor versions
+warnings.filterwarnings("ignore", category=InconsistentVersionWarning)
 
 
 MODEL_FEATURES = ("Water Temperature (°C)", "pH")
@@ -46,20 +51,27 @@ def _load_model_artifacts():
     return model, label_encoder
 
 
-def predict_recommendation(temperature, ph):
+def classify_water_quality(temperature, ph):
+    """
+    Classifies water quality using the trained DecisionTreeClassifier ML model.
+    Returns: 'Optimal', 'Warning', or 'Critical'
+    """
     model, label_encoder = _load_model_artifacts()
     features = pd.DataFrame(
-        [[temperature, ph]],
-        columns=MODEL_FEATURES,
+        [[float(temperature), float(ph)]],
+        columns=model.feature_names_in_,
     )
     try:
         encoded_prediction = model.predict(features)
-        classification = str(label_encoder.inverse_transform(encoded_prediction)[0])
+        return str(label_encoder.inverse_transform(encoded_prediction)[0])
     except (AttributeError, IndexError, TypeError, ValueError) as error:
         raise RecommendationModelError(
-            "Unable to generate a water quality recommendation."
+            "Unable to classify water quality using the ML model."
         ) from error
 
+
+def predict_recommendation(temperature, ph):
+    classification = classify_water_quality(temperature, ph)
     message = RECOMMENDATION_MESSAGES.get(classification)
     if message is None:
         raise RecommendationModelError(
