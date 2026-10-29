@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alerts and Notifications | ShrimpGuard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+{% include "_icon_sprite.html" %}
+
+<div class="sidebar">
+    <div class="logo"><svg class="ui-icon brand-icon"><use href="#icon-shrimp"></use></svg> <span>ShrimpGuard</span></div>
+    <p class="subtitle">Water Quality Monitoring</p>
+    <nav>
+        <a href="/"><svg class="ui-icon"><use href="#icon-dashboard"></use></svg> Dashboard</a>
+        <a href="/monitoring"><svg class="ui-icon"><use href="#icon-monitor"></use></svg> Real-time Monitoring</a>
+        <a href="/historical"><svg class="ui-icon"><use href="#icon-history"></use></svg> Historical Data</a>
+        <a href="/analytics"><svg class="ui-icon"><use href="#icon-chart"></use></svg> Analytics &amp; Reports</a>
+        <a href="/alerts" class="active"><svg class="ui-icon"><use href="#icon-alert"></use></svg> Alerts and Notifications</a>
+        <a href="/settings"><svg class="ui-icon"><use href="#icon-settings"></use></svg> Settings</a>
+    </nav>
+    {% include "_logout_form.html" %}
+</div>
+
+<div class="main-content">
+    <header>
+        <div>
+            <h1>Alerts and Notifications</h1>
+            <p>Live updates generated from the latest pond sensor readings.</p>
+        </div>
+        <div class="header-info">
+            <button id="notification-button" class="notification-button" type="button" aria-label="View notifications"><svg class="ui-icon"><use href="#icon-bell"></use></svg></button>
+            <div class="time"><span id="time"></span></div>
+        </div>
+    </header>
+
+    <section class="cards">
+        <div class="card">
+            <div class="icon"><svg class="ui-icon"><use href="#icon-alert"></use></svg></div>
+            <div>
+                <h3>Critical Alerts</h3>
+                <h2 id="critical-alerts-count">0</h2>
+                <p>Require immediate action</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="icon"><svg class="ui-icon"><use href="#icon-alert"></use></svg></div>
+            <div>
+                <h3>Warning Alerts</h3>
+                <h2 id="warning-alerts-count">0</h2>
+                <p>Need monitoring</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="icon"><svg class="ui-icon"><use href="#icon-check-circle"></use></svg></div>
+            <div>
+                <h3>Resolved Alerts</h3>
+                <h2 id="resolved-alerts-count">0</h2>
+                <p>In the last 7 days</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="icon"><svg class="ui-icon"><use href="#icon-message"></use></svg></div>
+            <div>
+                <h3>Unread Notifications</h3>
+                <h2 id="unread-notifications-count">0</h2>
+                <p>New messages</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="alerts-layout">
+        <div class="alerts-main">
+            <section class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">Live overview</p>
+                        <h2>Active Alerts</h2>
+                    </div>
+                </div>
+                <div id="active-alerts">
+                    <div class="status-box">
+                        Loading alerts...
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">Audit trail</p>
+                        <h2>Alert History</h2>
+                    </div>
+                    <div class="alert-history-controls">
+                        <button type="button" class="history-filter-button">All Types</button>
+                        <button type="button" class="history-filter-button">All Ponds</button>
+                        <button type="button" class="history-filter-button active">Today</button>
+                        <button type="button" class="history-filter-button">Filter</button>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date &amp; Time</th>
+                                <th>Pond</th>
+                                <th>Parameter</th>
+                                <th>Value</th>
+                                <th>Condition</th>
+                                <th>Severity</th>
+                                <th>SMS</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="alert-history-body"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <aside class="alerts-side">
+            <section class="panel">
+                <div class="panel-heading compact">
+                    <div>
+                        <p class="eyebrow">Summary</p>
+                        <h2>Notification Status</h2>
+                    </div>
+                    <button type="button" class="text-button">View History</button>
+                </div>
+                <div id="notification-status">
+                    <div class="status-box">
+                        Loading notification status...
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-heading compact">
+                    <div>
+                        <p class="eyebrow">Latest activity</p>
+                        <h2>Recent Notifications</h2>
+                    </div>
+                    <button type="button" class="text-button">View All</button>
+                </div>
+                <div id="recent-notifications">
+                    <div class="status-box">
+                        Loading notifications...
+                    </div>
+                </div>
+            </section>
+        </aside>
+    </section>
+</div>
+
+<script src="{{ url_for('static', filename='js/alerts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+</body>
+</html>

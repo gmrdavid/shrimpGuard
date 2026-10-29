@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ShrimpGuard Dashboard</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+{% include "_icon_sprite.html" %}
+
+<div class="sidebar">
+
+    <div class="logo">
+        <svg class="ui-icon brand-icon"><use href="#icon-shrimp"></use></svg> <span>ShrimpGuard</span>
+    </div>
+
+    <p class="subtitle">
+        Water Quality Monitoring
+    </p>
+
+    <nav>
+
+        <a href="/" class="active">
+            <svg class="ui-icon"><use href="#icon-dashboard"></use></svg> Dashboard
+        </a>
+
+        <a href="/monitoring">
+            <svg class="ui-icon"><use href="#icon-monitor"></use></svg> Real-time Monitoring
+        </a>
+
+        <a href="/historical">
+            <svg class="ui-icon"><use href="#icon-history"></use></svg> Historical Data
+        </a>
+
+        <a href="/analytics">
+            <svg class="ui-icon"><use href="#icon-chart"></use></svg> Analytics & Reports
+        </a>
+
+        <a href="/alerts">
+            <svg class="ui-icon"><use href="#icon-alert"></use></svg> Alerts and Notifications
+        </a>
+
+        <a href="/settings">
+            <svg class="ui-icon"><use href="#icon-settings"></use></svg> Settings
+        </a>
+
+    </nav>
+    {% include "_logout_form.html" %}
+
+</div>
+
+
+<div class="main-content">
+
+    <header>
+
+        <div>
+
+            <h1>Good morning, Admin!</h1>
+
+            <p>
+                Here's what's happening in your shrimp farm today.
+            </p>
+
+        </div>
+
+        <div class="header-info">
+
+            <button id="notification-button" class="notification-button" type="button" aria-label="View notifications"><svg class="ui-icon"><use href="#icon-bell"></use></svg></button>
+
+            <div class="time">
+                <span id="time"></span>
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- WATER QUALITY INPUT -->
+
+    <section class="input-panel">
+
+        <div>
+            <h2>Check Water Quality</h2>
+            <p>Enter the latest readings from your pond to see the water quality result.</p>
+        </div>
+
+        <form id="quality-form" class="quality-form">
+
+            <label>
+                Temperature (°C)
+                <input id="temperature-input" name="temperature" type="number" min="0" max="50" step="0.1" required>
+            </label>
+
+            <label>
+                pH Level
+                <input id="ph-input" name="ph" type="number" min="0" max="14" step="0.01" required>
+            </label>
+
+            <button type="submit">Display Results</button>
+
+        </form>
+
+    </section>
+
+
+    <!-- WATER QUALITY CARDS -->
+
+    <section class="cards">
+
+        <div class="card">
+
+            <div class="icon"><svg class="ui-icon"><use href="#icon-thermometer"></use></svg></div>
+
+            <div>
+
+                <h3>Temperature</h3>
+
+                <h2 id="temperature">
+                    -- °C
+                </h2>
+
+                <p id="temperature-status">
+                    Loading...
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="icon"><svg class="ui-icon"><use href="#icon-droplet"></use></svg></div>
+
+            <div>
+
+                <h3>pH Level</h3>
+
+                <h2 id="ph">
+                    --
+                </h2>
+
+                <p id="ph-status">
+                    Loading...
+                </p>
+
+            </div>
+
+        </div>
+
+
+    </section>
+
+
+    <!-- DASHBOARD CONTENT -->
+
+    <section class="dashboard-grid">
+
+
+        <!-- DASHBOARD STATUS -->
+
+        <div class="panel">
+
+            <h2>Dashboard Status</h2>
+
+            <div class="status-box">
+
+                <h3 id="overall-status">
+                    Loading water quality data...
+                </h3>
+
+                <p id="last-updated">
+                </p>
+                <p id="dashboard-demo-note" class="demo-data-note" hidden>
+                    This is illustrative demo data, not a live pond measurement.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- ACTIVE ALERTS -->
+
+        <div class="panel">
+
+            <h2>Alerts and Notifications</h2>
+
+            <div id="alerts">
+
+                Loading alerts...
+
+            </div>
+
+        </div>
+
+
+        <!-- WATER QUALITY INDEX -->
+
+        <div class="panel wqi">
+
+            <h2>Water Quality Index</h2>
+
+            <div class="wqi-circle">
+
+                <span id="wqi-value">
+                    --
+                </span>
+
+            </div>
+
+            <h3 id="wqi-status">
+                Loading...
+            </h3>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+
+</body>
+
+</html>

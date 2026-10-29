@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | ShrimpGuard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="admin-page">
+{% include "_icon_sprite.html" %}
+<div class="sidebar">
+    <div class="logo"><svg class="ui-icon brand-icon"><use href="#icon-shrimp"></use></svg> <span>ShrimpGuard</span></div>
+    <p class="subtitle">Administration</p>
+    <nav>
+        <a href="/admin/dashboard" class="active"><svg class="ui-icon"><use href="#icon-dashboard"></use></svg> Admin Dashboard</a>
+        <a href="/admin"><svg class="ui-icon"><use href="#icon-users"></use></svg> User Management</a>
+    </nav>
+    {% include "_logout_form.html" %}
+</div>
+
+<main class="main-content">
+    <header>
+        <div>
+            <p class="eyebrow">Administration</p>
+            <h1>Admin Dashboard</h1>
+            <p>Account activity and access at a glance.</p>
+        </div>
+    </header>
+
+    <section class="admin-overview" aria-label="User and system overview">
+        <article class="admin-metric">
+            <div class="admin-metric-top">
+                <span class="admin-metric-label">Total Users</span>
+                <span class="admin-metric-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-users"></use></svg></span>
+            </div>
+            <strong class="admin-metric-value">{{ total_users }}</strong>
+            <p class="admin-metric-note">Registered accounts</p>
+        </article>
+
+        <article class="admin-metric">
+            <div class="admin-metric-top">
+                <span class="admin-metric-label">Active Users</span>
+                <span class="admin-metric-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-check-circle"></use></svg></span>
+            </div>
+            <strong class="admin-metric-value">{{ active_users }}</strong>
+            <p class="admin-metric-note">Currently active accounts</p>
+        </article>
+
+        <article class="admin-metric">
+            <div class="admin-metric-top">
+                <span class="admin-metric-label">Inactive Users</span>
+                <span class="admin-metric-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-clock"></use></svg></span>
+            </div>
+            <strong class="admin-metric-value">{{ inactive_users }}</strong>
+            <p class="admin-metric-note">Inactive accounts</p>
+        </article>
+
+        <article class="admin-metric">
+            <div class="admin-metric-top">
+                <span class="admin-metric-label">System Status</span>
+                <span class="admin-metric-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-activity"></use></svg></span>
+            </div>
+            <strong class="admin-metric-value admin-system-value{% if not system_online %} offline{% endif %}">
+                {{ "Operational" if system_online else "Unavailable" }}
+            </strong>
+            <p class="admin-metric-note">Database connection</p>
+        </article>
+    </section>
+
+    <section class="panel admin-panel admin-activity-overview" aria-label="Users Activity Overview">
+        <div class="admin-panel-heading">
+            <h2>Users Activity Overview</h2>
+            <span>Account activity</span>
+        </div>
+        <div class="admin-activity-chart">
+            <p>No user activity data is available yet.</p>
+        </div>
+    </section>
+
+    <section class="admin-dashboard-lower" aria-label="User and activity summaries">
+        <article class="panel admin-panel">
+            <div class="admin-panel-heading">
+                <h2>User &amp; Role summary</h2>
+                <span>0 users</span>
+            </div>
+            <div class="admin-table-wrap">
+                <table class="admin-table admin-role-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Role</th>
+                            <th scope="col">Users</th>
+                            <th scope="col">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="admin-role-empty" colspan="3">No role data to summarize yet.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="panel admin-panel">
+            <div class="admin-panel-heading">
+                <h2>Recent Activity</h2>
+                <span>Latest events</span>
+            </div>
+            <div class="admin-activity-empty">
+                <span class="admin-activity-mark" aria-hidden="true">↻</span>
+                <p>No activity to show yet.</p>
+            </div>
+        </article>
+    </section>
+</main>
+</body>
+</html>

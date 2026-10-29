@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management | ShrimpGuard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="admin-page">
+{% include "_icon_sprite.html" %}
+<div class="sidebar">
+    <div class="logo"><svg class="ui-icon brand-icon"><use href="#icon-shrimp"></use></svg> <span>ShrimpGuard</span></div>
+    <p class="subtitle">Administration</p>
+    <nav>
+        <a href="/admin/dashboard"><svg class="ui-icon"><use href="#icon-dashboard"></use></svg> Admin Dashboard</a>
+        <a href="/admin" class="active"><svg class="ui-icon"><use href="#icon-users"></use></svg> User Management</a>
+    </nav>
+    {% include "_logout_form.html" %}
+</div>
+
+<main class="main-content">
+    <header class="admin-user-header">
+        <h1>User Management</h1>
+        <button class="admin-add-user" type="button">
+            <svg class="ui-icon" aria-hidden="true"><use href="#icon-plus"></use></svg> Add User
+        </button>
+    </header>
+
+    <section class="admin-overview" aria-label="User and system overview">
+        <article class="admin-metric">
+            <div class="admin-metric-top">
+                <span class="admin-metric-label">Total Users</span>
+                <span class="admin-metric-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-users"></use></svg></span>
+            </div>
+            <strong class="admin-metric-value">{{ total_users }}</strong>
+            <p class="admin-metric-note">Registered accounts</p>
+        </article>
+
+        <article class="admin-metric">
+            <div class="admin-metric-top">
+                <span class="admin-metric-label">Active Users</span>
+                <span class="admin-metric-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-check-circle"></use></svg></span>
+            </div>
+            <strong class="admin-metric-value">{{ active_users }}</strong>
+            <p class="admin-metric-note">Currently active accounts</p>
+        </article>
+
+        <article class="admin-metric">
+            <div class="admin-metric-top">
+                <span class="admin-metric-label">Inactive Users</span>
+                <span class="admin-metric-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-clock"></use></svg></span>
+            </div>
+            <strong class="admin-metric-value">{{ inactive_users }}</strong>
+            <p class="admin-metric-note">Inactive accounts</p>
+        </article>
+
+        <article class="admin-metric">
+            <div class="admin-metric-top">
+                <span class="admin-metric-label">System Status</span>
+                <span class="admin-metric-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-activity"></use></svg></span>
+            </div>
+            <strong class="admin-metric-value admin-system-value{% if not system_online %} offline{% endif %}">
+                {{ "Operational" if system_online else "Unavailable" }}
+            </strong>
+            <p class="admin-metric-note">Database connection</p>
+        </article>
+    </section>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="admin-user-notices" role="status">
+        {% for category, message in messages %}
+        <p class="admin-user-notice {{ category }}">{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <dialog class="admin-user-dialog" id="add-user-dialog" aria-labelledby="add-user-title">
+        <div class="admin-user-dialog-heading">
+            <h2 id="add-user-title">Add User</h2>
+            <form method="dialog">
+                <button class="admin-dialog-close" type="submit" aria-label="Close"><svg class="ui-icon"><use href="#icon-x"></use></svg></button>
+            </form>
+        </div>
+        <form class="admin-user-form" method="post" action="{{ url_for('create_user') }}">
+            <input type="hidden" name="csrf_token" value="{{ admin_csrf_token }}">
+            <label for="new-user-name">Name</label>
+            <input id="new-user-name" name="name" type="text" maxlength="80" required>
+            <label for="new-user-email">Email</label>
+            <input id="new-user-email" name="email" type="email" maxlength="255" required>
+            <label for="new-user-role">Role</label>
+            <select id="new-user-role" name="role" required>
+                <option value="Client" selected>Client</option>
+                <option value="Admin">Admin</option>
+            </select>
+            <label for="new-user-status">Status</label>
+            <select id="new-user-status" name="status" required>
+                <option value="Active" selected>Active</option>
+                <option value="Inactive">Inactive</option>
+            </select>
+            <label for="new-user-password">Temporary password</label>
+            <input id="new-user-password" name="password" type="password" minlength="8" autocomplete="new-password" required>
+            <div class="admin-user-form-actions">
+                <button class="admin-user-cancel" type="button" id="cancel-add-user">Cancel</button>
+                <button class="admin-user-submit" type="submit">Save User</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog class="admin-user-dialog" id="edit-user-dialog" aria-labelledby="edit-user-title">
+        <div class="admin-user-dialog-heading">
+            <h2 id="edit-user-title">Edit User</h2>
+            <form method="dialog">
+                <button class="admin-dialog-close" type="submit" aria-label="Close"><svg class="ui-icon"><use href="#icon-x"></use></svg></button>
+            </form>
+        </div>
+        <form id="edit-user-form" class="admin-user-form" method="post" action="{{ url_for('edit_user') }}">
+            <input type="hidden" name="csrf_token" value="{{ admin_csrf_token }}">
+            <input id="edit-user-current-email" name="current_email" type="hidden">
+            <label for="edit-user-name">Name</label>
+            <input id="edit-user-name" name="name" type="text" maxlength="80" required>
+            <label for="edit-user-email">Email</label>
+            <input id="edit-user-email" name="email" type="email" maxlength="255" required>
+            <label for="edit-user-role">Role</label>
+            <select id="edit-user-role" name="role" required>
+                <option value="Client">Client</option>
+                <option value="Admin">Admin</option>
+            </select>
+            <label for="edit-user-status">Status</label>
+            <select id="edit-user-status" name="status" required>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+            </select>
+            <div class="admin-user-form-actions">
+                <button class="admin-user-cancel" type="button" id="cancel-edit-user">Cancel</button>
+                <button class="admin-user-submit" type="submit">Save Changes</button>
+            </div>
+        </form>
+    </dialog>
+
+    <section class="admin-content-grid" aria-label="Administration details">
+        <article class="panel admin-panel admin-user-panel">
+            <div class="admin-user-toolbar">
+                <label class="admin-search">
+                    <span aria-hidden="true">⌕</span>
+                    <input id="user-search" type="search" placeholder="Search by name, email, or role..." autocomplete="off">
+                </label>
+                <label class="admin-filter-label">
+                    <span class="sr-only">Filter by role</span>
+                    <select id="user-role-filter" aria-label="Filter by role">
+                        <option value="all">All Roles</option>
+                        <option value="admin">Admin</option>
+                        <option value="client">Client</option>
+                    </select>
+                </label>
+                <label class="admin-filter-label">
+                    <span class="sr-only">Filter by status</span>
+                    <select id="user-status-filter" aria-label="Filter by status">
+                        <option value="all">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </label>
+            </div>
+            <div class="admin-table-wrap">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Name</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Role</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Last Login</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr data-user-row data-name="{{ user.user_name|lower }}" data-email="{{ user.email|lower }}" data-role="{{ user.role|lower }}" data-status="{{ user.status|lower }}">
+                            <td>{{ user.user_name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td><span class="admin-user-role {{ user.role|lower }}">{{ user.role }}</span></td>
+                            <td><span class="admin-user-status {{ user.status|lower }}">{{ user.status }}</span></td>
+                            <td>
+                                {% if user.last_login %}
+                                <time datetime="{{ user.last_login.isoformat() }}">
+                                    {{ user.last_login.strftime("%b %d, %Y") }}<br>
+                                    {{ user.last_login.strftime("%I:%M %p") }}
+                                </time>
+                                {% else %}
+                                Never
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="admin-edit-user" type="button" aria-label="Edit {{ user.user_name }}" title="Edit user" data-email="{{ user.email }}" data-name="{{ user.user_name }}" data-role="{{ user.role }}" data-status="{{ user.status }}">
+                                    <span aria-hidden="true">✎</span>
+                                </button>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td class="admin-empty" colspan="6">No user accounts have been added.</td>
+                        </tr>
+                        {% endfor %}
+                        <tr id="user-filter-empty" hidden>
+                            <td class="admin-empty" colspan="6">No users match these filters.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="admin-user-footer">
+                <span id="user-count" aria-live="polite">{{ users|length }} account{% if users|length != 1 %}s{% endif %}</span>
+            </div>
+        </article>
+
+        <article class="panel admin-panel">
+            <div class="admin-panel-heading">
+                <h2>Recent Activity</h2>
+                <span>Latest events</span>
+            </div>
+            <div class="admin-activity-empty">
+                <span class="admin-activity-mark" aria-hidden="true">↻</span>
+                <p>No activity to show yet.</p>
+            </div>
+        </article>
+    </section>
+</main>
+<script>
+    (() => {
+        const addUserButton = document.querySelector(".admin-add-user");
+        const addUserDialog = document.getElementById("add-user-dialog");
+        const cancelAddUser = document.getElementById("cancel-add-user");
+        const editUserDialog = document.getElementById("edit-user-dialog");
+        const editUserForm = document.getElementById("edit-user-form");
+        const cancelEditUser = document.getElementById("cancel-edit-user");
+        const search = document.getElementById("user-search");
+        const roleFilter = document.getElementById("user-role-filter");
+        const statusFilter = document.getElementById("user-status-filter");
+        const rows = Array.from(document.querySelectorAll("[data-user-row]"));
+        const emptyRow = document.getElementById("user-filter-empty");
+        const userCount = document.getElementById("user-count");
+
+        addUserButton.addEventListener("click", () => addUserDialog.showModal());
+        cancelAddUser.addEventListener("click", () => addUserDialog.close());
+        document.querySelectorAll(".admin-edit-user").forEach((button) => {
+            button.addEventListener("click", () => {
+                document.getElementById("edit-user-current-email").value = button.dataset.email;
+                document.getElementById("edit-user-name").value = button.dataset.name;
+                document.getElementById("edit-user-email").value = button.dataset.email;
+                document.getElementById("edit-user-role").value = button.dataset.role;
+                document.getElementById("edit-user-status").value = button.dataset.status;
+                editUserDialog.showModal();
+            });
+        });
+        cancelEditUser.addEventListener("click", () => editUserDialog.close());
+        editUserForm.addEventListener("submit", (event) => {
+            const userName = document.getElementById("edit-user-name").value.trim();
+            if (!window.confirm(`Save these changes to ${userName}?`)) {
+                event.preventDefault();
+            }
+        });
+
+        const filterUsers = () => {
+            const query = search.value.trim().toLowerCase();
+            let visibleCount = 0;
+
+            rows.forEach((row) => {
+                const matchesText = [row.dataset.name, row.dataset.email, row.dataset.role]
+                    .some((value) => value.includes(query));
+                const matchesRole = roleFilter.value === "all" || row.dataset.role === roleFilter.value;
+                const matchesStatus = statusFilter.value === "all" || row.dataset.status === statusFilter.value;
+                row.hidden = !(matchesText && matchesRole && matchesStatus);
+                if (!row.hidden) visibleCount += 1;
+            });
+
+            emptyRow.hidden = rows.length === 0 || visibleCount > 0;
+            userCount.textContent = `${visibleCount} account${visibleCount === 1 ? "" : "s"}`;
+        };
+
+        search.addEventListener("input", filterUsers);
+        roleFilter.addEventListener("change", filterUsers);
+        statusFilter.addEventListener("change", filterUsers);
+    })();
+</script>
+</body>
+</html>
