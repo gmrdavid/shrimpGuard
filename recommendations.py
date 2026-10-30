@@ -219,7 +219,8 @@ def _query_openai_recommendation(temperature, ph, classification):
 
     try:
         from openai import OpenAI
-        client = OpenAI(api_key=api_key.strip(), timeout=12.0)
+        base_url = os.getenv("OPENAI_BASE_URL", "").strip() or None
+        client = OpenAI(api_key=api_key.strip(), base_url=base_url, timeout=12.0)
         model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
         system_prompt = (
@@ -261,14 +262,20 @@ Return ONLY a valid JSON object matching this exact schema:
             max_tokens=650,
         )
 
-        raw_content = completion.choices[0].message.content
-        data = json.loads(raw_content)
+        raw_content = completion.choices[0].message.content or "{}"
+        cleaned_content = raw_content.strip()
+        if cleaned_content.startswith("```"):
+            cleaned_content = cleaned_content.strip("`")
+            if cleaned_content.startswith("json"):
+                cleaned_content = cleaned_content[4:].strip()
+        data = json.loads(cleaned_content)
 
         if not isinstance(data.get("actionable_solutions"), list):
             data["actionable_solutions"] = [data.get("actionable_solution", "Maintain regular pond monitoring.")]
 
+        provider = "Gemini AI" if "gemini" in model.lower() else ("Groq AI" if "llama" in model.lower() or "groq" in (base_url or "").lower() else "OpenAI API")
         data["classification"] = classification
-        data["source"] = f"OpenAI API ({model})"
+        data["source"] = f"{provider} ({model})"
         data["species"] = "Penaeus vannamei (Pacific White Shrimp)"
         return data
 
