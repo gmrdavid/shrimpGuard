@@ -4,6 +4,7 @@ import math
 import os
 import re
 import secrets
+import threading
 import zipfile
 from datetime import datetime, timedelta
 from functools import wraps
@@ -280,6 +281,22 @@ with app.app_context():
         pass
 
 
+def _async_dispatch_ntfy(status, temperature, ph, topics):
+    """Dispatches ntfy push notifications in a daemon thread so API responses are instantaneous."""
+    try:
+        from recommendations import predict_recommendation
+        ai_data = predict_recommendation(temperature, ph)
+    except Exception as exc:
+        app.logger.warning(f"Unable to load AI recommendation for push alert: {exc}")
+        ai_data = None
+
+    for top in set(topics):
+        try:
+            send_water_quality_alert_ntfy(status, temperature, ph, topic=top, ai_data=ai_data)
+        except Exception as exc:
+            app.logger.exception(f"Unable to dispatch ntfy push alert to topic {top}: {exc}")
+
+
 @app.route("/api/readings", methods=["POST"])
 @role_required("Client")
 def create_reading():
@@ -330,7 +347,7 @@ def create_reading():
         )
         db.session.commit()
 
-        # Automatic Push Alert dispatch via ntfy.sh (100% Free & Safe)
+        # Automatic Push Alert dispatch via ntfy.sh (100% Free & Safe, Non-blocking)
         if status in ("Critical", "Warning"):
             try:
                 topics = []
@@ -342,10 +359,14 @@ def create_reading():
                 if default_topic and is_valid_topic(default_topic) and default_topic not in topics:
                     topics.append(default_topic)
 
-                for top in set(topics):
-                    send_water_quality_alert_ntfy(status, temperature, ph, topic=top)
+                if topics:
+                    threading.Thread(
+                        target=_async_dispatch_ntfy,
+                        args=(status, temperature, ph, topics),
+                        daemon=True
+                    ).start()
             except Exception:
-                app.logger.exception("Unable to dispatch ntfy push alert.")
+                app.logger.exception("Unable to spawn ntfy push alert thread.")
 
         return jsonify(
             {
@@ -499,6 +520,7 @@ def get_alerts():
         app.logger.exception("Unable to load sensor readings for alerts.")
         return jsonify({"error": "Unable to load alerts database."}), 503
 
+    readings = sorted(list(readings), key=parse_reading_datetime, reverse=True)
     all_alerts = generate_alerts_from_readings(readings)
 
     user = db.session.get(User, user_id)
@@ -521,11 +543,87 @@ def get_alerts():
     resolved_count = len(readings) - len(active_alerts)
     if resolved_count < 0:
         resolved_count = 0
-    unread_notifications = sum(1 for a in all_alerts if not a.get("is_read"))
 
-    recent_notifications = all_alerts
-    sent_count = len(all_alerts)
-    delivered_count = len(all_alerts)
+    recent_notifications = []
+    for idx, reading in enumerate(readings[:30]):
+        try:
+            temp = float(reading["temperature"])
+            ph = float(reading["ph_level"])
+            date_str = str(reading["date"])
+        except (TypeError, ValueError, KeyError):
+            continue
+
+        ml_status = reading.get("status")
+        if not ml_status or ml_status.strip() in ("Normal", "Good"):
+            try:
+                ml_status = classify_water_quality(temp, ph)
+            except Exception:
+                ml_status = "Warning" if (temp < 28.0 or temp > 32.0 or ph < 7.50 or ph > 8.50) else "Optimal"
+
+        is_abnormal = ml_status in ("Critical", "Warning")
+        temp_abnormal = temp < 28.0 or temp > 32.0
+        ph_abnormal = ph < 7.50 or ph > 8.50
+        status_label = "Active" if (idx == 0 and is_abnormal) else "Resolved"
+
+        r_dt = parse_reading_datetime({"date": date_str})
+        is_read = bool(last_read and r_dt <= last_read)
+
+        if is_abnormal:
+            severity = ml_status
+            if temp_abnormal and ph_abnormal:
+                alert_type = "combined"
+                title = f"{severity} Combined Water Quality Alert"
+                message = f"ML model detected {severity} condition: Water temperature is {temp:.1f} °C (optimal: 28.0–32.0 °C) and pH is {ph:.2f} (optimal: 7.50–8.50)."
+                notification = f"Push: [{severity.upper()}] Temp {temp:.1f}°C, pH {ph:.2f}. Immediate pond management required."
+            elif temp_abnormal:
+                alert_type = "temperature"
+                title = f"{severity} Temperature Alert"
+                message = f"ML model detected {severity} temperature: Currently {temp:.1f} °C, outside optimal range of 28.0–32.0 °C."
+                notification = f"Push: [{severity.upper()}] Pond water temperature is {temp:.1f}°C. Check aeration/temperature controls."
+            elif ph_abnormal:
+                alert_type = "ph"
+                title = f"{severity} pH Level Alert"
+                message = f"ML model detected {severity} pH level: Currently {ph:.2f}, outside optimal range of 7.50–8.50."
+                notification = f"Push: [{severity.upper()}] Pond water pH is {ph:.2f}. Adjust water treatment and buffering."
+            else:
+                alert_type = "general"
+                title = f"{severity} Water Quality Alert"
+                message = f"ML model classified pond condition as {severity} (Temp: {temp:.1f} °C, pH: {ph:.2f})."
+                notification = f"Push: [{severity.upper()}] Water quality warning detected by ML model."
+
+            recent_notifications.append({
+                "id": f"notif-{date_str}",
+                "recorded_at": date_str,
+                "temperature": temp,
+                "ph": ph,
+                "severity": severity,
+                "type": alert_type,
+                "title": title,
+                "message": message,
+                "notification": notification,
+                "status": status_label,
+                "delivery_status": "Delivered",
+                "is_read": is_read
+            })
+        else:
+            recent_notifications.append({
+                "id": f"notif-{date_str}",
+                "recorded_at": date_str,
+                "temperature": temp,
+                "ph": ph,
+                "severity": "Optimal",
+                "type": "optimal",
+                "title": "Optimal Pond Status Verified",
+                "message": f"Normal telemetry logged: Water temperature is {temp:.1f} °C and pH is {ph:.2f}, meeting optimal Penaeus vannamei standards.",
+                "notification": f"Telemetry: [OPTIMAL] Temp {temp:.1f}°C, pH {ph:.2f}. All parameters within normal bounds.",
+                "status": "Normal",
+                "delivery_status": "Logged",
+                "is_read": is_read
+            })
+
+    unread_notifications = sum(1 for n in recent_notifications if not n.get("is_read"))
+    sent_count = len(recent_notifications)
+    delivered_count = len(recent_notifications)
     failed_count = 0
 
     history_items = []

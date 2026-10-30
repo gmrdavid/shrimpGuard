@@ -46,6 +46,85 @@ function updateDeviceTime() {
         });
     }
 
+
+    // ntfy.sh Setup & Guide Dialog
+    const openGuideBtn = document.getElementById("open-ntfy-guide-btn");
+    const openGuideLink = document.getElementById("open-ntfy-guide-link");
+    const closeGuideBtn = document.getElementById("close-ntfy-guide-modal");
+    const closeGuideActionBtn = document.getElementById("modal-close-ntfy-guide-btn");
+    const guideModal = document.getElementById("ntfy-guide-modal");
+    const guideTopicPreview = document.getElementById("guide-topic-preview");
+    const guideCopyTopicBtn = document.getElementById("guide-copy-topic-btn");
+    const guideCopyText = document.getElementById("guide-copy-text");
+
+    function openNtfyGuide() {
+        if (!guideModal) return;
+        const topicInput = document.getElementById("profile-ntfy-topic");
+        const currentTopic = topicInput && topicInput.value.trim() ? topicInput.value.trim() : "";
+        if (guideTopicPreview) {
+            guideTopicPreview.textContent = currentTopic || "(No topic entered yet - click Generate Secure Topic)";
+        }
+        guideModal.hidden = false;
+        document.body.style.overflow = "hidden";
+    }
+
+    function closeNtfyGuide() {
+        if (!guideModal) return;
+        guideModal.hidden = true;
+        document.body.style.overflow = "";
+    }
+
+    if (openGuideBtn) {
+        openGuideBtn.addEventListener("click", openNtfyGuide);
+    }
+
+    if (openGuideLink) {
+        openGuideLink.addEventListener("click", openNtfyGuide);
+    }
+
+    if (closeGuideBtn) {
+        closeGuideBtn.addEventListener("click", closeNtfyGuide);
+    }
+
+    if (closeGuideActionBtn) {
+        closeGuideActionBtn.addEventListener("click", closeNtfyGuide);
+    }
+
+    if (guideModal) {
+        guideModal.addEventListener("click", (e) => {
+            if (e.target === guideModal) {
+                closeNtfyGuide();
+            }
+        });
+    }
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && guideModal && !guideModal.hidden) {
+            closeNtfyGuide();
+        }
+    });
+
+    if (guideCopyTopicBtn) {
+        guideCopyTopicBtn.addEventListener("click", async () => {
+            const topicInput = document.getElementById("profile-ntfy-topic");
+            const topic = topicInput && topicInput.value.trim() ? topicInput.value.trim() : "";
+            if (!topic) {
+                window.alert("Please enter or generate a topic first!");
+                return;
+            }
+            try {
+                await navigator.clipboard.writeText(topic);
+                if (guideCopyText) guideCopyText.textContent = "Copied!";
+                setTimeout(() => {
+                    if (guideCopyText) guideCopyText.textContent = "Copy Topic";
+                }, 2000);
+            } catch (err) {
+                // Fallback prompt
+                window.prompt("Copy your topic name:", topic);
+            }
+        });
+    }
+
     // Send Test ntfy Push Notification
     const testNtfyButton = document.getElementById("test-ntfy-button");
     if (testNtfyButton) {

@@ -464,64 +464,6 @@
 
                 </article>
 
-<!-- UNIONIZED AMMONIA (NH3) CALCULATOR -->
-                <article class="panel dashboard-panel ammonia-panel dashboard-ammonia-panel">
-
-                    <div class="panel-heading">
-                        <div class="panel-heading-icon ammonia-heading-icon">
-                            <svg class="ui-icon" aria-hidden="true">
-                                <use href="#icon-droplet"></use>
-                            </svg>
-                        </div>
-
-                        <div>
-                            <h2>Unionized Ammonia (NH₃)</h2>
-                            <p>Toxicity estimation from TAN (Van Wyk et al., 1999)</p>
-                        </div>
-                    </div>
-
-                    <!-- DASHBOARD AMMONIA QUICK CARD -->
-                    <div class="dash-ammonia-grid">
-                        <div class="dash-ammonia-input-box">
-                            <label for="dash-ammonia-tan" class="dash-ammonia-label">
-                                Total Ammonia Nitrogen (TAN) <span class="ammonia-unit">ppm</span>
-                            </label>
-                            <div class="dash-ammonia-input-row">
-                                <input type="number" id="dash-ammonia-tan" class="ammonia-number-input" step="0.01" min="0" max="20" value="0.8" placeholder="0.80">
-                                <button type="button" id="dash-ammonia-calc-btn" class="ammonia-btn-primary dash-ammonia-btn">Calculate</button>
-                            </div>
-                            <div class="dash-ammonia-presets">
-                                <button type="button" class="dash-chip" data-tan="0.5">0.50</button>
-                                <button type="button" class="dash-chip active" data-tan="0.8">0.80</button>
-                                <button type="button" class="dash-chip" data-tan="1.0">1.00</button>
-                                <button type="button" class="dash-chip" data-tan="1.5">1.50</button>
-                            </div>
-                        </div>
-
-                        <div class="dash-ammonia-result-box">
-                            <div class="dash-ammonia-result-header">
-                                <span class="dash-ammonia-sub">ESTIMATED NH₃</span>
-                                <span id="dash-ammonia-badge" class="wqi-metric-badge badge-normal">Safe (&lt; 0.03 ppm)</span>
-                            </div>
-                            <div class="dash-ammonia-value-row">
-                                <strong id="dash-ammonia-value" class="dash-ammonia-number">0.0224</strong>
-                                <span class="dash-ammonia-unit">ppm</span>
-                            </div>
-                            <p id="dash-ammonia-info" class="dash-ammonia-info">
-                                Table factor <strong><em>f</em> = <span id="dash-ammonia-factor">0.028</span></strong> at live sensor readings.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="dash-ammonia-footer">
-                        <span id="dash-ammonia-assessment">Level is below 0.03 ppm safety limit.</span>
-                        <a href="/monitoring#monitoring-ammonia-section" class="panel-text-link">
-                            Open full matrix &rarr;
-                        </a>
-                    </div>
-
-                </article>
-
             </div>
         </section>
 

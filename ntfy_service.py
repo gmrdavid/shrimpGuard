@@ -214,6 +214,25 @@ def send_water_quality_alert_ntfy(
     severity_upper = str(severity).upper()
     timestamp = datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
 
+    # Fast path for verification/test pushes: bypass external AI calls and dispatch immediately
+    if severity_upper == "TEST":
+        title = "🧪 ShrimpGuard Push Test Notification"
+        body_message = (
+            "✅ ShrimpGuard Gateway Push Alerts Verified!\n\n"
+            f"📡 Target Topic: {topic or 'Configured Topic'}\n"
+            f"⏱️ Tested at: {timestamp}\n\n"
+            "Your ntfy.sh push notification connection is working properly! "
+            "You will automatically receive high-priority push alerts whenever pond water temperature or pH breaches optimal limits for Penaeus vannamei."
+        )
+        return send_ntfy_notification(
+            message=body_message,
+            title=title,
+            topic=topic,
+            priority=3,
+            tags=["white_check_mark", "shrimp", "test"],
+            click_url=click_url
+        )
+
     # 1. Per-parameter statuses
     temp_status, ph_status = get_parameter_status(temp_val, ph_val)
 

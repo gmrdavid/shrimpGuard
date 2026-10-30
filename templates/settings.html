@@ -253,11 +253,17 @@
                     </div>
 
                                         <div class="settings-field">
-                        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
-                            <label for="profile-ntfy-topic" style="margin-bottom: 0;">ntfy.sh Alert Topic (Push Notifications)</label>
-                            <button id="generate-topic-btn" type="button" style="background: none; border: none; color: #16a34a; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: underline; padding: 0;">
-                                Generate Secure Topic
-                            </button>
+                        <div class="ntfy-topic-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
+                            <label for="profile-ntfy-topic" style="margin-bottom: 0; font-weight: 700;">ntfy.sh Alert Topic (Push Notifications)</label>
+                            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                                <button id="open-ntfy-guide-btn" type="button" class="btn-guide-pill" title="View step-by-step setup guide for ntfy.sh">
+                                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-lightbulb"></use></svg>
+                                    <span>Setup Guide &amp; How to Use</span>
+                                </button>
+                                <button id="generate-topic-btn" type="button" style="background: none; border: none; color: #16a34a; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: underline; padding: 0;">
+                                    Generate Secure Topic
+                                </button>
+                            </div>
                         </div>
                         <input
                             id="profile-ntfy-topic"
@@ -270,7 +276,7 @@
                             title="3-64 characters: letters, numbers, hyphens, and underscores only.">
                         <small>
                             Receive 100% free real-time push alerts on mobile or desktop via <b>ntfy.sh</b>.<br>
-                            <b>Security Tip:</b> Keep your topic unguessable (like a secret password). Subscribe to this exact topic in the free <b>ntfy mobile app</b> (Android/iOS) or at <b>ntfy.sh</b> to receive your pond's alerts.
+                            <b>Need help setting up?</b> Click <button type="button" id="open-ntfy-guide-link" class="inline-guide-btn">How to use ntfy.sh guide</button> to see where to get the free app and how to subscribe to your pond alerts.
                         </small>
                     </div>
 
@@ -487,6 +493,159 @@
         </div>
     </div>
 </dialog>
+<!-- NTFY.SH SETUP & USER GUIDE POPUP DIALOG -->
+<div id="ntfy-guide-modal" class="modal-dialog-backdrop" hidden>
+    <div class="modal-dialog-container ntfy-guide-dialog-container" role="dialog" aria-modal="true" aria-labelledby="ntfy-guide-title">
+
+        <div class="modal-dialog-header">
+            <div class="modal-header-text">
+                <div class="panel-heading-icon ntfy-guide-modal-icon">
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-bell"></use>
+                    </svg>
+                </div>
+                <div>
+                    <h3 id="ntfy-guide-title">ntfy.sh Push Notifications Setup Guide</h3>
+                    <p>Follow these 4 simple steps to receive real-time pond alerts on your phone or PC</p>
+                </div>
+            </div>
+            <button type="button" id="close-ntfy-guide-modal" class="modal-close-btn" aria-label="Close dialog">
+                &times;
+            </button>
+        </div>
+
+        <div class="modal-dialog-body ntfy-guide-body">
+
+            <!-- OVERVIEW BANNER -->
+            <div class="ntfy-guide-intro-banner">
+                <div class="intro-badge">
+                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-lightbulb"></use></svg>
+                    <span>WHAT IS NTFY.SH?</span>
+                </div>
+                <p>
+                    <strong>ntfy.sh</strong> (pronounced <em>notify</em>) is a 100% free, private push notification service. It connects to ShrimpGuard to deliver instant push notifications, water parameter readings, and AI actionable solutions directly to your phone whenever water conditions turn <strong>Warning</strong> or <strong>Critical</strong>. Zero account sign-up is required!
+                </p>
+            </div>
+
+            <!-- STEP BY STEP CARDS -->
+            <div class="ntfy-steps-list">
+
+                <!-- STEP 1 -->
+                <div class="ntfy-step-card">
+                    <div class="step-badge">STEP 1</div>
+                    <div class="step-content">
+                        <h4>Create or Generate Your Private Alert Topic</h4>
+                        <p>
+                            A topic name acts like a secret private channel for your pond. Click <strong>"Generate Secure Topic"</strong> in Settings to create an unguessable private topic name (e.g. <code>sg-pond-8a3f9c</code>), then click <strong>"Save Profile"</strong>.
+                        </p>
+                        <div class="step-topic-preview-box">
+                            <span class="preview-label">Your Current Alert Topic:</span>
+                            <div class="step-copy-box">
+                                <code id="guide-topic-preview">sg-pond-...</code>
+                                <button type="button" id="guide-copy-topic-btn" class="guide-copy-btn" title="Copy to clipboard">
+                                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-check"></use></svg>
+                                    <span id="guide-copy-text">Copy Topic</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 2 -->
+                <div class="ntfy-step-card">
+                    <div class="step-badge">STEP 2</div>
+                    <div class="step-content">
+                        <h4>Where to Find ntfy.sh (Get the App or Open Web)</h4>
+                        <p>
+                            Install the official free app on your phone, or open the web version on your computer:
+                        </p>
+                        <div class="ntfy-platforms-grid">
+                            <a href="https://play.google.com/store/apps/details?id=io.heckel.ntfy" target="_blank" rel="noopener noreferrer" class="platform-card">
+                                <div class="platform-icon android-icon">
+                                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-monitor"></use></svg>
+                                </div>
+                                <div class="platform-info">
+                                    <strong>Android Devices</strong>
+                                    <span>Google Play Store &rarr;</span>
+                                </div>
+                            </a>
+
+                            <a href="https://apps.apple.com/us/app/ntfy/id1625396347" target="_blank" rel="noopener noreferrer" class="platform-card">
+                                <div class="platform-icon apple-icon">
+                                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-monitor"></use></svg>
+                                </div>
+                                <div class="platform-info">
+                                    <strong>iOS / iPhone / iPad</strong>
+                                    <span>Apple App Store &rarr;</span>
+                                </div>
+                            </a>
+
+                            <a href="https://ntfy.sh" target="_blank" rel="noopener noreferrer" class="platform-card">
+                                <div class="platform-icon web-icon">
+                                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-chart"></use></svg>
+                                </div>
+                                <div class="platform-info">
+                                    <strong>Desktop / Laptop</strong>
+                                    <span>Open ntfy.sh Website &rarr;</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 3 -->
+                <div class="ntfy-step-card">
+                    <div class="step-badge">STEP 3</div>
+                    <div class="step-content">
+                        <h4>Subscribe to Your Exact Topic in ntfy</h4>
+                        <ol class="step-instructions">
+                            <li>Open the <strong>ntfy app</strong> on your mobile phone (or visit <a href="https://ntfy.sh" target="_blank" rel="noopener noreferrer"><strong>https://ntfy.sh</strong></a> in your browser).</li>
+                            <li>Tap or click the <strong>"+" (Subscribe to topic)</strong> button.</li>
+                            <li>Paste or type your exact <strong>Alert Topic</strong> from Step 1.</li>
+                            <li>Leave the default server as <code>https://ntfy.sh</code>.</li>
+                            <li>Tap <strong>"Subscribe"</strong>. Ensure system notification permission is set to <strong>"Allow"</strong> so alerts ring with sound!</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- STEP 4 -->
+                <div class="ntfy-step-card">
+                    <div class="step-badge">STEP 4</div>
+                    <div class="step-content">
+                        <h4>Verify with a Test Push Notification</h4>
+                        <p>
+                            Back in ShrimpGuard Settings, click the blue <strong>"Send Test Push Notification"</strong> button. You will instantly receive a chime and notification banner on your phone and browser:
+                        </p>
+                        <div class="ntfy-notification-preview-card">
+                            <div class="notif-preview-header">
+                                <span class="notif-app-name">ShrimpGuard &bull; ntfy.sh</span>
+                                <span class="notif-time">Just now</span>
+                            </div>
+                            <div class="notif-preview-body">
+                                <strong>⚠️ Water Quality Alert (Optimal / Warning)</strong>
+                                <p>Temp: 28.0&deg;C (Optimal) | pH: 7.60 (Optimal) &bull; AI Recommendation: Maintain stable dissolved oxygen...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="modal-dialog-footer ntfy-guide-footer">
+            <a href="https://ntfy.sh" target="_blank" rel="noopener noreferrer" class="ntfy-direct-link-btn">
+                <span>Visit ntfy.sh Website</span>
+                <svg class="ui-icon" aria-hidden="true"><use href="#icon-arrow"></use></svg>
+            </a>
+            <button type="button" id="modal-close-ntfy-guide-btn" class="ammonia-btn-primary">
+                Got it, Close Guide
+            </button>
+        </div>
+
+    </div>
+</div>
+
 
 <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
 <script src="{{ url_for('static', filename='js/settings.js') }}"></script>

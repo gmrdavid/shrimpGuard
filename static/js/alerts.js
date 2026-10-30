@@ -184,19 +184,24 @@ function renderRecentNotifications(notifications) {
     if (prevBtn) prevBtn.disabled = (recentCurrentPage <= 1);
     if (nextBtn) nextBtn.disabled = (recentCurrentPage >= totalPages);
 
-    container.innerHTML = pageItems.map((item) => `
-        <div class="alert" style="${item.is_read ? 'opacity: 0.88;' : 'border-left: 3px solid #16a34a;'}">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                <span style="display: flex; align-items: center; gap: 6px;">
-                    <svg class="ui-icon"><use href="${item.severity === "Critical" ? "#icon-alert" : "#icon-bell"}"></use></svg>
-                    <strong>${item.title}</strong>
-                </span>
-                ${item.is_read ? '' : '<span style="background: #e8f5e9; color: #16a34a; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px;">NEW</span>'}
+    container.innerHTML = pageItems.map((item) => {
+        const sev = (item.severity || "optimal").toLowerCase();
+        const iconHref = sev === "critical" ? "#icon-alert" : sev === "warning" ? "#icon-bell" : "#icon-check-circle";
+        const isUnread = !item.is_read;
+        return `
+            <div class="alert" style="${isUnread ? 'border-left: 3px solid #16a34a; background: #fafdfb;' : 'border-left: 3px solid #d1d5db; opacity: 0.9;'}">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="display: flex; align-items: center; gap: 6px;">
+                        <svg class="ui-icon"><use href="${iconHref}"></use></svg>
+                        <strong>${item.title}</strong>
+                    </span>
+                    ${isUnread ? '<span style="background: #e8f5e9; color: #16a34a; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px;">NEW</span>' : ''}
+                </div>
+                <div>${item.message}</div>
+                <small style="color: #6d8477; display: block; margin-top: 4px;">${formatDateTime(item.recorded_at)}</small>
             </div>
-            <div>${item.message}</div>
-            <small style="color: #6d8477; display: block; margin-top: 4px;">${formatDateTime(item.recorded_at)}</small>
-        </div>
-    `).join("");
+        `;
+    }).join("");
 }
 
 // =========================================
@@ -689,6 +694,7 @@ function initAlertHistoryControls() {
                         cachedRecentNotifications.forEach(n => n.is_read = true);
                         renderRecentNotifications(cachedRecentNotifications);
                     }
+                    window.dispatchEvent(new Event("shrimpguard:notification-update"));
                 }
             } catch (err) {
                 console.error("Failed to mark all as read:", err);

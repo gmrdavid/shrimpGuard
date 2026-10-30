@@ -664,12 +664,12 @@ async function loadMonitoringData() {
             updateSummary(trueLatest);
             calculateWQI(trueLatest);
             updateAmmoniaMonitoring(trueLatest);
-            try {
-                updateRecommendations(trueLatest, await loadRecommendation(trueLatest));
-            } catch (error) {
-                console.error("Unable to load AI recommendations:", error);
+            loadRecommendation(trueLatest).then(rec => {
+                updateRecommendations(trueLatest, rec);
+            }).catch(err => {
+                console.error("Unable to load AI recommendations:", err);
                 updateRecommendations(trueLatest, null);
-            }
+            });
             document.getElementById("trend-count").textContent = `${history.length} reading${
                 history.length === 1 ? "" : "s"
             }`;
@@ -693,17 +693,7 @@ async function loadMonitoringData() {
     }
 }
 
-updateDeviceTime();
-initAmmoniaCalculator();
-setInterval(updateDeviceTime, 1000);
-loadMonitoringData();
-window.addEventListener("storage", loadMonitoringData);
-window.addEventListener("resize", () => {
-    if (currentHistory && currentHistory.length) {
-        drawTrendChart(currentHistory);
-    }
-});
-setInterval(loadMonitoringData, 10000);
+
 
 
 /* ==========================================================================
@@ -760,7 +750,7 @@ function getClosestGrid(temp, ph) {
 
 function highlightVanWykTable(temp, ph) {
     const table = document.getElementById("van-wyk-matrix");
-    if (!table) return;
+    if (!table || typeof table.querySelectorAll !== "function") return;
 
     const { temp: targetT, ph: targetP } = getClosestGrid(temp, ph);
 
@@ -916,9 +906,10 @@ function initAmmoniaCalculator() {
     const overrideFields = document.getElementById("ammonia-override-fields");
     const customTempInput = document.getElementById("ammonia-custom-temp");
     const customPhInput = document.getElementById("ammonia-custom-ph");
-    const accordionBtn = document.getElementById("toggle-van-wyk-btn");
-    const accordionBody = document.getElementById("van-wyk-accordion-body");
-    const accordionChevron = document.getElementById("accordion-chevron");
+    const openModalBtn = document.getElementById("open-van-wyk-modal");
+    const closeModalBtn = document.getElementById("close-van-wyk-modal");
+    const closeActionBtn = document.getElementById("modal-close-action-btn");
+    const modalBackdrop = document.getElementById("van-wyk-modal");
     const presetChips = document.querySelectorAll("#ammonia-preset-chips .preset-chip");
 
     if (recalcBtn) {
@@ -966,17 +957,58 @@ function initAmmoniaCalculator() {
         });
     }
 
-    if (accordionBtn && accordionBody) {
-        accordionBtn.addEventListener("click", () => {
-            const isExpanded = accordionBtn.getAttribute("aria-expanded") === "true";
-            accordionBtn.setAttribute("aria-expanded", String(!isExpanded));
-            accordionBody.hidden = isExpanded;
-            if (accordionChevron) {
-                accordionChevron.textContent = isExpanded ? "+" : "−";
+    function openModal() {
+        if (!modalBackdrop) return;
+        modalBackdrop.hidden = false;
+        document.body.style.overflow = "hidden";
+        highlightVanWykTable(currentSensorTemp, currentSensorPh);
+    }
+
+    function closeModal() {
+        if (!modalBackdrop) return;
+        modalBackdrop.hidden = true;
+        document.body.style.overflow = "";
+    }
+
+    if (openModalBtn) {
+        openModalBtn.addEventListener("click", openModal);
+    }
+
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener("click", closeModal);
+    }
+
+    if (closeActionBtn) {
+        closeActionBtn.addEventListener("click", closeModal);
+    }
+
+    if (modalBackdrop) {
+        modalBackdrop.addEventListener("click", (e) => {
+            if (e.target === modalBackdrop) {
+                closeModal();
             }
         });
     }
 
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && modalBackdrop && !modalBackdrop.hidden) {
+            closeModal();
+        }
+    });
+
     highlightVanWykTable(currentSensorTemp, currentSensorPh);
     triggerAmmoniaRecalc();
 }
+
+// Entrypoint initialization
+updateDeviceTime();
+setInterval(updateDeviceTime, 1000);
+initAmmoniaCalculator();
+loadMonitoringData();
+window.addEventListener("storage", loadMonitoringData);
+window.addEventListener("resize", () => {
+    if (currentHistory && currentHistory.length) {
+        drawTrendChart(currentHistory);
+    }
+});
+setInterval(loadMonitoringData, 10000);

@@ -220,7 +220,7 @@ def _query_openai_recommendation(temperature, ph, classification):
     try:
         from openai import OpenAI
         base_url = os.getenv("OPENAI_BASE_URL", "").strip() or None
-        client = OpenAI(api_key=api_key.strip(), base_url=base_url, timeout=30.0)
+        client = OpenAI(api_key=api_key.strip(), base_url=base_url, timeout=4.0, max_retries=0)
         model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
         system_prompt = (

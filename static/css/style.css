@@ -18520,3 +18520,628 @@ nav a {
         grid-template-columns: 1fr;
     }
 }\n
+
+/* ==========================================================================
+   VAN WYK MATRIX POPUP MODAL DIALOG
+   ========================================================================== */
+
+.ammonia-dialog-trigger-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #edf4f0;
+    flex-wrap: wrap;
+}
+
+.ammonia-matrix-popup-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #f0f7f3;
+    border: 1.5px solid #b7dacf;
+    color: #164e42;
+    border-radius: 8px;
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 150ms ease, border-color 150ms ease, transform 120ms ease;
+}
+
+.ammonia-matrix-popup-btn:hover {
+    background: #e2f2ea;
+    border-color: #1b5145;
+    transform: translateY(-1px);
+}
+
+.ammonia-matrix-popup-btn .ui-icon {
+    width: 16px;
+    height: 16px;
+    fill: #1b5145;
+}
+
+.matrix-hint-text {
+    font-size: 11.5px;
+    color: #688577;
+}
+
+/* Modal Dialog Backdrop & Container */
+.modal-dialog-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(14, 38, 33, 0.65);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.modal-dialog-backdrop[hidden] {
+    display: none !important;
+}
+
+.modal-dialog-container {
+    background: #ffffff;
+    border: 1px solid #c9ded4;
+    border-radius: 14px;
+    max-width: 820px;
+    width: 100%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 16px 40px rgba(10, 35, 30, 0.25);
+    overflow: hidden;
+    animation: modalFadeIn 180ms ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal-dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    border-bottom: 1px solid #e5eee8;
+    background: #f7faf8;
+}
+
+.modal-header-text {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.modal-header-text h3 {
+    font-size: 17px;
+    font-weight: 800;
+    color: #143d34;
+    margin: 0;
+}
+
+.modal-header-text p {
+    font-size: 12px;
+    color: #557266;
+    margin: 2px 0 0 0;
+}
+
+.modal-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close-btn {
+    background: transparent;
+    border: none;
+    font-size: 26px;
+    line-height: 1;
+    color: #557266;
+    cursor: pointer;
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 120ms ease, color 120ms ease;
+}
+
+.modal-close-btn:hover {
+    background: #e2ece6;
+    color: #143d34;
+}
+
+.modal-dialog-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.modal-dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 14px 24px;
+    border-top: 1px solid #e5eee8;
+    background: #f7faf8;
+}
+
+
+/* ==========================================================================
+   NTFY.SH PUSH NOTIFICATION SETUP GUIDE DIALOG
+   ========================================================================== */
+
+.btn-guide-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
+    border-radius: 14px;
+    padding: 3px 10px;
+    font-size: 11.5px;
+    font-weight: 750;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 120ms ease, color 120ms ease, transform 120ms ease;
+}
+
+.btn-guide-pill:hover {
+    background: #bae6fd;
+    color: #0284c7;
+    transform: translateY(-1px);
+}
+
+.inline-guide-btn {
+    background: none;
+    border: none;
+    color: #0284c7;
+    font-weight: 750;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+}
+
+.inline-guide-btn:hover {
+    color: #0369a1;
+}
+
+.ntfy-guide-dialog-container {
+    max-width: 780px;
+    width: 100%;
+}
+
+.ntfy-guide-modal-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #e0f2fe;
+    color: #0284c7;
+    border: 1px solid #bae6fd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ntfy-guide-modal-icon .ui-icon {
+    width: 20px;
+    height: 20px;
+    fill: #0284c7;
+}
+
+.ntfy-guide-body {
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.ntfy-guide-intro-banner {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 14px 18px;
+}
+
+.intro-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 850;
+    letter-spacing: 0.05em;
+    color: #15803d;
+    margin-bottom: 6px;
+}
+
+.intro-badge .ui-icon {
+    width: 14px;
+    height: 14px;
+    fill: #15803d;
+}
+
+.ntfy-guide-intro-banner p {
+    font-size: 12.5px;
+    color: #274d3b;
+    line-height: 1.55;
+    margin: 0;
+}
+
+.ntfy-steps-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.ntfy-step-card {
+    background: #ffffff;
+    border: 1px solid #e2ece6;
+    border-radius: 12px;
+    padding: 16px 18px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    box-shadow: 0 1px 3px rgba(20, 61, 52, 0.03);
+}
+
+.step-badge {
+    background: #1b5145;
+    color: #ffffff;
+    font-size: 10.5px;
+    font-weight: 850;
+    padding: 4px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.step-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.step-content h4 {
+    font-size: 14px;
+    font-weight: 800;
+    color: #143d34;
+    margin: 0;
+}
+
+.step-content p {
+    font-size: 12px;
+    color: #40594e;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.step-topic-preview-box {
+    margin-top: 6px;
+    background: #f7faf8;
+    border: 1px dashed #bcd9cb;
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.preview-label {
+    font-size: 10.5px;
+    font-weight: 750;
+    color: #557266;
+    text-transform: uppercase;
+}
+
+.step-copy-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.step-copy-box code {
+    font-family: monospace;
+    font-size: 14px;
+    font-weight: 750;
+    color: #164e42;
+    background: #ffffff;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid #d4e5dc;
+    flex: 1;
+    word-break: break-all;
+}
+
+.guide-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #1b5145;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 120ms ease;
+    white-space: nowrap;
+}
+
+.guide-copy-btn:hover {
+    background: #143d34;
+}
+
+.guide-copy-btn .ui-icon {
+    width: 13px;
+    height: 13px;
+    fill: currentColor;
+}
+
+.ntfy-platforms-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.platform-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px 12px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 120ms ease;
+}
+
+.platform-card:hover {
+    background: #f1f5f9;
+    border-color: #0284c7;
+    transform: translateY(-1px);
+}
+
+.platform-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.platform-icon.android-icon {
+    background: #e6f9ed;
+    color: #16a34a;
+}
+
+.platform-icon.apple-icon {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.platform-icon.web-icon {
+    background: #e0f2fe;
+    color: #0284c7;
+}
+
+.platform-icon .ui-icon {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+
+.platform-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.platform-info strong {
+    font-size: 11.5px;
+    color: #1e293b;
+    font-weight: 750;
+}
+
+.platform-info span {
+    font-size: 10.5px;
+    color: #0284c7;
+    font-weight: 650;
+}
+
+.step-instructions {
+    margin: 6px 0 0 0;
+    padding-left: 20px;
+    font-size: 12px;
+    color: #40594e;
+    line-height: 1.6;
+}
+
+.step-instructions li {
+    margin-bottom: 4px;
+}
+
+.step-instructions a {
+    color: #0284c7;
+    font-weight: 700;
+}
+
+.ntfy-notification-preview-card {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-left: 4px solid #0284c7;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-top: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.notif-preview-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10.5px;
+    font-weight: 750;
+    color: #64748b;
+    text-transform: uppercase;
+}
+
+.notif-preview-body strong {
+    font-size: 12px;
+    color: #0f172a;
+    display: block;
+}
+
+.notif-preview-body p {
+    font-size: 11px;
+    color: #334155;
+    margin: 2px 0 0 0;
+}
+
+.ntfy-guide-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ntfy-direct-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #0284c7;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 120ms ease;
+}
+
+.ntfy-direct-link-btn:hover {
+    color: #0369a1;
+    text-decoration: underline;
+}
+
+.ntfy-direct-link-btn .ui-icon {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+}
+
+@media (max-width: 680px) {
+    .ntfy-platforms-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =========================================
+   HEADER NOTIFICATION BELL BADGE & MODAL
+   ========================================= */
+.notification-button {
+    position: relative !important;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 9999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.45);
+    pointer-events: none;
+    z-index: 10;
+    animation: notification-pulse 2s infinite ease-in-out;
+}
+
+@keyframes notification-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+}
+
+.notification-item.optimal {
+    border-left: 4px solid #16a34a;
+}
+
+.notification-item.warning {
+    border-left: 4px solid #f59e0b;
+}
+
+.notification-item.critical {
+    border-left: 4px solid #ef4444;
+}
+
+.notification-item-unread {
+    background: #f4faf6 !important;
+}
+
+.notification-badge-new {
+    background: #e8f5e9;
+    color: #16a34a;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.severity-optimal {
+    background: #e8f5e9;
+    color: #16a34a;
+    font-weight: 700;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.modal-mark-read-btn {
+    background: none;
+    border: none;
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+}
+
+.modal-mark-read-btn:hover {
+    color: #15803d;
+}

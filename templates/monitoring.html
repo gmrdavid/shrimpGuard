@@ -149,7 +149,7 @@
         </header>
 
 
-        <!-- STATUS AND DATA SOURCE -->
+        <!-- 1. STATUS AND DATA SOURCE -->
         <section class="monitoring-section" aria-labelledby="monitoring-summary-title">
 
             <div class="section-heading-row">
@@ -162,296 +162,81 @@
 
             <div class="monitoring-summary">
 
-            <article class="panel monitoring-status monitoring-status-panel">
+                <article class="panel monitoring-status monitoring-status-panel">
 
-                <div class="monitoring-panel-title">
-                    <span class="monitoring-panel-icon status-panel-icon">
-                        <svg class="ui-icon" aria-hidden="true">
-                            <use href="#icon-dashboard"></use>
-                        </svg>
-                    </span>
-
-                    <div>
-                        <span class="monitoring-section-eyebrow">
-                            MONITORING SUMMARY
-                        </span>
-                        <h2>Current Water Quality Status</h2>
-                    </div>
-                </div>
-
-                <div class="monitoring-status-content">
-
-                    <span class="monitoring-status-label">
-                        <span class="monitoring-status-dot"></span>
-                        LATEST ASSESSMENT
-                    </span>
-
-                    <h2 id="monitoring-status">Waiting for a reading</h2>
-
-                    <p id="monitoring-updated">
-                        Submit readings on the dashboard to begin monitoring.
-                    </p>
-
-                </div>
-
-            </article>
-
-
-            <article class="panel monitoring-note monitoring-source-panel">
-
-                <div class="monitoring-panel-title">
-                    <span class="monitoring-panel-icon source-panel-icon">
-                        <svg class="ui-icon" aria-hidden="true">
-                            <use href="#icon-monitor"></use>
-                        </svg>
-                    </span>
-
-                    <div>
-                        <span class="monitoring-section-eyebrow">
-                            DATA INFORMATION
-                        </span>
-                        <h2>Reading Source</h2>
-                    </div>
-                </div>
-
-                <div class="monitoring-source-content">
-                    <strong>Database sensors</strong>
-
-                    <p>
-                        The latest readings are loaded from the sensors table.
-                    </p>
-
-                    <p id="monitoring-demo-note"
-                       class="demo-data-note"
-                       hidden>
-                        These are illustrative demo readings, not live pond measurements.
-                    </p>
-                </div>
-
-            </article>
-
-            </div>
-
-        </section>
-
-
-        <!-- UNIONIZED AMMONIA (NH3) CALCULATOR -->
-        <section class="monitoring-section" id="monitoring-ammonia-section" aria-labelledby="monitoring-ammonia-title">
-
-            <div class="section-heading-row">
-                <div>
-                    <span class="section-eyebrow">TOXICITY ASSESSMENT</span>
-                    <h2 id="monitoring-ammonia-title">Unionized Ammonia (NH₃) Calculator</h2>
-                    <p>Calculates toxic unionized ammonia from Total Ammonia Nitrogen (TAN) using real-time sensor temperature and pH (Van Wyk et al., 1999).</p>
-                </div>
-
-                <span class="section-count">Van Wyk et al., 1999 Model</span>
-            </div>
-
-            <article class="panel monitoring-panel ammonia-panel">
-
-                <div class="panel-heading">
-                    <div class="panel-heading-icon ammonia-heading-icon">
-                        <svg class="ui-icon" aria-hidden="true">
-                            <use href="#icon-droplet"></use>
-                        </svg>
-                    </div>
-
-                    <div>
-                        <h2>Unionized Ammonia Estimation</h2>
-                        <p>Formula: NH₃ (ppm) = Factor (<em>f</em>) &times; TAN (ppm) &bull; Acceptable safety threshold: &lt; 0.03 ppm</p>
-                    </div>
-                </div>
-
-                <!-- AMMONIA CALCULATOR LAYOUT -->
-                <div class="ammonia-calc-grid">
-
-                    <!-- INPUT CARD -->
-                    <div class="ammonia-card ammonia-card-input">
-                        <div class="ammonia-card-header">
-                            <span class="ammonia-card-label">INPUT TAN &amp; SENSOR PARAMETERS</span>
-                        </div>
-
-                        <!-- TAN INPUT -->
-                        <div class="ammonia-field-group">
-                            <div class="ammonia-input-label-row">
-                                <label for="ammonia-tan-input" class="ammonia-input-label">Total Ammonia Nitrogen (TAN)</label>
-                                <span class="ammonia-input-unit">ppm (mg/L)</span>
-                            </div>
-                            <div class="ammonia-input-controls">
-                                <input
-                                    type="number"
-                                    id="ammonia-tan-input"
-                                    class="ammonia-number-input"
-                                    min="0"
-                                    max="20"
-                                    step="0.01"
-                                    value="0.8"
-                                    placeholder="e.g. 0.80">
-                                <button type="button" id="ammonia-recalc-btn" class="ammonia-btn-primary">
-                                    Calculate
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- PRESETS -->
-                        <div class="ammonia-presets-row">
-                            <span class="ammonia-presets-label">Common Presets:</span>
-                            <div class="ammonia-preset-chips" id="ammonia-preset-chips">
-                                <button type="button" class="preset-chip" data-tan="0.25">0.25 ppm</button>
-                                <button type="button" class="preset-chip" data-tan="0.5">0.50 ppm</button>
-                                <button type="button" class="preset-chip active" data-tan="0.8">0.80 ppm</button>
-                                <button type="button" class="preset-chip" data-tan="1.0">1.00 ppm</button>
-                                <button type="button" class="preset-chip" data-tan="1.5">1.50 ppm</button>
-                                <button type="button" class="preset-chip" data-tan="2.0">2.00 ppm</button>
-                            </div>
-                        </div>
-
-                        <!-- LIVE SENSORS SYNC INDICATORS -->
-                        <div class="ammonia-live-sensors">
-                            <div class="ammonia-sensor-badge">
-                                <span class="sensor-badge-title">LIVE SENSOR TEMP</span>
-                                <span class="sensor-badge-val"><span id="ammonia-live-temp">--</span> &deg;C</span>
-                            </div>
-                            <div class="ammonia-sensor-badge">
-                                <span class="sensor-badge-title">LIVE SENSOR pH</span>
-                                <span class="sensor-badge-val"><span id="ammonia-live-ph">--</span> pH</span>
-                            </div>
-                        </div>
-
-                        <!-- SIMULATION / OVERRIDE TOGGLE -->
-                        <div class="ammonia-override-box">
-                            <label class="ammonia-checkbox-label">
-                                <input type="checkbox" id="ammonia-override-checkbox">
-                                <span>Simulate custom temperature &amp; pH (What-if scenario)</span>
-                            </label>
-                            <div id="ammonia-override-fields" class="ammonia-override-fields" hidden>
-                                <div class="override-field">
-                                    <label for="ammonia-custom-temp">Temp (&deg;C):</label>
-                                    <input type="number" id="ammonia-custom-temp" min="20" max="40" step="0.1" value="28.0" class="override-input">
-                                </div>
-                                <div class="override-field">
-                                    <label for="ammonia-custom-ph">pH Level:</label>
-                                    <input type="number" id="ammonia-custom-ph" min="6.0" max="11.0" step="0.05" value="7.60" class="override-input">
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!-- OUTPUT CARD -->
-                    <div class="ammonia-card ammonia-card-result">
-                        <div class="ammonia-card-header">
-                            <span class="ammonia-card-label">ESTIMATED UNIONIZED AMMONIA (NH₃)</span>
-                            <span id="ammonia-status-badge" class="wqi-metric-badge badge-normal">Safe (&lt; 0.03 ppm)</span>
-                        </div>
-
-                        <div class="ammonia-result-display">
-                            <span id="ammonia-result-value" class="ammonia-big-value">0.0224</span>
-                            <span class="ammonia-big-unit">ppm</span>
-                        </div>
-
-                        <!-- BREAKDOWN STEPS (MATCHING SLIDE 2) -->
-                        <div class="ammonia-formula-breakdown">
-                            <div class="formula-step">
-                                <span class="step-tag">Step 1</span>
-                                <span>Table factor at <strong id="calc-step-temp">28.0&deg;C</strong> &amp; pH <strong id="calc-step-ph">7.60</strong>: <strong><em>f</em> = <span id="calc-step-factor">0.028</span></strong></span>
-                            </div>
-                            <div class="formula-step">
-                                <span class="step-tag">Step 2</span>
-                                <span>Multiply by TAN: <span id="calc-step-tan-math">0.028 &times; 0.80 ppm</span> = <strong id="calc-step-result">0.0224 ppm</strong></span>
-                            </div>
-                        </div>
-
-                        <!-- BIOLOGICAL ASSESSMENT -->
-                        <div id="ammonia-assessment-box" class="ammonia-assessment is-safe">
-                            <p id="ammonia-assessment-text">
-                                This level (0.0224 ppm) is lower than the acceptable level (&lt;0.03 ppm), hence no corrective action would need to be taken.
-                            </p>
-                        </div>
-
-                        <!-- SLIDE 2 SENSITIVITY CALLOUT -->
-                        <div class="ammonia-sensitivity-callout">
+                    <div class="monitoring-panel-title">
+                        <span class="monitoring-panel-icon status-panel-icon">
                             <svg class="ui-icon" aria-hidden="true">
-                                <use href="#icon-lightbulb"></use>
+                                <use href="#icon-dashboard"></use>
                             </svg>
-                            <p id="ammonia-sensitivity-note">
-                                <strong>Sensitivity Insight:</strong> At 28&deg;C, an increase in pH of only +0.2 (to 7.8) yields <strong>0.0344 ppm</strong>, which exceeds the acceptable limit (&lt;0.03 ppm) and requires immediate aeration &amp; mitigation.
-                            </p>
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <!-- INTERACTIVE VAN WYK TABLE ACCORDION -->
-                <div class="ammonia-table-accordion">
-                    <button type="button" id="toggle-van-wyk-btn" class="accordion-header-btn" aria-expanded="true">
-                        <span class="accordion-title">
-                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-chart"></use></svg>
-                            Van Wyk et al. (1999) Reference Matrix (Live Highlight)
                         </span>
-                        <span class="accordion-chevron" id="accordion-chevron">&minus;</span>
-                    </button>
 
-                    <div id="van-wyk-accordion-body" class="accordion-body">
-                        <div class="table-legend-row">
-                            <span class="legend-text">Proportion of Total Ammonia Nitrogen in the Unionized Form as a Function of Temperature and pH:</span>
-                            <div class="legend-badges">
-                                <span class="legend-chip chip-col">Active Temp Column</span>
-                                <span class="legend-chip chip-row">Active pH Row</span>
-                                <span class="legend-chip chip-intersect">Intersection Factor (<em>f</em>)</span>
-                            </div>
-                        </div>
-
-                        <div class="table-responsive van-wyk-table-scroll">
-                            <table class="van-wyk-grid" id="van-wyk-matrix">
-                                <thead>
-                                    <tr>
-                                        <th rowspan="2" class="th-ph">pH</th>
-                                        <th colspan="5" class="th-temp-header">Temperature (&deg;C)</th>
-                                    </tr>
-                                    <tr class="th-temp-sub">
-                                        <th data-temp="24">24</th>
-                                        <th data-temp="26">26</th>
-                                        <th data-temp="28">28</th>
-                                        <th data-temp="30">30</th>
-                                        <th data-temp="32">32</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr data-ph="7.0"><td class="td-ph">7.0</td><td data-temp="24">0.005</td><td data-temp="26">0.006</td><td data-temp="28">0.007</td><td data-temp="30">0.008</td><td data-temp="32">0.009</td></tr>
-                                    <tr data-ph="7.2"><td class="td-ph">7.2</td><td data-temp="24">0.008</td><td data-temp="26">0.010</td><td data-temp="28">0.011</td><td data-temp="30">0.013</td><td data-temp="32">0.015</td></tr>
-                                    <tr data-ph="7.4"><td class="td-ph">7.4</td><td data-temp="24">0.013</td><td data-temp="26">0.015</td><td data-temp="28">0.018</td><td data-temp="30">0.020</td><td data-temp="32">0.023</td></tr>
-                                    <tr data-ph="7.6"><td class="td-ph">7.6</td><td data-temp="24">0.021</td><td data-temp="26">0.024</td><td data-temp="28">0.028</td><td data-temp="30">0.031</td><td data-temp="32">0.036</td></tr>
-                                    <tr data-ph="7.8"><td class="td-ph">7.8</td><td data-temp="24">0.033</td><td data-temp="26">0.038</td><td data-temp="28">0.043</td><td data-temp="30">0.049</td><td data-temp="32">0.056</td></tr>
-                                    <tr data-ph="8.0"><td class="td-ph">8.0</td><td data-temp="24">0.051</td><td data-temp="26">0.058</td><td data-temp="28">0.066</td><td data-temp="30">0.075</td><td data-temp="32">0.085</td></tr>
-                                    <tr data-ph="8.2"><td class="td-ph">8.2</td><td data-temp="24">0.078</td><td data-temp="26">0.089</td><td data-temp="28">0.101</td><td data-temp="30">0.114</td><td data-temp="32">0.129</td></tr>
-                                    <tr data-ph="8.4"><td class="td-ph">8.4</td><td data-temp="24">0.119</td><td data-temp="26">0.134</td><td data-temp="28">0.151</td><td data-temp="30">0.170</td><td data-temp="32">0.190</td></tr>
-                                    <tr data-ph="8.6"><td class="td-ph">8.6</td><td data-temp="24">0.176</td><td data-temp="26">0.197</td><td data-temp="28">0.220</td><td data-temp="30">0.245</td><td data-temp="32">0.271</td></tr>
-                                    <tr data-ph="8.8"><td class="td-ph">8.8</td><td data-temp="24">0.253</td><td data-temp="26">0.281</td><td data-temp="28">0.309</td><td data-temp="30">0.340</td><td data-temp="32">0.371</td></tr>
-                                    <tr data-ph="9.0"><td class="td-ph">9.0</td><td data-temp="24">0.349</td><td data-temp="26">0.382</td><td data-temp="28">0.415</td><td data-temp="30">0.449</td><td data-temp="32">0.483</td></tr>
-                                    <tr data-ph="9.2"><td class="td-ph">9.2</td><td data-temp="24">0.460</td><td data-temp="26">0.495</td><td data-temp="28">0.530</td><td data-temp="30">0.564</td><td data-temp="32">0.597</td></tr>
-                                    <tr data-ph="9.4"><td class="td-ph">9.4</td><td data-temp="24">0.574</td><td data-temp="26">0.608</td><td data-temp="28">0.641</td><td data-temp="30">0.672</td><td data-temp="32">0.701</td></tr>
-                                    <tr data-ph="9.6"><td class="td-ph">9.6</td><td data-temp="24">0.681</td><td data-temp="26">0.711</td><td data-temp="28">0.739</td><td data-temp="30">0.764</td><td data-temp="32">0.788</td></tr>
-                                    <tr data-ph="10.0"><td class="td-ph">10.0</td><td data-temp="24">0.843</td><td data-temp="26">0.861</td><td data-temp="28">0.877</td><td data-temp="30">0.891</td><td data-temp="32">0.903</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="van-wyk-source-credit">
-                            Source: Van Wyk et al., 1999 &bull; Recirculating Freshwater Systems for Marine Shrimp
+                        <div>
+                            <span class="monitoring-section-eyebrow">
+                                MONITORING SUMMARY
+                            </span>
+                            <h2>Current Water Quality Status</h2>
                         </div>
                     </div>
-                </div>
 
-            </article>
+                    <div class="monitoring-status-content">
+
+                        <span class="monitoring-status-label">
+                            <span class="monitoring-status-dot"></span>
+                            LATEST ASSESSMENT
+                        </span>
+
+                        <h2 id="monitoring-status">Waiting for a reading</h2>
+
+                        <p id="monitoring-updated">
+                            Submit readings on the dashboard to begin monitoring.
+                        </p>
+
+                    </div>
+
+                </article>
+
+
+                <article class="panel monitoring-note monitoring-source-panel">
+
+                    <div class="monitoring-panel-title">
+                        <span class="monitoring-panel-icon source-panel-icon">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-monitor"></use>
+                            </svg>
+                        </span>
+
+                        <div>
+                            <span class="monitoring-section-eyebrow">
+                                DATA INFORMATION
+                            </span>
+                            <h2>Reading Source</h2>
+                        </div>
+                    </div>
+
+                    <div class="monitoring-source-content">
+                        <strong>Database sensors</strong>
+
+                        <p>
+                            The latest readings are loaded from the sensors table.
+                        </p>
+
+                        <p id="monitoring-demo-note"
+                           class="demo-data-note"
+                           hidden>
+                            These are illustrative demo readings, not live pond measurements.
+                        </p>
+                    </div>
+
+                </article>
+
+            </div>
 
         </section>
 
 
-        <!-- CURRENT READINGS -->
-        <section class="monitoring-section"
-                 aria-labelledby="monitoring-readings-title">
+        <!-- 2. LATEST READINGS -->
+        <section class="monitoring-section" aria-labelledby="monitoring-readings-title">
 
             <div class="section-heading-row">
 
@@ -466,8 +251,7 @@
             </div>
 
 
-            <div class="monitoring-cards"
-                 aria-label="Current water quality readings">
+            <div class="monitoring-cards" aria-label="Current water quality readings">
 
                 <!-- TEMPERATURE -->
                 <article class="monitor-card monitoring-reading-card">
@@ -489,7 +273,7 @@
 
                         <div class="monitoring-reading-value">
                             <strong id="monitor-temperature">--</strong>
-                            <span>°C</span>
+                            <span>&deg;C</span>
                         </div>
 
                         <p class="monitoring-reading-description">
@@ -545,221 +329,7 @@
         </section>
 
 
-        <!-- UNIONIZED AMMONIA (NH3) CALCULATOR -->
-        <section class="monitoring-section" id="monitoring-ammonia-section" aria-labelledby="monitoring-ammonia-title">
-
-            <div class="section-heading-row">
-                <div>
-                    <span class="section-eyebrow">TOXICITY ASSESSMENT</span>
-                    <h2 id="monitoring-ammonia-title">Unionized Ammonia (NH₃) Calculator</h2>
-                    <p>Calculates toxic unionized ammonia from Total Ammonia Nitrogen (TAN) using real-time sensor temperature and pH (Van Wyk et al., 1999).</p>
-                </div>
-
-                <span class="section-count">Van Wyk et al., 1999 Model</span>
-            </div>
-
-            <article class="panel monitoring-panel ammonia-panel">
-
-                <div class="panel-heading">
-                    <div class="panel-heading-icon ammonia-heading-icon">
-                        <svg class="ui-icon" aria-hidden="true">
-                            <use href="#icon-droplet"></use>
-                        </svg>
-                    </div>
-
-                    <div>
-                        <h2>Unionized Ammonia Estimation</h2>
-                        <p>Formula: NH₃ (ppm) = Factor (<em>f</em>) &times; TAN (ppm) &bull; Acceptable safety threshold: &lt; 0.03 ppm</p>
-                    </div>
-                </div>
-
-                <!-- AMMONIA CALCULATOR LAYOUT -->
-                <div class="ammonia-calc-grid">
-
-                    <!-- INPUT CARD -->
-                    <div class="ammonia-card ammonia-card-input">
-                        <div class="ammonia-card-header">
-                            <span class="ammonia-card-label">INPUT TAN &amp; SENSOR PARAMETERS</span>
-                        </div>
-
-                        <!-- TAN INPUT -->
-                        <div class="ammonia-field-group">
-                            <div class="ammonia-input-label-row">
-                                <label for="ammonia-tan-input" class="ammonia-input-label">Total Ammonia Nitrogen (TAN)</label>
-                                <span class="ammonia-input-unit">ppm (mg/L)</span>
-                            </div>
-                            <div class="ammonia-input-controls">
-                                <input
-                                    type="number"
-                                    id="ammonia-tan-input"
-                                    class="ammonia-number-input"
-                                    min="0"
-                                    max="20"
-                                    step="0.01"
-                                    value="0.8"
-                                    placeholder="e.g. 0.80">
-                                <button type="button" id="ammonia-recalc-btn" class="ammonia-btn-primary">
-                                    Calculate
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- PRESETS -->
-                        <div class="ammonia-presets-row">
-                            <span class="ammonia-presets-label">Common Presets:</span>
-                            <div class="ammonia-preset-chips" id="ammonia-preset-chips">
-                                <button type="button" class="preset-chip" data-tan="0.25">0.25 ppm</button>
-                                <button type="button" class="preset-chip" data-tan="0.5">0.50 ppm</button>
-                                <button type="button" class="preset-chip active" data-tan="0.8">0.80 ppm</button>
-                                <button type="button" class="preset-chip" data-tan="1.0">1.00 ppm</button>
-                                <button type="button" class="preset-chip" data-tan="1.5">1.50 ppm</button>
-                                <button type="button" class="preset-chip" data-tan="2.0">2.00 ppm</button>
-                            </div>
-                        </div>
-
-                        <!-- LIVE SENSORS SYNC INDICATORS -->
-                        <div class="ammonia-live-sensors">
-                            <div class="ammonia-sensor-badge">
-                                <span class="sensor-badge-title">LIVE SENSOR TEMP</span>
-                                <span class="sensor-badge-val"><span id="ammonia-live-temp">--</span> &deg;C</span>
-                            </div>
-                            <div class="ammonia-sensor-badge">
-                                <span class="sensor-badge-title">LIVE SENSOR pH</span>
-                                <span class="sensor-badge-val"><span id="ammonia-live-ph">--</span> pH</span>
-                            </div>
-                        </div>
-
-                        <!-- SIMULATION / OVERRIDE TOGGLE -->
-                        <div class="ammonia-override-box">
-                            <label class="ammonia-checkbox-label">
-                                <input type="checkbox" id="ammonia-override-checkbox">
-                                <span>Simulate custom temperature &amp; pH (What-if scenario)</span>
-                            </label>
-                            <div id="ammonia-override-fields" class="ammonia-override-fields" hidden>
-                                <div class="override-field">
-                                    <label for="ammonia-custom-temp">Temp (&deg;C):</label>
-                                    <input type="number" id="ammonia-custom-temp" min="20" max="40" step="0.1" value="28.0" class="override-input">
-                                </div>
-                                <div class="override-field">
-                                    <label for="ammonia-custom-ph">pH Level:</label>
-                                    <input type="number" id="ammonia-custom-ph" min="6.0" max="11.0" step="0.05" value="7.60" class="override-input">
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!-- OUTPUT CARD -->
-                    <div class="ammonia-card ammonia-card-result">
-                        <div class="ammonia-card-header">
-                            <span class="ammonia-card-label">ESTIMATED UNIONIZED AMMONIA (NH₃)</span>
-                            <span id="ammonia-status-badge" class="wqi-metric-badge badge-normal">Safe (&lt; 0.03 ppm)</span>
-                        </div>
-
-                        <div class="ammonia-result-display">
-                            <span id="ammonia-result-value" class="ammonia-big-value">0.0224</span>
-                            <span class="ammonia-big-unit">ppm</span>
-                        </div>
-
-                        <!-- BREAKDOWN STEPS (MATCHING SLIDE 2) -->
-                        <div class="ammonia-formula-breakdown">
-                            <div class="formula-step">
-                                <span class="step-tag">Step 1</span>
-                                <span>Table factor at <strong id="calc-step-temp">28.0&deg;C</strong> &amp; pH <strong id="calc-step-ph">7.60</strong>: <strong><em>f</em> = <span id="calc-step-factor">0.028</span></strong></span>
-                            </div>
-                            <div class="formula-step">
-                                <span class="step-tag">Step 2</span>
-                                <span>Multiply by TAN: <span id="calc-step-tan-math">0.028 &times; 0.80 ppm</span> = <strong id="calc-step-result">0.0224 ppm</strong></span>
-                            </div>
-                        </div>
-
-                        <!-- BIOLOGICAL ASSESSMENT -->
-                        <div id="ammonia-assessment-box" class="ammonia-assessment is-safe">
-                            <p id="ammonia-assessment-text">
-                                This level (0.0224 ppm) is lower than the acceptable level (&lt;0.03 ppm), hence no corrective action would need to be taken.
-                            </p>
-                        </div>
-
-                        <!-- SLIDE 2 SENSITIVITY CALLOUT -->
-                        <div class="ammonia-sensitivity-callout">
-                            <svg class="ui-icon" aria-hidden="true">
-                                <use href="#icon-lightbulb"></use>
-                            </svg>
-                            <p id="ammonia-sensitivity-note">
-                                <strong>Sensitivity Insight:</strong> At 28&deg;C, an increase in pH of only +0.2 (to 7.8) yields <strong>0.0344 ppm</strong>, which exceeds the acceptable limit (&lt;0.03 ppm) and requires immediate aeration &amp; mitigation.
-                            </p>
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <!-- INTERACTIVE VAN WYK TABLE ACCORDION -->
-                <div class="ammonia-table-accordion">
-                    <button type="button" id="toggle-van-wyk-btn" class="accordion-header-btn" aria-expanded="true">
-                        <span class="accordion-title">
-                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-chart"></use></svg>
-                            Van Wyk et al. (1999) Reference Matrix (Live Highlight)
-                        </span>
-                        <span class="accordion-chevron" id="accordion-chevron">&minus;</span>
-                    </button>
-
-                    <div id="van-wyk-accordion-body" class="accordion-body">
-                        <div class="table-legend-row">
-                            <span class="legend-text">Proportion of Total Ammonia Nitrogen in the Unionized Form as a Function of Temperature and pH:</span>
-                            <div class="legend-badges">
-                                <span class="legend-chip chip-col">Active Temp Column</span>
-                                <span class="legend-chip chip-row">Active pH Row</span>
-                                <span class="legend-chip chip-intersect">Intersection Factor (<em>f</em>)</span>
-                            </div>
-                        </div>
-
-                        <div class="table-responsive van-wyk-table-scroll">
-                            <table class="van-wyk-grid" id="van-wyk-matrix">
-                                <thead>
-                                    <tr>
-                                        <th rowspan="2" class="th-ph">pH</th>
-                                        <th colspan="5" class="th-temp-header">Temperature (&deg;C)</th>
-                                    </tr>
-                                    <tr class="th-temp-sub">
-                                        <th data-temp="24">24</th>
-                                        <th data-temp="26">26</th>
-                                        <th data-temp="28">28</th>
-                                        <th data-temp="30">30</th>
-                                        <th data-temp="32">32</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr data-ph="7.0"><td class="td-ph">7.0</td><td data-temp="24">0.005</td><td data-temp="26">0.006</td><td data-temp="28">0.007</td><td data-temp="30">0.008</td><td data-temp="32">0.009</td></tr>
-                                    <tr data-ph="7.2"><td class="td-ph">7.2</td><td data-temp="24">0.008</td><td data-temp="26">0.010</td><td data-temp="28">0.011</td><td data-temp="30">0.013</td><td data-temp="32">0.015</td></tr>
-                                    <tr data-ph="7.4"><td class="td-ph">7.4</td><td data-temp="24">0.013</td><td data-temp="26">0.015</td><td data-temp="28">0.018</td><td data-temp="30">0.020</td><td data-temp="32">0.023</td></tr>
-                                    <tr data-ph="7.6"><td class="td-ph">7.6</td><td data-temp="24">0.021</td><td data-temp="26">0.024</td><td data-temp="28">0.028</td><td data-temp="30">0.031</td><td data-temp="32">0.036</td></tr>
-                                    <tr data-ph="7.8"><td class="td-ph">7.8</td><td data-temp="24">0.033</td><td data-temp="26">0.038</td><td data-temp="28">0.043</td><td data-temp="30">0.049</td><td data-temp="32">0.056</td></tr>
-                                    <tr data-ph="8.0"><td class="td-ph">8.0</td><td data-temp="24">0.051</td><td data-temp="26">0.058</td><td data-temp="28">0.066</td><td data-temp="30">0.075</td><td data-temp="32">0.085</td></tr>
-                                    <tr data-ph="8.2"><td class="td-ph">8.2</td><td data-temp="24">0.078</td><td data-temp="26">0.089</td><td data-temp="28">0.101</td><td data-temp="30">0.114</td><td data-temp="32">0.129</td></tr>
-                                    <tr data-ph="8.4"><td class="td-ph">8.4</td><td data-temp="24">0.119</td><td data-temp="26">0.134</td><td data-temp="28">0.151</td><td data-temp="30">0.170</td><td data-temp="32">0.190</td></tr>
-                                    <tr data-ph="8.6"><td class="td-ph">8.6</td><td data-temp="24">0.176</td><td data-temp="26">0.197</td><td data-temp="28">0.220</td><td data-temp="30">0.245</td><td data-temp="32">0.271</td></tr>
-                                    <tr data-ph="8.8"><td class="td-ph">8.8</td><td data-temp="24">0.253</td><td data-temp="26">0.281</td><td data-temp="28">0.309</td><td data-temp="30">0.340</td><td data-temp="32">0.371</td></tr>
-                                    <tr data-ph="9.0"><td class="td-ph">9.0</td><td data-temp="24">0.349</td><td data-temp="26">0.382</td><td data-temp="28">0.415</td><td data-temp="30">0.449</td><td data-temp="32">0.483</td></tr>
-                                    <tr data-ph="9.2"><td class="td-ph">9.2</td><td data-temp="24">0.460</td><td data-temp="26">0.495</td><td data-temp="28">0.530</td><td data-temp="30">0.564</td><td data-temp="32">0.597</td></tr>
-                                    <tr data-ph="9.4"><td class="td-ph">9.4</td><td data-temp="24">0.574</td><td data-temp="26">0.608</td><td data-temp="28">0.641</td><td data-temp="30">0.672</td><td data-temp="32">0.701</td></tr>
-                                    <tr data-ph="9.6"><td class="td-ph">9.6</td><td data-temp="24">0.681</td><td data-temp="26">0.711</td><td data-temp="28">0.739</td><td data-temp="30">0.764</td><td data-temp="32">0.788</td></tr>
-                                    <tr data-ph="10.0"><td class="td-ph">10.0</td><td data-temp="24">0.843</td><td data-temp="26">0.861</td><td data-temp="28">0.877</td><td data-temp="30">0.891</td><td data-temp="32">0.903</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="van-wyk-source-credit">
-                            Source: Van Wyk et al., 1999 &bull; Recirculating Freshwater Systems for Marine Shrimp
-                        </div>
-                    </div>
-                </div>
-
-            </article>
-
-        </section>
-
-
-<!-- WATER QUALITY INDEX -->
+        <!-- 3. WATER QUALITY INDEX -->
         <section class="monitoring-section" aria-labelledby="monitoring-wqi-title">
 
             <div class="section-heading-row">
@@ -827,7 +397,7 @@
         </section>
 
 
-        <!-- UNIONIZED AMMONIA (NH3) CALCULATOR -->
+        <!-- 4. UNIONIZED AMMONIA (NH3) CALCULATOR -->
         <section class="monitoring-section" id="monitoring-ammonia-section" aria-labelledby="monitoring-ammonia-title">
 
             <div class="section-heading-row">
@@ -835,220 +405,6 @@
                     <span class="section-eyebrow">TOXICITY ASSESSMENT</span>
                     <h2 id="monitoring-ammonia-title">Unionized Ammonia (NH₃) Calculator</h2>
                     <p>Calculates toxic unionized ammonia from Total Ammonia Nitrogen (TAN) using real-time sensor temperature and pH (Van Wyk et al., 1999).</p>
-                </div>
-
-                <span class="section-count">Van Wyk et al., 1999 Model</span>
-            </div>
-
-            <article class="panel monitoring-panel ammonia-panel">
-
-                <div class="panel-heading">
-                    <div class="panel-heading-icon ammonia-heading-icon">
-                        <svg class="ui-icon" aria-hidden="true">
-                            <use href="#icon-droplet"></use>
-                        </svg>
-                    </div>
-
-                    <div>
-                        <h2>Unionized Ammonia Estimation</h2>
-                        <p>Formula: NH₃ (ppm) = Factor (<em>f</em>) &times; TAN (ppm) &bull; Acceptable safety threshold: &lt; 0.03 ppm</p>
-                    </div>
-                </div>
-
-                <!-- AMMONIA CALCULATOR LAYOUT -->
-                <div class="ammonia-calc-grid">
-
-                    <!-- INPUT CARD -->
-                    <div class="ammonia-card ammonia-card-input">
-                        <div class="ammonia-card-header">
-                            <span class="ammonia-card-label">INPUT TAN &amp; SENSOR PARAMETERS</span>
-                        </div>
-
-                        <!-- TAN INPUT -->
-                        <div class="ammonia-field-group">
-                            <div class="ammonia-input-label-row">
-                                <label for="ammonia-tan-input" class="ammonia-input-label">Total Ammonia Nitrogen (TAN)</label>
-                                <span class="ammonia-input-unit">ppm (mg/L)</span>
-                            </div>
-                            <div class="ammonia-input-controls">
-                                <input
-                                    type="number"
-                                    id="ammonia-tan-input"
-                                    class="ammonia-number-input"
-                                    min="0"
-                                    max="20"
-                                    step="0.01"
-                                    value="0.8"
-                                    placeholder="e.g. 0.80">
-                                <button type="button" id="ammonia-recalc-btn" class="ammonia-btn-primary">
-                                    Calculate
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- PRESETS -->
-                        <div class="ammonia-presets-row">
-                            <span class="ammonia-presets-label">Common Presets:</span>
-                            <div class="ammonia-preset-chips" id="ammonia-preset-chips">
-                                <button type="button" class="preset-chip" data-tan="0.25">0.25 ppm</button>
-                                <button type="button" class="preset-chip" data-tan="0.5">0.50 ppm</button>
-                                <button type="button" class="preset-chip active" data-tan="0.8">0.80 ppm</button>
-                                <button type="button" class="preset-chip" data-tan="1.0">1.00 ppm</button>
-                                <button type="button" class="preset-chip" data-tan="1.5">1.50 ppm</button>
-                                <button type="button" class="preset-chip" data-tan="2.0">2.00 ppm</button>
-                            </div>
-                        </div>
-
-                        <!-- LIVE SENSORS SYNC INDICATORS -->
-                        <div class="ammonia-live-sensors">
-                            <div class="ammonia-sensor-badge">
-                                <span class="sensor-badge-title">LIVE SENSOR TEMP</span>
-                                <span class="sensor-badge-val"><span id="ammonia-live-temp">--</span> &deg;C</span>
-                            </div>
-                            <div class="ammonia-sensor-badge">
-                                <span class="sensor-badge-title">LIVE SENSOR pH</span>
-                                <span class="sensor-badge-val"><span id="ammonia-live-ph">--</span> pH</span>
-                            </div>
-                        </div>
-
-                        <!-- SIMULATION / OVERRIDE TOGGLE -->
-                        <div class="ammonia-override-box">
-                            <label class="ammonia-checkbox-label">
-                                <input type="checkbox" id="ammonia-override-checkbox">
-                                <span>Simulate custom temperature &amp; pH (What-if scenario)</span>
-                            </label>
-                            <div id="ammonia-override-fields" class="ammonia-override-fields" hidden>
-                                <div class="override-field">
-                                    <label for="ammonia-custom-temp">Temp (&deg;C):</label>
-                                    <input type="number" id="ammonia-custom-temp" min="20" max="40" step="0.1" value="28.0" class="override-input">
-                                </div>
-                                <div class="override-field">
-                                    <label for="ammonia-custom-ph">pH Level:</label>
-                                    <input type="number" id="ammonia-custom-ph" min="6.0" max="11.0" step="0.05" value="7.60" class="override-input">
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!-- OUTPUT CARD -->
-                    <div class="ammonia-card ammonia-card-result">
-                        <div class="ammonia-card-header">
-                            <span class="ammonia-card-label">ESTIMATED UNIONIZED AMMONIA (NH₃)</span>
-                            <span id="ammonia-status-badge" class="wqi-metric-badge badge-normal">Safe (&lt; 0.03 ppm)</span>
-                        </div>
-
-                        <div class="ammonia-result-display">
-                            <span id="ammonia-result-value" class="ammonia-big-value">0.0224</span>
-                            <span class="ammonia-big-unit">ppm</span>
-                        </div>
-
-                        <!-- BREAKDOWN STEPS (MATCHING SLIDE 2) -->
-                        <div class="ammonia-formula-breakdown">
-                            <div class="formula-step">
-                                <span class="step-tag">Step 1</span>
-                                <span>Table factor at <strong id="calc-step-temp">28.0&deg;C</strong> &amp; pH <strong id="calc-step-ph">7.60</strong>: <strong><em>f</em> = <span id="calc-step-factor">0.028</span></strong></span>
-                            </div>
-                            <div class="formula-step">
-                                <span class="step-tag">Step 2</span>
-                                <span>Multiply by TAN: <span id="calc-step-tan-math">0.028 &times; 0.80 ppm</span> = <strong id="calc-step-result">0.0224 ppm</strong></span>
-                            </div>
-                        </div>
-
-                        <!-- BIOLOGICAL ASSESSMENT -->
-                        <div id="ammonia-assessment-box" class="ammonia-assessment is-safe">
-                            <p id="ammonia-assessment-text">
-                                This level (0.0224 ppm) is lower than the acceptable level (&lt;0.03 ppm), hence no corrective action would need to be taken.
-                            </p>
-                        </div>
-
-                        <!-- SLIDE 2 SENSITIVITY CALLOUT -->
-                        <div class="ammonia-sensitivity-callout">
-                            <svg class="ui-icon" aria-hidden="true">
-                                <use href="#icon-lightbulb"></use>
-                            </svg>
-                            <p id="ammonia-sensitivity-note">
-                                <strong>Sensitivity Insight:</strong> At 28&deg;C, an increase in pH of only +0.2 (to 7.8) yields <strong>0.0344 ppm</strong>, which exceeds the acceptable limit (&lt;0.03 ppm) and requires immediate aeration &amp; mitigation.
-                            </p>
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <!-- INTERACTIVE VAN WYK TABLE ACCORDION -->
-                <div class="ammonia-table-accordion">
-                    <button type="button" id="toggle-van-wyk-btn" class="accordion-header-btn" aria-expanded="true">
-                        <span class="accordion-title">
-                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-chart"></use></svg>
-                            Van Wyk et al. (1999) Reference Matrix (Live Highlight)
-                        </span>
-                        <span class="accordion-chevron" id="accordion-chevron">&minus;</span>
-                    </button>
-
-                    <div id="van-wyk-accordion-body" class="accordion-body">
-                        <div class="table-legend-row">
-                            <span class="legend-text">Proportion of Total Ammonia Nitrogen in the Unionized Form as a Function of Temperature and pH:</span>
-                            <div class="legend-badges">
-                                <span class="legend-chip chip-col">Active Temp Column</span>
-                                <span class="legend-chip chip-row">Active pH Row</span>
-                                <span class="legend-chip chip-intersect">Intersection Factor (<em>f</em>)</span>
-                            </div>
-                        </div>
-
-                        <div class="table-responsive van-wyk-table-scroll">
-                            <table class="van-wyk-grid" id="van-wyk-matrix">
-                                <thead>
-                                    <tr>
-                                        <th rowspan="2" class="th-ph">pH</th>
-                                        <th colspan="5" class="th-temp-header">Temperature (&deg;C)</th>
-                                    </tr>
-                                    <tr class="th-temp-sub">
-                                        <th data-temp="24">24</th>
-                                        <th data-temp="26">26</th>
-                                        <th data-temp="28">28</th>
-                                        <th data-temp="30">30</th>
-                                        <th data-temp="32">32</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr data-ph="7.0"><td class="td-ph">7.0</td><td data-temp="24">0.005</td><td data-temp="26">0.006</td><td data-temp="28">0.007</td><td data-temp="30">0.008</td><td data-temp="32">0.009</td></tr>
-                                    <tr data-ph="7.2"><td class="td-ph">7.2</td><td data-temp="24">0.008</td><td data-temp="26">0.010</td><td data-temp="28">0.011</td><td data-temp="30">0.013</td><td data-temp="32">0.015</td></tr>
-                                    <tr data-ph="7.4"><td class="td-ph">7.4</td><td data-temp="24">0.013</td><td data-temp="26">0.015</td><td data-temp="28">0.018</td><td data-temp="30">0.020</td><td data-temp="32">0.023</td></tr>
-                                    <tr data-ph="7.6"><td class="td-ph">7.6</td><td data-temp="24">0.021</td><td data-temp="26">0.024</td><td data-temp="28">0.028</td><td data-temp="30">0.031</td><td data-temp="32">0.036</td></tr>
-                                    <tr data-ph="7.8"><td class="td-ph">7.8</td><td data-temp="24">0.033</td><td data-temp="26">0.038</td><td data-temp="28">0.043</td><td data-temp="30">0.049</td><td data-temp="32">0.056</td></tr>
-                                    <tr data-ph="8.0"><td class="td-ph">8.0</td><td data-temp="24">0.051</td><td data-temp="26">0.058</td><td data-temp="28">0.066</td><td data-temp="30">0.075</td><td data-temp="32">0.085</td></tr>
-                                    <tr data-ph="8.2"><td class="td-ph">8.2</td><td data-temp="24">0.078</td><td data-temp="26">0.089</td><td data-temp="28">0.101</td><td data-temp="30">0.114</td><td data-temp="32">0.129</td></tr>
-                                    <tr data-ph="8.4"><td class="td-ph">8.4</td><td data-temp="24">0.119</td><td data-temp="26">0.134</td><td data-temp="28">0.151</td><td data-temp="30">0.170</td><td data-temp="32">0.190</td></tr>
-                                    <tr data-ph="8.6"><td class="td-ph">8.6</td><td data-temp="24">0.176</td><td data-temp="26">0.197</td><td data-temp="28">0.220</td><td data-temp="30">0.245</td><td data-temp="32">0.271</td></tr>
-                                    <tr data-ph="8.8"><td class="td-ph">8.8</td><td data-temp="24">0.253</td><td data-temp="26">0.281</td><td data-temp="28">0.309</td><td data-temp="30">0.340</td><td data-temp="32">0.371</td></tr>
-                                    <tr data-ph="9.0"><td class="td-ph">9.0</td><td data-temp="24">0.349</td><td data-temp="26">0.382</td><td data-temp="28">0.415</td><td data-temp="30">0.449</td><td data-temp="32">0.483</td></tr>
-                                    <tr data-ph="9.2"><td class="td-ph">9.2</td><td data-temp="24">0.460</td><td data-temp="26">0.495</td><td data-temp="28">0.530</td><td data-temp="30">0.564</td><td data-temp="32">0.597</td></tr>
-                                    <tr data-ph="9.4"><td class="td-ph">9.4</td><td data-temp="24">0.574</td><td data-temp="26">0.608</td><td data-temp="28">0.641</td><td data-temp="30">0.672</td><td data-temp="32">0.701</td></tr>
-                                    <tr data-ph="9.6"><td class="td-ph">9.6</td><td data-temp="24">0.681</td><td data-temp="26">0.711</td><td data-temp="28">0.739</td><td data-temp="30">0.764</td><td data-temp="32">0.788</td></tr>
-                                    <tr data-ph="10.0"><td class="td-ph">10.0</td><td data-temp="24">0.843</td><td data-temp="26">0.861</td><td data-temp="28">0.877</td><td data-temp="30">0.891</td><td data-temp="32">0.903</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="van-wyk-source-credit">
-                            Source: Van Wyk et al., 1999 &bull; Recirculating Freshwater Systems for Marine Shrimp
-                        </div>
-                    </div>
-                </div>
-
-            </article>
-
-        </section>
-
-
-        <!-- UNIONIZED AMMONIA (NH3) CALCULATOR -->
-        <section class="monitoring-section" id="monitoring-ammonia-section" aria-labelledby="monitoring-ammonia-title">
-
-            <div class="section-heading-row">
-                <div>
-                    <span class="section-eyebrow">TOXICITY ASSESSMENT</span>
-                    <h2 id="monitoring-ammonia-title">Unionized Ammonia (NH₃) Calculator</h2>
-                    <p>Calculate toxic unionized ammonia from Total Ammonia Nitrogen (TAN) using real-time sensor temperature and pH (Van Wyk et al., 1999).</p>
                 </div>
 
                 <span class="section-count">Van Wyk et al., 1999 Model</span>
@@ -1190,64 +546,15 @@
 
                 </div>
 
-                <!-- INTERACTIVE VAN WYK TABLE ACCORDION -->
-                <div class="ammonia-table-accordion">
-                    <button type="button" id="toggle-van-wyk-btn" class="accordion-header-btn" aria-expanded="true">
-                        <span class="accordion-title">
-                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-chart"></use></svg>
-                            Van Wyk et al. (1999) Reference Matrix (Live Highlight)
-                        </span>
-                        <span class="accordion-chevron" id="accordion-chevron">&minus;</span>
+                <!-- CARD FOOTER WITH MODAL DIALOG TRIGGER -->
+                <div class="ammonia-dialog-trigger-row">
+                    <button type="button" id="open-van-wyk-modal" class="ammonia-matrix-popup-btn">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-chart"></use>
+                        </svg>
+                        <span>View Van Wyk Reference Matrix</span>
                     </button>
-
-                    <div id="van-wyk-accordion-body" class="accordion-body">
-                        <div class="table-legend-row">
-                            <span class="legend-text">Proportion of Total Ammonia Nitrogen in the Unionized Form as a Function of Temperature and pH:</span>
-                            <div class="legend-badges">
-                                <span class="legend-chip chip-col">Active Temp Column</span>
-                                <span class="legend-chip chip-row">Active pH Row</span>
-                                <span class="legend-chip chip-intersect">Intersection Factor (<em>f</em>)</span>
-                            </div>
-                        </div>
-
-                        <div class="table-responsive van-wyk-table-scroll">
-                            <table class="van-wyk-grid" id="van-wyk-matrix">
-                                <thead>
-                                    <tr>
-                                        <th rowspan="2" class="th-ph">pH</th>
-                                        <th colspan="5" class="th-temp-header">Temperature (&deg;C)</th>
-                                    </tr>
-                                    <tr class="th-temp-sub">
-                                        <th data-temp="24">24</th>
-                                        <th data-temp="26">26</th>
-                                        <th data-temp="28">28</th>
-                                        <th data-temp="30">30</th>
-                                        <th data-temp="32">32</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr data-ph="7.0"><td class="td-ph">7.0</td><td data-temp="24">0.005</td><td data-temp="26">0.006</td><td data-temp="28">0.007</td><td data-temp="30">0.008</td><td data-temp="32">0.009</td></tr>
-                                    <tr data-ph="7.2"><td class="td-ph">7.2</td><td data-temp="24">0.008</td><td data-temp="26">0.010</td><td data-temp="28">0.011</td><td data-temp="30">0.013</td><td data-temp="32">0.015</td></tr>
-                                    <tr data-ph="7.4"><td class="td-ph">7.4</td><td data-temp="24">0.013</td><td data-temp="26">0.015</td><td data-temp="28">0.018</td><td data-temp="30">0.020</td><td data-temp="32">0.023</td></tr>
-                                    <tr data-ph="7.6"><td class="td-ph">7.6</td><td data-temp="24">0.021</td><td data-temp="26">0.024</td><td data-temp="28">0.028</td><td data-temp="30">0.031</td><td data-temp="32">0.036</td></tr>
-                                    <tr data-ph="7.8"><td class="td-ph">7.8</td><td data-temp="24">0.033</td><td data-temp="26">0.038</td><td data-temp="28">0.043</td><td data-temp="30">0.049</td><td data-temp="32">0.056</td></tr>
-                                    <tr data-ph="8.0"><td class="td-ph">8.0</td><td data-temp="24">0.051</td><td data-temp="26">0.058</td><td data-temp="28">0.066</td><td data-temp="30">0.075</td><td data-temp="32">0.085</td></tr>
-                                    <tr data-ph="8.2"><td class="td-ph">8.2</td><td data-temp="24">0.078</td><td data-temp="26">0.089</td><td data-temp="28">0.101</td><td data-temp="30">0.114</td><td data-temp="32">0.129</td></tr>
-                                    <tr data-ph="8.4"><td class="td-ph">8.4</td><td data-temp="24">0.119</td><td data-temp="26">0.134</td><td data-temp="28">0.151</td><td data-temp="30">0.170</td><td data-temp="32">0.190</td></tr>
-                                    <tr data-ph="8.6"><td class="td-ph">8.6</td><td data-temp="24">0.176</td><td data-temp="26">0.197</td><td data-temp="28">0.220</td><td data-temp="30">0.245</td><td data-temp="32">0.271</td></tr>
-                                    <tr data-ph="8.8"><td class="td-ph">8.8</td><td data-temp="24">0.253</td><td data-temp="26">0.281</td><td data-temp="28">0.309</td><td data-temp="30">0.340</td><td data-temp="32">0.371</td></tr>
-                                    <tr data-ph="9.0"><td class="td-ph">9.0</td><td data-temp="24">0.349</td><td data-temp="26">0.382</td><td data-temp="28">0.415</td><td data-temp="30">0.449</td><td data-temp="32">0.483</td></tr>
-                                    <tr data-ph="9.2"><td class="td-ph">9.2</td><td data-temp="24">0.460</td><td data-temp="26">0.495</td><td data-temp="28">0.530</td><td data-temp="30">0.564</td><td data-temp="32">0.597</td></tr>
-                                    <tr data-ph="9.4"><td class="td-ph">9.4</td><td data-temp="24">0.574</td><td data-temp="26">0.608</td><td data-temp="28">0.641</td><td data-temp="30">0.672</td><td data-temp="32">0.701</td></tr>
-                                    <tr data-ph="9.6"><td class="td-ph">9.6</td><td data-temp="24">0.681</td><td data-temp="26">0.711</td><td data-temp="28">0.739</td><td data-temp="30">0.764</td><td data-temp="32">0.788</td></tr>
-                                    <tr data-ph="10.0"><td class="td-ph">10.0</td><td data-temp="24">0.843</td><td data-temp="26">0.861</td><td data-temp="28">0.877</td><td data-temp="30">0.891</td><td data-temp="32">0.903</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="van-wyk-source-credit">
-                            Source: Van Wyk et al., 1999 &bull; Recirculating Freshwater Systems for Marine Shrimp
-                        </div>
-                    </div>
+                    <span class="matrix-hint-text">Opens reference table with dynamic sensor temperature &amp; pH highlighting</span>
                 </div>
 
             </article>
@@ -1255,7 +562,7 @@
         </section>
 
 
-        <!-- TREND CHART -->
+        <!-- 5. WATER QUALITY TRENDS -->
         <section class="monitoring-section" aria-labelledby="monitoring-trend-title">
 
             <div class="section-heading-row">
@@ -1272,258 +579,44 @@
 
             <div class="panel trend-panel monitoring-trend-panel">
 
-            <div class="chart-wrap monitoring-chart-wrap">
+                <div class="chart-wrap monitoring-chart-wrap">
 
-                <canvas
-                    id="trend-chart"
-                    role="img"
-                    aria-label="Trend graph for temperature and pH">
-                    Your browser does not support the canvas element.
-                </canvas>
+                    <canvas
+                        id="trend-chart"
+                        role="img"
+                        aria-label="Trend graph for temperature and pH">
+                        Your browser does not support the canvas element.
+                    </canvas>
 
-                <div id="chart-tooltip" class="monitoring-chart-tooltip" hidden></div>
+                    <div id="chart-tooltip" class="monitoring-chart-tooltip" hidden></div>
 
-                <p id="chart-empty">
-                    Submit at least one dashboard reading to see the trend graph.
-                </p>
+                    <p id="chart-empty">
+                        Submit at least one dashboard reading to see the trend graph.
+                    </p>
 
-            </div>
+                </div>
 
-            <div class="chart-legend monitoring-chart-legend"
-                 aria-label="Chart legend">
+                <div class="chart-legend monitoring-chart-legend"
+                     aria-label="Chart legend">
 
-                <span>
-                    <i class="legend-temperature"></i>
-                    Temperature (°C)
-                </span>
+                    <span>
+                        <i class="legend-temperature"></i>
+                        Temperature (&deg;C)
+                    </span>
 
-                <span>
-                    <i class="legend-ph"></i>
-                    pH Level
-                </span>
+                    <span>
+                        <i class="legend-ph"></i>
+                        pH Level
+                    </span>
 
-            </div>
+                </div>
 
             </div>
 
         </section>
 
 
-        <!-- UNIONIZED AMMONIA (NH3) CALCULATOR -->
-        <section class="monitoring-section" id="monitoring-ammonia-section" aria-labelledby="monitoring-ammonia-title">
-
-            <div class="section-heading-row">
-                <div>
-                    <span class="section-eyebrow">TOXICITY ASSESSMENT</span>
-                    <h2 id="monitoring-ammonia-title">Unionized Ammonia (NH₃) Calculator</h2>
-                    <p>Calculates toxic unionized ammonia from Total Ammonia Nitrogen (TAN) using real-time sensor temperature and pH (Van Wyk et al., 1999).</p>
-                </div>
-
-                <span class="section-count">Van Wyk et al., 1999 Model</span>
-            </div>
-
-            <article class="panel monitoring-panel ammonia-panel">
-
-                <div class="panel-heading">
-                    <div class="panel-heading-icon ammonia-heading-icon">
-                        <svg class="ui-icon" aria-hidden="true">
-                            <use href="#icon-droplet"></use>
-                        </svg>
-                    </div>
-
-                    <div>
-                        <h2>Unionized Ammonia Estimation</h2>
-                        <p>Formula: NH₃ (ppm) = Factor (<em>f</em>) &times; TAN (ppm) &bull; Acceptable safety threshold: &lt; 0.03 ppm</p>
-                    </div>
-                </div>
-
-                <!-- AMMONIA CALCULATOR LAYOUT -->
-                <div class="ammonia-calc-grid">
-
-                    <!-- INPUT CARD -->
-                    <div class="ammonia-card ammonia-card-input">
-                        <div class="ammonia-card-header">
-                            <span class="ammonia-card-label">INPUT TAN &amp; SENSOR PARAMETERS</span>
-                        </div>
-
-                        <!-- TAN INPUT -->
-                        <div class="ammonia-field-group">
-                            <div class="ammonia-input-label-row">
-                                <label for="ammonia-tan-input" class="ammonia-input-label">Total Ammonia Nitrogen (TAN)</label>
-                                <span class="ammonia-input-unit">ppm (mg/L)</span>
-                            </div>
-                            <div class="ammonia-input-controls">
-                                <input
-                                    type="number"
-                                    id="ammonia-tan-input"
-                                    class="ammonia-number-input"
-                                    min="0"
-                                    max="20"
-                                    step="0.01"
-                                    value="0.8"
-                                    placeholder="e.g. 0.80">
-                                <button type="button" id="ammonia-recalc-btn" class="ammonia-btn-primary">
-                                    Calculate
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- PRESETS -->
-                        <div class="ammonia-presets-row">
-                            <span class="ammonia-presets-label">Common Presets:</span>
-                            <div class="ammonia-preset-chips" id="ammonia-preset-chips">
-                                <button type="button" class="preset-chip" data-tan="0.25">0.25 ppm</button>
-                                <button type="button" class="preset-chip" data-tan="0.5">0.50 ppm</button>
-                                <button type="button" class="preset-chip active" data-tan="0.8">0.80 ppm</button>
-                                <button type="button" class="preset-chip" data-tan="1.0">1.00 ppm</button>
-                                <button type="button" class="preset-chip" data-tan="1.5">1.50 ppm</button>
-                                <button type="button" class="preset-chip" data-tan="2.0">2.00 ppm</button>
-                            </div>
-                        </div>
-
-                        <!-- LIVE SENSORS SYNC INDICATORS -->
-                        <div class="ammonia-live-sensors">
-                            <div class="ammonia-sensor-badge">
-                                <span class="sensor-badge-title">LIVE SENSOR TEMP</span>
-                                <span class="sensor-badge-val"><span id="ammonia-live-temp">--</span> &deg;C</span>
-                            </div>
-                            <div class="ammonia-sensor-badge">
-                                <span class="sensor-badge-title">LIVE SENSOR pH</span>
-                                <span class="sensor-badge-val"><span id="ammonia-live-ph">--</span> pH</span>
-                            </div>
-                        </div>
-
-                        <!-- SIMULATION / OVERRIDE TOGGLE -->
-                        <div class="ammonia-override-box">
-                            <label class="ammonia-checkbox-label">
-                                <input type="checkbox" id="ammonia-override-checkbox">
-                                <span>Simulate custom temperature &amp; pH (What-if scenario)</span>
-                            </label>
-                            <div id="ammonia-override-fields" class="ammonia-override-fields" hidden>
-                                <div class="override-field">
-                                    <label for="ammonia-custom-temp">Temp (&deg;C):</label>
-                                    <input type="number" id="ammonia-custom-temp" min="20" max="40" step="0.1" value="28.0" class="override-input">
-                                </div>
-                                <div class="override-field">
-                                    <label for="ammonia-custom-ph">pH Level:</label>
-                                    <input type="number" id="ammonia-custom-ph" min="6.0" max="11.0" step="0.05" value="7.60" class="override-input">
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!-- OUTPUT CARD -->
-                    <div class="ammonia-card ammonia-card-result">
-                        <div class="ammonia-card-header">
-                            <span class="ammonia-card-label">ESTIMATED UNIONIZED AMMONIA (NH₃)</span>
-                            <span id="ammonia-status-badge" class="wqi-metric-badge badge-normal">Safe (&lt; 0.03 ppm)</span>
-                        </div>
-
-                        <div class="ammonia-result-display">
-                            <span id="ammonia-result-value" class="ammonia-big-value">0.0224</span>
-                            <span class="ammonia-big-unit">ppm</span>
-                        </div>
-
-                        <!-- BREAKDOWN STEPS (MATCHING SLIDE 2) -->
-                        <div class="ammonia-formula-breakdown">
-                            <div class="formula-step">
-                                <span class="step-tag">Step 1</span>
-                                <span>Table factor at <strong id="calc-step-temp">28.0&deg;C</strong> &amp; pH <strong id="calc-step-ph">7.60</strong>: <strong><em>f</em> = <span id="calc-step-factor">0.028</span></strong></span>
-                            </div>
-                            <div class="formula-step">
-                                <span class="step-tag">Step 2</span>
-                                <span>Multiply by TAN: <span id="calc-step-tan-math">0.028 &times; 0.80 ppm</span> = <strong id="calc-step-result">0.0224 ppm</strong></span>
-                            </div>
-                        </div>
-
-                        <!-- BIOLOGICAL ASSESSMENT -->
-                        <div id="ammonia-assessment-box" class="ammonia-assessment is-safe">
-                            <p id="ammonia-assessment-text">
-                                This level (0.0224 ppm) is lower than the acceptable level (&lt;0.03 ppm), hence no corrective action would need to be taken.
-                            </p>
-                        </div>
-
-                        <!-- SLIDE 2 SENSITIVITY CALLOUT -->
-                        <div class="ammonia-sensitivity-callout">
-                            <svg class="ui-icon" aria-hidden="true">
-                                <use href="#icon-lightbulb"></use>
-                            </svg>
-                            <p id="ammonia-sensitivity-note">
-                                <strong>Sensitivity Insight:</strong> At 28&deg;C, an increase in pH of only +0.2 (to 7.8) yields <strong>0.0344 ppm</strong>, which exceeds the acceptable limit (&lt;0.03 ppm) and requires immediate aeration &amp; mitigation.
-                            </p>
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <!-- INTERACTIVE VAN WYK TABLE ACCORDION -->
-                <div class="ammonia-table-accordion">
-                    <button type="button" id="toggle-van-wyk-btn" class="accordion-header-btn" aria-expanded="true">
-                        <span class="accordion-title">
-                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-chart"></use></svg>
-                            Van Wyk et al. (1999) Reference Matrix (Live Highlight)
-                        </span>
-                        <span class="accordion-chevron" id="accordion-chevron">&minus;</span>
-                    </button>
-
-                    <div id="van-wyk-accordion-body" class="accordion-body">
-                        <div class="table-legend-row">
-                            <span class="legend-text">Proportion of Total Ammonia Nitrogen in the Unionized Form as a Function of Temperature and pH:</span>
-                            <div class="legend-badges">
-                                <span class="legend-chip chip-col">Active Temp Column</span>
-                                <span class="legend-chip chip-row">Active pH Row</span>
-                                <span class="legend-chip chip-intersect">Intersection Factor (<em>f</em>)</span>
-                            </div>
-                        </div>
-
-                        <div class="table-responsive van-wyk-table-scroll">
-                            <table class="van-wyk-grid" id="van-wyk-matrix">
-                                <thead>
-                                    <tr>
-                                        <th rowspan="2" class="th-ph">pH</th>
-                                        <th colspan="5" class="th-temp-header">Temperature (&deg;C)</th>
-                                    </tr>
-                                    <tr class="th-temp-sub">
-                                        <th data-temp="24">24</th>
-                                        <th data-temp="26">26</th>
-                                        <th data-temp="28">28</th>
-                                        <th data-temp="30">30</th>
-                                        <th data-temp="32">32</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr data-ph="7.0"><td class="td-ph">7.0</td><td data-temp="24">0.005</td><td data-temp="26">0.006</td><td data-temp="28">0.007</td><td data-temp="30">0.008</td><td data-temp="32">0.009</td></tr>
-                                    <tr data-ph="7.2"><td class="td-ph">7.2</td><td data-temp="24">0.008</td><td data-temp="26">0.010</td><td data-temp="28">0.011</td><td data-temp="30">0.013</td><td data-temp="32">0.015</td></tr>
-                                    <tr data-ph="7.4"><td class="td-ph">7.4</td><td data-temp="24">0.013</td><td data-temp="26">0.015</td><td data-temp="28">0.018</td><td data-temp="30">0.020</td><td data-temp="32">0.023</td></tr>
-                                    <tr data-ph="7.6"><td class="td-ph">7.6</td><td data-temp="24">0.021</td><td data-temp="26">0.024</td><td data-temp="28">0.028</td><td data-temp="30">0.031</td><td data-temp="32">0.036</td></tr>
-                                    <tr data-ph="7.8"><td class="td-ph">7.8</td><td data-temp="24">0.033</td><td data-temp="26">0.038</td><td data-temp="28">0.043</td><td data-temp="30">0.049</td><td data-temp="32">0.056</td></tr>
-                                    <tr data-ph="8.0"><td class="td-ph">8.0</td><td data-temp="24">0.051</td><td data-temp="26">0.058</td><td data-temp="28">0.066</td><td data-temp="30">0.075</td><td data-temp="32">0.085</td></tr>
-                                    <tr data-ph="8.2"><td class="td-ph">8.2</td><td data-temp="24">0.078</td><td data-temp="26">0.089</td><td data-temp="28">0.101</td><td data-temp="30">0.114</td><td data-temp="32">0.129</td></tr>
-                                    <tr data-ph="8.4"><td class="td-ph">8.4</td><td data-temp="24">0.119</td><td data-temp="26">0.134</td><td data-temp="28">0.151</td><td data-temp="30">0.170</td><td data-temp="32">0.190</td></tr>
-                                    <tr data-ph="8.6"><td class="td-ph">8.6</td><td data-temp="24">0.176</td><td data-temp="26">0.197</td><td data-temp="28">0.220</td><td data-temp="30">0.245</td><td data-temp="32">0.271</td></tr>
-                                    <tr data-ph="8.8"><td class="td-ph">8.8</td><td data-temp="24">0.253</td><td data-temp="26">0.281</td><td data-temp="28">0.309</td><td data-temp="30">0.340</td><td data-temp="32">0.371</td></tr>
-                                    <tr data-ph="9.0"><td class="td-ph">9.0</td><td data-temp="24">0.349</td><td data-temp="26">0.382</td><td data-temp="28">0.415</td><td data-temp="30">0.449</td><td data-temp="32">0.483</td></tr>
-                                    <tr data-ph="9.2"><td class="td-ph">9.2</td><td data-temp="24">0.460</td><td data-temp="26">0.495</td><td data-temp="28">0.530</td><td data-temp="30">0.564</td><td data-temp="32">0.597</td></tr>
-                                    <tr data-ph="9.4"><td class="td-ph">9.4</td><td data-temp="24">0.574</td><td data-temp="26">0.608</td><td data-temp="28">0.641</td><td data-temp="30">0.672</td><td data-temp="32">0.701</td></tr>
-                                    <tr data-ph="9.6"><td class="td-ph">9.6</td><td data-temp="24">0.681</td><td data-temp="26">0.711</td><td data-temp="28">0.739</td><td data-temp="30">0.764</td><td data-temp="32">0.788</td></tr>
-                                    <tr data-ph="10.0"><td class="td-ph">10.0</td><td data-temp="24">0.843</td><td data-temp="26">0.861</td><td data-temp="28">0.877</td><td data-temp="30">0.891</td><td data-temp="32">0.903</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="van-wyk-source-credit">
-                            Source: Van Wyk et al., 1999 &bull; Recirculating Freshwater Systems for Marine Shrimp
-                        </div>
-                    </div>
-                </div>
-
-            </article>
-
-        </section>
-
-
-        <!-- AI RECOMMENDATIONS & ACTIONABLE SOLUTIONS (OPENAI API FOR PENAEUS VANNAMEI) -->
+        <!-- 6. AI RECOMMENDATIONS & ACTIONABLE SOLUTIONS (OPENAI API FOR PENAEUS VANNAMEI) -->
         <section class="monitoring-section" aria-labelledby="recommendations-title">
 
             <div class="section-heading-row">
@@ -1543,240 +636,26 @@
 
             <div class="panel recommendations monitoring-recommendations-panel">
 
-            <div id="monitoring-recommendations"
-                class="monitoring-recommendation-list">
+                <div id="monitoring-recommendations"
+                    class="monitoring-recommendation-list">
 
-                <div class="rec-loading-placeholder">
-                    <p>Loading AI recommendations and actionable solutions for <em>Penaeus vannamei</em>...</p>
+                    <div class="rec-loading-placeholder">
+                        <p>Loading AI recommendations and actionable solutions for <em>Penaeus vannamei</em>...</p>
+                    </div>
+
+                </div>
+
+                <div class="monitoring-recommendation-note">
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-alert"></use>
+                    </svg>
+
+                    <p>
+                        Recommendations and actionable solutions are powered by OpenAI and generated specifically for <em>Penaeus vannamei</em> pond parameters. Follow standard aquaculture verification before executing chemical interventions.
+                    </p>
                 </div>
 
             </div>
-
-            <div class="monitoring-recommendation-note">
-                <svg class="ui-icon" aria-hidden="true">
-                    <use href="#icon-alert"></use>
-                </svg>
-
-                <p>
-                    Recommendations and actionable solutions are powered by OpenAI and generated specifically for <em>Penaeus vannamei</em> pond parameters. Follow standard aquaculture verification before executing chemical interventions.
-                </p>
-            </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- UNIONIZED AMMONIA (NH3) CALCULATOR -->
-        <section class="monitoring-section" id="monitoring-ammonia-section" aria-labelledby="monitoring-ammonia-title">
-
-            <div class="section-heading-row">
-                <div>
-                    <span class="section-eyebrow">TOXICITY ASSESSMENT</span>
-                    <h2 id="monitoring-ammonia-title">Unionized Ammonia (NH₃) Calculator</h2>
-                    <p>Calculates toxic unionized ammonia from Total Ammonia Nitrogen (TAN) using real-time sensor temperature and pH (Van Wyk et al., 1999).</p>
-                </div>
-
-                <span class="section-count">Van Wyk et al., 1999 Model</span>
-            </div>
-
-            <article class="panel monitoring-panel ammonia-panel">
-
-                <div class="panel-heading">
-                    <div class="panel-heading-icon ammonia-heading-icon">
-                        <svg class="ui-icon" aria-hidden="true">
-                            <use href="#icon-droplet"></use>
-                        </svg>
-                    </div>
-
-                    <div>
-                        <h2>Unionized Ammonia Estimation</h2>
-                        <p>Formula: NH₃ (ppm) = Factor (<em>f</em>) &times; TAN (ppm) &bull; Acceptable safety threshold: &lt; 0.03 ppm</p>
-                    </div>
-                </div>
-
-                <!-- AMMONIA CALCULATOR LAYOUT -->
-                <div class="ammonia-calc-grid">
-
-                    <!-- INPUT CARD -->
-                    <div class="ammonia-card ammonia-card-input">
-                        <div class="ammonia-card-header">
-                            <span class="ammonia-card-label">INPUT TAN &amp; SENSOR PARAMETERS</span>
-                        </div>
-
-                        <!-- TAN INPUT -->
-                        <div class="ammonia-field-group">
-                            <div class="ammonia-input-label-row">
-                                <label for="ammonia-tan-input" class="ammonia-input-label">Total Ammonia Nitrogen (TAN)</label>
-                                <span class="ammonia-input-unit">ppm (mg/L)</span>
-                            </div>
-                            <div class="ammonia-input-controls">
-                                <input
-                                    type="number"
-                                    id="ammonia-tan-input"
-                                    class="ammonia-number-input"
-                                    min="0"
-                                    max="20"
-                                    step="0.01"
-                                    value="0.8"
-                                    placeholder="e.g. 0.80">
-                                <button type="button" id="ammonia-recalc-btn" class="ammonia-btn-primary">
-                                    Calculate
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- PRESETS -->
-                        <div class="ammonia-presets-row">
-                            <span class="ammonia-presets-label">Common Presets:</span>
-                            <div class="ammonia-preset-chips" id="ammonia-preset-chips">
-                                <button type="button" class="preset-chip" data-tan="0.25">0.25 ppm</button>
-                                <button type="button" class="preset-chip" data-tan="0.5">0.50 ppm</button>
-                                <button type="button" class="preset-chip active" data-tan="0.8">0.80 ppm</button>
-                                <button type="button" class="preset-chip" data-tan="1.0">1.00 ppm</button>
-                                <button type="button" class="preset-chip" data-tan="1.5">1.50 ppm</button>
-                                <button type="button" class="preset-chip" data-tan="2.0">2.00 ppm</button>
-                            </div>
-                        </div>
-
-                        <!-- LIVE SENSORS SYNC INDICATORS -->
-                        <div class="ammonia-live-sensors">
-                            <div class="ammonia-sensor-badge">
-                                <span class="sensor-badge-title">LIVE SENSOR TEMP</span>
-                                <span class="sensor-badge-val"><span id="ammonia-live-temp">--</span> &deg;C</span>
-                            </div>
-                            <div class="ammonia-sensor-badge">
-                                <span class="sensor-badge-title">LIVE SENSOR pH</span>
-                                <span class="sensor-badge-val"><span id="ammonia-live-ph">--</span> pH</span>
-                            </div>
-                        </div>
-
-                        <!-- SIMULATION / OVERRIDE TOGGLE -->
-                        <div class="ammonia-override-box">
-                            <label class="ammonia-checkbox-label">
-                                <input type="checkbox" id="ammonia-override-checkbox">
-                                <span>Simulate custom temperature &amp; pH (What-if scenario)</span>
-                            </label>
-                            <div id="ammonia-override-fields" class="ammonia-override-fields" hidden>
-                                <div class="override-field">
-                                    <label for="ammonia-custom-temp">Temp (&deg;C):</label>
-                                    <input type="number" id="ammonia-custom-temp" min="20" max="40" step="0.1" value="28.0" class="override-input">
-                                </div>
-                                <div class="override-field">
-                                    <label for="ammonia-custom-ph">pH Level:</label>
-                                    <input type="number" id="ammonia-custom-ph" min="6.0" max="11.0" step="0.05" value="7.60" class="override-input">
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!-- OUTPUT CARD -->
-                    <div class="ammonia-card ammonia-card-result">
-                        <div class="ammonia-card-header">
-                            <span class="ammonia-card-label">ESTIMATED UNIONIZED AMMONIA (NH₃)</span>
-                            <span id="ammonia-status-badge" class="wqi-metric-badge badge-normal">Safe (&lt; 0.03 ppm)</span>
-                        </div>
-
-                        <div class="ammonia-result-display">
-                            <span id="ammonia-result-value" class="ammonia-big-value">0.0224</span>
-                            <span class="ammonia-big-unit">ppm</span>
-                        </div>
-
-                        <!-- BREAKDOWN STEPS (MATCHING SLIDE 2) -->
-                        <div class="ammonia-formula-breakdown">
-                            <div class="formula-step">
-                                <span class="step-tag">Step 1</span>
-                                <span>Table factor at <strong id="calc-step-temp">28.0&deg;C</strong> &amp; pH <strong id="calc-step-ph">7.60</strong>: <strong><em>f</em> = <span id="calc-step-factor">0.028</span></strong></span>
-                            </div>
-                            <div class="formula-step">
-                                <span class="step-tag">Step 2</span>
-                                <span>Multiply by TAN: <span id="calc-step-tan-math">0.028 &times; 0.80 ppm</span> = <strong id="calc-step-result">0.0224 ppm</strong></span>
-                            </div>
-                        </div>
-
-                        <!-- BIOLOGICAL ASSESSMENT -->
-                        <div id="ammonia-assessment-box" class="ammonia-assessment is-safe">
-                            <p id="ammonia-assessment-text">
-                                This level (0.0224 ppm) is lower than the acceptable level (&lt;0.03 ppm), hence no corrective action would need to be taken.
-                            </p>
-                        </div>
-
-                        <!-- SLIDE 2 SENSITIVITY CALLOUT -->
-                        <div class="ammonia-sensitivity-callout">
-                            <svg class="ui-icon" aria-hidden="true">
-                                <use href="#icon-lightbulb"></use>
-                            </svg>
-                            <p id="ammonia-sensitivity-note">
-                                <strong>Sensitivity Insight:</strong> At 28&deg;C, an increase in pH of only +0.2 (to 7.8) yields <strong>0.0344 ppm</strong>, which exceeds the acceptable limit (&lt;0.03 ppm) and requires immediate aeration &amp; mitigation.
-                            </p>
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <!-- INTERACTIVE VAN WYK TABLE ACCORDION -->
-                <div class="ammonia-table-accordion">
-                    <button type="button" id="toggle-van-wyk-btn" class="accordion-header-btn" aria-expanded="true">
-                        <span class="accordion-title">
-                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-chart"></use></svg>
-                            Van Wyk et al. (1999) Reference Matrix (Live Highlight)
-                        </span>
-                        <span class="accordion-chevron" id="accordion-chevron">&minus;</span>
-                    </button>
-
-                    <div id="van-wyk-accordion-body" class="accordion-body">
-                        <div class="table-legend-row">
-                            <span class="legend-text">Proportion of Total Ammonia Nitrogen in the Unionized Form as a Function of Temperature and pH:</span>
-                            <div class="legend-badges">
-                                <span class="legend-chip chip-col">Active Temp Column</span>
-                                <span class="legend-chip chip-row">Active pH Row</span>
-                                <span class="legend-chip chip-intersect">Intersection Factor (<em>f</em>)</span>
-                            </div>
-                        </div>
-
-                        <div class="table-responsive van-wyk-table-scroll">
-                            <table class="van-wyk-grid" id="van-wyk-matrix">
-                                <thead>
-                                    <tr>
-                                        <th rowspan="2" class="th-ph">pH</th>
-                                        <th colspan="5" class="th-temp-header">Temperature (&deg;C)</th>
-                                    </tr>
-                                    <tr class="th-temp-sub">
-                                        <th data-temp="24">24</th>
-                                        <th data-temp="26">26</th>
-                                        <th data-temp="28">28</th>
-                                        <th data-temp="30">30</th>
-                                        <th data-temp="32">32</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr data-ph="7.0"><td class="td-ph">7.0</td><td data-temp="24">0.005</td><td data-temp="26">0.006</td><td data-temp="28">0.007</td><td data-temp="30">0.008</td><td data-temp="32">0.009</td></tr>
-                                    <tr data-ph="7.2"><td class="td-ph">7.2</td><td data-temp="24">0.008</td><td data-temp="26">0.010</td><td data-temp="28">0.011</td><td data-temp="30">0.013</td><td data-temp="32">0.015</td></tr>
-                                    <tr data-ph="7.4"><td class="td-ph">7.4</td><td data-temp="24">0.013</td><td data-temp="26">0.015</td><td data-temp="28">0.018</td><td data-temp="30">0.020</td><td data-temp="32">0.023</td></tr>
-                                    <tr data-ph="7.6"><td class="td-ph">7.6</td><td data-temp="24">0.021</td><td data-temp="26">0.024</td><td data-temp="28">0.028</td><td data-temp="30">0.031</td><td data-temp="32">0.036</td></tr>
-                                    <tr data-ph="7.8"><td class="td-ph">7.8</td><td data-temp="24">0.033</td><td data-temp="26">0.038</td><td data-temp="28">0.043</td><td data-temp="30">0.049</td><td data-temp="32">0.056</td></tr>
-                                    <tr data-ph="8.0"><td class="td-ph">8.0</td><td data-temp="24">0.051</td><td data-temp="26">0.058</td><td data-temp="28">0.066</td><td data-temp="30">0.075</td><td data-temp="32">0.085</td></tr>
-                                    <tr data-ph="8.2"><td class="td-ph">8.2</td><td data-temp="24">0.078</td><td data-temp="26">0.089</td><td data-temp="28">0.101</td><td data-temp="30">0.114</td><td data-temp="32">0.129</td></tr>
-                                    <tr data-ph="8.4"><td class="td-ph">8.4</td><td data-temp="24">0.119</td><td data-temp="26">0.134</td><td data-temp="28">0.151</td><td data-temp="30">0.170</td><td data-temp="32">0.190</td></tr>
-                                    <tr data-ph="8.6"><td class="td-ph">8.6</td><td data-temp="24">0.176</td><td data-temp="26">0.197</td><td data-temp="28">0.220</td><td data-temp="30">0.245</td><td data-temp="32">0.271</td></tr>
-                                    <tr data-ph="8.8"><td class="td-ph">8.8</td><td data-temp="24">0.253</td><td data-temp="26">0.281</td><td data-temp="28">0.309</td><td data-temp="30">0.340</td><td data-temp="32">0.371</td></tr>
-                                    <tr data-ph="9.0"><td class="td-ph">9.0</td><td data-temp="24">0.349</td><td data-temp="26">0.382</td><td data-temp="28">0.415</td><td data-temp="30">0.449</td><td data-temp="32">0.483</td></tr>
-                                    <tr data-ph="9.2"><td class="td-ph">9.2</td><td data-temp="24">0.460</td><td data-temp="26">0.495</td><td data-temp="28">0.530</td><td data-temp="30">0.564</td><td data-temp="32">0.597</td></tr>
-                                    <tr data-ph="9.4"><td class="td-ph">9.4</td><td data-temp="24">0.574</td><td data-temp="26">0.608</td><td data-temp="28">0.641</td><td data-temp="30">0.672</td><td data-temp="32">0.701</td></tr>
-                                    <tr data-ph="9.6"><td class="td-ph">9.6</td><td data-temp="24">0.681</td><td data-temp="26">0.711</td><td data-temp="28">0.739</td><td data-temp="30">0.764</td><td data-temp="32">0.788</td></tr>
-                                    <tr data-ph="10.0"><td class="td-ph">10.0</td><td data-temp="24">0.843</td><td data-temp="26">0.861</td><td data-temp="28">0.877</td><td data-temp="30">0.891</td><td data-temp="32">0.903</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="van-wyk-source-credit">
-                            Source: Van Wyk et al., 1999 &bull; Recirculating Freshwater Systems for Marine Shrimp
-                        </div>
-                    </div>
-                </div>
-
-            </article>
 
         </section>
 
@@ -1796,8 +675,91 @@
 
 </div>
 
+
+<!-- VAN WYK REFERENCE MATRIX POPUP DIALOG -->
+<div id="van-wyk-modal" class="modal-dialog-backdrop" hidden>
+    <div class="modal-dialog-container" role="dialog" aria-modal="true" aria-labelledby="modal-matrix-title">
+
+        <div class="modal-dialog-header">
+            <div class="modal-header-text">
+                <div class="panel-heading-icon ammonia-heading-icon modal-icon">
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-chart"></use>
+                    </svg>
+                </div>
+                <div>
+                    <h3 id="modal-matrix-title">Van Wyk et al. (1999) Reference Matrix</h3>
+                    <p>Proportion of Total Ammonia Nitrogen in the Unionized Form (Live Grid Highlight)</p>
+                </div>
+            </div>
+            <button type="button" id="close-van-wyk-modal" class="modal-close-btn" aria-label="Close dialog">
+                &times;
+            </button>
+        </div>
+
+        <div class="modal-dialog-body">
+
+            <div class="table-legend-row">
+                <span class="legend-text">Active sensor values highlighted:</span>
+                <div class="legend-badges">
+                    <span class="legend-chip chip-col">Active Temp Column</span>
+                    <span class="legend-chip chip-row">Active pH Row</span>
+                    <span class="legend-chip chip-intersect">Intersection Factor (<em>f</em>)</span>
+                </div>
+            </div>
+
+            <div class="table-responsive van-wyk-table-scroll">
+                <table class="van-wyk-grid" id="van-wyk-matrix">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" class="th-ph">pH</th>
+                            <th colspan="5" class="th-temp-header">Temperature (&deg;C)</th>
+                        </tr>
+                        <tr class="th-temp-sub">
+                            <th data-temp="24">24</th>
+                            <th data-temp="26">26</th>
+                            <th data-temp="28">28</th>
+                            <th data-temp="30">30</th>
+                            <th data-temp="32">32</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-ph="7.0"><td class="td-ph">7.0</td><td data-temp="24">0.005</td><td data-temp="26">0.006</td><td data-temp="28">0.007</td><td data-temp="30">0.008</td><td data-temp="32">0.009</td></tr>
+                        <tr data-ph="7.2"><td class="td-ph">7.2</td><td data-temp="24">0.008</td><td data-temp="26">0.010</td><td data-temp="28">0.011</td><td data-temp="30">0.013</td><td data-temp="32">0.015</td></tr>
+                        <tr data-ph="7.4"><td class="td-ph">7.4</td><td data-temp="24">0.013</td><td data-temp="26">0.015</td><td data-temp="28">0.018</td><td data-temp="30">0.020</td><td data-temp="32">0.023</td></tr>
+                        <tr data-ph="7.6"><td class="td-ph">7.6</td><td data-temp="24">0.021</td><td data-temp="26">0.024</td><td data-temp="28">0.028</td><td data-temp="30">0.031</td><td data-temp="32">0.036</td></tr>
+                        <tr data-ph="7.8"><td class="td-ph">7.8</td><td data-temp="24">0.033</td><td data-temp="26">0.038</td><td data-temp="28">0.043</td><td data-temp="30">0.049</td><td data-temp="32">0.056</td></tr>
+                        <tr data-ph="8.0"><td class="td-ph">8.0</td><td data-temp="24">0.051</td><td data-temp="26">0.058</td><td data-temp="28">0.066</td><td data-temp="30">0.075</td><td data-temp="32">0.085</td></tr>
+                        <tr data-ph="8.2"><td class="td-ph">8.2</td><td data-temp="24">0.078</td><td data-temp="26">0.089</td><td data-temp="28">0.101</td><td data-temp="30">0.114</td><td data-temp="32">0.129</td></tr>
+                        <tr data-ph="8.4"><td class="td-ph">8.4</td><td data-temp="24">0.119</td><td data-temp="26">0.134</td><td data-temp="28">0.151</td><td data-temp="30">0.170</td><td data-temp="32">0.190</td></tr>
+                        <tr data-ph="8.6"><td class="td-ph">8.6</td><td data-temp="24">0.176</td><td data-temp="26">0.197</td><td data-temp="28">0.220</td><td data-temp="30">0.245</td><td data-temp="32">0.271</td></tr>
+                        <tr data-ph="8.8"><td class="td-ph">8.8</td><td data-temp="24">0.253</td><td data-temp="26">0.281</td><td data-temp="28">0.309</td><td data-temp="30">0.340</td><td data-temp="32">0.371</td></tr>
+                        <tr data-ph="9.0"><td class="td-ph">9.0</td><td data-temp="24">0.349</td><td data-temp="26">0.382</td><td data-temp="28">0.415</td><td data-temp="30">0.449</td><td data-temp="32">0.483</td></tr>
+                        <tr data-ph="9.2"><td class="td-ph">9.2</td><td data-temp="24">0.460</td><td data-temp="26">0.495</td><td data-temp="28">0.530</td><td data-temp="30">0.564</td><td data-temp="32">0.597</td></tr>
+                        <tr data-ph="9.4"><td class="td-ph">9.4</td><td data-temp="24">0.574</td><td data-temp="26">0.608</td><td data-temp="28">0.641</td><td data-temp="30">0.672</td><td data-temp="32">0.701</td></tr>
+                        <tr data-ph="9.6"><td class="td-ph">9.6</td><td data-temp="24">0.681</td><td data-temp="26">0.711</td><td data-temp="28">0.739</td><td data-temp="30">0.764</td><td data-temp="32">0.788</td></tr>
+                        <tr data-ph="10.0"><td class="td-ph">10.0</td><td data-temp="24">0.843</td><td data-temp="26">0.861</td><td data-temp="28">0.877</td><td data-temp="30">0.891</td><td data-temp="32">0.903</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="van-wyk-source-credit">
+                Source: Van Wyk et al., 1999 &bull; Recirculating Freshwater Systems for Marine Shrimp
+            </div>
+
+        </div>
+
+        <div class="modal-dialog-footer">
+            <button type="button" id="modal-close-action-btn" class="ammonia-btn-primary">
+                Close Matrix
+            </button>
+        </div>
+
+    </div>
+</div>
+
 <script src="{{ url_for('static', filename='js/monitoring.js') }}"></script>
 <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
 
 </body>
-</html>
+</html>\n
