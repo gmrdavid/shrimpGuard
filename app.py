@@ -99,6 +99,7 @@ class User(db.Model):
     status = db.Column(db.String(20), nullable=False, default="Active")
     last_login = db.Column(db.DateTime, nullable=True)
     ntfy_topic = db.Column(db.String(100), nullable=True)
+    last_read_notifications = db.Column(db.DateTime, nullable=True)
 
     @property
     def name(self):
@@ -188,6 +189,16 @@ def inject_logout_csrf_token():
     }
 
 
+
+def parse_reading_datetime(reading):
+    try:
+        d_val = str(reading["date"] if isinstance(reading, dict) or hasattr(reading, "__getitem__") else getattr(reading, "date", ""))
+        if d_val.endswith("Z") or "+" in d_val:
+            return datetime.fromisoformat(d_val.replace("Z", "+00:00")).astimezone().replace(tzinfo=None)
+        return datetime.fromisoformat(d_val)
+    except Exception:
+        return datetime.min
+
 def serialize_sensor_reading(reading):
     status = reading["status"]
     if not status or status.strip() in ("Normal", "Good"):
@@ -207,8 +218,21 @@ def role_required(required_role):
     def decorate(view):
         @wraps(view)
         def wrapped(*args, **kwargs):
+            # 1. Hardware IoT / API key authentication (for automated microcontrollers & daemons)
+            api_key = request.headers.get("X-API-Key")
+            auth_header = request.headers.get("Authorization", "")
+            if not api_key and auth_header.startswith("Bearer "):
+                api_key = auth_header[7:].strip()
+
+            configured_secret = os.getenv("SECRET_KEY")
+            if api_key and configured_secret and hmac.compare_digest(api_key, configured_secret):
+                return view(*args, **kwargs)
+
+            # 2. Browser session authentication
             user_id = session.get("user_id")
             if user_id is None:
+                if request.is_json or request.path.startswith("/api/"):
+                    return jsonify({"error": "Authentication required."}), 401
                 return redirect(url_for("login"))
 
             try:
@@ -219,10 +243,14 @@ def role_required(required_role):
 
             if user is None:
                 session.clear()
+                if request.is_json or request.path.startswith("/api/"):
+                    return jsonify({"error": "User account not found."}), 401
                 return redirect(url_for("login"))
 
             actual_role = user.role.strip().casefold()
             if actual_role != required_role.casefold():
+                if request.is_json or request.path.startswith("/api/"):
+                    return jsonify({"error": "Insufficient permissions for this endpoint."}), 403
                 if actual_role == "admin":
                     return redirect(url_for("admin_home"))
                 if actual_role == "client":
@@ -264,15 +292,26 @@ def create_reading():
     try:
         temperature = float(payload["temperature"])
         ph = float(payload["ph"])
-        recorded_at = (
-            datetime.fromisoformat(payload["recorded_at"])
-            if payload.get("recorded_at")
-            else datetime.now()
-        )
+        raw_recorded_at = payload.get("recorded_at")
+        if raw_recorded_at:
+            clean_ts = str(raw_recorded_at).replace("Z", "+00:00")
+            parsed_dt = datetime.fromisoformat(clean_ts)
+            if parsed_dt.tzinfo is not None:
+                recorded_at = parsed_dt.astimezone().replace(tzinfo=None)
+            else:
+                recorded_at = parsed_dt
+        else:
+            recorded_at = datetime.now()
     except (TypeError, ValueError):
         return jsonify({"error": "Reading values must be valid numbers and date."}), 400
     if not math.isfinite(temperature) or not math.isfinite(ph):
         return jsonify({"error": "Reading values must be finite numbers."}), 400
+
+    now_dt = datetime.now()
+    if recorded_at > now_dt:
+        recorded_at = now_dt
+
+    recorded_at_str = recorded_at.strftime("%Y-%m-%dT%H:%M:%S.%f")
 
     # ML-based classification: solely determined by the DecisionTreeClassifier model
     try:
@@ -285,7 +324,7 @@ def create_reading():
             insert(sensor_readings).values(
                 ph_level=ph,
                 temperature=temperature,
-                date=recorded_at.isoformat(),
+                date=recorded_at_str,
                 status=status,
             )
         )
@@ -312,7 +351,7 @@ def create_reading():
             {
                 "temperature": temperature,
                 "ph": ph,
-                "recorded_at": recorded_at.isoformat(),
+                "recorded_at": recorded_at_str,
                 "status": status,
             }
         ), 201
@@ -326,18 +365,17 @@ def create_reading():
 @role_required("Client")
 def latest_reading():
     try:
-        reading = db.session.execute(
+        readings = db.session.execute(
             select(sensor_readings)
-            .order_by(sensor_readings.c.date.desc())
-            .limit(1)
-        ).mappings().first()
+        ).mappings().all()
     except SQLAlchemyError:
         db.session.rollback()
         app.logger.exception("Unable to load the latest sensor reading.")
         return jsonify({"error": "Unable to load sensor readings."}), 503
-    if not reading:
+    if not readings:
         return jsonify(None)
-    return jsonify(serialize_sensor_reading(reading))
+    latest = max(readings, key=parse_reading_datetime)
+    return jsonify(serialize_sensor_reading(latest))
 
 
 @app.route("/api/recommendations", methods=["POST"])
@@ -368,13 +406,13 @@ def reading_history():
     try:
         readings = db.session.execute(
             select(sensor_readings)
-            .order_by(sensor_readings.c.date.desc())
         ).mappings().all()
     except SQLAlchemyError:
         db.session.rollback()
         app.logger.exception("Unable to load sensor reading history.")
         return jsonify({"error": "Unable to load sensor readings."}), 503
-    return jsonify([serialize_sensor_reading(reading) for reading in reversed(readings)])
+    sorted_readings = sorted(readings, key=parse_reading_datetime)
+    return jsonify([serialize_sensor_reading(r) for r in sorted_readings])
 
 
 def generate_alerts_from_readings(readings):
@@ -463,15 +501,29 @@ def get_alerts():
 
     all_alerts = generate_alerts_from_readings(readings)
 
+    user = db.session.get(User, user_id)
+    last_read = None
+    if user and user.last_read_notifications:
+        last_read = user.last_read_notifications
+    elif session.get("last_notifications_read_at"):
+        try:
+            last_read = datetime.fromisoformat(session["last_notifications_read_at"])
+        except Exception:
+            last_read = None
+
+    for a in all_alerts:
+        a_dt = parse_reading_datetime({"date": a["recorded_at"]})
+        a["is_read"] = bool(last_read and a_dt <= last_read)
+
     critical_count = sum(1 for a in all_alerts if a["severity"] == "Critical")
     warning_count = sum(1 for a in all_alerts if a["severity"] == "Warning")
     active_alerts = [a for a in all_alerts if a["status"] == "Active"]
     resolved_count = len(readings) - len(active_alerts)
     if resolved_count < 0:
         resolved_count = 0
-    unread_notifications = len(all_alerts)
+    unread_notifications = sum(1 for a in all_alerts if not a.get("is_read"))
 
-    recent_notifications = all_alerts[:5]
+    recent_notifications = all_alerts
     sent_count = len(all_alerts)
     delivered_count = len(all_alerts)
     failed_count = 0
@@ -1275,6 +1327,26 @@ def api_test_ntfy():
         topic=topic
     )
     return jsonify(result)
+
+
+@app.route("/api/alerts/mark-read", methods=["POST"])
+def mark_alerts_read():
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Authentication required."}), 401
+
+    now_dt = datetime.now()
+    session["last_notifications_read_at"] = now_dt.isoformat()
+
+    try:
+        user = db.session.get(User, user_id)
+        if user:
+            user.last_read_notifications = now_dt
+            db.session.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+
+    return jsonify({"success": True, "unread_notifications": 0, "marked_at": now_dt.isoformat()})
 
 
 if __name__ == "__main__":

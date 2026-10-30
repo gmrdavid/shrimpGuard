@@ -273,8 +273,11 @@
                     <div class="metric-card-content">
                         <h3>Unread Notifications</h3>
 
-                        <div class="metric-reading">
+                        <div class="metric-reading" style="display: flex; align-items: baseline; justify-content: space-between;">
                             <h2 id="unread-notifications-count">0</h2>
+                            <button id="mark-all-read-btn" type="button" style="background: none; border: none; font-size: 11px; font-weight: 600; color: #16a34a; cursor: pointer; text-decoration: underline; padding: 0;">
+                                Mark all as read
+                            </button>
                         </div>
 
                         <p class="metric-status">
@@ -333,70 +336,98 @@
                 <!-- ALERT HISTORY -->
                 <section class="panel dashboard-panel alerts-panel alerts-history-panel">
 
-                    <div class="panel-heading">
-                        <div class="panel-heading-icon history-heading-icon">
-                            <svg class="ui-icon" aria-hidden="true">
-                                <use href="#icon-history"></use>
-                            </svg>
-                        </div>
+                    <div class="historical-records-heading">
 
-                        <div>
-                            <h2>Alert History</h2>
-                            <p>Review recorded events and their resolution status.</p>
-                        </div>
-                    </div>
+                        <div class="historical-card-heading">
 
-                    <div class="alert-history-controls">
-                        <select id="alert-type-select" class="history-filter-button history-filter-select" aria-label="Filter by alert type">
-                            <option value="all">All Types</option>
-                            <option value="critical">Critical</option>
-                            <option value="warning">Warning</option>
-                            <option value="temperature">Temperature</option>
-                            <option value="ph">pH Level</option>
-                            <option value="resolved">Resolved</option>
-                        </select>
+                            <span class="historical-card-icon records-icon">
+                                <svg class="ui-icon" aria-hidden="true">
+                                    <use href="#icon-history"></use>
+                                </svg>
+                            </span>
 
-                        <button type="button" id="alert-today-button" class="history-filter-button active" aria-pressed="true">
-                            Today
-                        </button>
-
-                        <button type="button" id="alert-filter-toggle" class="history-filter-button" aria-expanded="false" aria-controls="alert-filter-drawer">
-                            <svg class="ui-icon" aria-hidden="true">
-                                <use href="#icon-settings"></use>
-                            </svg>
-                            <span>Filter</span>
-                            <span id="active-filter-badge" class="filter-badge" hidden>0</span>
-                        </button>
-                    </div>
-
-                    <!-- Expandable Filter Drawer -->
-                    <div id="alert-filter-drawer" class="alert-filter-drawer" hidden>
-                        <div class="filter-drawer-grid">
-                            <div class="filter-group">
-                                <label for="alert-custom-date">Specific Date</label>
-                                <input type="date" id="alert-custom-date" class="filter-input">
+                            <div>
+                                <span class="historical-section-eyebrow">SAVED RECORDS</span>
+                                <h2>Alert History</h2>
+                                <p>Review recorded events and their resolution status.</p>
                             </div>
 
-                            <div class="filter-group">
-                                <label for="alert-status-select">Status</label>
-                                <select id="alert-status-select" class="filter-select">
-                                    <option value="all">All Statuses</option>
-                                    <option value="Active">Active Alerts</option>
-                                    <option value="Resolved">Resolved</option>
+                        </div>
+
+                        <div class="historical-table-toolbar">
+
+                            <div class="historical-limit-wrap">
+                                <label for="table-limit-select" class="historical-limit-label">Show:</label>
+                                <select id="table-limit-select" class="historical-limit-select" aria-label="Alerts per page">
+                                    <option value="5">5 rows</option>
+                                    <option value="10" selected>10 rows</option>
+                                    <option value="25">25 rows</option>
+                                    <option value="50">50 rows</option>
+                                    <option value="all">All rows</option>
                                 </select>
                             </div>
 
-                            <div class="filter-group search-group">
-                                <label for="alert-search-input">Search Keywords</label>
-                                <input type="search" id="alert-search-input" class="filter-input" placeholder="Search alerts or details...">
+                            <!-- FILTER DATE BUTTON & POPUP CALENDAR -->
+                            <div class="calendar-picker-anchor">
+                                <button id="filter-date-btn" class="historical-toolbar-btn" type="button" aria-expanded="false" aria-haspopup="dialog" aria-label="Filter by date calendar" title="Select a date to filter alerts">
+                                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg>
+                                    <span id="filter-date-text">Filter Date: All</span>
+                                    <span class="toolbar-arrow">▾</span>
+                                </button>
+
+                                <div id="calendar-popup" class="calendar-popup" hidden style="display: none;" role="dialog" aria-label="Alerts Date Picker">
+                                    <div class="calendar-popup-header">
+                                        <button type="button" id="cal-prev-month" class="cal-nav-btn" aria-label="Previous month">‹</button>
+                                        <span id="cal-month-title" class="cal-month-title">October 2026</span>
+                                        <button type="button" id="cal-next-month" class="cal-nav-btn" aria-label="Next month">›</button>
+                                    </div>
+
+                                    <div class="calendar-weekdays">
+                                        <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+                                    </div>
+
+                                    <div id="calendar-days-grid" class="calendar-days-grid"></div>
+
+                                    <div class="calendar-popup-footer">
+                                        <div class="calendar-legend">
+                                            <span class="cal-legend-item">
+                                                <span class="cal-dot cal-dot-green"></span> With readings
+                                            </span>
+                                            <span class="cal-legend-item">
+                                                <span class="cal-dot cal-dot-red"></span> No readings
+                                            </span>
+                                        </div>
+                                        <button type="button" id="cal-clear-btn" class="cal-clear-btn">Show All Dates</button>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="filter-actions">
-                                <button type="button" id="alert-reset-filters" class="filter-reset-button">
-                                    Clear Filters
+                            <!-- FILTER STATUS DROPDOWN -->
+                            <div class="status-picker-anchor">
+                                <button id="filter-status-btn" class="historical-toolbar-btn" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="Filter by status" title="Filter by status">
+                                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
+                                    <span id="filter-status-text">Status: All</span>
+                                    <span class="toolbar-arrow">▾</span>
                                 </button>
+
+                                <div id="status-dropdown-menu" class="status-dropdown-menu" hidden style="display: none;" role="menu">
+                                    <button type="button" class="status-menu-item active" data-status="all" role="menuitem">
+                                        <span class="status-menu-dot dot-all"></span> All Statuses
+                                    </button>
+                                    <button type="button" class="status-menu-item" data-status="optimal" role="menuitem">
+                                        <span class="status-menu-dot dot-optimal"></span> Optimal
+                                    </button>
+                                    <button type="button" class="status-menu-item" data-status="warning" role="menuitem">
+                                        <span class="status-menu-dot dot-warning"></span> Warning
+                                    </button>
+                                    <button type="button" class="status-menu-item" data-status="critical" role="menuitem">
+                                        <span class="status-menu-dot dot-critical"></span> Critical
+                                    </button>
+                                </div>
                             </div>
+
                         </div>
+
                     </div>
 
                     <div class="table-wrap alerts-table-wrap">
@@ -415,14 +446,18 @@
                         </table>
                     </div>
 
-                    <div class="alerts-table-footer">
-                        <span>Alert records from your monitoring system</span>
-                        <span class="alerts-table-footer-icon">
-                            <svg class="ui-icon" aria-hidden="true">
-                                <use href="#icon-history"></use>
-                            </svg>
-                            Audit trail
+                    <div class="historical-table-footer">
+
+                        <span id="table-page-info" class="table-page-info" aria-live="polite">
+                            Showing 0 readings
                         </span>
+
+                        <nav
+                            id="alert-history-pagination"
+                            class="readings-pagination historical-pagination"
+                            aria-label="Alert history pages">
+                        </nav>
+
                     </div>
 
                 </section>
@@ -477,6 +512,19 @@
                     <div id="recent-notifications" class="alerts-recent-list">
                         <div class="status-box dashboard-status-box">
                             Loading notifications...
+                        </div>
+                    </div>
+
+                    <!-- Recent Notifications Pagination Controls -->
+                    <div id="recent-notifications-pagination" class="recent-notifications-pagination" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-top: 1px solid #e8edea; background: #fafcfb; font-size: 11px; color: #6a7c72;">
+                        <span id="recent-page-info">Page 1 of 1</span>
+                        <div style="display: flex; gap: 6px;">
+                            <button type="button" id="recent-prev-btn" class="recent-nav-btn" disabled style="padding: 4px 10px; border-radius: 6px; border: 1px solid #d2ded7; background: #fff; font-size: 11px; font-weight: 600; cursor: pointer; color: #1e3a2b;">
+                                ← Prev
+                            </button>
+                            <button type="button" id="recent-next-btn" class="recent-nav-btn" disabled style="padding: 4px 10px; border-radius: 6px; border: 1px solid #d2ded7; background: #fff; font-size: 11px; font-weight: 600; cursor: pointer; color: #1e3a2b;">
+                                Next →
+                            </button>
                         </div>
                     </div>
 

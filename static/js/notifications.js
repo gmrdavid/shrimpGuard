@@ -81,6 +81,11 @@ function setupNotificationModal() {
         backdrop.classList.add("visible");
         button.setAttribute("aria-expanded", "true");
         await renderNotifications();
+        try {
+            await fetch("/api/alerts/mark-read", { method: "POST" });
+            const unreadCountEl = document.getElementById("unread-notifications-count");
+            if (unreadCountEl) unreadCountEl.textContent = "0";
+        } catch (_) {}
     });
 
     closeButton.addEventListener("click", () => {

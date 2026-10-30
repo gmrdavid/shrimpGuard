@@ -51,8 +51,10 @@ function getPhStatus(phLevel) {
 }
 
 function updateSummary(reading) {
-    document.getElementById("monitor-temperature").textContent = reading.temperature;
-    document.getElementById("monitor-ph").textContent = reading.ph;
+    const tempNum = Number(reading.temperature);
+    const phNum = Number(reading.ph);
+    document.getElementById("monitor-temperature").textContent = !isNaN(tempNum) ? tempNum.toFixed(1) : reading.temperature;
+    document.getElementById("monitor-ph").textContent = !isNaN(phNum) ? phNum.toFixed(2) : reading.ph;
     const status = getQualityStatus(reading);
     const statusEl = document.getElementById("monitoring-status");
     if (statusEl) {
@@ -63,8 +65,10 @@ function updateSummary(reading) {
     if (statusDot) {
         statusDot.className = `monitoring-status-dot dot-${status.toLowerCase()}`;
     }
-    document.getElementById("monitoring-updated").textContent =
-        "Last updated " + new Date(reading.recorded_at).toLocaleString();
+    const dateObj = reading.recorded_at ? new Date(reading.recorded_at) : null;
+    document.getElementById("monitoring-updated").textContent = dateObj && !isNaN(dateObj)
+        ? "Last updated " + dateObj.toLocaleString([], { dateStyle: "medium", timeStyle: "medium" })
+        : "Last updated recently";
     document.getElementById("monitoring-demo-note").hidden = reading.status !== "Demo";
 }
 
@@ -464,7 +468,23 @@ async function loadMonitoringData() {
                 throw new Error("Sensor history response has an invalid format.");
             }
 
-            if (!latest || history.length === 0) {
+            // Ensure history is chronologically ordered (oldest to newest for trajectory chart)
+            history.sort((a, b) => new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime());
+
+            // Determine the true latest reading between /api/readings/latest and the newest history point
+            const newestFromHistory = history.length > 0 ? history[history.length - 1] : null;
+            let trueLatest = latest;
+            if (!trueLatest && newestFromHistory) {
+                trueLatest = newestFromHistory;
+            } else if (trueLatest && newestFromHistory) {
+                const latestTime = new Date(trueLatest.recorded_at).getTime();
+                const historyTime = new Date(newestFromHistory.recorded_at).getTime();
+                if (historyTime > latestTime) {
+                    trueLatest = newestFromHistory;
+                }
+            }
+
+            if (!trueLatest || history.length === 0) {
                 emptyMessage.hidden = false;
                 document.getElementById("trend-count").textContent = "No readings yet";
                 updateRecommendations(null);
@@ -479,12 +499,12 @@ async function loadMonitoringData() {
             }
 
             emptyMessage.hidden = true;
-            updateSummary(latest);
+            updateSummary(trueLatest);
             try {
-                updateRecommendations(latest, await loadRecommendation(latest));
+                updateRecommendations(trueLatest, await loadRecommendation(trueLatest));
             } catch (error) {
                 console.error("Unable to load AI recommendations:", error);
-                updateRecommendations(latest, null);
+                updateRecommendations(trueLatest, null);
             }
             document.getElementById("trend-count").textContent = `${history.length} reading${
                 history.length === 1 ? "" : "s"

@@ -1,14 +1,22 @@
 let cachedAlertsData = null;
 let cachedHistory = [];
-let currentFilter = {
-    type: "all",
-    todayOnly: true,
-    customDate: "",
-    status: "all",
-    search: ""
-};
-let filterDrawerOpen = false;
+let cachedRecentNotifications = [];
+let recentCurrentPage = 1;
+const recentPerPage = 3;
+
+let historyPage = 1;
+let alertsPerPage = "10";
+let tableFilterDate = null; // null or 'YYYY-MM-DD'
+let tableFilterStatus = "all"; // 'all', 'optimal', 'warning', 'critical'
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let calInitialized = false;
 let alertControlsInitialized = false;
+
+const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+];
 
 function updateDeviceTime() {
     const timeEl = document.getElementById("time");
@@ -26,6 +34,31 @@ function formatDateTime(isoString) {
     const date = new Date(isoString);
     if (isNaN(date.getTime())) return isoString;
     return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+}
+
+function localDate(reading) {
+    if (!reading || !reading.recorded_at) return "";
+    const date = new Date(reading.recorded_at);
+    if (isNaN(date.getTime())) return "";
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function getDatesWithReadingsSet() {
+    const set = new Set();
+    cachedHistory.forEach((r) => {
+        const d = localDate(r);
+        if (d) set.add(d);
+    });
+    return set;
+}
+
+function statusForAlert(item) {
+    if (!item) return "Optimal";
+    const sev = String(item.severity || "").trim().toLowerCase();
+    const ml = String(item.ml_status || "").trim().toLowerCase();
+    if (sev === "critical" || ml === "critical") return "Critical";
+    if (sev === "warning" || ml === "warning") return "Warning";
+    return "Optimal";
 }
 
 function updateSummaryCards(alertsData) {
@@ -116,269 +149,550 @@ function updateSummaryCards(alertsData) {
 }
 
 function renderRecentNotifications(notifications) {
+    cachedRecentNotifications = Array.isArray(notifications) ? notifications : [];
     const container = document.getElementById("recent-notifications");
+    const paginationEl = document.getElementById("recent-notifications-pagination");
+    const pageInfo = document.getElementById("recent-page-info");
+    const prevBtn = document.getElementById("recent-prev-btn");
+    const nextBtn = document.getElementById("recent-next-btn");
+
     if (!container) return;
 
-    if (!Array.isArray(notifications) || notifications.length === 0) {
+    if (!cachedRecentNotifications.length) {
         container.innerHTML = `
             <div class="status-box">
                 No recent notifications recorded. All parameters are optimal.
             </div>
         `;
+        if (paginationEl) paginationEl.hidden = true;
         return;
     }
 
-    container.innerHTML = notifications.map((item) => `
-        <div class="alert">
-            <svg class="ui-icon"><use href="${item.severity === "Critical" ? "#icon-alert" : "#icon-bell"}"></use></svg>
-            <strong>${item.title}</strong>
-            <br>
-            ${item.message}
-            <br>
+    if (paginationEl) paginationEl.hidden = false;
+
+    const totalPages = Math.max(1, Math.ceil(cachedRecentNotifications.length / recentPerPage));
+    if (recentCurrentPage > totalPages) recentCurrentPage = totalPages;
+    if (recentCurrentPage < 1) recentCurrentPage = 1;
+
+    const startIdx = (recentCurrentPage - 1) * recentPerPage;
+    const endIdx = Math.min(startIdx + recentPerPage, cachedRecentNotifications.length);
+    const pageItems = cachedRecentNotifications.slice(startIdx, endIdx);
+
+    if (pageInfo) {
+        pageInfo.textContent = `Showing ${startIdx + 1}–${endIdx} of ${cachedRecentNotifications.length}`;
+    }
+    if (prevBtn) prevBtn.disabled = (recentCurrentPage <= 1);
+    if (nextBtn) nextBtn.disabled = (recentCurrentPage >= totalPages);
+
+    container.innerHTML = pageItems.map((item) => `
+        <div class="alert" style="${item.is_read ? 'opacity: 0.88;' : 'border-left: 3px solid #16a34a;'}">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span style="display: flex; align-items: center; gap: 6px;">
+                    <svg class="ui-icon"><use href="${item.severity === "Critical" ? "#icon-alert" : "#icon-bell"}"></use></svg>
+                    <strong>${item.title}</strong>
+                </span>
+                ${item.is_read ? '' : '<span style="background: #e8f5e9; color: #16a34a; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px;">NEW</span>'}
+            </div>
+            <div>${item.message}</div>
             <small style="color: #6d8477; display: block; margin-top: 4px;">${formatDateTime(item.recorded_at)}</small>
         </div>
     `).join("");
 }
 
-function filterAlertHistory(history) {
-    if (!Array.isArray(history)) return [];
+// =========================================
+// CALENDAR & DATE FILTER LOGIC
+// =========================================
 
-    return history.filter((item) => {
-        const readingDateObj = new Date(item.recorded_at);
-        const hasDate = !isNaN(readingDateObj.getTime());
+function renderCalendar() {
+    const titleEl = document.getElementById("cal-month-title");
+    const gridEl = document.getElementById("calendar-days-grid");
+    if (!titleEl || !gridEl) return;
 
-        // 1. Timeframe filter (Today)
-        if (currentFilter.todayOnly && !currentFilter.customDate && hasDate) {
-            const today = new Date();
-            const isSameDay =
-                readingDateObj.getFullYear() === today.getFullYear() &&
-                readingDateObj.getMonth() === today.getMonth() &&
-                readingDateObj.getDate() === today.getDate();
-            if (!isSameDay) return false;
-        }
+    titleEl.textContent = `${monthNames[calMonth]} ${calYear}`;
+    gridEl.innerHTML = "";
 
-        // 2. Custom Date filter (YYYY-MM-DD)
-        if (currentFilter.customDate && hasDate) {
-            const localReadingDate = `${readingDateObj.getFullYear()}-${String(readingDateObj.getMonth() + 1).padStart(2, "0")}-${String(readingDateObj.getDate()).padStart(2, "0")}`;
-            if (localReadingDate !== currentFilter.customDate) return false;
-        }
+    const datesWithReadings = getDatesWithReadingsSet();
 
-        // 3. Type filter
-        if (currentFilter.type === "critical") {
-            if (item.severity !== "Critical") return false;
-        } else if (currentFilter.type === "warning") {
-            if (item.severity !== "Warning") return false;
-        } else if (currentFilter.type === "temperature") {
-            if (!item.alerts || !item.alerts.some((a) => a.type === "temperature" || a.type === "combined")) return false;
-        } else if (currentFilter.type === "ph") {
-            if (!item.alerts || !item.alerts.some((a) => a.type === "ph" || a.type === "combined")) return false;
-        } else if (currentFilter.type === "resolved") {
-            if (item.status !== "Resolved" && item.alert_count > 0) return false;
-        }
+    const firstDayIndex = new Date(calYear, calMonth, 1).getDay();
+    const totalDays = new Date(calYear, calMonth + 1, 0).getDate();
+    const prevMonthDays = new Date(calYear, calMonth, 0).getDate();
 
-        // 4. Status filter
-        if (currentFilter.status === "Active" && item.status !== "Active") return false;
-        if (currentFilter.status === "Resolved" && item.status !== "Resolved") return false;
+    for (let i = firstDayIndex - 1; i >= 0; i--) {
+        const filler = document.createElement("div");
+        filler.className = "cal-day cal-day-empty";
+        filler.textContent = String(prevMonthDays - i);
+        gridEl.appendChild(filler);
+    }
 
-        // 5. Search keyword
-        if (currentFilter.search) {
-            const query = currentFilter.search.toLowerCase();
-            const dateStr = hasDate ? readingDateObj.toLocaleDateString().toLowerCase() : "";
-            const timeStr = hasDate ? readingDateObj.toLocaleTimeString().toLowerCase() : "";
-            const detailsStr = (item.details || "").toLowerCase();
-            const statusStr = (item.status || "").toLowerCase();
-            const severityStr = (item.severity || "").toLowerCase();
-            const textMatch =
-                dateStr.includes(query) ||
-                timeStr.includes(query) ||
-                detailsStr.includes(query) ||
-                statusStr.includes(query) ||
-                severityStr.includes(query);
-            if (!textMatch) return false;
-        }
+    for (let day = 1; day <= totalDays; day++) {
+        const dayStr = `${calYear}-${String(calMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+        const hasData = datesWithReadings.has(dayStr);
+        const isSelected = tableFilterDate === dayStr;
 
-        return true;
-    });
+        const dayBtn = document.createElement("button");
+        dayBtn.type = "button";
+        dayBtn.className = `cal-day-btn ${hasData ? "has-data" : "no-data"}${isSelected ? " selected" : ""}`;
+        dayBtn.setAttribute("data-date", dayStr);
+        dayBtn.setAttribute("title", `${dayStr}: ${hasData ? "Readings available" : "No readings"}`);
+
+        const dayNum = document.createElement("span");
+        dayNum.className = "cal-day-num";
+        dayNum.textContent = String(day);
+
+        const dot = document.createElement("span");
+        dot.className = `cal-dot ${hasData ? "cal-dot-green" : "cal-dot-red"}`;
+
+        dayBtn.appendChild(dayNum);
+        dayBtn.appendChild(dot);
+
+        dayBtn.addEventListener("click", () => {
+            selectDateFilter(dayStr);
+        });
+
+        gridEl.appendChild(dayBtn);
+    }
 }
+
+function selectDateFilter(dateStr) {
+    if (tableFilterDate === dateStr) {
+        tableFilterDate = null;
+    } else {
+        tableFilterDate = dateStr;
+    }
+    updateDateFilterUI();
+    closeCalendarPopup();
+    historyPage = 1;
+    renderAlertHistory(cachedHistory);
+}
+
+function clearDateFilter() {
+    tableFilterDate = null;
+    updateDateFilterUI();
+    closeCalendarPopup();
+    historyPage = 1;
+    renderAlertHistory(cachedHistory);
+}
+
+function updateDateFilterUI() {
+    const textEl = document.getElementById("filter-date-text");
+    const clearBtn = document.getElementById("cal-clear-btn");
+    if (!textEl) return;
+
+    if (!tableFilterDate) {
+        textEl.textContent = "Filter Date: All";
+        if (clearBtn) clearBtn.classList.remove("active");
+    } else {
+        const parts = tableFilterDate.split("-");
+        const y = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10) - 1;
+        const d = parseInt(parts[2], 10);
+        const dateObj = new Date(y, m, d);
+        const formatted = isNaN(dateObj.getTime())
+            ? tableFilterDate
+            : dateObj.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+        textEl.textContent = `Date: ${formatted}`;
+        if (clearBtn) clearBtn.classList.add("active");
+    }
+    renderCalendar();
+}
+
+function prevMonth() {
+    calMonth--;
+    if (calMonth < 0) {
+        calMonth = 11;
+        calYear--;
+    }
+    renderCalendar();
+}
+
+function nextMonth() {
+    calMonth++;
+    if (calMonth > 11) {
+        calMonth = 0;
+        calYear++;
+    }
+    renderCalendar();
+}
+
+function openCalendarPopup() {
+    const popup = document.getElementById("calendar-popup");
+    const btn = document.getElementById("filter-date-btn");
+    if (!popup) return;
+    closeStatusDropdown();
+    popup.hidden = false;
+    popup.style.display = "block";
+    if (btn) btn.setAttribute("aria-expanded", "true");
+    renderCalendar();
+}
+
+function closeCalendarPopup() {
+    const popup = document.getElementById("calendar-popup");
+    const btn = document.getElementById("filter-date-btn");
+    if (!popup) return;
+    popup.hidden = true;
+    popup.style.display = "none";
+    if (btn) btn.setAttribute("aria-expanded", "false");
+}
+
+function toggleCalendarPopup() {
+    const popup = document.getElementById("calendar-popup");
+    if (popup && (!popup.hidden && popup.style.display !== "none")) {
+        closeCalendarPopup();
+    } else {
+        openCalendarPopup();
+    }
+}
+
+// =========================================
+// STATUS DROPDOWN FILTER LOGIC
+// =========================================
+
+function selectStatusFilter(status) {
+    tableFilterStatus = String(status).toLowerCase();
+    const textEl = document.getElementById("filter-status-text");
+    if (textEl) {
+        const labels = {
+            all: "Status: All",
+            optimal: "Status: Optimal",
+            warning: "Status: Warning",
+            critical: "Status: Critical",
+        };
+        textEl.textContent = labels[tableFilterStatus] || "Status: All";
+    }
+
+    const items = document.querySelectorAll(".status-menu-item");
+    items.forEach((btn) => {
+        if (btn.getAttribute("data-status") === tableFilterStatus) {
+            btn.classList.add("active");
+        } else {
+            btn.classList.remove("active");
+        }
+    });
+
+    closeStatusDropdown();
+    historyPage = 1;
+    renderAlertHistory(cachedHistory);
+}
+
+function openStatusDropdown() {
+    const menu = document.getElementById("status-dropdown-menu");
+    const btn = document.getElementById("filter-status-btn");
+    if (!menu) return;
+    closeCalendarPopup();
+    menu.hidden = false;
+    menu.style.display = "flex";
+    if (btn) btn.setAttribute("aria-expanded", "true");
+}
+
+function closeStatusDropdown() {
+    const menu = document.getElementById("status-dropdown-menu");
+    const btn = document.getElementById("filter-status-btn");
+    if (!menu) return;
+    menu.hidden = true;
+    menu.style.display = "none";
+    if (btn) btn.setAttribute("aria-expanded", "false");
+}
+
+function toggleStatusDropdown() {
+    const menu = document.getElementById("status-dropdown-menu");
+    if (menu && (!menu.hidden && menu.style.display !== "none")) {
+        closeStatusDropdown();
+    } else {
+        openStatusDropdown();
+    }
+}
+
+// =========================================
+// ALERT HISTORY TABLE & PAGINATION
+// =========================================
 
 function renderAlertHistory(history) {
     const tableBody = document.getElementById("alert-history-body");
+    const pagination = document.getElementById("alert-history-pagination");
+    const pageInfoEl = document.getElementById("table-page-info");
     if (!tableBody) return;
 
-    const filtered = filterAlertHistory(history);
+    let filteredItems = Array.isArray(history) ? history.slice() : [];
 
-    if (!filtered.length) {
-        let msg = "No alert history recorded in the database.";
-        if (currentFilter.todayOnly && !currentFilter.customDate) {
-            msg = "No alerts recorded today in the database.";
-        } else if (
-            currentFilter.customDate ||
-            currentFilter.type !== "all" ||
-            currentFilter.search ||
-            currentFilter.status !== "all"
-        ) {
-            msg = "No alert history matches the selected filters.";
+    // Table-level date filter
+    if (tableFilterDate) {
+        filteredItems = filteredItems.filter((r) => localDate(r) === tableFilterDate);
+    }
+
+    // Table-level status filter
+    if (tableFilterStatus && tableFilterStatus !== "all") {
+        filteredItems = filteredItems.filter((r) => statusForAlert(r).toLowerCase() === tableFilterStatus);
+    }
+
+    // Sort by recorded_at descending (newest first)
+    filteredItems.sort((a, b) => new Date(b.recorded_at).getTime() - new Date(a.recorded_at).getTime());
+
+    // Limit and Pagination calculation
+    const total = filteredItems.length;
+    const limit = alertsPerPage === "all" ? Math.max(total, 1) : parseInt(alertsPerPage, 10);
+    const pageCount = Math.ceil(total / limit) || 1;
+    historyPage = Math.min(historyPage, Math.max(pageCount, 1));
+    const startIndex = (historyPage - 1) * limit;
+    const endIndex = Math.min(startIndex + limit, total);
+    const pagedItems = filteredItems.slice(startIndex, endIndex);
+
+    // Update table page info text (matching historical format)
+    if (pageInfoEl) {
+        if (total === 0) {
+            pageInfoEl.textContent = "Showing 0 readings";
+        } else if (alertsPerPage === "all") {
+            pageInfoEl.textContent = `Showing all ${total} reading${total === 1 ? "" : "s"}`;
+        } else {
+            pageInfoEl.textContent = `Showing ${startIndex + 1}–${endIndex} of ${total} reading${total === 1 ? "" : "s"}`;
         }
+    }
+
+    // Update Toolbar indicators
+    const filterDateText = document.getElementById("filter-date-text");
+    if (filterDateText) {
+        if (!tableFilterDate) {
+            filterDateText.textContent = "Filter Date: All";
+        } else {
+            const parts = tableFilterDate.split("-");
+            const y = parseInt(parts[0], 10);
+            const m = parseInt(parts[1], 10) - 1;
+            const d = parseInt(parts[2], 10);
+            const dateObj = new Date(y, m, d);
+            const formatted = isNaN(dateObj.getTime())
+                ? tableFilterDate
+                : dateObj.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+            filterDateText.textContent = `Date: ${formatted}`;
+        }
+    }
+
+    const filterStatusText = document.getElementById("filter-status-text");
+    if (filterStatusText) {
+        const labels = {
+            all: "Status: All",
+            optimal: "Status: Optimal",
+            warning: "Status: Warning",
+            critical: "Status: Critical",
+        };
+        filterStatusText.textContent = labels[tableFilterStatus] || "Status: All";
+    }
+
+    if (total === 0) {
         tableBody.innerHTML = `
             <tr>
                 <td colspan="6" class="table-empty" style="text-align: center; padding: 28px 14px; color: #8a998f;">
-                    ${msg}
+                    No saved alert records match these filters.
                 </td>
             </tr>
         `;
-        return;
+    } else {
+        tableBody.innerHTML = pagedItems.map((item) => {
+            const d = new Date(item.recorded_at);
+            const dateStr = !isNaN(d.getTime()) ? d.toLocaleDateString() : item.recorded_at;
+            const timeStr = !isNaN(d.getTime()) ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "-";
+
+            const overall = statusForAlert(item);
+            const severityBadge = overall === "Critical"
+                ? '<span class="severity-badge severity-critical">Critical</span>'
+                : overall === "Warning"
+                ? '<span class="severity-badge severity-warning">Warning</span>'
+                : '<span class="severity-badge severity-none">Optimal</span>';
+
+            const statusPill = item.status === "Active"
+                ? '<span class="status-pill status-active">Active</span>'
+                : '<span class="status-pill status-resolved">Resolved</span>';
+
+            return `
+                <tr>
+                    <td>${dateStr}</td>
+                    <td>${timeStr}</td>
+                    <td><strong>${item.alert_count}</strong></td>
+                    <td>${severityBadge}</td>
+                    <td>${statusPill}</td>
+                    <td>${item.details || "-"}</td>
+                </tr>
+            `;
+        }).join("");
     }
 
-    tableBody.innerHTML = filtered.map((item) => {
-        const d = new Date(item.recorded_at);
-        const dateStr = !isNaN(d.getTime()) ? d.toLocaleDateString() : item.recorded_at;
-        const timeStr = !isNaN(d.getTime()) ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "-";
+    // Render Pagination controls (exact match with historical.js)
+    if (pagination) {
+        pagination.replaceChildren();
+        pagination.hidden = pageCount <= 1;
+        if (pageCount <= 1) return;
 
-        const severityBadge = item.severity === "Critical"
-            ? '<span class="severity-badge severity-critical">Critical</span>'
-            : item.severity === "Warning"
-            ? '<span class="severity-badge severity-warning">Warning</span>'
-            : '<span class="severity-badge severity-none">Optimal</span>';
+        const addPageButton = (label, page, options = {}) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "readings-page-button";
+            button.textContent = label;
+            if (options.label) button.setAttribute("aria-label", options.label);
+            if (options.current) button.setAttribute("aria-current", "page");
+            if (options.disabled) button.disabled = true;
+            button.addEventListener("click", () => {
+                historyPage = page;
+                renderAlertHistory(history);
+            });
+            pagination.appendChild(button);
+        };
 
-        const statusPill = item.status === "Active"
-            ? '<span class="status-pill status-active">Active</span>'
-            : '<span class="status-pill status-resolved">Resolved</span>';
+        addPageButton("‹", historyPage - 1, {
+            label: "Previous page",
+            disabled: historyPage === 1
+        });
 
-        return `
-            <tr>
-                <td>${dateStr}</td>
-                <td>${timeStr}</td>
-                <td><strong>${item.alert_count}</strong></td>
-                <td>${severityBadge}</td>
-                <td>${statusPill}</td>
-                <td>${item.details}</td>
-            </tr>
-        `;
-    }).join("");
-}
-
-function updateActiveFilterBadge() {
-    let count = 0;
-    if (currentFilter.type !== "all") count++;
-    if (!currentFilter.todayOnly && currentFilter.customDate) count++;
-    if (currentFilter.status !== "all") count++;
-    if (currentFilter.search.trim().length > 0) count++;
-
-    const badge = document.getElementById("active-filter-badge");
-    if (badge) {
-        if (count > 0) {
-            badge.textContent = count;
-            badge.hidden = false;
+        let visiblePages;
+        if (pageCount <= 7) {
+            visiblePages = Array.from({ length: pageCount }, (_, index) => index + 1);
+        } else if (historyPage <= 4) {
+            visiblePages = [1, 2, 3, 4, 5, "…", pageCount];
+        } else if (historyPage >= pageCount - 3) {
+            visiblePages = [1, "…", pageCount - 4, pageCount - 3, pageCount - 2, pageCount - 1, pageCount];
         } else {
-            badge.hidden = true;
+            visiblePages = [1, "…", historyPage - 1, historyPage, historyPage + 1, "…", pageCount];
         }
+
+        visiblePages.forEach((page) => {
+            if (typeof page !== "number") {
+                const ellipsis = document.createElement("span");
+                ellipsis.className = "readings-page-ellipsis";
+                ellipsis.textContent = page;
+                ellipsis.setAttribute("aria-hidden", "true");
+                pagination.appendChild(ellipsis);
+                return;
+            }
+            addPageButton(String(page), page, { current: page === historyPage });
+        });
+
+        addPageButton("›", historyPage + 1, {
+            label: "Next page",
+            disabled: historyPage === pageCount
+        });
     }
 }
 
 function initAlertHistoryControls() {
     if (alertControlsInitialized) return;
 
-    const typeSelect = document.getElementById("alert-type-select");
-    const todayButton = document.getElementById("alert-today-button");
-    const filterToggle = document.getElementById("alert-filter-toggle");
-    const filterDrawer = document.getElementById("alert-filter-drawer");
-    const customDateInput = document.getElementById("alert-custom-date");
-    const statusSelect = document.getElementById("alert-status-select");
-    const searchInput = document.getElementById("alert-search-input");
-    const resetButton = document.getElementById("alert-reset-filters");
-
-    if (typeSelect) {
-        typeSelect.addEventListener("change", (e) => {
-            currentFilter.type = e.target.value;
-            updateActiveFilterBadge();
+    // Limit selector
+    const tableLimitSelect = document.getElementById("table-limit-select");
+    if (tableLimitSelect) {
+        tableLimitSelect.addEventListener("change", (e) => {
+            alertsPerPage = e.target.value;
+            historyPage = 1;
             renderAlertHistory(cachedHistory);
         });
     }
 
-    if (todayButton) {
-        todayButton.addEventListener("click", () => {
-            currentFilter.todayOnly = !currentFilter.todayOnly;
-            if (currentFilter.todayOnly) {
-                currentFilter.customDate = "";
-                if (customDateInput) customDateInput.value = "";
-                todayButton.classList.add("active");
-                todayButton.setAttribute("aria-pressed", "true");
-            } else {
-                todayButton.classList.remove("active");
-                todayButton.setAttribute("aria-pressed", "false");
-            }
-            updateActiveFilterBadge();
-            renderAlertHistory(cachedHistory);
+    // Filter date button & Calendar nav
+    const filterDateBtn = document.getElementById("filter-date-btn");
+    if (filterDateBtn) {
+        filterDateBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            toggleCalendarPopup();
         });
     }
 
-    if (filterToggle && filterDrawer) {
-        filterToggle.addEventListener("click", () => {
-            filterDrawerOpen = !filterDrawerOpen;
-            filterDrawer.hidden = !filterDrawerOpen;
-            filterToggle.setAttribute("aria-expanded", String(filterDrawerOpen));
-            if (filterDrawerOpen) {
-                filterToggle.classList.add("active");
-            } else {
-                filterToggle.classList.remove("active");
-            }
+    const calPrevBtn = document.getElementById("cal-prev-month");
+    if (calPrevBtn) {
+        calPrevBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            prevMonth();
         });
     }
 
-    if (customDateInput) {
-        customDateInput.addEventListener("change", (e) => {
-            currentFilter.customDate = e.target.value;
-            if (currentFilter.customDate) {
-                currentFilter.todayOnly = false;
-                if (todayButton) {
-                    todayButton.classList.remove("active");
-                    todayButton.setAttribute("aria-pressed", "false");
+    const calNextBtn = document.getElementById("cal-next-month");
+    if (calNextBtn) {
+        calNextBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            nextMonth();
+        });
+    }
+
+    const calClearBtn = document.getElementById("cal-clear-btn");
+    if (calClearBtn) {
+        calClearBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            clearDateFilter();
+        });
+    }
+
+    // Status Filter button & Dropdown
+    const filterStatusBtn = document.getElementById("filter-status-btn");
+    if (filterStatusBtn) {
+        filterStatusBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            toggleStatusDropdown();
+        });
+    }
+
+    const statusMenuItems = document.querySelectorAll(".status-menu-item");
+    statusMenuItems.forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const status = btn.getAttribute("data-status");
+            selectStatusFilter(status);
+        });
+    });
+
+    // Close popup/dropdown when clicking outside
+    document.addEventListener("click", (e) => {
+        const calAnchor = document.querySelector(".calendar-picker-anchor");
+        if (calAnchor && !calAnchor.contains(e.target)) {
+            closeCalendarPopup();
+        }
+        const statusAnchor = document.querySelector(".status-picker-anchor");
+        if (statusAnchor && !statusAnchor.contains(e.target)) {
+            closeStatusDropdown();
+        }
+    });
+
+    // Close on Escape key
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+            closeCalendarPopup();
+            closeStatusDropdown();
+        }
+    });
+
+    // Recent Notifications Pagination controls
+    const recentPrevBtn = document.getElementById("recent-prev-btn");
+    const recentNextBtn = document.getElementById("recent-next-btn");
+
+    if (recentPrevBtn) {
+        recentPrevBtn.addEventListener("click", () => {
+            if (recentCurrentPage > 1) {
+                recentCurrentPage--;
+                renderRecentNotifications(cachedRecentNotifications);
+            }
+        });
+    }
+    if (recentNextBtn) {
+        recentNextBtn.addEventListener("click", () => {
+            recentCurrentPage++;
+            renderRecentNotifications(cachedRecentNotifications);
+        });
+    }
+
+    // Mark all as read button
+    const markReadBtn = document.getElementById("mark-all-read-btn");
+    if (markReadBtn) {
+        markReadBtn.addEventListener("click", async () => {
+            try {
+                const res = await fetch("/api/alerts/mark-read", { method: "POST" });
+                if (res.ok) {
+                    const unreadEl = document.getElementById("unread-notifications-count");
+                    if (unreadEl) unreadEl.textContent = "0";
+                    if (cachedAlertsData && cachedAlertsData.summary) {
+                        cachedAlertsData.summary.unread_notifications = 0;
+                    }
+                    if (Array.isArray(cachedRecentNotifications)) {
+                        cachedRecentNotifications.forEach(n => n.is_read = true);
+                        renderRecentNotifications(cachedRecentNotifications);
+                    }
                 }
+            } catch (err) {
+                console.error("Failed to mark all as read:", err);
             }
-            updateActiveFilterBadge();
-            renderAlertHistory(cachedHistory);
-        });
-    }
-
-    if (statusSelect) {
-        statusSelect.addEventListener("change", (e) => {
-            currentFilter.status = e.target.value;
-            updateActiveFilterBadge();
-            renderAlertHistory(cachedHistory);
-        });
-    }
-
-    if (searchInput) {
-        let debounceTimer;
-        searchInput.addEventListener("input", (e) => {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                currentFilter.search = e.target.value;
-                updateActiveFilterBadge();
-                renderAlertHistory(cachedHistory);
-            }, 250);
-        });
-    }
-
-    if (resetButton) {
-        resetButton.addEventListener("click", () => {
-            currentFilter = {
-                type: "all",
-                todayOnly: false,
-                customDate: "",
-                status: "all",
-                search: ""
-            };
-            if (typeSelect) typeSelect.value = "all";
-            if (todayButton) {
-                todayButton.classList.remove("active");
-                todayButton.setAttribute("aria-pressed", "false");
-            }
-            if (customDateInput) customDateInput.value = "";
-            if (statusSelect) statusSelect.value = "all";
-            if (searchInput) searchInput.value = "";
-            updateActiveFilterBadge();
-            renderAlertHistory(cachedHistory);
         });
     }
 
@@ -395,9 +709,19 @@ async function loadAlertsData() {
         cachedAlertsData = data;
         cachedHistory = data.history_items || [];
 
+        if (!calInitialized && cachedHistory.length > 0) {
+            const latestDate = new Date(cachedHistory[0].recorded_at);
+            if (!isNaN(latestDate.getTime())) {
+                calYear = latestDate.getFullYear();
+                calMonth = latestDate.getMonth();
+                calInitialized = true;
+            }
+        }
+
         initAlertHistoryControls();
         updateSummaryCards(data);
         renderRecentNotifications(data.recent_notifications || []);
+        renderCalendar();
         renderAlertHistory(cachedHistory);
     } catch (error) {
         console.error("Unable to load sensor data for alerts:", error);
@@ -413,6 +737,8 @@ async function loadAlertsData() {
     }
 }
 
+closeCalendarPopup();
+closeStatusDropdown();
 updateDeviceTime();
 setInterval(updateDeviceTime, 1000);
 loadAlertsData();
