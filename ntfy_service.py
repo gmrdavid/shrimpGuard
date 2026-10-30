@@ -39,6 +39,43 @@ def generate_secure_topic(prefix="sg-pond-"):
     return f"{prefix}{random_hex}"
 
 
+def get_parameter_status(temp, ph):
+    """
+    Evaluates individual parameter statuses specifically for Penaeus vannamei culture:
+    - Optimal Temperature: 28.0 - 32.0 °C
+    - Optimal pH: 7.50 - 8.50
+    Returns: (temp_status, ph_status)
+    """
+    temp_val = float(temp)
+    ph_val = float(ph)
+
+    # Temperature per-parameter evaluation
+    if temp_val < 25.0:
+        temp_status = "Critical (Severely Low)"
+    elif temp_val < 28.0:
+        temp_status = "Warning (Sub-optimal Low)"
+    elif temp_val <= 32.0:
+        temp_status = "Optimal (Normal)"
+    elif temp_val <= 34.0:
+        temp_status = "Warning (Elevated High)"
+    else:
+        temp_status = "Critical (Severely High)"
+
+    # pH per-parameter evaluation
+    if ph_val < 6.50:
+        ph_status = "Critical (Acidic Hazard)"
+    elif ph_val < 7.50:
+        ph_status = "Warning (Slightly Acidic)"
+    elif ph_val <= 8.50:
+        ph_status = "Optimal (Normal)"
+    elif ph_val <= 9.00:
+        ph_status = "Warning (Elevated Alkaline)"
+    else:
+        ph_status = "Critical (Toxic Alkaline Hazard)"
+
+    return temp_status, ph_status
+
+
 def send_ntfy_notification(
     message,
     title=None,
@@ -155,38 +192,83 @@ def send_ntfy_notification(
         }
 
 
-def send_water_quality_alert_ntfy(severity, temp, ph, reason=None, topic=None, click_url=None):
+def send_water_quality_alert_ntfy(
+    severity,
+    temp,
+    ph,
+    reason=None,
+    topic=None,
+    click_url=None,
+    ai_data=None
+):
     """
-    Formats and dispatches a shrimp pond water quality emergency alert via ntfy.sh.
+    Formats and dispatches a comprehensive shrimp pond water quality alert via ntfy.sh containing:
+    1. Water parameter values (temperature, pH)
+    2. Per-parameter status (e.g. Warning (Elevated High), Critical (Acidic Hazard))
+    3. Overall status (ML classification: Critical, Warning, Optimal)
+    4. AI recommendation (biological diagnosis from OpenAI API)
+    5. Actionable solutions (operational instructions from OpenAI API)
     """
+    temp_val = float(temp)
+    ph_val = float(ph)
     severity_upper = str(severity).upper()
     timestamp = datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
 
+    # 1. Per-parameter statuses
+    temp_status, ph_status = get_parameter_status(temp_val, ph_val)
+
+    # 2. Query AI recommendation & actionable solutions if not passed
+    if ai_data is None:
+        try:
+            from recommendations import predict_recommendation
+            ai_data = predict_recommendation(temp_val, ph_val)
+        except Exception as exc:
+            logger.warning(f"Unable to load AI recommendation: {exc}")
+            ai_data = None
+
+    if ai_data:
+        ai_recommendation = ai_data.get("recommendation", "").strip()
+        solutions_list = ai_data.get("actionable_solutions", [])
+        if not solutions_list and ai_data.get("actionable_solution"):
+            solutions_list = [ai_data.get("actionable_solution")]
+        ai_source = ai_data.get("source", "OpenAI API")
+    else:
+        ai_recommendation = reason or "Pond conditions require continued observation and standard monitoring."
+        solutions_list = ["Inspect mechanical aerators and monitor pH and dissolved oxygen."]
+        ai_source = "ShrimpGuard Engine"
+
+    # Priority and Tags
     if severity_upper == "CRITICAL":
         priority = 5
         tags = ["rotating_light", "warning", "shrimp"]
-        title = f"ShrimpGuard EMERGENCY [{severity_upper}]"
-        default_remediation = "Emergency remediation required! Check aeration, heaters, and water treatment immediately."
+        title = f"🚨 ShrimpGuard EMERGENCY [{severity_upper}]"
     elif severity_upper == "WARNING":
         priority = 4
         tags = ["warning", "shrimp"]
-        title = f"ShrimpGuard WARNING [{severity_upper}]"
-        default_remediation = "Pond conditions in caution range. Monitor closely and adjust water buffers."
+        title = f"⚠️ ShrimpGuard WARNING [{severity_upper}]"
     else:
         priority = 3
         tags = ["white_check_mark", "shrimp"]
-        title = f"ShrimpGuard Notification [{severity_upper}]"
-        default_remediation = "Pond water parameters within safe operational thresholds."
+        title = f"ℹ️ ShrimpGuard Notification [{severity_upper}]"
 
-    action = reason or default_remediation
+    # Format numbered actionable solutions (up to 4 key actions)
+    formatted_actions = []
+    for i, act in enumerate(solutions_list[:4], 1):
+        formatted_actions.append(f"{i}. {act}")
+    actions_text = "\n".join(formatted_actions) if formatted_actions else "1. Continue routine pond monitoring."
 
+    # Build comprehensive alert message
     body_message = (
-        f"Penaeus vannamei Pond Alert\n"
-        f"• Temperature: {temp:.1f} °C (Optimal: 28.0–32.0 °C)\n"
-        f"• pH Level: {ph:.2f} (Optimal: 7.50–8.50)\n"
-        f"• ML Status: {severity_upper}\n\n"
-        f"Action Required:\n{action}\n\n"
-        f"Logged at: {timestamp}"
+        f"🦐 Penaeus vannamei Pond Health Report\n\n"
+        f"📊 WATER PARAMETERS & STATUS:\n"
+        f"• Temperature: {temp_val:.1f} °C — {temp_status} [Optimal: 28.0–32.0 °C]\n"
+        f"• pH Level: {ph_val:.2f} — {ph_status} [Optimal: 7.50–8.50]\n"
+        f"• Overall Status: {severity_upper} (DecisionTree ML)\n\n"
+        f"🤖 AI RECOMMENDATION ({ai_source}):\n"
+        f"{ai_recommendation}\n\n"
+        f"🛠️ ACTIONABLE SOLUTIONS:\n"
+        f"{actions_text}\n\n"
+        f"⏱️ Logged at: {timestamp}"
     )
 
     return send_ntfy_notification(
