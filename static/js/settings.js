@@ -21,6 +21,66 @@ function updateDeviceTime() {
         }
     });
 
+        // Generate secure unguessable ntfy topic
+    const generateTopicBtn = document.getElementById("generate-topic-btn");
+    if (generateTopicBtn) {
+        generateTopicBtn.addEventListener("click", async () => {
+            try {
+                const resp = await fetch("/api/ntfy/generate-topic");
+                const data = await resp.json();
+                if (data.topic) {
+                    const input = document.getElementById("profile-ntfy-topic");
+                    if (input) {
+                        input.value = data.topic;
+                        input.focus();
+                    }
+                }
+            } catch (err) {
+                const randomHex = Math.random().toString(16).substring(2, 10);
+                const input = document.getElementById("profile-ntfy-topic");
+                if (input) {
+                    input.value = `sg-pond-${randomHex}`;
+                    input.focus();
+                }
+            }
+        });
+    }
+
+    // Send Test ntfy Push Notification
+    const testNtfyButton = document.getElementById("test-ntfy-button");
+    if (testNtfyButton) {
+        testNtfyButton.addEventListener("click", async () => {
+            const topicInput = document.getElementById("profile-ntfy-topic");
+            const topic = topicInput ? topicInput.value.trim() : "";
+            if (!topic) {
+                window.alert("Please enter or generate an ntfy topic first to test push notifications.\n\nTip: Click 'Generate Secure Topic' to create an unguessable private topic.");
+                if (topicInput) topicInput.focus();
+                return;
+            }
+            const originalHtml = testNtfyButton.innerHTML;
+            testNtfyButton.disabled = true;
+            testNtfyButton.textContent = "Sending Push Notification...";
+            try {
+                const resp = await fetch("/api/ntfy/test", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ ntfy_topic: topic })
+                });
+                const res = await resp.json();
+                if (res.success) {
+                    window.alert(`Push Notification Dispatched Successfully!\n\nStatus: ${res.status}\nTopic: ${res.topic}\nServer: ${res.server || "ntfy.sh"}\n\nTo view on your phone or browser, open:\nhttps://ntfy.sh/${res.topic}`);
+                } else {
+                    window.alert(`Notification Delivery Notice: ${res.error || "Unable to send push notification."}`);
+                }
+            } catch (err) {
+                window.alert(`Error sending test push notification: ${err.message}`);
+            } finally {
+                testNtfyButton.disabled = false;
+                testNtfyButton.innerHTML = originalHtml;
+            }
+        });
+    }
+
     confirmProfileButton.addEventListener("click", () => {
         if (profileForm.reportValidity()) {
             confirmationDialog.close();

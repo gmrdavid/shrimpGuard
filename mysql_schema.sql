@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
     role VARCHAR(50) NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'Active',
     last_login DATETIME NULL,
+    ntfy_topic VARCHAR(100) NULL,
     PRIMARY KEY (email),
     UNIQUE KEY uq_users_name (name),
     UNIQUE KEY uq_users_email (email)

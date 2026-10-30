@@ -1,53 +1,10 @@
-let notificationHistory = [];
+let cachedNotifications = [];
 
-function getAlertData(reading) {
-    const alerts = [];
-
-    if (!reading) {
-        return alerts;
-    }
-
-    if (reading.temperature < 26 || reading.temperature > 32) {
-        const severity = reading.temperature < 24 || reading.temperature > 34 ? "Critical" : "Mild";
-        alerts.push({
-            severity,
-            title: `${severity} Temperature Alert`,
-            message: `Temperature is currently ${reading.temperature} °C, outside the recommended range of 26–32 °C.`,
-            notification: `SMS: Pond temperature is ${reading.temperature} °C. Check cooling or heating systems and respond promptly.`,
-            recorded_at: reading.recorded_at
-        });
-    }
-
-    if (reading.ph < 7.5 || reading.ph > 8.5) {
-        const severity = reading.ph < 7.0 || reading.ph > 9.0 ? "Critical" : "Mild";
-        alerts.push({
-            severity,
-            title: `${severity} pH Alert`,
-            message: `pH is currently ${reading.ph}, outside the recommended range of 7.5–8.5.`,
-            notification: `SMS: pH is ${reading.ph}. Adjust water treatment and verify the pH control system.`,
-            recorded_at: reading.recorded_at
-        });
-    }
-
-    return alerts;
-}
-
-function getRecentNotifications() {
-    const notifications = [];
-
-    notificationHistory.forEach((reading) => {
-        const readingAlerts = getAlertData(reading);
-        readingAlerts.forEach((alert) => {
-            notifications.push({
-                ...alert,
-                recorded_at: alert.recorded_at || reading.recorded_at
-            });
-        });
-    });
-
-    return notifications
-        .sort((a, b) => new Date(b.recorded_at) - new Date(a.recorded_at))
-        .slice(0, 7);
+function formatNotificationTime(isoString) {
+    if (!isoString) return "-";
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return isoString;
+    return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
 }
 
 async function renderNotifications() {
@@ -57,50 +14,45 @@ async function renderNotifications() {
         return;
     }
 
-    notificationContainer.innerHTML = '<div class="notification-empty">Loading sensor notifications...</div>';
+    notificationContainer.innerHTML = '<div class="notification-empty">Loading notifications from database...</div>';
 
     try {
-        const response = await fetch("/api/readings/history");
+        const response = await fetch("/api/alerts");
         if (!response.ok) {
-            throw new Error(`Sensor history request failed with status ${response.status}.`);
+            throw new Error(`Alerts API request failed with status ${response.status}.`);
         }
-        const history = await response.json();
-        if (!Array.isArray(history)) {
-            throw new Error("Sensor history response has an invalid format.");
+        const data = await response.json();
+        const notifications = (data && data.recent_notifications) ? data.recent_notifications : [];
+        cachedNotifications = notifications;
+
+        if (notifications.length === 0) {
+            notificationContainer.innerHTML = `
+                <div class="notification-empty">
+                    <svg class="ui-icon"><use href="#icon-check-circle"></use></svg> All pond water parameters are currently optimal according to the ML model. No active alerts.
+                </div>
+            `;
+            return;
         }
-        notificationHistory = history;
+
+        notificationContainer.innerHTML = `
+            <ul class="notification-list">
+                ${notifications.map((item) => `
+                    <li class="notification-item ${(item.severity || "").toLowerCase()}">
+                        <div class="notification-meta">
+                            <span class="notification-severity ${item.severity === "Critical" ? "severity-critical" : "severity-warning"}">${item.severity}</span>
+                            <small>${formatNotificationTime(item.recorded_at)}</small>
+                        </div>
+                        <h3>${item.title}</h3>
+                        <p>${item.message}</p>
+                        <p style="margin-top: 6px; font-size: 11px; color: #537260;"><strong>Dispatch:</strong> ${item.notification}</p>
+                    </li>
+                `).join("")}
+            </ul>
+        `;
     } catch (error) {
         console.error("Unable to load sensor notifications:", error);
-        notificationContainer.innerHTML = '<div class="notification-empty">Unable to load notifications from the sensors database. Please try again.</div>';
-        return;
+        notificationContainer.innerHTML = '<div class="notification-empty">Unable to load notifications from database. Please retry.</div>';
     }
-
-    const notifications = getRecentNotifications();
-
-    if (notifications.length === 0) {
-        notificationContainer.innerHTML = `
-            <div class="notification-empty">
-                <svg class="ui-icon"><use href="#icon-check-circle"></use></svg> No alerts or notifications have been generated yet. Submit a reading from the dashboard to create the first alert feed.
-            </div>
-        `;
-        return;
-    }
-
-    notificationContainer.innerHTML = `
-        <ul class="notification-list">
-            ${notifications.map((item) => `
-                <li class="notification-item ${item.severity.toLowerCase()}">
-                    <div class="notification-meta">
-                        <span class="notification-severity">${item.severity}</span>
-                        <small>${new Date(item.recorded_at).toLocaleString()}</small>
-                    </div>
-                    <h3>${item.title}</h3>
-                    <p>${item.message}</p>
-                    <p><strong>Notification:</strong> ${item.notification}</p>
-                </li>
-            `).join("")}
-        </ul>
-    `;
 }
 
 function setupNotificationModal() {

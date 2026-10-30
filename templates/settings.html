@@ -252,6 +252,28 @@
                         <small>Use an email address you can access.</small>
                     </div>
 
+                                        <div class="settings-field">
+                        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+                            <label for="profile-ntfy-topic" style="margin-bottom: 0;">ntfy.sh Alert Topic (Push Notifications)</label>
+                            <button id="generate-topic-btn" type="button" style="background: none; border: none; color: #16a34a; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: underline; padding: 0;">
+                                Generate Secure Topic
+                            </button>
+                        </div>
+                        <input
+                            id="profile-ntfy-topic"
+                            name="ntfy_topic"
+                            type="text"
+                            maxlength="64"
+                            value="{{ user.ntfy_topic or '' }}"
+                            placeholder="e.g. sg-pond-7f9a2b"
+                            pattern="[a-zA-Z0-9_-]{3,64}"
+                            title="3-64 characters: letters, numbers, hyphens, and underscores only.">
+                        <small>
+                            Receive 100% free real-time push alerts on mobile or desktop via <b>ntfy.sh</b>.<br>
+                            <b>Security Tip:</b> Keep your topic unguessable (like a secret password). Subscribe to this exact topic in the free <b>ntfy mobile app</b> (Android/iOS) or at <b>ntfy.sh</b> to receive your pond's alerts.
+                        </small>
+                    </div>
+
                     <div class="settings-field">
                         <label for="profile-role">Account Role</label>
                         <div class="settings-readonly-wrap">
@@ -271,12 +293,18 @@
                         <small id="profile-role-help">Your account role cannot be changed here.</small>
                     </div>
 
-                    <div class="settings-form-actions">
+                    <div class="settings-form-actions" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
                         <button id="save-profile-button" class="settings-submit" type="button">
                             <svg class="ui-icon" aria-hidden="true">
                                 <use href="#icon-check-circle"></use>
                             </svg>
                             <span>Save Profile</span>
+                        </button>
+                        <button id="test-ntfy-button" class="settings-submit" type="button" style="background: #0284c7; border-color: #0284c7;">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-bell"></use>
+                            </svg>
+                            <span>Send Test Push Notification</span>
                         </button>
                     </div>
 

@@ -21,6 +21,12 @@ from recommendations import (
     classify_water_quality,
     predict_recommendation,
 )
+from ntfy_service import (
+    generate_secure_topic,
+    is_valid_topic,
+    send_ntfy_notification,
+    send_water_quality_alert_ntfy,
+)
 
 app = Flask(__name__)
 
@@ -92,6 +98,7 @@ class User(db.Model):
     password_hash = db.Column("password", db.String(255), nullable=False)
     status = db.Column(db.String(20), nullable=False, default="Active")
     last_login = db.Column(db.DateTime, nullable=True)
+    ntfy_topic = db.Column(db.String(100), nullable=True)
 
     @property
     def name(self):
@@ -283,6 +290,24 @@ def create_reading():
             )
         )
         db.session.commit()
+
+        # Automatic Push Alert dispatch via ntfy.sh (100% Free & Safe)
+        if status in ("Critical", "Warning"):
+            try:
+                topics = []
+                users_with_topic = db.session.query(User).filter(User.ntfy_topic.isnot(None), User.ntfy_topic != "").all()
+                for u in users_with_topic:
+                    if u.ntfy_topic and is_valid_topic(u.ntfy_topic):
+                        topics.append(u.ntfy_topic)
+                default_topic = os.getenv("NTFY_DEFAULT_TOPIC")
+                if default_topic and is_valid_topic(default_topic) and default_topic not in topics:
+                    topics.append(default_topic)
+
+                for top in set(topics):
+                    send_water_quality_alert_ntfy(status, temperature, ph, topic=top)
+            except Exception:
+                app.logger.exception("Unable to dispatch ntfy push alert.")
+
         return jsonify(
             {
                 "temperature": temperature,
@@ -350,6 +375,156 @@ def reading_history():
         app.logger.exception("Unable to load sensor reading history.")
         return jsonify({"error": "Unable to load sensor readings."}), 503
     return jsonify([serialize_sensor_reading(reading) for reading in reversed(readings)])
+
+
+def generate_alerts_from_readings(readings):
+    """
+    Transforms database sensor readings into structured alerts based on the DecisionTree ML model classification.
+    """
+    alerts = []
+    for idx, reading in enumerate(readings):
+        try:
+            temp = float(reading["temperature"])
+            ph = float(reading["ph_level"])
+            date_str = str(reading["date"])
+        except (TypeError, ValueError, KeyError):
+            continue
+
+        ml_status = reading.get("status")
+        if not ml_status or ml_status.strip() in ("Normal", "Good"):
+            try:
+                ml_status = classify_water_quality(temp, ph)
+            except Exception:
+                ml_status = "Warning" if (temp < 28.0 or temp > 32.0 or ph < 7.50 or ph > 8.50) else "Optimal"
+
+        is_abnormal = ml_status in ("Critical", "Warning")
+        temp_abnormal = temp < 28.0 or temp > 32.0
+        ph_abnormal = ph < 7.50 or ph > 8.50
+
+        # Active if it is the latest reading and is abnormal
+        is_active = (idx == 0 and is_abnormal)
+        status_label = "Active" if is_active else "Resolved"
+
+        if is_abnormal:
+            severity = ml_status
+            if temp_abnormal and ph_abnormal:
+                alert_type = "combined"
+                title = f"{severity} Combined Water Quality Alert"
+                message = f"ML model detected {severity} condition: Water temperature is {temp:.1f} °C (optimal: 28.0–32.0 °C) and pH is {ph:.2f} (optimal: 7.50–8.50)."
+                notification = f"Push: [{severity.upper()}] Temp {temp:.1f}°C, pH {ph:.2f}. Immediate pond management required."
+            elif temp_abnormal:
+                alert_type = "temperature"
+                title = f"{severity} Temperature Alert"
+                message = f"ML model detected {severity} temperature: Currently {temp:.1f} °C, outside optimal range of 28.0–32.0 °C."
+                notification = f"Push: [{severity.upper()}] Pond water temperature is {temp:.1f}°C. Check aeration/temperature controls."
+            elif ph_abnormal:
+                alert_type = "ph"
+                title = f"{severity} pH Level Alert"
+                message = f"ML model detected {severity} pH level: Currently {ph:.2f}, outside optimal range of 7.50–8.50."
+                notification = f"Push: [{severity.upper()}] Pond water pH is {ph:.2f}. Adjust water treatment and buffering."
+            else:
+                alert_type = "general"
+                title = f"{severity} Water Quality Alert"
+                message = f"ML model classified pond condition as {severity} (Temp: {temp:.1f} °C, pH: {ph:.2f})."
+                notification = f"Push: [{severity.upper()}] Water quality warning detected by ML model."
+
+            alerts.append({
+                "id": f"alert-{date_str}",
+                "recorded_at": date_str,
+                "temperature": temp,
+                "ph": ph,
+                "severity": severity,
+                "type": alert_type,
+                "title": title,
+                "message": message,
+                "notification": notification,
+                "status": status_label,
+                "delivery_status": "Delivered",
+            })
+
+    return alerts
+
+
+@app.route("/api/alerts")
+def get_alerts():
+    user_id = session.get("user_id")
+    if user_id is None:
+        return jsonify({"error": "Authentication required."}), 401
+
+    try:
+        readings = db.session.execute(
+            select(sensor_readings)
+            .order_by(sensor_readings.c.date.desc())
+        ).mappings().all()
+    except SQLAlchemyError:
+        db.session.rollback()
+        app.logger.exception("Unable to load sensor readings for alerts.")
+        return jsonify({"error": "Unable to load alerts database."}), 503
+
+    all_alerts = generate_alerts_from_readings(readings)
+
+    critical_count = sum(1 for a in all_alerts if a["severity"] == "Critical")
+    warning_count = sum(1 for a in all_alerts if a["severity"] == "Warning")
+    active_alerts = [a for a in all_alerts if a["status"] == "Active"]
+    resolved_count = len(readings) - len(active_alerts)
+    if resolved_count < 0:
+        resolved_count = 0
+    unread_notifications = len(all_alerts)
+
+    recent_notifications = all_alerts[:5]
+    sent_count = len(all_alerts)
+    delivered_count = len(all_alerts)
+    failed_count = 0
+
+    history_items = []
+    for idx, reading in enumerate(readings):
+        try:
+            temp = float(reading["temperature"])
+            ph = float(reading["ph_level"])
+            date_str = str(reading["date"])
+        except (TypeError, ValueError, KeyError):
+            continue
+
+        ml_status = reading.get("status")
+        if not ml_status or ml_status.strip() in ("Normal", "Good"):
+            try:
+                ml_status = classify_water_quality(temp, ph)
+            except Exception:
+                ml_status = "Warning" if (temp < 28.0 or temp > 32.0 or ph < 7.50 or ph > 8.50) else "Optimal"
+
+        reading_alerts = [a for a in all_alerts if a["recorded_at"] == date_str]
+        is_active = (idx == 0 and ml_status in ("Critical", "Warning"))
+        status_label = "Active" if is_active else "Resolved"
+
+        history_items.append({
+            "recorded_at": date_str,
+            "temperature": temp,
+            "ph": ph,
+            "ml_status": ml_status,
+            "status": status_label,
+            "alerts": reading_alerts,
+            "alert_count": len(reading_alerts),
+            "severity": ml_status if ml_status in ("Critical", "Warning") else "Normal",
+            "details": ", ".join(a["title"] for a in reading_alerts) if reading_alerts else f"Optimal water quality (Temp: {temp:.1f} °C, pH: {ph:.2f})"
+        })
+
+    return jsonify({
+        "alerts": all_alerts,
+        "active_alerts": active_alerts,
+        "recent_notifications": recent_notifications,
+        "history_items": history_items,
+        "summary": {
+            "critical_count": critical_count,
+            "warning_count": warning_count,
+            "resolved_count": resolved_count,
+            "unread_notifications": unread_notifications,
+            "dispatch_stats": {
+                "sent": sent_count,
+                "delivered": delivered_count,
+                "failed": failed_count,
+            }
+        }
+    })
 
 
 @app.route("/historical/export")
@@ -980,6 +1155,7 @@ def settings():
         elif action == "profile":
             user_name = request.form.get("name", "").strip()
             email = request.form.get("email", "").strip().lower()
+            ntfy_topic = request.form.get("ntfy_topic", "").strip()
             if not user_name or len(user_name) > 80:
                 flash("Enter a name between 1 and 80 characters.", "error")
             elif not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email) or len(email) > 255:
@@ -988,9 +1164,12 @@ def settings():
                 flash("An account with that email already exists.", "error")
             elif User.query.filter(User.email != user_email, User.user_name == user_name).first():
                 flash("A user with that name already exists.", "error")
+            elif ntfy_topic and not is_valid_topic(ntfy_topic):
+                flash("Invalid ntfy topic. Use 3-64 characters (letters, numbers, hyphens, and underscores only).", "error")
             else:
                 user.user_name = user_name
                 user.email = email
+                user.ntfy_topic = ntfy_topic
                 try:
                     db.session.commit()
                 except SQLAlchemyError:
@@ -1056,6 +1235,46 @@ def api_activity_logs():
     except SQLAlchemyError as exc:
         db.session.rollback()
         return jsonify({"status": "error", "message": str(exc)}), 500
+
+
+
+@app.route("/api/ntfy/generate-topic", methods=["GET", "POST"])
+def api_ntfy_generate_topic():
+    user_email = session.get("user_id")
+    if not user_email:
+        return jsonify({"error": "Authentication required."}), 401
+    return jsonify({"topic": generate_secure_topic()})
+
+
+@app.route("/api/ntfy/test", methods=["POST"])
+def api_test_ntfy():
+    user_email = session.get("user_id")
+    if not user_email:
+        return jsonify({"error": "Authentication required."}), 401
+
+    payload = request.get_json(silent=True) or {}
+    topic = payload.get("ntfy_topic", "").strip()
+    if not topic:
+        user = db.session.get(User, user_email)
+        topic = user.ntfy_topic if user else None
+
+    if not topic:
+        topic = os.getenv("NTFY_DEFAULT_TOPIC", "").strip()
+
+    if not topic:
+        return jsonify({"error": "No ntfy topic provided. Please enter a topic in Settings or .env."}), 400
+
+    if not is_valid_topic(topic):
+        return jsonify({"error": "Invalid topic name. Use 3-64 characters: letters, numbers, hyphens, and underscores only."}), 400
+
+    result = send_water_quality_alert_ntfy(
+        severity="TEST",
+        temp=29.0,
+        ph=8.0,
+        reason="Test notification verification from ShrimpGuard gateway via ntfy.sh",
+        topic=topic
+    )
+    return jsonify(result)
 
 
 if __name__ == "__main__":

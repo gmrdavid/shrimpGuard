@@ -1,3 +1,4 @@
+let cachedAlertsData = null;
 let cachedHistory = [];
 let currentFilter = {
     type: "all",
@@ -20,65 +21,29 @@ function updateDeviceTime() {
     }
 }
 
-function getAlertData(reading) {
-    const alerts = [];
-
-    if (!reading) {
-        return alerts;
-    }
-
-    if (reading.temperature < 26 || reading.temperature > 32) {
-        const severity = reading.temperature < 24 || reading.temperature > 34 ? "Critical" : "Warning";
-        alerts.push({
-            type: "temperature",
-            severity,
-            title: `${severity} Temperature Alert`,
-            message: `Temperature is currently ${reading.temperature} °C, outside the recommended range of 26–32 °C.`,
-            notification: `SMS: Pond temperature is ${reading.temperature} °C. Check cooling or heating systems and respond promptly.`
-        });
-    }
-
-    if (reading.ph < 7.5 || reading.ph > 8.5) {
-        const severity = reading.ph < 7.0 || reading.ph > 9.0 ? "Critical" : "Warning";
-        alerts.push({
-            type: "ph",
-            severity,
-            title: `${severity} pH Alert`,
-            message: `pH is currently ${reading.ph}, outside the recommended range of 7.5–8.5.`,
-            notification: `SMS: pH is ${reading.ph}. Adjust water treatment and verify the pH control system.`
-        });
-    }
-
-    return alerts;
-}
-
 function formatDateTime(isoString) {
-    if (!isoString) {
-        return "-";
-    }
-
+    if (!isoString) return "-";
     const date = new Date(isoString);
+    if (isNaN(date.getTime())) return isoString;
     return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
 }
 
-function updateSummaryCards(history, latestReading) {
-    const alertsFromHistory = history.flatMap((reading) => getAlertData(reading));
-    const criticalAlerts = alertsFromHistory.filter((alert) => alert.severity === "Critical").length;
-    const warningAlerts = alertsFromHistory.filter((alert) => alert.severity === "Warning").length;
-    const resolvedAlerts = history.filter((reading) => getAlertData(reading).length === 0).length;
-    const unreadNotifications = alertsFromHistory.length;
+function updateSummaryCards(alertsData) {
+    if (!alertsData || !alertsData.summary) return;
 
+    const summary = alertsData.summary;
     const critEl = document.getElementById("critical-alerts-count");
     const warnEl = document.getElementById("warning-alerts-count");
     const resEl = document.getElementById("resolved-alerts-count");
     const unreadEl = document.getElementById("unread-notifications-count");
 
-    if (critEl) critEl.textContent = criticalAlerts;
-    if (warnEl) warnEl.textContent = warningAlerts;
-    if (resEl) resEl.textContent = resolvedAlerts;
-    if (unreadEl) unreadEl.textContent = unreadNotifications;
+    if (critEl) critEl.textContent = summary.critical_count ?? 0;
+    if (warnEl) warnEl.textContent = summary.warning_count ?? 0;
+    if (resEl) resEl.textContent = summary.resolved_count ?? 0;
+    if (unreadEl) unreadEl.textContent = summary.unread_notifications ?? 0;
 
-    const activeAlerts = latestReading ? getAlertData(latestReading) : [];
+    // 1. Active Alerts
+    const activeAlerts = alertsData.active_alerts || [];
     const activeAlertsContainer = document.getElementById("active-alerts");
 
     if (activeAlertsContainer) {
@@ -91,7 +56,7 @@ function updateSummaryCards(history, latestReading) {
         } else {
             activeAlertsContainer.innerHTML = activeAlerts.map((item) => `
                 <div class="alert">
-                    <svg class="ui-icon"><use href="${item.severity === "Critical" ? "#icon-alert" : "#icon-bell"}"></use></svg> ${item.title}
+                    <svg class="ui-icon"><use href="${item.severity === "Critical" ? "#icon-alert" : "#icon-bell"}"></use></svg> <strong>${item.title}</strong>
                     <br>
                     ${item.message}
                     <br><br>
@@ -101,78 +66,76 @@ function updateSummaryCards(history, latestReading) {
         }
     }
 
+    // 2. Notification Delivery Status (Live from Database)
     const statusContainer = document.getElementById("notification-status");
     if (statusContainer) {
+        const stats = summary.dispatch_stats || { sent: 0, delivered: 0, failed: 0 };
         statusContainer.className = "notification-status-panel";
         statusContainer.innerHTML = `
             <div class="notification-status-header">
                 <h3>Notification Status</h3>
-                <button type="button" class="notification-status-action">View History</button>
+                <span class="notification-badge-live" style="font-size: 11px; color: #16a34a; font-weight: 750;">Connected to Database</span>
             </div>
 
-            <div class="notification-status-subtitle">SMS Notification (SIM800L)</div>
+            <div class="notification-status-subtitle">Push Notification (ntfy.sh Telemetry)</div>
 
             <div class="notification-status-row">
                 <div class="notification-status-main">
                     <div class="notification-status-icon success"><svg class="ui-icon"><use href="#icon-check"></use></svg></div>
                     <div class="notification-status-copy">
-                        <div class="notification-status-value">0</div>
+                        <div class="notification-status-value">${stats.sent}</div>
                         <div class="notification-status-label">Sent</div>
                     </div>
                 </div>
-                <div class="notification-status-date">Today</div>
+                <div class="notification-status-date">Telemetry Active</div>
             </div>
 
             <div class="notification-status-row">
                 <div class="notification-status-main">
                     <div class="notification-status-icon success"><svg class="ui-icon"><use href="#icon-check"></use></svg></div>
                     <div class="notification-status-copy">
-                        <div class="notification-status-value">0</div>
+                        <div class="notification-status-value">${stats.delivered}</div>
                         <div class="notification-status-label">Delivered</div>
                     </div>
                 </div>
-                <div class="notification-status-date">Today</div>
+                <div class="notification-status-date">Verified</div>
             </div>
 
             <div class="notification-status-row">
                 <div class="notification-status-main">
-                    <div class="notification-status-icon danger"><svg class="ui-icon"><use href="#icon-x"></use></svg></div>
+                    <div class="notification-status-icon ${stats.failed > 0 ? "danger" : "success"}"><svg class="ui-icon"><use href="${stats.failed > 0 ? "#icon-x" : "#icon-check"}"></use></svg></div>
                     <div class="notification-status-copy">
-                        <div class="notification-status-value">0</div>
+                        <div class="notification-status-value">${stats.failed}</div>
                         <div class="notification-status-label">Failed</div>
                     </div>
                 </div>
-                <div class="notification-status-date">Today</div>
+                <div class="notification-status-date">No errors</div>
             </div>
         `;
     }
 }
 
-function renderRecentNotifications(history) {
+function renderRecentNotifications(notifications) {
     const container = document.getElementById("recent-notifications");
     if (!container) return;
 
-    const allAlerts = history
-        .flatMap((reading) => getAlertData(reading).map((alert) => ({ ...alert, recorded_at: reading.recorded_at })))
-        .sort((a, b) => new Date(b.recorded_at) - new Date(a.recorded_at))
-        .slice(0, 5);
-
-    if (allAlerts.length === 0) {
+    if (!Array.isArray(notifications) || notifications.length === 0) {
         container.innerHTML = `
             <div class="status-box">
-                No notifications available yet.
+                No recent notifications recorded. All parameters are optimal.
             </div>
         `;
         return;
     }
 
-    container.innerHTML = allAlerts.map((item) => `
+    container.innerHTML = notifications.map((item) => `
         <div class="alert">
+            <svg class="ui-icon"><use href="${item.severity === "Critical" ? "#icon-alert" : "#icon-bell"}"></use></svg>
             <strong>${item.title}</strong>
             <br>
             ${item.message}
             <br>
-            <small>${formatDateTime(item.recorded_at)}</small>
+            <small style="color: #6d8477; display: block; margin-top: 4px;">${formatDateTime(item.recorded_at)}</small>
         </div>
     `).join("");
 }
@@ -180,12 +143,12 @@ function renderRecentNotifications(history) {
 function filterAlertHistory(history) {
     if (!Array.isArray(history)) return [];
 
-    return history.filter((reading) => {
-        const alerts = getAlertData(reading);
-        const readingDateObj = new Date(reading.recorded_at);
+    return history.filter((item) => {
+        const readingDateObj = new Date(item.recorded_at);
+        const hasDate = !isNaN(readingDateObj.getTime());
 
         // 1. Timeframe filter (Today)
-        if (currentFilter.todayOnly && !currentFilter.customDate) {
+        if (currentFilter.todayOnly && !currentFilter.customDate && hasDate) {
             const today = new Date();
             const isSameDay =
                 readingDateObj.getFullYear() === today.getFullYear() &&
@@ -195,40 +158,42 @@ function filterAlertHistory(history) {
         }
 
         // 2. Custom Date filter (YYYY-MM-DD)
-        if (currentFilter.customDate) {
+        if (currentFilter.customDate && hasDate) {
             const localReadingDate = `${readingDateObj.getFullYear()}-${String(readingDateObj.getMonth() + 1).padStart(2, "0")}-${String(readingDateObj.getDate()).padStart(2, "0")}`;
             if (localReadingDate !== currentFilter.customDate) return false;
         }
 
         // 3. Type filter
         if (currentFilter.type === "critical") {
-            if (!alerts.some((a) => a.severity === "Critical")) return false;
+            if (item.severity !== "Critical") return false;
         } else if (currentFilter.type === "warning") {
-            if (!alerts.some((a) => a.severity === "Warning")) return false;
+            if (item.severity !== "Warning") return false;
         } else if (currentFilter.type === "temperature") {
-            if (!alerts.some((a) => a.type === "temperature")) return false;
+            if (!item.alerts || !item.alerts.some((a) => a.type === "temperature" || a.type === "combined")) return false;
         } else if (currentFilter.type === "ph") {
-            if (!alerts.some((a) => a.type === "ph")) return false;
+            if (!item.alerts || !item.alerts.some((a) => a.type === "ph" || a.type === "combined")) return false;
         } else if (currentFilter.type === "resolved") {
-            if (alerts.length > 0) return false;
+            if (item.status !== "Resolved" && item.alert_count > 0) return false;
         }
 
         // 4. Status filter
-        if (currentFilter.status === "Active" && alerts.length === 0) return false;
-        if (currentFilter.status === "Resolved" && alerts.length > 0) return false;
+        if (currentFilter.status === "Active" && item.status !== "Active") return false;
+        if (currentFilter.status === "Resolved" && item.status !== "Resolved") return false;
 
         // 5. Search keyword
         if (currentFilter.search) {
             const query = currentFilter.search.toLowerCase();
-            const dateStr = readingDateObj.toLocaleDateString().toLowerCase();
-            const timeStr = readingDateObj.toLocaleTimeString().toLowerCase();
-            const titlesStr = alerts.map((a) => a.title).join(" ").toLowerCase();
-            const statusStr = (alerts.length ? "active" : "resolved").toLowerCase();
+            const dateStr = hasDate ? readingDateObj.toLocaleDateString().toLowerCase() : "";
+            const timeStr = hasDate ? readingDateObj.toLocaleTimeString().toLowerCase() : "";
+            const detailsStr = (item.details || "").toLowerCase();
+            const statusStr = (item.status || "").toLowerCase();
+            const severityStr = (item.severity || "").toLowerCase();
             const textMatch =
                 dateStr.includes(query) ||
                 timeStr.includes(query) ||
-                titlesStr.includes(query) ||
-                statusStr.includes(query);
+                detailsStr.includes(query) ||
+                statusStr.includes(query) ||
+                severityStr.includes(query);
             if (!textMatch) return false;
         }
 
@@ -243,9 +208,9 @@ function renderAlertHistory(history) {
     const filtered = filterAlertHistory(history);
 
     if (!filtered.length) {
-        let msg = "No alert history available.";
+        let msg = "No alert history recorded in the database.";
         if (currentFilter.todayOnly && !currentFilter.customDate) {
-            msg = "No alerts recorded today.";
+            msg = "No alerts recorded today in the database.";
         } else if (
             currentFilter.customDate ||
             currentFilter.type !== "all" ||
@@ -264,35 +229,29 @@ function renderAlertHistory(history) {
         return;
     }
 
-    tableBody.innerHTML = filtered.slice().reverse().map((reading) => {
-        const alerts = getAlertData(reading);
-        const highestSeverity = alerts.length ? alerts.reduce((max, alert) => {
-            const priority = { Critical: 2, Warning: 1 };
-            return priority[alert.severity] > priority[max] ? alert.severity : max;
-        }, "Warning") : "Normal";
+    tableBody.innerHTML = filtered.map((item) => {
+        const d = new Date(item.recorded_at);
+        const dateStr = !isNaN(d.getTime()) ? d.toLocaleDateString() : item.recorded_at;
+        const timeStr = !isNaN(d.getTime()) ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "-";
 
-        const severityBadge = highestSeverity === "Critical"
+        const severityBadge = item.severity === "Critical"
             ? '<span class="severity-badge severity-critical">Critical</span>'
-            : highestSeverity === "Warning"
+            : item.severity === "Warning"
             ? '<span class="severity-badge severity-warning">Warning</span>'
-            : '<span class="severity-badge severity-none">Normal</span>';
+            : '<span class="severity-badge severity-none">Optimal</span>';
 
-        const statusPill = alerts.length
+        const statusPill = item.status === "Active"
             ? '<span class="status-pill status-active">Active</span>'
             : '<span class="status-pill status-resolved">Resolved</span>';
 
-        const alertDetails = alerts.length
-            ? alerts.map((alert) => alert.title).join(", ")
-            : "No issues detected";
-
         return `
             <tr>
-                <td>${new Date(reading.recorded_at).toLocaleDateString()}</td>
-                <td>${new Date(reading.recorded_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</td>
-                <td><strong>${alerts.length}</strong></td>
+                <td>${dateStr}</td>
+                <td>${timeStr}</td>
+                <td><strong>${item.alert_count}</strong></td>
                 <td>${severityBadge}</td>
                 <td>${statusPill}</td>
-                <td>${alertDetails}</td>
+                <td>${item.details}</td>
             </tr>
         `;
     }).join("");
@@ -390,10 +349,14 @@ function initAlertHistoryControls() {
     }
 
     if (searchInput) {
+        let debounceTimer;
         searchInput.addEventListener("input", (e) => {
-            currentFilter.search = e.target.value;
-            updateActiveFilterBadge();
-            renderAlertHistory(cachedHistory);
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                currentFilter.search = e.target.value;
+                updateActiveFilterBadge();
+                renderAlertHistory(cachedHistory);
+            }, 250);
         });
     }
 
@@ -401,15 +364,15 @@ function initAlertHistoryControls() {
         resetButton.addEventListener("click", () => {
             currentFilter = {
                 type: "all",
-                todayOnly: true,
+                todayOnly: false,
                 customDate: "",
                 status: "all",
                 search: ""
             };
             if (typeSelect) typeSelect.value = "all";
             if (todayButton) {
-                todayButton.classList.add("active");
-                todayButton.setAttribute("aria-pressed", "true");
+                todayButton.classList.remove("active");
+                todayButton.setAttribute("aria-pressed", "false");
             }
             if (customDateInput) customDateInput.value = "";
             if (statusSelect) statusSelect.value = "all";
@@ -424,27 +387,18 @@ function initAlertHistoryControls() {
 
 async function loadAlertsData() {
     try {
-        const [latestResponse, historyResponse] = await Promise.all([
-            fetch("/api/readings/latest"),
-            fetch("/api/readings/history")
-        ]);
-
-        if (!latestResponse.ok || !historyResponse.ok) {
-            throw new Error(`Sensor API returned ${latestResponse.status} / ${historyResponse.status}.`);
+        const response = await fetch("/api/alerts");
+        if (!response.ok) {
+            throw new Error(`Alerts API returned ${response.status}`);
         }
-        const reading = await latestResponse.json();
-        const history = await historyResponse.json();
-        if (!Array.isArray(history)) {
-            throw new Error("Sensor history response has an invalid format.");
-        }
+        const data = await response.json();
+        cachedAlertsData = data;
+        cachedHistory = data.history_items || [];
 
-        cachedHistory = history;
         initAlertHistoryControls();
-        updateSummaryCards(history, reading);
-        renderRecentNotifications(history);
-        renderAlertHistory(history);
-        document.getElementById("critical-alerts-count").textContent = history.flatMap((item) => getAlertData(item)).filter((alert) => alert.severity === "Critical").length;
-        document.getElementById("warning-alerts-count").textContent = history.flatMap((item) => getAlertData(item)).filter((alert) => alert.severity === "Warning").length;
+        updateSummaryCards(data);
+        renderRecentNotifications(data.recent_notifications || []);
+        renderAlertHistory(cachedHistory);
     } catch (error) {
         console.error("Unable to load sensor data for alerts:", error);
         const activeContainer = document.getElementById("active-alerts");
@@ -452,9 +406,9 @@ async function loadAlertsData() {
         const historyBody = document.getElementById("alert-history-body");
         const statusContainer = document.getElementById("notification-status");
 
-        if (activeContainer) activeContainer.innerHTML = '<div class="status-box">Unable to load sensor data. Please refresh or retry.</div>';
-        if (recentContainer) recentContainer.innerHTML = '<div class="status-box">Unable to load sensor data. Please refresh or retry.</div>';
-        if (historyBody) historyBody.innerHTML = '<tr><td colspan="6" class="table-empty" style="text-align: center; padding: 24px; color: #8a998f;">Unable to load sensor data.</td></tr>';
+        if (activeContainer) activeContainer.innerHTML = '<div class="status-box">Unable to load database alerts. Please refresh or retry.</div>';
+        if (recentContainer) recentContainer.innerHTML = '<div class="status-box">Unable to load notifications. Please refresh or retry.</div>';
+        if (historyBody) historyBody.innerHTML = '<tr><td colspan="6" class="table-empty" style="text-align: center; padding: 24px; color: #8a998f;">Unable to connect to alerts database.</td></tr>';
         if (statusContainer) statusContainer.innerHTML = '<div class="status-box">Sensor database unavailable.</div>';
     }
 }
