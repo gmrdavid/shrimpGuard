@@ -211,10 +211,13 @@ function renderAnalytics(reading, history, recommendation) {
         `${counts.critical} critical, ${counts.warnings} warning conditions in saved readings`;
     document.getElementById("analytics-recommended-action").textContent =
         recommendation ? recommendation.classification : "Unavailable";
-    document.getElementById("analytics-action-summary").textContent =
-        recommendation
-            ? recommendation.recommendation
-            : "AI recommendations are temporarily unavailable.";
+    
+    // Provide a concise actionable summary for the overview metric card
+    const shortAction = recommendation
+        ? (recommendation.actionable_solution || recommendation.recommendation)
+        : "AI recommendations are temporarily unavailable.";
+    document.getElementById("analytics-action-summary").textContent = shortAction;
+    
     document.getElementById("analytics-monitoring-status").textContent = "Database";
     document.getElementById("analytics-last-update").textContent = latestDate.toLocaleString();
     document.getElementById("analytics-health-heading").textContent = outsideRange
@@ -222,15 +225,32 @@ function renderAnalytics(reading, history, recommendation) {
         : "Latest pond readings are within ML optimal range.";
     document.getElementById("analytics-health-detail").textContent =
         `Latest temperature: ${reading.temperature} °C; latest pH: ${reading.ph}. ${history.length} readings loaded from the sensors table.`;
-    document.getElementById("analytics-key-findings").innerHTML = [
-        `<li>Latest temperature is ${reading.temperature} °C (${getAdjustmentStatus("temperature", reading.temperature, ML_RANGES.temperature.optimalMin, ML_RANGES.temperature.optimalMax).text.toLowerCase()}).</li>`,
-        `<li>Latest pH is ${reading.ph} (${getAdjustmentStatus("ph", reading.ph, ML_RANGES.ph.optimalMin, ML_RANGES.ph.optimalMax).text.toLowerCase()}).</li>`,
-        `<li>${counts.critical} critical and ${counts.warnings} warning conditions across saved readings.</li>`
-    ].join("");
-    document.getElementById("analytics-recommended-operations").innerHTML = [
-        `<li>${recommendation ? recommendation.recommendation : "AI recommendations are temporarily unavailable."}</li>`,
-        `<li>Review the ${history.length} saved sensor readings and continue regular monitoring.</li>`
-    ].join("");
+    
+    // Key Findings: structured bullet points
+    const findingsList = [
+        `<li>Latest temperature is <strong>${reading.temperature} °C</strong> (${getAdjustmentStatus("temperature", reading.temperature, ML_RANGES.temperature.optimalMin, ML_RANGES.temperature.optimalMax).text.toLowerCase()}).</li>`,
+        `<li>Latest pH is <strong>${reading.ph}</strong> (${getAdjustmentStatus("ph", reading.ph, ML_RANGES.ph.optimalMin, ML_RANGES.ph.optimalMax).text.toLowerCase()}).</li>`,
+        `<li>${counts.critical} critical and ${counts.warnings} warning conditions across ${history.length} saved readings.</li>`
+    ];
+    if (recommendation && recommendation.recommendation) {
+        const diagSummary = recommendation.recommendation.length > 200
+            ? recommendation.recommendation.slice(0, 197) + "..."
+            : recommendation.recommendation;
+        findingsList.splice(2, 0, `<li><strong>Biological Diagnosis:</strong> ${diagSummary}</li>`);
+    }
+    document.getElementById("analytics-key-findings").innerHTML = findingsList.join("");
+
+    // Recommended Operations: actionable bullet points from AI
+    let opsList = [];
+    if (recommendation && Array.isArray(recommendation.actionable_solutions) && recommendation.actionable_solutions.length > 0) {
+        opsList = recommendation.actionable_solutions.slice(0, 3).map(action => `<li>${action}</li>`);
+    } else if (recommendation && recommendation.actionable_solution) {
+        opsList = [`<li>${recommendation.actionable_solution}</li>`];
+    } else {
+        opsList = [`<li>AI recommendations are temporarily unavailable.</li>`];
+    }
+    opsList.push(`<li>Review the ${history.length} saved sensor readings and continue regular monitoring.</li>`);
+    document.getElementById("analytics-recommended-operations").innerHTML = opsList.join("");
     document.getElementById("analytics-report-quality").textContent = `${qualityAverage} / 100`;
     document.getElementById("analytics-report-critical").textContent = String(counts.critical);
     document.getElementById("analytics-report-warnings").textContent = String(counts.warnings);

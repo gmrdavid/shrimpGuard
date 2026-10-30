@@ -139,9 +139,9 @@
 
                 </button>
 
-                <div class="historical-clock">
-                    <span>LOCAL TIME</span>
-                    <strong id="time">Loading time...</strong>
+                <div class="historical-date-time">
+                    <span class="date-time-label">LOCAL TIME</span>
+                    <span id="time" class="time-value">Loading time...</span>
                 </div>
 
             </div>
@@ -150,24 +150,20 @@
 
 
         <!-- FILTERS -->
-        <section class="filter-panel historical-filter-panel"
-                 aria-labelledby="history-filter-title">
+        <section class="historical-section" aria-labelledby="history-filter-title">
 
-            <div class="historical-filter-heading">
-
-                <span class="historical-filter-icon">
-                    <svg class="ui-icon" aria-hidden="true">
-                        <use href="#icon-settings"></use>
-                    </svg>
-                </span>
-
+            <div class="section-heading-row">
                 <div>
-                    <span class="historical-section-eyebrow">RECORD SEARCH</span>
+                    <span class="section-eyebrow">QUERY &amp; SEARCH</span>
                     <h2 id="history-filter-title">Filter Historical Records</h2>
                     <p>Choose the date, parameter, and time range to review.</p>
                 </div>
-
+                <span class="section-count">Filter options</span>
             </div>
+
+            <div class="filter-panel historical-filter-panel">
+
+
 
             <form id="history-filter" class="history-filter historical-filter-form">
 
@@ -206,11 +202,24 @@
 
             </form>
 
+            </div>
+
         </section>
 
 
         <!-- SUMMARY AND CHART -->
-        <section class="historical-content-grid">
+        <section class="historical-section" aria-labelledby="history-chart-section-title">
+
+            <div class="section-heading-row">
+                <div>
+                    <span class="section-eyebrow">DATA ANALYSIS</span>
+                    <h2 id="history-chart-section-title">Historical Review &amp; Visual Trend</h2>
+                    <p>Summary statistics and trajectory of filtered water measurements.</p>
+                </div>
+                <span class="section-count">Time series</span>
+            </div>
+
+            <div class="historical-content-grid">
 
             <!-- DATA SUMMARY -->
             <aside class="panel history-review historical-review-panel">
@@ -331,6 +340,8 @@
                 </div>
 
             </section>
+
+            </div>
 
         </section>
 

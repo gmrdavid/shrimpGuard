@@ -82,7 +82,7 @@
 
 .review-warning { background: #fff4e5; color: #9a5810; }
 .historical-chart-panel { min-height: 0; }
-.historical-chart-wrap { height: 340px; margin-top: 20px; position: relative; }
+.historical-chart-wrap { height: 260px; margin-top: 14px; position: relative; }
 #historical-chart { height: 100%; width: 100%; }
 #history-empty { color: #667085; left: 50%; position: absolute; text-align: center; top: 50%; transform: translate(-50%, -50%); width: 90%; }
 .readings-panel { min-height: 0; }
@@ -16598,19 +16598,21 @@ nav a {
 /* Metrics Grid */
 .dashboard-page .wqi-metrics-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 6px;
 }
 
 .dashboard-page .wqi-metric-card {
     background: #ffffff;
     border: 1px solid #dce9e1;
-    border-radius: 10px;
-    padding: 12px 14px;
+    border-radius: 12px;
+    padding: 18px 20px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    gap: 6px;
+    min-height: 110px;
+    gap: 8px;
     box-shadow: 0 1px 4px rgba(20, 61, 52, 0.04);
     transition: transform 120ms ease, border-color 120ms ease;
 }
@@ -16862,4 +16864,514 @@ nav a {
     border-radius: 50%;
     flex-shrink: 0;
     margin-top: 1px;
+}
+
+
+/* ==========================================================================
+   SHRIMPGUARD — UNIFIED CLIENT PAGES DESIGN SYSTEM (ANALYTICS-STANDARD)
+   Harmonizes Dashboard, Monitoring, Historical Data, Analytics, Alerts & Settings.
+   ========================================================================== */
+
+/* 1. Global Page Backgrounds & Typography across all client pages */
+.dashboard-page,
+.monitoring-page,
+.historical-page,
+.analytics-page,
+.alerts-page,
+.settings-page {
+    background-color: #f5f8f6 !important;
+    color: #1c3027 !important;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+/* 2. Main Content Canvas & Generous Spacing */
+.dashboard-page .dashboard-main,
+.monitoring-page .monitoring-main,
+.historical-page .historical-main,
+.analytics-page .analytics-main,
+.alerts-page .alerts-main,
+.settings-page .settings-main {
+    width: calc(100% - 252px) !important;
+    margin-left: 252px !important;
+    padding: 34px 38px 48px !important;
+    min-height: 100vh !important;
+    box-sizing: border-box !important;
+}
+
+/* 3. Page Headers */
+.dashboard-page .dashboard-header,
+.monitoring-page .monitoring-header,
+.historical-page .historical-header,
+.analytics-page .analytics-header,
+.alerts-page .alerts-header,
+.settings-page .settings-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 24px !important;
+    margin-bottom: 30px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+}
+
+/* Eyebrows in Header & Sections */
+.dashboard-page .dashboard-eyebrow,
+.monitoring-page .monitoring-eyebrow,
+.historical-page .historical-eyebrow,
+.analytics-page .analytics-eyebrow,
+.alerts-page .alerts-eyebrow,
+.settings-page .settings-eyebrow,
+.dashboard-page .section-eyebrow,
+.monitoring-page .section-eyebrow,
+.historical-page .section-eyebrow,
+.analytics-page .section-eyebrow,
+.alerts-page .section-eyebrow,
+.settings-page .section-eyebrow {
+    display: flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    margin-bottom: 8px !important;
+    color: #126b4f !important;
+    font-size: 9.5px !important;
+    font-weight: 800 !important;
+    letter-spacing: 1.3px !important;
+    text-transform: uppercase !important;
+}
+
+.eyebrow-dot,
+.monitoring-eyebrow-dot,
+.historical-eyebrow-dot {
+    width: 7px !important;
+    height: 7px !important;
+    border-radius: 50% !important;
+    background: #38a56e !important;
+    box-shadow: 0 0 0 4px #e4f4e9 !important;
+    flex-shrink: 0 !important;
+}
+
+/* Heading Titles & Descriptions */
+.dashboard-page .dashboard-heading h1,
+.monitoring-page .monitoring-page-heading h1,
+.historical-page .historical-page-heading h1,
+.analytics-page .analytics-heading h1,
+.alerts-page .alerts-heading h1,
+.settings-page .settings-heading h1 {
+    margin: 0 !important;
+    color: #193b2b !important;
+    font-size: clamp(23px, 2.3vw, 30px) !important;
+    font-weight: 800 !important;
+    letter-spacing: -1px !important;
+    line-height: 1.25 !important;
+}
+
+.dashboard-page .dashboard-heading > p,
+.monitoring-page .monitoring-page-heading > p,
+.historical-page .historical-page-heading > p,
+.analytics-page .analytics-heading > p,
+.alerts-page .alerts-heading > p,
+.settings-page .settings-heading > p {
+    margin: 8px 0 0 !important;
+    color: #75847b !important;
+    font-size: 12.5px !important;
+    line-height: 1.7 !important;
+    max-width: 660px !important;
+}
+
+/* Clocks & Date-Time Header Area */
+.dashboard-page .dashboard-date-time,
+.monitoring-page .monitoring-date-time,
+.historical-page .historical-date-time,
+.analytics-page .analytics-date-time,
+.alerts-page .alerts-date-time,
+.settings-page .settings-date-time,
+.monitoring-page .monitoring-clock,
+.historical-page .historical-clock {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    min-width: 112px !important;
+}
+
+.date-time-label,
+.monitoring-clock > span,
+.historical-clock > span {
+    color: #8b9a90 !important;
+    font-size: 9px !important;
+    font-weight: 800 !important;
+    letter-spacing: 1px !important;
+    text-transform: uppercase !important;
+}
+
+.time-value,
+.monitoring-clock strong,
+.historical-clock strong {
+    color: #344c3d !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+}
+
+/* 4. Unified Sections & Section Heading Rows */
+.dashboard-page .dashboard-section,
+.monitoring-page .monitoring-section,
+.historical-page .historical-section,
+.analytics-page .analytics-section,
+.alerts-page .alerts-section,
+.settings-page .settings-section {
+    margin-top: 36px !important;
+    margin-bottom: 12px !important;
+}
+
+.section-heading-row {
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: space-between !important;
+    gap: 18px !important;
+    margin-bottom: 20px !important;
+}
+
+.section-heading-row h2 {
+    margin: 0 !important;
+    color: #243e30 !important;
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.4px !important;
+}
+
+.section-heading-row p {
+    margin: 5px 0 0 !important;
+    color: #75847b !important;
+    font-size: 12px !important;
+    line-height: 1.6 !important;
+}
+
+/* Section Count Badges */
+.section-count,
+.monitoring-parameter-count,
+.historical-count-badge,
+.monitoring-trend-count {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 7px 12px !important;
+    border: 1px solid #dcebe0 !important;
+    border-radius: 8px !important;
+    background: #fff !important;
+    color: #547361 !important;
+    font-size: 10.5px !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+    box-shadow: 0 1px 3px rgba(28, 69, 45, 0.03) !important;
+}
+
+/* 5. Standard Panels Across All Pages */
+.dashboard-page .panel,
+.monitoring-page .panel,
+.historical-page .panel,
+.analytics-page .panel,
+.alerts-page .panel,
+.settings-page .panel,
+.dashboard-page .input-panel,
+.settings-page .input-panel,
+.historical-page .filter-panel {
+    border: 1px solid #e5ece7 !important;
+    border-radius: 17px !important;
+    background: #fff !important;
+    box-shadow: 0 5px 20px rgba(28, 69, 45, 0.025) !important;
+    transition: box-shadow 180ms ease, transform 180ms ease !important;
+}
+
+.dashboard-page .dashboard-panel,
+.monitoring-page .monitoring-status-panel,
+.monitoring-page .monitoring-source-panel,
+.monitoring-page .monitoring-trend-panel,
+.monitoring-page .monitoring-recommendations-panel,
+.historical-page .historical-filter-panel,
+.historical-page .historical-review-panel,
+.historical-page .historical-chart-panel,
+.historical-page .historical-records-panel,
+.alerts-page .alerts-panel,
+.settings-page .settings-panel,
+.settings-page .settings-intro-panel,
+.dashboard-page .dashboard-input-panel {
+    padding: 24px 26px !important;
+}
+
+/* Panel Headings & Icons */
+.panel-heading,
+.monitoring-panel-heading,
+.historical-filter-heading,
+.historical-card-heading,
+.input-panel-heading {
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+    margin-bottom: 22px !important;
+}
+
+.panel-heading-icon,
+.monitoring-panel-icon,
+.historical-filter-icon,
+.historical-card-icon,
+.input-panel-icon,
+.analytics-panel-icon {
+    display: grid !important;
+    width: 44px !important;
+    height: 44px !important;
+    flex-shrink: 0 !important;
+    place-items: center !important;
+    border-radius: 12px !important;
+}
+
+.panel-heading-icon .ui-icon,
+.monitoring-panel-icon .ui-icon,
+.historical-filter-icon .ui-icon,
+.historical-card-icon .ui-icon,
+.input-panel-icon .ui-icon,
+.analytics-panel-icon .ui-icon {
+    width: 22px !important;
+    height: 22px !important;
+}
+
+/* 6. Unified Metric Cards (Dashboard, Monitoring, Analytics, Alerts) */
+.dashboard-page .dashboard-metric-cards,
+.analytics-page .analytics-metric-cards,
+.alerts-page .alerts-metric-cards {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 20px !important;
+    margin: 0 !important;
+}
+
+.monitoring-page .monitoring-cards,
+.monitoring-page .monitoring-summary,
+.analytics-page .analytics-sensor-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 22px !important;
+}
+
+.dashboard-page .dashboard-metric-card,
+.monitoring-page .monitoring-reading-card,
+.analytics-page .analytics-metric-card,
+.alerts-page .alerts-metric-card,
+.analytics-page .analytics-sensor-card {
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    min-height: 224px !important;
+    min-width: 0 !important;
+    padding: 22px 22px 0 !important;
+    overflow: hidden !important;
+    border: 1px solid #e5ece7 !important;
+    border-radius: 17px !important;
+    background: #fff !important;
+    box-shadow: 0 5px 20px rgba(28, 69, 45, 0.025) !important;
+    transition: box-shadow 180ms ease, transform 180ms ease !important;
+}
+
+.dashboard-page .dashboard-metric-card:hover,
+.monitoring-page .monitoring-reading-card:hover,
+.analytics-page .analytics-metric-card:hover,
+.alerts-page .alerts-metric-card:hover,
+.analytics-page .analytics-sensor-card:hover {
+    box-shadow: 0 9px 25px rgba(28, 69, 45, 0.07) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Metric Status Badges */
+.metric-status,
+.monitoring-reading-description {
+    display: inline-flex !important;
+    align-items: flex-start !important;
+    gap: 7px !important;
+    margin-top: auto !important;
+    margin-bottom: 0 !important;
+    padding: 7px 11px !important;
+    border: 1px solid #e4ece6 !important;
+    border-radius: 8px !important;
+    background: #f7faf8 !important;
+    color: #546b5c !important;
+    font-size: 10.5px !important;
+    font-weight: 650 !important;
+    line-height: 1.45 !important;
+}
+
+/* Card Footers */
+.metric-card-footer,
+.monitoring-reading-footer {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    min-height: 42px !important;
+    padding: 10px 0 !important;
+    border-top: 1px solid #edf1ee !important;
+    color: #8a998f !important;
+    font-size: 10.5px !important;
+}
+
+/* 7. Grids & Panels Layouts (Dashboard, Historical, Settings) */
+.dashboard-page .dashboard-grid,
+.analytics-page .dashboard-grid,
+.settings-page .settings-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 24px !important;
+    align-items: stretch !important;
+}
+
+.historical-page .historical-content-grid {
+    display: grid !important;
+    grid-template-columns: minmax(240px, 0.72fr) minmax(0, 1.8fr) !important;
+    gap: 20px !important;
+    align-items: stretch !important;
+}
+
+.historical-page .historical-filter-panel {
+    padding: 18px 22px !important;
+}
+
+.historical-page .historical-review-panel,
+.historical-page .historical-chart-panel {
+    padding: 18px 22px !important;
+    min-height: 0 !important;
+}
+
+.historical-page .historical-chart-wrap {
+    height: 260px !important;
+    min-height: 200px !important;
+    margin-top: 10px !important;
+}
+
+.historical-page #historical-chart {
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+}
+
+.historical-page .historical-summary-intro {
+    margin-top: 12px !important;
+    padding: 10px 12px !important;
+    border-radius: 9px !important;
+}
+
+.historical-page .historical-summary-intro h3 {
+    font-size: 12px !important;
+}
+
+.historical-page .historical-summary-intro p {
+    font-size: 9.5px !important;
+    margin-top: 2px !important;
+}
+
+.historical-page .historical-summary-stats {
+    margin-top: 8px !important;
+}
+
+.historical-page .historical-summary-stat {
+    min-height: 30px !important;
+    padding: 5px 2px !important;
+    font-size: 10.5px !important;
+}
+
+.historical-page .historical-summary-stat strong {
+    font-size: 12px !important;
+}
+
+.historical-page .historical-review-divider {
+    margin: 10px 0 !important;
+}
+
+.historical-page .historical-review-notes > p {
+    font-size: 10.5px !important;
+    line-height: 1.5 !important;
+}
+
+.historical-page .historical-review-status {
+    margin-top: 8px !important;
+    padding: 5px 9px !important;
+    font-size: 9.5px !important;
+}
+
+/* 8. Footnotes across all input and guide panels */
+.input-panel-footnote,
+.monitoring-recommendation-note {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin-top: 6px !important;
+    padding-top: 16px !important;
+    border-top: 1px solid #eef2ef !important;
+    color: #89968d !important;
+    font-size: 11px !important;
+    line-height: 1.6 !important;
+}
+
+.input-panel-footnote .ui-icon,
+.monitoring-recommendation-note .ui-icon {
+    width: 15px !important;
+    height: 15px !important;
+    flex-shrink: 0 !important;
+}
+
+/* 9. Footers Across All Pages */
+.dashboard-footer {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    margin-top: 40px !important;
+    padding: 22px 0 10px !important;
+    border-top: 1px solid #e4ebe6 !important;
+    color: #8b9990 !important;
+    font-size: 10.5px !important;
+    line-height: 1.6 !important;
+}
+
+.dashboard-footer > span:first-child {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    color: #537260 !important;
+    font-weight: 800 !important;
+}
+
+.dashboard-footer .ui-icon {
+    width: 15px !important;
+    height: 15px !important;
+}
+
+/* 10. Responsive Breakpoints */
+@media (max-width: 1100px) {
+    .dashboard-page .dashboard-metric-cards,
+    .analytics-page .analytics-metric-cards,
+    .alerts-page .alerts-metric-cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 18px !important;
+    }
+
+    .dashboard-page .dashboard-grid,
+    .analytics-page .dashboard-grid,
+    .settings-page .settings-grid,
+    .historical-page .historical-content-grid,
+    .monitoring-page .monitoring-cards,
+    .monitoring-page .monitoring-summary {
+        grid-template-columns: minmax(0, 1fr) !important;
+        gap: 20px !important;
+    }
+}
+
+@media (max-width: 760px) {
+    .dashboard-page .dashboard-main,
+    .monitoring-page .monitoring-main,
+    .historical-page .historical-main,
+    .analytics-page .analytics-main,
+    .alerts-page .alerts-main,
+    .settings-page .settings-main {
+        width: 100% !important;
+        margin-left: 0 !important;
+        padding: 24px 18px 36px !important;
+    }
 }

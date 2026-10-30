@@ -139,9 +139,9 @@
 
                 </button>
 
-                <div class="monitoring-clock">
-                    <span>LOCAL TIME</span>
-                    <strong id="time">Loading time...</strong>
+                <div class="monitoring-date-time">
+                    <span class="date-time-label">LOCAL TIME</span>
+                    <span id="time" class="time-value">Loading time...</span>
                 </div>
 
             </div>
@@ -150,7 +150,17 @@
 
 
         <!-- STATUS AND DATA SOURCE -->
-        <section class="monitoring-summary">
+        <section class="monitoring-section" aria-labelledby="monitoring-summary-title">
+
+            <div class="section-heading-row">
+                <div>
+                    <span class="section-eyebrow">SYSTEM STATUS</span>
+                    <h2 id="monitoring-summary-title">Current Water Quality &amp; Reading Source</h2>
+                </div>
+                <span class="section-count">2 summaries</span>
+            </div>
+
+            <div class="monitoring-summary">
 
             <article class="panel monitoring-status monitoring-status-panel">
 
@@ -220,6 +230,8 @@
 
             </article>
 
+            </div>
+
         </section>
 
 
@@ -227,19 +239,15 @@
         <section class="monitoring-section"
                  aria-labelledby="monitoring-readings-title">
 
-            <div class="monitoring-section-heading">
+            <div class="section-heading-row">
 
                 <div>
-                    <span class="monitoring-section-eyebrow">
-                        SENSOR PARAMETERS
-                    </span>
+                    <span class="section-eyebrow">SENSOR PARAMETERS</span>
                     <h2 id="monitoring-readings-title">Latest Readings</h2>
                     <p>Current available water quality measurements.</p>
                 </div>
 
-                <span class="monitoring-parameter-count">
-                    2 PARAMETERS
-                </span>
+                <span class="section-count">2 parameters</span>
 
             </div>
 
@@ -324,31 +332,21 @@
 
 
         <!-- TREND CHART -->
-        <section class="panel trend-panel monitoring-trend-panel">
+        <section class="monitoring-section" aria-labelledby="monitoring-trend-title">
 
-            <div class="monitoring-panel-heading">
+            <div class="section-heading-row">
 
-                <div class="monitoring-panel-title">
-                    <span class="monitoring-panel-icon trend-panel-icon">
-                        <svg class="ui-icon" aria-hidden="true">
-                            <use href="#icon-chart"></use>
-                        </svg>
-                    </span>
-
-                    <div>
-                        <span class="monitoring-section-eyebrow">
-                            HISTORICAL OVERVIEW
-                        </span>
-                        <h2>Water Quality Trends</h2>
-                        <p>Review recent temperature and pH readings.</p>
-                    </div>
+                <div>
+                    <span class="section-eyebrow">HISTORICAL TRAJECTORY</span>
+                    <h2 id="monitoring-trend-title">Water Quality Trends</h2>
+                    <p>Continuous trend visualization for water temperature and pH.</p>
                 </div>
 
-                <span id="trend-count" class="monitoring-trend-count">
-                    No readings yet
-                </span>
+                <span id="trend-count" class="section-count">No readings yet</span>
 
             </div>
+
+            <div class="panel trend-panel monitoring-trend-panel">
 
             <div class="chart-wrap monitoring-chart-wrap">
 
@@ -382,28 +380,20 @@
 
             </div>
 
+            </div>
+
         </section>
 
 
         <!-- AI RECOMMENDATIONS & ACTIONABLE SOLUTIONS (OPENAI API FOR PENAEUS VANNAMEI) -->
-        <section class="panel recommendations monitoring-recommendations-panel">
+        <section class="monitoring-section" aria-labelledby="recommendations-title">
 
-            <div class="monitoring-panel-heading">
+            <div class="section-heading-row">
 
-                <div class="monitoring-panel-title">
-                    <span class="monitoring-panel-icon recommendation-panel-icon">
-                        <svg class="ui-icon" aria-hidden="true">
-                            <use href="#icon-shrimp"></use>
-                        </svg>
-                    </span>
-
-                    <div>
-                        <span class="monitoring-section-eyebrow">
-                            OPENAI DECISION SUPPORT &bull; PENAEUS VANNAMEI
-                        </span>
-                        <h2>AI Recommendations &amp; Actionable Solutions</h2>
-                        <p>Automated OpenAI biological guidance and actionable farming solutions solely for <em>Penaeus vannamei</em> shrimp.</p>
-                    </div>
+                <div>
+                    <span class="section-eyebrow">AI DECISION SUPPORT &bull; PENAEUS VANNAMEI</span>
+                    <h2 id="recommendations-title">AI Recommendations &amp; Actionable Solutions</h2>
+                    <p>Automated biological guidance and actionable farming solutions solely for <em>Penaeus vannamei</em> shrimp.</p>
                 </div>
 
                 <div class="monitoring-species-pill">
@@ -412,6 +402,8 @@
                 </div>
 
             </div>
+
+            <div class="panel recommendations monitoring-recommendations-panel">
 
             <div id="monitoring-recommendations"
                 class="monitoring-recommendation-list">
@@ -432,21 +424,20 @@
                 </p>
             </div>
 
+            </div>
+
         </section>
 
 
         <!-- FOOTER -->
-        <footer class="monitoring-footer">
-            <span class="monitoring-footer-brand">
+        <footer class="dashboard-footer monitoring-footer">
+            <span>
                 <svg class="ui-icon" aria-hidden="true">
                     <use href="#icon-shrimp"></use>
                 </svg>
                 ShrimpGuard
             </span>
-
-            <span>
-                Water Quality Monitoring &amp; Decision Support
-            </span>
+            <span>Water Quality Monitoring &amp; Decision Support</span>
         </footer>
 
     </main>
