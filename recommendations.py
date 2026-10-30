@@ -73,6 +73,269 @@ def classify_water_quality(temperature, ph):
         ) from error
 
 
+@lru_cache(maxsize=1)
+def get_ml_optimal_ranges():
+    """
+    Dynamically extracts the optimal parameter boundaries directly from the
+    trained DecisionTreeClassifier tree structure.
+    Returns:
+        dict with optimal temperature and pH ranges and center setpoints.
+    """
+    try:
+        model, label_encoder = _load_model_artifacts()
+        optimal_idx = list(label_encoder.classes_).index("Optimal")
+        tree = model.tree_
+
+        def _traverse(node, bounds):
+            if tree.feature[node] == -2:  # leaf node
+                import numpy as np
+                predicted_class = int(np.argmax(tree.value[node]))
+                if predicted_class == optimal_idx:
+                    return [bounds]
+                return []
+
+            feat = int(tree.feature[node])
+            thresh = float(tree.threshold[node])
+
+            # Left child: feature <= threshold
+            left_b = {k: list(v) for k, v in bounds.items()}
+            left_b[feat][1] = min(left_b[feat][1], thresh)
+
+            # Right child: feature > threshold
+            right_b = {k: list(v) for k, v in bounds.items()}
+            right_b[feat][0] = max(right_b[feat][0], thresh)
+
+            leaves = []
+            leaves.extend(_traverse(tree.children_left[node], left_b))
+            leaves.extend(_traverse(tree.children_right[node], right_b))
+            return leaves
+
+            float("-inf")
+            float("inf")
+        initial_bounds = {0: [float("-inf"), float("inf")], 1: [float("-inf"), float("inf")]}
+        optimal_leaves = _traverse(0, initial_bounds)
+        if optimal_leaves:
+            opt = optimal_leaves[0]
+            temp_min = round(float(opt[0][0]), 1)
+            temp_max = round(float(opt[0][1]), 1)
+            # The decision tree thresholds are 7.49 and 8.51 which delimit the interval [7.50, 8.50]
+            ph_min = round(float(opt[1][0]), 1)
+            ph_max = round(float(opt[1][1]), 1)
+            return {
+                "temperature": {
+                    "min": temp_min,
+                    "max": temp_max,
+                    "mid": round((temp_min + temp_max) / 2.0, 1),
+                },
+                "ph": {
+                    "min": ph_min,
+                    "max": ph_max,
+                    "mid": round((ph_min + ph_max) / 2.0, 2),
+                },
+            }
+    except Exception as exc:
+        logger.warning("Failed to extract ranges from model tree: %s; using standard learned defaults", exc)
+
+    return {
+        "temperature": {"min": 28.0, "max": 32.0, "mid": 30.0},
+        "ph": {"min": 7.50, "max": 8.50, "mid": 8.00},
+    }
+
+
+def get_ml_parameter_status(param_name, value):
+    """
+    Evaluates individual parameter status ('Optimal', 'Warning', or 'Critical')
+    solely and strictly using the trained DecisionTreeClassifier ML model.
+
+    To isolate a single parameter without bias, the other feature is set to the
+    exact learned neutral midpoint of its optimal region.
+    """
+    ranges = get_ml_optimal_ranges()
+    val = float(value)
+
+    param_key = str(param_name).lower().strip()
+    if param_key in ("temperature", "temp"):
+        neutral_ph = ranges["ph"]["mid"]
+        return classify_water_quality(val, neutral_ph)
+    elif param_key in ("ph", "ph_level"):
+        neutral_temp = ranges["temperature"]["mid"]
+        return classify_water_quality(neutral_temp, val)
+    else:
+        raise ValueError(f"Unknown parameter name: {param_name}")
+
+
+def calculate_ml_water_quality_analysis(temperature, ph):
+    """
+    Comprehensive water quality assessment based solely on the trained DecisionTreeClassifier:
+    1. Overall water quality classification ('Optimal', 'Warning', 'Critical')
+    2. Status per parameter (Temperature status and pH status) evaluated directly by ML model
+    3. Normalization adjustments based on ML optimal boundaries
+    4. Water Quality Index (WQI) score and status strictly aligned with ML predictions
+    """
+    temp = float(temperature)
+    ph_val = float(ph)
+
+    # 1. Overall ML classification
+    overall_status = classify_water_quality(temp, ph_val)
+
+    # 2. Per-parameter status strictly evaluated by the ML model
+    temp_status = get_ml_parameter_status("temperature", temp)
+    ph_status = get_ml_parameter_status("ph", ph_val)
+
+    # 3. ML learned optimal boundaries
+    ranges = get_ml_optimal_ranges()
+    temp_min = ranges["temperature"]["min"]
+    temp_max = ranges["temperature"]["max"]
+    ph_min = ranges["ph"]["min"]
+    ph_max = ranges["ph"]["max"]
+
+    # 4. Temperature normalization adjustment
+    if temp < temp_min:
+        diff_t = round(temp_min - temp, 1)
+        pct_t = round((diff_t / temp) * 100.0, 1) if temp > 0 else 0.0
+        badge_cls = "badge-critical" if temp_status == "Critical" else "badge-warning"
+        temp_adj = {
+            "percent": pct_t,
+            "delta": diff_t,
+            "direction": "Increase",
+            "percent_text": f"+{pct_t:.1f}%",
+            "badge_text": f"+{pct_t:.1f}% Needed",
+            "badge_class": badge_cls,
+            "detail_text": f"Increase by +{diff_t:.1f} °C to reach ML optimal range ({temp_min:.1f}–{temp_max:.1f} °C)",
+            "status": temp_status,
+        }
+    elif temp > temp_max:
+        diff_t = round(temp - temp_max, 1)
+        pct_t = round((diff_t / temp) * 100.0, 1) if temp > 0 else 0.0
+        badge_cls = "badge-critical" if temp_status == "Critical" else "badge-warning"
+        temp_adj = {
+            "percent": pct_t,
+            "delta": -diff_t,
+            "direction": "Decrease",
+            "percent_text": f"-{pct_t:.1f}%",
+            "badge_text": f"-{pct_t:.1f}% Needed",
+            "badge_class": badge_cls,
+            "detail_text": f"Decrease by -{diff_t:.1f} °C to reach ML optimal range ({temp_min:.1f}–{temp_max:.1f} °C)",
+            "status": temp_status,
+        }
+    else:
+        temp_adj = {
+            "percent": 0.0,
+            "delta": 0.0,
+            "direction": "Optimal",
+            "percent_text": "0.0%",
+            "badge_text": "Normal",
+            "badge_class": "badge-normal",
+            "detail_text": f"Current: {temp:.1f} °C · Within ML optimal range ({temp_min:.1f}–{temp_max:.1f} °C)",
+            "status": temp_status,
+        }
+
+    # 5. pH normalization adjustment
+    if ph_val < ph_min:
+        diff_p = round(ph_min - ph_val, 2)
+        pct_p = round((diff_p / ph_val) * 100.0, 1) if ph_val > 0 else 0.0
+        badge_cls = "badge-critical" if ph_status == "Critical" else "badge-warning"
+        ph_adj = {
+            "percent": pct_p,
+            "delta": diff_p,
+            "direction": "Increase",
+            "percent_text": f"+{pct_p:.1f}%",
+            "badge_text": f"+{pct_p:.1f}% Needed",
+            "badge_class": badge_cls,
+            "detail_text": f"Increase by +{diff_p:.2f} to reach ML optimal range ({ph_min:.2f}–{ph_max:.2f})",
+            "status": ph_status,
+        }
+    elif ph_val > ph_max:
+        diff_p = round(ph_val - ph_max, 2)
+        pct_p = round((diff_p / ph_val) * 100.0, 1) if ph_val > 0 else 0.0
+        badge_cls = "badge-critical" if ph_status == "Critical" else "badge-warning"
+        ph_adj = {
+            "percent": pct_p,
+            "delta": -diff_p,
+            "direction": "Decrease",
+            "percent_text": f"-{pct_p:.1f}%",
+            "badge_text": f"-{pct_p:.1f}% Needed",
+            "badge_class": badge_cls,
+            "detail_text": f"Decrease by -{diff_p:.2f} to reach ML optimal range ({ph_min:.2f}–{ph_max:.2f})",
+            "status": ph_status,
+        }
+    else:
+        ph_adj = {
+            "percent": 0.0,
+            "delta": 0.0,
+            "direction": "Optimal",
+            "percent_text": "0.0%",
+            "badge_text": "Normal",
+            "badge_class": "badge-normal",
+            "detail_text": f"Current: {ph_val:.2f} · Within ML optimal range ({ph_min:.2f}–{ph_max:.2f})",
+            "status": ph_status,
+        }
+
+    # 6. Water Quality Index (WQI) score calculation aligned with ML classification
+    # Calculate penalty based on ML classification
+    temp_penalty = 0.0
+    if temp_status == "Optimal":
+        temp_penalty = min(5.0, (abs(temp - ranges["temperature"]["mid"]) / (temp_max - ranges["temperature"]["mid"])) * 5.0)
+    elif temp_status == "Warning":
+        temp_penalty = 12.0 + min(6.0, abs(temp - ranges["temperature"]["mid"]) * 2.0)
+    else:  # Critical
+        temp_penalty = 25.0 + min(15.0, abs(temp - ranges["temperature"]["mid"]) * 2.5)
+
+    ph_penalty = 0.0
+    if ph_status == "Optimal":
+        ph_penalty = min(5.0, (abs(ph_val - ranges["ph"]["mid"]) / (ph_max - ranges["ph"]["mid"])) * 5.0)
+    elif ph_status == "Warning":
+        ph_penalty = 12.0 + min(6.0, abs(ph_val - ranges["ph"]["mid"]) * 5.0)
+    else:  # Critical
+        ph_penalty = 25.0 + min(15.0, abs(ph_val - ranges["ph"]["mid"]) * 6.0)
+
+    calculated_wqi = int(round(max(0.0, 100.0 - temp_penalty - ph_penalty)))
+
+    # Guarantee strict synchronization with the ML model:
+    # Optimal: 90% - 100%
+    # Warning: 70% - 89%
+    # Critical: 0% - 69%
+    if overall_status == "Optimal":
+        wqi_score = max(90, min(100, calculated_wqi))
+        wqi_status = "OPTIMAL QUALITY"
+        wqi_theme = "optimal"
+    elif overall_status == "Warning":
+        wqi_score = max(70, min(89, calculated_wqi))
+        wqi_status = "WARNING CONDITION"
+        wqi_theme = "warning"
+    else:
+        wqi_score = min(69, calculated_wqi)
+        wqi_status = "CRITICAL CONDITION"
+        wqi_theme = "critical"
+
+    return {
+        "temperature": temp,
+        "ph": ph_val,
+        "overall_status": overall_status,
+        "temperature_status": temp_status,
+        "ph_status": ph_status,
+        "wqi_score": wqi_score,
+        "wqi_status": wqi_status,
+        "wqi_theme": wqi_theme,
+        "temp_adjustment": temp_adj,
+        "ph_adjustment": ph_adj,
+        "ml_ranges": {
+            "temperature": {
+                "optimal_min": temp_min,
+                "optimal_max": temp_max,
+                "optimal_mid": ranges["temperature"]["mid"],
+                "unit": "°C",
+            },
+            "ph": {
+                "optimal_min": ph_min,
+                "optimal_max": ph_max,
+                "optimal_mid": ranges["ph"]["mid"],
+                "unit": "pH",
+            },
+        },
+    }
+
+
 def _get_dynamic_vannamei_fallback(temperature, ph, classification, reason=""):
     """
     Generates intelligent, non-hardcoded biological recommendations and concrete

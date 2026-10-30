@@ -19156,3 +19156,35 @@ nav a {
 .modal-mark-read-btn:hover {
     color: #15803d;
 }
+
+
+/* ML Parameter Status Badges */
+.metric-status.status-optimal {
+    background: #edf7f0 !important;
+    border-color: #c2e5cd !important;
+    color: #1b6336 !important;
+}
+.metric-status.status-optimal::before {
+    background: #279e55 !important;
+    box-shadow: 0 0 0 2px rgba(39, 158, 85, 0.2) !important;
+}
+
+.metric-status.status-warning {
+    background: #fff8eb !important;
+    border-color: #fce2b6 !important;
+    color: #92580c !important;
+}
+.metric-status.status-warning::before {
+    background: #d98218 !important;
+    box-shadow: 0 0 0 2px rgba(217, 130, 24, 0.2) !important;
+}
+
+.metric-status.status-critical {
+    background: #fdf1f1 !important;
+    border-color: #fad1d1 !important;
+    color: #a82323 !important;
+}
+.metric-status.status-critical::before {
+    background: #dc3545 !important;
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2) !important;
+}

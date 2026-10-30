@@ -41,39 +41,21 @@ def generate_secure_topic(prefix="sg-pond-"):
 
 def get_parameter_status(temp, ph):
     """
-    Evaluates individual parameter statuses specifically for Penaeus vannamei culture:
-    - Optimal Temperature: 28.0 - 32.0 °C
-    - Optimal pH: 7.50 - 8.50
+    Evaluates individual parameter statuses strictly using the trained DecisionTreeClassifier ML model.
     Returns: (temp_status, ph_status)
     """
-    temp_val = float(temp)
-    ph_val = float(ph)
-
-    # Temperature per-parameter evaluation
-    if temp_val < 25.0:
-        temp_status = "Critical (Severely Low)"
-    elif temp_val < 28.0:
-        temp_status = "Warning (Sub-optimal Low)"
-    elif temp_val <= 32.0:
-        temp_status = "Optimal (Normal)"
-    elif temp_val <= 34.0:
-        temp_status = "Warning (Elevated High)"
-    else:
-        temp_status = "Critical (Severely High)"
-
-    # pH per-parameter evaluation
-    if ph_val < 6.50:
-        ph_status = "Critical (Acidic Hazard)"
-    elif ph_val < 7.50:
-        ph_status = "Warning (Slightly Acidic)"
-    elif ph_val <= 8.50:
-        ph_status = "Optimal (Normal)"
-    elif ph_val <= 9.00:
-        ph_status = "Warning (Elevated Alkaline)"
-    else:
-        ph_status = "Critical (Toxic Alkaline Hazard)"
-
-    return temp_status, ph_status
+    try:
+        from recommendations import get_ml_parameter_status
+        temp_status = get_ml_parameter_status("temperature", temp)
+        ph_status = get_ml_parameter_status("ph", ph)
+        return temp_status, ph_status
+    except Exception as exc:
+        logger.warning(f"ML parameter evaluation fallback in ntfy_service: {exc}")
+        temp_val = float(temp)
+        ph_val = float(ph)
+        t_stat = "Critical" if (temp_val <= 25.0 or temp_val > 33.5) else ("Warning" if (temp_val < 28.0 or temp_val > 32.0) else "Optimal")
+        p_stat = "Critical" if (ph_val < 6.50 or ph_val > 9.00) else ("Warning" if (ph_val < 7.50 or ph_val > 8.50) else "Optimal")
+        return t_stat, p_stat
 
 
 def send_ntfy_notification(

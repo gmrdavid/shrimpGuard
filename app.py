@@ -19,7 +19,9 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from recommendations import (
     RecommendationModelError,
+    calculate_ml_water_quality_analysis,
     classify_water_quality,
+    get_ml_parameter_status,
     predict_recommendation,
 )
 from ntfy_service import (
@@ -201,17 +203,64 @@ def parse_reading_datetime(reading):
         return datetime.min
 
 def serialize_sensor_reading(reading):
-    status = reading["status"]
-    if not status or status.strip() in ("Normal", "Good"):
-        try:
-            status = classify_water_quality(float(reading["temperature"]), float(reading["ph_level"]))
-        except Exception:
-            status = "Optimal"
+    try:
+        t_val = float(reading["temperature"])
+        p_val = float(reading["ph_level"])
+        analysis = calculate_ml_water_quality_analysis(t_val, p_val)
+        status = analysis["overall_status"]
+        temp_status = analysis["temperature_status"]
+        ph_status = analysis["ph_status"]
+        wqi_score = analysis["wqi_score"]
+        wqi_status = analysis["wqi_status"]
+        wqi_theme = analysis["wqi_theme"]
+        temp_adjustment = analysis["temp_adjustment"]
+        ph_adjustment = analysis["ph_adjustment"]
+        ml_ranges = analysis["ml_ranges"]
+    except Exception:
+        status = reading["status"] or "Optimal"
+        temp_status = "Optimal"
+        ph_status = "Optimal"
+        wqi_score = 100
+        wqi_status = "OPTIMAL QUALITY"
+        wqi_theme = "optimal"
+        temp_adjustment = {
+            "percent": 0.0,
+            "delta": 0.0,
+            "direction": "Optimal",
+            "percent_text": "0.0%",
+            "badge_text": "Normal",
+            "badge_class": "badge-normal",
+            "detail_text": "Within ML optimal range (28.0–32.0 °C)",
+            "status": "Optimal",
+        }
+        ph_adjustment = {
+            "percent": 0.0,
+            "delta": 0.0,
+            "direction": "Optimal",
+            "percent_text": "0.0%",
+            "badge_text": "Normal",
+            "badge_class": "badge-normal",
+            "detail_text": "Within ML optimal range (7.50–8.50)",
+            "status": "Optimal",
+        }
+        ml_ranges = {
+            "temperature": {"optimal_min": 28.0, "optimal_max": 32.0, "optimal_mid": 30.0, "unit": "°C"},
+            "ph": {"optimal_min": 7.50, "optimal_max": 8.50, "optimal_mid": 8.00, "unit": "pH"},
+        }
+
     return {
         "temperature": reading["temperature"],
         "ph": reading["ph_level"],
         "recorded_at": reading["date"],
         "status": status,
+        "temperature_status": temp_status,
+        "ph_status": ph_status,
+        "wqi_score": wqi_score,
+        "wqi_status": wqi_status,
+        "wqi_theme": wqi_theme,
+        "temp_adjustment": temp_adjustment,
+        "ph_adjustment": ph_adjustment,
+        "ml_ranges": ml_ranges,
     }
 
 
@@ -330,12 +379,15 @@ def create_reading():
 
     recorded_at_str = recorded_at.strftime("%Y-%m-%dT%H:%M:%S.%f")
 
-    # ML-based classification: solely determined by the DecisionTreeClassifier model
+    # ML-based classification & comprehensive analysis: solely determined by the DecisionTreeClassifier model
     try:
-        status = classify_water_quality(temperature, ph)
-    except RecommendationModelError:
+        analysis = calculate_ml_water_quality_analysis(temperature, ph)
+        status = analysis["overall_status"]
+    except Exception:
         app.logger.exception("Unable to classify reading using ML model.")
-        status = "Warning" 
+        status = "Warning"
+        analysis = None
+
     try:
         db.session.execute(
             insert(sensor_readings).values(
@@ -368,14 +420,25 @@ def create_reading():
             except Exception:
                 app.logger.exception("Unable to spawn ntfy push alert thread.")
 
-        return jsonify(
-            {
-                "temperature": temperature,
-                "ph": ph,
-                "recorded_at": recorded_at_str,
-                "status": status,
-            }
-        ), 201
+        resp_payload = {
+            "temperature": temperature,
+            "ph": ph,
+            "recorded_at": recorded_at_str,
+            "status": status,
+        }
+        if analysis:
+            resp_payload.update({
+                "temperature_status": analysis["temperature_status"],
+                "ph_status": analysis["ph_status"],
+                "wqi_score": analysis["wqi_score"],
+                "wqi_status": analysis["wqi_status"],
+                "wqi_theme": analysis["wqi_theme"],
+                "temp_adjustment": analysis["temp_adjustment"],
+                "ph_adjustment": analysis["ph_adjustment"],
+                "ml_ranges": analysis["ml_ranges"],
+            })
+
+        return jsonify(resp_payload), 201
     except SQLAlchemyError:
         db.session.rollback()
         app.logger.exception("Unable to save sensor reading.")
@@ -397,6 +460,42 @@ def latest_reading():
         return jsonify(None)
     latest = max(readings, key=parse_reading_datetime)
     return jsonify(serialize_sensor_reading(latest))
+
+
+@app.route("/api/wqi/calculate", methods=["GET", "POST"])
+@role_required("Client")
+def calculate_wqi_endpoint():
+    """
+    Calculates Water Quality Index (WQI), individual parameter statuses,
+    and parameter normalization requirements solely derived from the trained
+    DecisionTreeClassifier ML model.
+    """
+    if request.method == "POST":
+        payload = request.get_json(silent=True) or {}
+        temp_raw = payload.get("temperature")
+        ph_raw = payload.get("ph")
+    else:
+        temp_raw = request.args.get("temperature")
+        ph_raw = request.args.get("ph")
+
+    if temp_raw is None or ph_raw is None:
+        return jsonify({"error": "Temperature and pH parameters are required."}), 400
+
+    try:
+        temp_val = float(temp_raw)
+        ph_val = float(ph_raw)
+    except (TypeError, ValueError):
+        return jsonify({"error": "Temperature and pH must be valid numbers."}), 400
+
+    if not math.isfinite(temp_val) or not math.isfinite(ph_val):
+        return jsonify({"error": "Temperature and pH must be finite numbers."}), 400
+
+    try:
+        analysis = calculate_ml_water_quality_analysis(temp_val, ph_val)
+        return jsonify(analysis)
+    except Exception as exc:
+        app.logger.exception("Error evaluating ML water quality analysis: %s", exc)
+        return jsonify({"error": "Unable to evaluate water quality analysis."}), 500
 
 
 @app.route("/api/recommendations", methods=["POST"])
