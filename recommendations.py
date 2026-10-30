@@ -10,8 +10,8 @@ import joblib
 import pandas as pd
 from sklearn.exceptions import InconsistentVersionWarning
 
-# Load environment variables from .env
-load_dotenv()
+# Load environment variables from .env in project root
+load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
 
 # Suppress unpickling version warnings across different scikit-learn minor versions
 warnings.filterwarnings("ignore", category=InconsistentVersionWarning)
@@ -220,7 +220,7 @@ def _query_openai_recommendation(temperature, ph, classification):
     try:
         from openai import OpenAI
         base_url = os.getenv("OPENAI_BASE_URL", "").strip() or None
-        client = OpenAI(api_key=api_key.strip(), base_url=base_url, timeout=12.0)
+        client = OpenAI(api_key=api_key.strip(), base_url=base_url, timeout=30.0)
         model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
         system_prompt = (
@@ -259,7 +259,7 @@ Return ONLY a valid JSON object matching this exact schema:
             ],
             response_format={"type": "json_object"},
             temperature=0.35,
-            max_tokens=650,
+            max_tokens=2500,
         )
 
         raw_content = completion.choices[0].message.content or "{}"
