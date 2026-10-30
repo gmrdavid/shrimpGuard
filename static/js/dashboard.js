@@ -13,6 +13,7 @@ function displayResults(data) {
     document.getElementById("dashboard-demo-note").hidden = data.status !== "Demo";
     updateStatus(data);
     calculateWQI(data);
+    updateDashboardAmmonia(data);
     createAlerts(data);
 }
 
@@ -345,5 +346,86 @@ setInterval(updateDeviceTime, 1000);
 updateGreeting();
 setInterval(updateGreeting, 60000);
 
+initDashboardAmmonia();
 loadLatestReading();
 setInterval(loadLatestReading, 10000);
+
+/* ==========================================================================
+   DASHBOARD UNIONIZED AMMONIA (NH3) CALCULATOR (Van Wyk et al., 1999)
+   ========================================================================== */
+
+let currentDashTemp = 28.0;
+let currentDashPh = 7.60;
+let dashAmmoniaDebounce = null;
+
+async function recalculateDashAmmonia() {
+    const tanInput = document.getElementById("dash-ammonia-tan");
+    const valEl = document.getElementById("dash-ammonia-value");
+    const badgeEl = document.getElementById("dash-ammonia-badge");
+    const factorEl = document.getElementById("dash-ammonia-factor");
+    const assessEl = document.getElementById("dash-ammonia-assessment");
+
+    const tan = tanInput ? parseFloat(tanInput.value) || 0 : 0.8;
+    try {
+        const response = await fetch("/api/ammonia/calculate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ tan, temperature: currentDashTemp, ph: currentDashPh })
+        });
+        if (response.ok) {
+            const res = await response.json();
+            if (valEl) valEl.textContent = res.unionized_ammonia_ppm.toFixed(4);
+            if (badgeEl) {
+                badgeEl.textContent = res.is_safe ? "Safe (< 0.03 ppm)" : "Action Required (≥ 0.03 ppm)";
+                badgeEl.className = `wqi-metric-badge ${res.is_safe ? "badge-normal" : "badge-critical"}`;
+            }
+            if (factorEl) factorEl.textContent = res.fraction.toFixed(3);
+            if (assessEl) {
+                assessEl.textContent = res.is_safe
+                    ? "Safe level for Penaeus vannamei (<0.03 ppm). No corrective action needed."
+                    : "Dangerous toxicity level (≥0.03 ppm). Corrective action required!";
+            }
+        }
+    } catch (err) {
+        console.warn("Dashboard ammonia calculate error:", err);
+    }
+}
+
+function updateDashboardAmmonia(data) {
+    if (!data) return;
+    const t = Number(data.temperature);
+    const p = Number(data.ph);
+    if (!isNaN(t)) currentDashTemp = t;
+    if (!isNaN(p)) currentDashPh = p;
+    recalculateDashAmmonia();
+}
+
+function initDashboardAmmonia() {
+    const tanInput = document.getElementById("dash-ammonia-tan");
+    const calcBtn = document.getElementById("dash-ammonia-calc-btn");
+    const chips = document.querySelectorAll(".dash-ammonia-presets .dash-chip");
+
+    if (calcBtn) {
+        calcBtn.addEventListener("click", () => recalculateDashAmmonia());
+    }
+
+    if (tanInput) {
+        tanInput.addEventListener("input", () => {
+            clearTimeout(dashAmmoniaDebounce);
+            dashAmmoniaDebounce = setTimeout(recalculateDashAmmonia, 250);
+        });
+    }
+
+    chips.forEach(chip => {
+        chip.addEventListener("click", () => {
+            chips.forEach(c => c.classList.remove("active"));
+            chip.classList.add("active");
+            if (tanInput) {
+                tanInput.value = chip.getAttribute("data-tan");
+            }
+            recalculateDashAmmonia();
+        });
+    });
+
+    recalculateDashAmmonia();
+}

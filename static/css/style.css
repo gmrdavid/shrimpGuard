@@ -17065,14 +17065,16 @@ nav a {
 }
 
 /* Metrics Grid */
-.dashboard-page .wqi-metrics-grid {
+.dashboard-page .wqi-metrics-grid,
+.monitoring-page .wqi-metrics-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 16px;
     margin-top: 6px;
 }
 
-.dashboard-page .wqi-metric-card {
+.dashboard-page .wqi-metric-card,
+.monitoring-page .wqi-metric-card {
     background: #ffffff;
     border: 1px solid #dce9e1;
     border-radius: 12px;
@@ -17086,12 +17088,14 @@ nav a {
     transition: transform 120ms ease, border-color 120ms ease;
 }
 
-.dashboard-page .wqi-metric-card:hover {
+.dashboard-page .wqi-metric-card:hover,
+.monitoring-page .wqi-metric-card:hover {
     border-color: #24744d;
     transform: translateY(-1px);
 }
 
-.dashboard-page .wqi-metric-label {
+.dashboard-page .wqi-metric-label,
+.monitoring-page .wqi-metric-label {
     font-size: 9.5px;
     font-weight: 750;
     color: #6b8274;
@@ -17100,7 +17104,8 @@ nav a {
     line-height: 1.3;
 }
 
-.dashboard-page .wqi-metric-value-row {
+.dashboard-page .wqi-metric-value-row,
+.monitoring-page .wqi-metric-value-row {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
@@ -17108,7 +17113,8 @@ nav a {
     flex-wrap: wrap;
 }
 
-.dashboard-page .wqi-metric-percent {
+.dashboard-page .wqi-metric-percent,
+.monitoring-page .wqi-metric-percent {
     font-size: 22px;
     font-weight: 800;
     color: #143d34;
@@ -17116,7 +17122,8 @@ nav a {
     letter-spacing: -0.02em;
 }
 
-.dashboard-page .wqi-metric-badge {
+.dashboard-page .wqi-metric-badge,
+.monitoring-page .wqi-metric-badge {
     font-size: 10.5px;
     font-weight: 700;
     padding: 3px 8px;
@@ -17125,29 +17132,80 @@ nav a {
 }
 
 .dashboard-page .wqi-metric-badge.badge-normal,
-.dashboard-page .wqi-metric-badge.badge-optimal {
+.dashboard-page .wqi-metric-badge.badge-optimal,
+.monitoring-page .wqi-metric-badge.badge-normal,
+.monitoring-page .wqi-metric-badge.badge-optimal {
     background: #eaf6ef;
     color: #15803d;
     border: 1px solid #bbf7d0;
 }
 
-.dashboard-page .wqi-metric-badge.badge-warning {
+.dashboard-page .wqi-metric-badge.badge-warning,
+.monitoring-page .wqi-metric-badge.badge-warning {
     background: #fffbeb;
     color: #b45309;
     border: 1px solid #fde68a;
 }
 
-.dashboard-page .wqi-metric-badge.badge-critical {
+.dashboard-page .wqi-metric-badge.badge-critical,
+.monitoring-page .wqi-metric-badge.badge-critical {
     background: #fef2f2;
     color: #b91c1c;
     border: 1px solid #fecaca;
 }
 
-.dashboard-page .wqi-metric-detail {
+.dashboard-page .wqi-metric-detail,
+.monitoring-page .wqi-metric-detail {
     font-size: 10px;
     color: #6e8377;
     line-height: 1.4;
     margin: 0;
+}
+
+.monitoring-page .monitoring-wqi-panel {
+    padding: 21px;
+}
+
+.monitoring-page .panel-heading {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+    margin-bottom: 20px;
+}
+
+.monitoring-page .panel-heading-icon {
+    display: grid;
+    width: 39px;
+    height: 39px;
+    flex-shrink: 0;
+    place-items: center;
+    border-radius: 11px;
+}
+
+.monitoring-page .panel-heading-icon .ui-icon {
+    width: 19px;
+    height: 19px;
+}
+
+.monitoring-page .wqi-heading-icon {
+    background: #eaf1ff;
+    color: #557cc3;
+}
+
+.monitoring-page .panel-heading h2 {
+    margin: 0;
+    color: #294535;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.5;
+}
+
+.monitoring-page .panel-heading p {
+    margin: 4px 0 0;
+    color: #8b9990;
+    font-size: 10px;
+    line-height: 1.5;
 }
 
 @media (max-width: 900px) {
@@ -17162,7 +17220,8 @@ nav a {
         padding: 0 0 16px 0;
     }
 
-    .dashboard-page .wqi-metrics-grid {
+    .dashboard-page .wqi-metrics-grid,
+    .monitoring-page .wqi-metrics-grid {
         grid-template-columns: 1fr;
     }
 }
@@ -17844,3 +17903,620 @@ nav a {
         padding: 24px 18px 36px !important;
     }
 }
+\n\n/* ==========================================================================
+   UNIONIZED AMMONIA (NH3) CALCULATOR & VAN WYK MATRIX (Van Wyk et al., 1999)
+   ========================================================================== */
+
+.ammonia-panel {
+    background: #ffffff;
+    border: 1px solid #dce9e1;
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: 0 1px 6px rgba(20, 61, 52, 0.05);
+    margin-top: 20px;
+    margin-bottom: 24px;
+}
+
+.ammonia-heading-icon {
+    background: #e0f4ee;
+    color: #0c6a58;
+    border: 1px solid #bceae0;
+}
+
+.ammonia-calc-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 20px;
+    margin-top: 14px;
+}
+
+.ammonia-card {
+    background: #ffffff;
+    border: 1px solid #dce9e1;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: 0 1px 4px rgba(20, 61, 52, 0.03);
+}
+
+.ammonia-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #edf4f0;
+    padding-bottom: 10px;
+}
+
+.ammonia-card-label {
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: 0.06em;
+    color: #1b5145;
+    text-transform: uppercase;
+}
+
+.ammonia-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ammonia-input-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.ammonia-input-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #143d34;
+}
+
+.ammonia-input-unit {
+    font-size: 11px;
+    font-weight: 600;
+    color: #708078;
+}
+
+.ammonia-input-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.ammonia-number-input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1.5px solid #c9ded3;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 650;
+    color: #143d34;
+    background: #ffffff;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.ammonia-number-input:focus {
+    outline: none;
+    border-color: #1b5145;
+    box-shadow: 0 0 0 3px rgba(27, 81, 69, 0.15);
+}
+
+.ammonia-btn-primary {
+    background: #1b5145;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 10px 18px;
+    cursor: pointer;
+    transition: background 150ms ease, transform 120ms ease;
+    white-space: nowrap;
+}
+
+.ammonia-btn-primary:hover {
+    background: #143d34;
+    transform: translateY(-1px);
+}
+
+.ammonia-presets-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ammonia-presets-label {
+    font-size: 11px;
+    font-weight: 650;
+    color: #708078;
+}
+
+.ammonia-preset-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.preset-chip, .dash-chip {
+    padding: 5px 11px;
+    border-radius: 14px;
+    border: 1px solid #cce2d6;
+    background: #f4faf6;
+    font-size: 11.5px;
+    font-weight: 650;
+    color: #1b5145;
+    cursor: pointer;
+    transition: all 120ms ease;
+}
+
+.preset-chip:hover, .dash-chip:hover {
+    background: #e2f2eb;
+    border-color: #1b5145;
+}
+
+.preset-chip.active, .dash-chip.active {
+    background: #1b5145;
+    color: #ffffff;
+    border-color: #1b5145;
+    box-shadow: 0 1px 3px rgba(27, 81, 69, 0.25);
+}
+
+.ammonia-live-sensors {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    background: #f7faf8;
+    border: 1px dashed #c0d9cc;
+    border-radius: 8px;
+    padding: 10px 14px;
+}
+
+.ammonia-sensor-badge {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.sensor-badge-title {
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 0.04em;
+    color: #688577;
+    text-transform: uppercase;
+}
+
+.sensor-badge-val {
+    font-size: 14px;
+    font-weight: 800;
+    color: #143d34;
+}
+
+.ammonia-override-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: #fbfdfc;
+    border: 1px solid #e3eee8;
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.ammonia-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #1b5145;
+    cursor: pointer;
+    user-select: none;
+}
+
+.ammonia-checkbox-label input[type="checkbox"] {
+    accent-color: #1b5145;
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+}
+
+.ammonia-override-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top: 1px solid #edf4f0;
+}
+
+.override-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.override-field label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #557266;
+}
+
+.override-input {
+    padding: 6px 10px;
+    border: 1px solid #c9ded3;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #143d34;
+}
+
+/* Result Card */
+.ammonia-result-display {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 10px 0 4px 0;
+}
+
+.ammonia-big-value {
+    font-size: 40px;
+    font-weight: 850;
+    color: #143d34;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+.ammonia-big-unit {
+    font-size: 18px;
+    font-weight: 700;
+    color: #708078;
+}
+
+.ammonia-formula-breakdown {
+    background: #f8fbf9;
+    border: 1px solid #e1eee7;
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12.5px;
+    color: #1f4a3e;
+}
+
+.formula-step {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    line-height: 1.4;
+}
+
+.step-tag {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    background: #e2f2ea;
+    color: #1b5145;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.ammonia-assessment {
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 12.5px;
+    line-height: 1.45;
+}
+
+.ammonia-assessment.is-safe {
+    background: #effaf4;
+    border-left: 4px solid #24744d;
+    color: #15452f;
+}
+
+.ammonia-assessment.is-action {
+    background: #fdf2f2;
+    border-left: 4px solid #c53030;
+    color: #741d1d;
+}
+
+.ammonia-sensitivity-callout {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: #fefbeb;
+    border: 1px solid #f6e6b0;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 11.5px;
+    color: #7c5e10;
+    line-height: 1.4;
+}
+
+.ammonia-sensitivity-callout .ui-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    fill: #b38600;
+}
+
+/* Van Wyk Accordion & Interactive Grid */
+.ammonia-table-accordion {
+    margin-top: 18px;
+    border: 1px solid #dce9e1;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+.accordion-header-btn {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f7faf8;
+    border: none;
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #143d34;
+    cursor: pointer;
+    text-align: left;
+    transition: background 120ms ease;
+}
+
+.accordion-header-btn:hover {
+    background: #edf4f0;
+}
+
+.accordion-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.accordion-title .ui-icon {
+    width: 15px;
+    height: 15px;
+    fill: #1b5145;
+}
+
+.accordion-chevron {
+    font-size: 18px;
+    font-weight: 700;
+    color: #557266;
+    line-height: 1;
+}
+
+.accordion-body {
+    padding: 16px;
+    border-top: 1px solid #dce9e1;
+}
+
+.table-legend-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+    font-size: 11.5px;
+    color: #4b665a;
+}
+
+.legend-badges {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.legend-chip {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.chip-col {
+    background: #e2f2eb;
+    color: #15452f;
+    border: 1px solid #b7dfce;
+}
+
+.chip-row {
+    background: #e9f2ee;
+    color: #1b5145;
+    border: 1px solid #c9ded5;
+}
+
+.chip-intersect {
+    background: #fff3bf;
+    color: #855700;
+    border: 1px solid #d49f05;
+    font-weight: 750;
+}
+
+.van-wyk-table-scroll {
+    overflow-x: auto;
+    border: 1px solid #d4e2db;
+    border-radius: 8px;
+}
+
+.van-wyk-grid {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    text-align: center;
+    background: #ffffff;
+}
+
+.van-wyk-grid th, .van-wyk-grid td {
+    padding: 6px 10px;
+    border: 1px solid #dce8e2;
+    transition: background 120ms ease;
+}
+
+.van-wyk-grid th {
+    background: #edf5f1;
+    color: #143d34;
+    font-weight: 700;
+}
+
+.van-wyk-grid .th-ph {
+    width: 60px;
+    background: #e4efe9;
+    font-weight: 750;
+}
+
+.van-wyk-grid .td-ph {
+    font-weight: 700;
+    background: #f7faf8;
+    color: #1b5145;
+}
+
+.van-wyk-grid tbody tr:hover {
+    background: #f8fbf9;
+}
+
+/* Active Highlight Styling Matching Slide 3 */
+.van-wyk-grid td.active-col-cell,
+.van-wyk-grid th.active-col-header {
+    background-color: #e4f4ed !important;
+    color: #0d4334;
+}
+
+.van-wyk-grid tr.active-row td {
+    background-color: #ebf6f1;
+}
+
+.van-wyk-grid tr.active-row td.td-ph {
+    background-color: #d1eadf !important;
+    font-weight: 850;
+}
+
+.van-wyk-grid td.active-intersect-cell {
+    background-color: #fff3bf !important;
+    color: #855700 !important;
+    font-weight: 850 !important;
+    outline: 2px solid #d49f05 !important;
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 0 8px rgba(212, 159, 5, 0.45);
+}
+
+.van-wyk-source-credit {
+    margin-top: 10px;
+    font-size: 11px;
+    font-style: italic;
+    color: #708078;
+    text-align: right;
+}
+
+/* Dashboard Ammonia Panel */
+.dashboard-ammonia-panel {
+    margin-top: 20px;
+}
+
+.dash-ammonia-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 12px;
+}
+
+.dash-ammonia-input-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.dash-ammonia-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #143d34;
+}
+
+.dash-ammonia-input-row {
+    display: flex;
+    gap: 8px;
+}
+
+.dash-ammonia-presets {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+}
+
+.dash-ammonia-result-box {
+    background: #f8fbf9;
+    border: 1px solid #dce9e1;
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 6px;
+}
+
+.dash-ammonia-result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dash-ammonia-sub {
+    font-size: 10.5px;
+    font-weight: 750;
+    color: #1b5145;
+    letter-spacing: 0.04em;
+}
+
+.dash-ammonia-value-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.dash-ammonia-number {
+    font-size: 28px;
+    font-weight: 850;
+    color: #143d34;
+    line-height: 1;
+}
+
+.dash-ammonia-unit {
+    font-size: 14px;
+    font-weight: 700;
+    color: #708078;
+}
+
+.dash-ammonia-info {
+    font-size: 11px;
+    color: #557266;
+}
+
+.dash-ammonia-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #edf4f0;
+    font-size: 12px;
+    color: #557266;
+}
+
+@media (max-width: 860px) {
+    .ammonia-calc-grid,
+    .dash-ammonia-grid {
+        grid-template-columns: 1fr;
+    }
+}\n

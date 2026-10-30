@@ -1349,5 +1349,65 @@ def mark_alerts_read():
     return jsonify({"success": True, "unread_notifications": 0, "marked_at": now_dt.isoformat()})
 
 
+
+
+def get_latest_sensor_dict():
+    try:
+        readings = db.session.execute(select(sensor_readings)).mappings().all()
+        if not readings:
+            return None
+        latest = max(readings, key=parse_reading_datetime)
+        return {
+            "temperature": float(latest["temperature"]),
+            "ph": float(latest["ph_level"]),
+            "status": str(latest.get("status") or "Optimal"),
+            "recorded_at": str(latest["date"])
+        }
+    except Exception:
+        return None
+
+
+@app.route("/api/ammonia/calculate", methods=["GET", "POST"])
+def calculate_ammonia():
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Authentication required."}), 401
+
+    data = request.get_json(silent=True) or {}
+    if request.method == "GET":
+        data = request.args
+
+    tan_raw = data.get("tan")
+    if tan_raw is None or str(tan_raw).strip() == "":
+        return jsonify({"error": "Total Ammonia Nitrogen (TAN) value is required."}), 400
+
+    try:
+        tan = float(tan_raw)
+        if tan < 0:
+            return jsonify({"error": "TAN value must be positive."}), 400
+    except (ValueError, TypeError):
+        return jsonify({"error": "Invalid TAN value. Must be a valid number."}), 400
+
+    temp = data.get("temperature")
+    ph = data.get("ph")
+
+    if temp is None or ph is None or str(temp).strip() == "" or str(ph).strip() == "":
+        latest = get_latest_sensor_dict()
+        if not latest or latest.get("temperature") is None or latest.get("ph") is None:
+            return jsonify({"error": "No sensor readings available to calculate unionized ammonia. Please provide temperature and pH."}), 400
+        temp = latest["temperature"]
+        ph = latest["ph"]
+
+    try:
+        temp = float(temp)
+        ph = float(ph)
+    except (ValueError, TypeError):
+        return jsonify({"error": "Invalid temperature or pH value."}), 400
+
+    from ammonia_service import calculate_unionized_ammonia
+    result = calculate_unionized_ammonia(tan, temp, ph)
+    return jsonify(result)
+
+
 if __name__ == "__main__":
     app.run(debug=True)

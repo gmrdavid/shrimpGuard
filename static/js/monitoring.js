@@ -72,6 +72,167 @@ function updateSummary(reading) {
     document.getElementById("monitoring-demo-note").hidden = reading.status !== "Demo";
 }
 
+function calculateWQI(data) {
+    if (!data) return;
+    const temp = Number(data.temperature);
+    const ph = Number(data.ph);
+
+    if (isNaN(temp) || isNaN(ph)) return;
+
+    // 1. Calculate Overall Water Quality Index Accuracy Score
+    let wqi = 100;
+    // Temperature: optimal 28–32; warning 25–28; critical <= 25 or > 32
+    if (temp <= 25.0 || temp > 32.0) {
+        wqi -= 25; // Critical penalty
+    } else if (temp < 28.0) {
+        wqi -= 10; // Warning penalty
+    }
+
+    // pH: optimal 7.50–8.50; warning 6.50–7.49 or 8.51–9.0; critical <= 6.49 or > 9.0
+    if (ph <= 6.49 || ph > 9.0) {
+        wqi -= 25; // Critical penalty
+    } else if (ph < 7.50 || ph > 8.50) {
+        wqi -= 10; // Warning penalty
+    }
+
+    const accuracyScore = Math.max(0, wqi);
+
+    // Determine status label & theme
+    let statusLabel = "OPTIMAL QUALITY";
+    let statusTheme = "optimal";
+    if (accuracyScore < 70) {
+        statusLabel = "CRITICAL CONDITION";
+        statusTheme = "critical";
+    } else if (accuracyScore < 90) {
+        statusLabel = "WARNING CONDITION";
+        statusTheme = "warning";
+    }
+
+    // 2. Mathematical Equation for Temperature Normalization Percentage:
+    // Optimal normal range: [28.0 °C, 32.0 °C]
+    // Δ% = (|Boundary - Current| / Current) * 100%
+    const tempMin = 28.0;
+    const tempMax = 32.0;
+    let tempDiffPercent = 0.0;
+    let tempBadgeText = "Normal";
+    let tempBadgeClass = "badge-normal";
+    let tempDetailText = `Current: ${temp.toFixed(1)} °C · Within optimal range (28.0–32.0 °C)`;
+
+    if (temp < tempMin) {
+        const diff = tempMin - temp;
+        tempDiffPercent = (diff / temp) * 100;
+        tempBadgeText = `+${tempDiffPercent.toFixed(1)}% Needed`;
+        tempBadgeClass = "badge-warning";
+        tempDetailText = `Increase by +${diff.toFixed(1)} °C to reach normal 28.0 °C`;
+    } else if (temp > tempMax) {
+        const diff = temp - tempMax;
+        tempDiffPercent = (diff / temp) * 100;
+        tempBadgeText = `-${tempDiffPercent.toFixed(1)}% Needed`;
+        tempBadgeClass = "badge-warning";
+        tempDetailText = `Decrease by -${diff.toFixed(1)} °C to reach normal 32.0 °C`;
+    }
+
+    const tempPercentEl = document.getElementById("temp-norm-percent");
+    if (tempPercentEl) {
+        tempPercentEl.textContent = tempDiffPercent === 0 ? "0.0%" : (temp < tempMin ? `+${tempDiffPercent.toFixed(1)}%` : `-${tempDiffPercent.toFixed(1)}%`);
+    }
+    const tempBadgeEl = document.getElementById("temp-norm-badge");
+    if (tempBadgeEl) {
+        tempBadgeEl.textContent = tempBadgeText;
+        tempBadgeEl.className = `wqi-metric-badge ${tempBadgeClass}`;
+    }
+    const tempDetailEl = document.getElementById("temp-norm-detail");
+    if (tempDetailEl) {
+        tempDetailEl.textContent = tempDetailText;
+    }
+
+    // 3. Mathematical Equation for pH Level Normalization Percentage:
+    // Optimal normal range: [7.50, 8.50]
+    // Δ% = (|Boundary - Current| / Current) * 100%
+    const phMin = 7.50;
+    const phMax = 8.50;
+    let phDiffPercent = 0.0;
+    let phBadgeText = "Normal";
+    let phBadgeClass = "badge-normal";
+    let phDetailText = `Current: ${ph.toFixed(2)} · Within optimal range (7.50–8.50 pH)`;
+
+    if (ph < phMin) {
+        const diff = phMin - ph;
+        phDiffPercent = (diff / ph) * 100;
+        phBadgeText = `+${phDiffPercent.toFixed(1)}% Needed`;
+        phBadgeClass = "badge-warning";
+        phDetailText = `Increase by +${diff.toFixed(2)} to reach normal 7.50 pH`;
+    } else if (ph > phMax) {
+        const diff = ph - phMax;
+        phDiffPercent = (diff / ph) * 100;
+        phBadgeText = `-${phDiffPercent.toFixed(1)}% Needed`;
+        phBadgeClass = "badge-warning";
+        phDetailText = `Decrease by -${diff.toFixed(2)} to reach normal 8.50 pH`;
+    }
+
+    const phPercentEl = document.getElementById("ph-norm-percent");
+    if (phPercentEl) {
+        phPercentEl.textContent = phDiffPercent === 0 ? "0.0%" : (ph < phMin ? `+${phDiffPercent.toFixed(1)}%` : `-${phDiffPercent.toFixed(1)}%`);
+    }
+    const phBadgeEl = document.getElementById("ph-norm-badge");
+    if (phBadgeEl) {
+        phBadgeEl.textContent = phBadgeText;
+        phBadgeEl.className = `wqi-metric-badge ${phBadgeClass}`;
+    }
+    const phDetailEl = document.getElementById("ph-norm-detail");
+    if (phDetailEl) {
+        phDetailEl.textContent = phDetailText;
+    }
+
+    // 4. Update Overall Assessment Accuracy Metric Card
+    const accuracyPercentEl = document.getElementById("wqi-accuracy-percent");
+    if (accuracyPercentEl) {
+        accuracyPercentEl.textContent = `${accuracyScore}%`;
+    }
+    const accuracyBadgeEl = document.getElementById("wqi-accuracy-badge");
+    if (accuracyBadgeEl) {
+        accuracyBadgeEl.textContent = statusLabel;
+        accuracyBadgeEl.className = `wqi-metric-badge badge-${statusTheme}`;
+    }
+    const accuracyDetailEl = document.getElementById("wqi-accuracy-detail");
+    if (accuracyDetailEl) {
+        accuracyDetailEl.textContent = `Water Quality Index assessment accuracy rating`;
+    }
+}
+
+function resetWQI() {
+    const tempPercentEl = document.getElementById("temp-norm-percent");
+    if (tempPercentEl) tempPercentEl.textContent = "0.0%";
+    const tempBadgeEl = document.getElementById("temp-norm-badge");
+    if (tempBadgeEl) {
+        tempBadgeEl.textContent = "Normal";
+        tempBadgeEl.className = "wqi-metric-badge badge-normal";
+    }
+    const tempDetailEl = document.getElementById("temp-norm-detail");
+    if (tempDetailEl) tempDetailEl.textContent = "Optimal range: 28.0–32.0 °C";
+
+    const phPercentEl = document.getElementById("ph-norm-percent");
+    if (phPercentEl) phPercentEl.textContent = "0.0%";
+    const phBadgeEl = document.getElementById("ph-norm-badge");
+    if (phBadgeEl) {
+        phBadgeEl.textContent = "Normal";
+        phBadgeEl.className = "wqi-metric-badge badge-normal";
+    }
+    const phDetailEl = document.getElementById("ph-norm-detail");
+    if (phDetailEl) phDetailEl.textContent = "Optimal range: 7.50–8.50 pH";
+
+    const accuracyPercentEl = document.getElementById("wqi-accuracy-percent");
+    if (accuracyPercentEl) accuracyPercentEl.textContent = "--";
+    const accuracyBadgeEl = document.getElementById("wqi-accuracy-badge");
+    if (accuracyBadgeEl) {
+        accuracyBadgeEl.textContent = "Assessment";
+        accuracyBadgeEl.className = "wqi-metric-badge badge-normal";
+    }
+    const accuracyDetailEl = document.getElementById("wqi-accuracy-detail");
+    if (accuracyDetailEl) accuracyDetailEl.textContent = "Water quality assessment accuracy";
+}
+
+
 function drawTrendChart(history) {
     if (!Array.isArray(history) || history.length === 0) return;
     currentHistory = history;
@@ -494,12 +655,15 @@ async function loadMonitoringData() {
                 document.getElementById("monitoring-updated").textContent =
                     "No sensor readings are saved yet.";
                 document.getElementById("monitoring-demo-note").hidden = true;
+                resetWQI();
                 handlePointerLeave();
                 return;
             }
 
             emptyMessage.hidden = true;
             updateSummary(trueLatest);
+            calculateWQI(trueLatest);
+            updateAmmoniaMonitoring(trueLatest);
             try {
                 updateRecommendations(trueLatest, await loadRecommendation(trueLatest));
             } catch (error) {
@@ -524,11 +688,13 @@ async function loadMonitoringData() {
             "Could not connect to the sensors database.";
         document.getElementById("monitoring-demo-note").hidden = true;
         updateRecommendations(null);
+        resetWQI();
         handlePointerLeave();
     }
 }
 
 updateDeviceTime();
+initAmmoniaCalculator();
 setInterval(updateDeviceTime, 1000);
 loadMonitoringData();
 window.addEventListener("storage", loadMonitoringData);
@@ -538,3 +704,279 @@ window.addEventListener("resize", () => {
     }
 });
 setInterval(loadMonitoringData, 10000);
+
+
+/* ==========================================================================
+   UNIONIZED AMMONIA (NH3) CALCULATOR (Van Wyk et al., 1999)
+   ========================================================================== */
+
+const VAN_WYK_TEMPS = [24, 26, 28, 30, 32];
+const VAN_WYK_PH_LEVELS = [7.0, 7.2, 7.4, 7.6, 7.8, 8.0, 8.2, 8.4, 8.6, 8.8, 9.0, 9.2, 9.4, 9.6, 10.0];
+
+const VAN_WYK_TABLE = {
+    7.0: [0.005, 0.006, 0.007, 0.008, 0.009],
+    7.2: [0.008, 0.010, 0.011, 0.013, 0.015],
+    7.4: [0.013, 0.015, 0.018, 0.020, 0.023],
+    7.6: [0.021, 0.024, 0.028, 0.031, 0.036],
+    7.8: [0.033, 0.038, 0.043, 0.049, 0.056],
+    8.0: [0.051, 0.058, 0.066, 0.075, 0.085],
+    8.2: [0.078, 0.089, 0.101, 0.114, 0.129],
+    8.4: [0.119, 0.134, 0.151, 0.170, 0.190],
+    8.6: [0.176, 0.197, 0.220, 0.245, 0.271],
+    8.8: [0.253, 0.281, 0.309, 0.340, 0.371],
+    9.0: [0.349, 0.382, 0.415, 0.449, 0.483],
+    9.2: [0.460, 0.495, 0.530, 0.564, 0.597],
+    9.4: [0.574, 0.608, 0.641, 0.672, 0.701],
+    9.6: [0.681, 0.711, 0.739, 0.764, 0.788],
+    10.0: [0.843, 0.861, 0.877, 0.891, 0.903]
+};
+
+let currentSensorTemp = 28.0;
+let currentSensorPh = 7.60;
+let ammoniaDebounceTimer = null;
+
+function getClosestGrid(temp, ph) {
+    let closestT = VAN_WYK_TEMPS[0];
+    let minTDiff = Math.abs(closestT - temp);
+    for (const t of VAN_WYK_TEMPS) {
+        const diff = Math.abs(t - temp);
+        if (diff < minTDiff) {
+            minTDiff = diff;
+            closestT = t;
+        }
+    }
+
+    let closestP = VAN_WYK_PH_LEVELS[0];
+    let minPDiff = Math.abs(closestP - ph);
+    for (const p of VAN_WYK_PH_LEVELS) {
+        const diff = Math.abs(p - ph);
+        if (diff < minPDiff) {
+            minPDiff = diff;
+            closestP = p;
+        }
+    }
+    return { temp: closestT, ph: closestP };
+}
+
+function highlightVanWykTable(temp, ph) {
+    const table = document.getElementById("van-wyk-matrix");
+    if (!table) return;
+
+    const { temp: targetT, ph: targetP } = getClosestGrid(temp, ph);
+
+    // Clear previous highlights
+    table.querySelectorAll(".active-col-header").forEach(el => el.classList.remove("active-col-header"));
+    table.querySelectorAll(".active-col-cell").forEach(el => el.classList.remove("active-col-cell"));
+    table.querySelectorAll(".active-row").forEach(el => el.classList.remove("active-row"));
+    table.querySelectorAll(".active-intersect-cell").forEach(el => el.classList.remove("active-intersect-cell"));
+
+    // Highlight active column in headers & data cells
+    const thMatch = table.querySelector(`tr.th-temp-sub th[data-temp="${targetT}"]`);
+    if (thMatch) thMatch.classList.add("active-col-header");
+
+    table.querySelectorAll(`tbody td[data-temp="${targetT}"]`).forEach(td => {
+        td.classList.add("active-col-cell");
+    });
+
+    // Highlight active pH row
+    const pStr1 = targetP.toFixed(1);
+    const pStr2 = String(targetP);
+    const row = table.querySelector(`tbody tr[data-ph="${pStr1}"]`) ||
+                table.querySelector(`tbody tr[data-ph="${pStr2}"]`);
+    if (row) {
+        row.classList.add("active-row");
+        const intersectCell = row.querySelector(`td[data-temp="${targetT}"]`);
+        if (intersectCell) {
+            intersectCell.classList.add("active-intersect-cell");
+        }
+    }
+}
+
+async function calculateAmmonia(tan, temp, ph) {
+    try {
+        const response = await fetch("/api/ammonia/calculate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ tan, temperature: temp, ph })
+        });
+        if (response.ok) {
+            const data = await response.json();
+            renderAmmoniaResult(data);
+            return;
+        }
+    } catch (err) {
+        console.warn("Ammonia API fetch failed, falling back to local computation:", err);
+    }
+
+    // Client-side fallback computation
+    const { temp: closeT, ph: closeP } = getClosestGrid(temp, ph);
+    const tIdx = VAN_WYK_TEMPS.indexOf(closeT);
+    const factor = (VAN_WYK_TABLE[closeP] && VAN_WYK_TABLE[closeP][tIdx] !== undefined)
+        ? VAN_WYK_TABLE[closeP][tIdx]
+        : 0.028;
+    const nh3 = Math.round(tan * factor * 10000) / 10000;
+    const isSafe = nh3 < 0.03;
+
+    renderAmmoniaResult({
+        tan_ppm: tan,
+        temperature: temp,
+        ph: ph,
+        fraction: factor,
+        unionized_ammonia_ppm: nh3,
+        threshold_ppm: 0.03,
+        status: isSafe ? "Safe" : "Action Required",
+        is_safe: isSafe,
+        assessment: isSafe
+            ? `This level (${nh3.toFixed(4)} ppm) is lower than the acceptable level (<0.03 ppm), hence no corrective action would need to be taken.`
+            : `This level (${nh3.toFixed(4)} ppm) exceeds the acceptable threshold (>= 0.03 ppm). Corrective measures must be taken immediately.`,
+        closest_grid: { temperature: closeT, ph: closeP, table_factor: factor }
+    });
+}
+
+function renderAmmoniaResult(data) {
+    const resultValEl = document.getElementById("ammonia-result-value");
+    const badgeEl = document.getElementById("ammonia-status-badge");
+    const stepTempEl = document.getElementById("calc-step-temp");
+    const stepPhEl = document.getElementById("calc-step-ph");
+    const stepFactorEl = document.getElementById("calc-step-factor");
+    const stepMathEl = document.getElementById("calc-step-tan-math");
+    const stepResultEl = document.getElementById("calc-step-result");
+    const assessBox = document.getElementById("ammonia-assessment-box");
+    const assessText = document.getElementById("ammonia-assessment-text");
+
+    if (resultValEl) resultValEl.textContent = data.unionized_ammonia_ppm.toFixed(4);
+
+    if (badgeEl) {
+        if (data.is_safe) {
+            badgeEl.textContent = "Safe (< 0.03 ppm)";
+            badgeEl.className = "wqi-metric-badge badge-normal";
+        } else {
+            badgeEl.textContent = "Action Required (≥ 0.03 ppm)";
+            badgeEl.className = "wqi-metric-badge badge-critical";
+        }
+    }
+
+    if (stepTempEl) stepTempEl.textContent = `${Number(data.temperature).toFixed(1)}°C`;
+    if (stepPhEl) stepPhEl.textContent = Number(data.ph).toFixed(2);
+    if (stepFactorEl) stepFactorEl.textContent = Number(data.fraction).toFixed(3);
+    if (stepMathEl) stepMathEl.textContent = `${Number(data.fraction).toFixed(3)} × ${Number(data.tan_ppm).toFixed(2)} ppm`;
+    if (stepResultEl) stepResultEl.textContent = `${Number(data.unionized_ammonia_ppm).toFixed(4)} ppm`;
+
+    if (assessBox && assessText) {
+        assessText.textContent = data.assessment;
+        assessBox.className = `ammonia-assessment ${data.is_safe ? "is-safe" : "is-action"}`;
+    }
+
+    highlightVanWykTable(data.temperature, data.ph);
+}
+
+function triggerAmmoniaRecalc() {
+    const tanInput = document.getElementById("ammonia-tan-input");
+    const overrideCheckbox = document.getElementById("ammonia-override-checkbox");
+    const customTempInput = document.getElementById("ammonia-custom-temp");
+    const customPhInput = document.getElementById("ammonia-custom-ph");
+
+    const tan = tanInput ? parseFloat(tanInput.value) || 0 : 0.8;
+    const isOverride = overrideCheckbox && overrideCheckbox.checked;
+
+    const temp = isOverride && customTempInput ? parseFloat(customTempInput.value) || currentSensorTemp : currentSensorTemp;
+    const ph = isOverride && customPhInput ? parseFloat(customPhInput.value) || currentSensorPh : currentSensorPh;
+
+    calculateAmmonia(tan, temp, ph);
+}
+
+function updateAmmoniaMonitoring(latestReading) {
+    if (!latestReading) return;
+    const tempNum = Number(latestReading.temperature);
+    const phNum = Number(latestReading.ph);
+
+    if (!isNaN(tempNum)) currentSensorTemp = tempNum;
+    if (!isNaN(phNum)) currentSensorPh = phNum;
+
+    const liveTempEl = document.getElementById("ammonia-live-temp");
+    const livePhEl = document.getElementById("ammonia-live-ph");
+    if (liveTempEl) liveTempEl.textContent = currentSensorTemp.toFixed(1);
+    if (livePhEl) livePhEl.textContent = currentSensorPh.toFixed(2);
+
+    const overrideCheckbox = document.getElementById("ammonia-override-checkbox");
+    if (overrideCheckbox && !overrideCheckbox.checked) {
+        const customTempInput = document.getElementById("ammonia-custom-temp");
+        const customPhInput = document.getElementById("ammonia-custom-ph");
+        if (customTempInput) customTempInput.value = currentSensorTemp.toFixed(1);
+        if (customPhInput) customPhInput.value = currentSensorPh.toFixed(2);
+    }
+
+    triggerAmmoniaRecalc();
+}
+
+function initAmmoniaCalculator() {
+    const tanInput = document.getElementById("ammonia-tan-input");
+    const recalcBtn = document.getElementById("ammonia-recalc-btn");
+    const overrideCheckbox = document.getElementById("ammonia-override-checkbox");
+    const overrideFields = document.getElementById("ammonia-override-fields");
+    const customTempInput = document.getElementById("ammonia-custom-temp");
+    const customPhInput = document.getElementById("ammonia-custom-ph");
+    const accordionBtn = document.getElementById("toggle-van-wyk-btn");
+    const accordionBody = document.getElementById("van-wyk-accordion-body");
+    const accordionChevron = document.getElementById("accordion-chevron");
+    const presetChips = document.querySelectorAll("#ammonia-preset-chips .preset-chip");
+
+    if (recalcBtn) {
+        recalcBtn.addEventListener("click", () => triggerAmmoniaRecalc());
+    }
+
+    if (tanInput) {
+        tanInput.addEventListener("input", () => {
+            clearTimeout(ammoniaDebounceTimer);
+            ammoniaDebounceTimer = setTimeout(triggerAmmoniaRecalc, 250);
+        });
+    }
+
+    presetChips.forEach(chip => {
+        chip.addEventListener("click", () => {
+            presetChips.forEach(c => c.classList.remove("active"));
+            chip.classList.add("active");
+            if (tanInput) {
+                tanInput.value = chip.getAttribute("data-tan");
+            }
+            triggerAmmoniaRecalc();
+        });
+    });
+
+    if (overrideCheckbox) {
+        overrideCheckbox.addEventListener("change", () => {
+            if (overrideFields) {
+                overrideFields.hidden = !overrideCheckbox.checked;
+            }
+            triggerAmmoniaRecalc();
+        });
+    }
+
+    if (customTempInput) {
+        customTempInput.addEventListener("input", () => {
+            clearTimeout(ammoniaDebounceTimer);
+            ammoniaDebounceTimer = setTimeout(triggerAmmoniaRecalc, 250);
+        });
+    }
+
+    if (customPhInput) {
+        customPhInput.addEventListener("input", () => {
+            clearTimeout(ammoniaDebounceTimer);
+            ammoniaDebounceTimer = setTimeout(triggerAmmoniaRecalc, 250);
+        });
+    }
+
+    if (accordionBtn && accordionBody) {
+        accordionBtn.addEventListener("click", () => {
+            const isExpanded = accordionBtn.getAttribute("aria-expanded") === "true";
+            accordionBtn.setAttribute("aria-expanded", String(!isExpanded));
+            accordionBody.hidden = isExpanded;
+            if (accordionChevron) {
+                accordionChevron.textContent = isExpanded ? "+" : "−";
+            }
+        });
+    }
+
+    highlightVanWykTable(currentSensorTemp, currentSensorPh);
+    triggerAmmoniaRecalc();
+}
