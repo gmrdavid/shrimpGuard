@@ -75,6 +75,10 @@ function renderNotificationsList(notifications, unreadCount) {
     const notificationContainer = document.getElementById("notification-content");
     if (!notificationContainer) return;
 
+    const isAdminPage = window.location.pathname.startsWith("/admin");
+    const alertsHref = isAdminPage ? "/admin/telemetry" : "/alerts";
+    const alertsLabel = isAdminPage ? "View IoT & Telemetry Control &rarr;" : "View all alerts & history &rarr;";
+
     if (!Array.isArray(notifications) || notifications.length === 0) {
         notificationContainer.innerHTML = `
             <div class="notification-empty" style="padding: 28px 20px; text-align: center; color: #537260;">
@@ -83,7 +87,7 @@ function renderNotificationsList(notifications, unreadCount) {
                 <div style="font-size: 12px; color: #6a7c72;">All water parameters meet recommended standards for Penaeus vannamei.</div>
             </div>
             <div style="padding: 10px 16px; border-top: 1px solid #eef2f0; background: #fafcfb; text-align: center;">
-                <a href="/alerts" style="color: #16a34a; font-size: 12px; font-weight: 700; text-decoration: none;">View all alerts &amp; history &rarr;</a>
+                <a href="${alertsHref}" style="color: #16a34a; font-size: 12px; font-weight: 700; text-decoration: none;">${alertsLabel}</a>
             </div>
         `;
         return;
@@ -125,7 +129,7 @@ function renderNotificationsList(notifications, unreadCount) {
             ${itemsHtml}
         </ul>
         <div style="padding: 10px 16px; border-top: 1px solid #eef2f0; background: #fafcfb; text-align: center;">
-            <a href="/alerts" style="color: #16a34a; font-size: 12px; font-weight: 700; text-decoration: none;">View all alerts &amp; audit trail &rarr;</a>
+            <a href="${alertsHref}" style="color: #16a34a; font-size: 12px; font-weight: 700; text-decoration: none;">${alertsLabel}</a>
         </div>
     `;
 

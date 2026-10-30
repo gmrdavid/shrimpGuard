@@ -48,6 +48,20 @@
                     </svg>
                     <span>User Management</span>
                 </a>
+
+                <a href="/admin/telemetry">
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-monitor"></use>
+                    </svg>
+                    <span>IoT &amp; Telemetry Control</span>
+                </a>
+
+                <a href="/admin/logs">
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-history"></use>
+                    </svg>
+                    <span>Audit &amp; System Logs</span>
+                </a>
             </nav>
 
             <div class="sidebar-bottom">
@@ -549,6 +563,7 @@
     </div>
 
     <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/adminlogout.js') }}"></script>
     <script>
         function updateDeviceTime() {
             const timeEl = document.getElementById("time");

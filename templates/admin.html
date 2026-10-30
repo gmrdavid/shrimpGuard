@@ -47,6 +47,20 @@
             </svg>
             <span>User Management</span>
         </a>
+
+        <a href="/admin/telemetry">
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-monitor"></use>
+            </svg>
+            <span>IoT &amp; Telemetry Control</span>
+        </a>
+
+        <a href="/admin/logs">
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-history"></use>
+            </svg>
+            <span>Audit &amp; System Logs</span>
+        </a>
     </nav>
 
     <div class="sidebar-bottom">
@@ -419,17 +433,24 @@
                     <label for="new-user-password">
                         Temporary Password <span aria-hidden="true">*</span>
                     </label>
-                    <input id="new-user-password"
-                        name="password"
-                        type="password"
-                        placeholder="Enter a temporary password"
-                        minlength="8"
-                        autocomplete="new-password"
-                        aria-describedby="new-user-password-help"
-                        required>
+                    <div style="position: relative; display: flex; align-items: center;">
+                        <input id="new-user-password"
+                            name="password"
+                            type="password"
+                            placeholder="Enter a temporary password"
+                            minlength="8"
+                            autocomplete="new-password"
+                            aria-describedby="new-user-password-help"
+                            style="width: 100%; padding-right: 42px;"
+                            required>
+                        <button type="button" class="admin-pw-toggle-btn" data-target-input="new-user-password" aria-label="Toggle password visibility" style="position: absolute; right: 8px; background: none; border: none; cursor: pointer; color: #6b7280; display: flex; align-items: center; padding: 4px;">
+                            <svg class="ui-icon" style="width: 18px; height: 18px;" aria-hidden="true">
+                                <use href="#icon-eye"></use>
+                            </svg>
+                        </button>
+                    </div>
                     <small id="new-user-password-help">
-                        Use at least 8 characters. Share the password securely
-                        with the account holder.
+                        Use at least 8 characters. Share the password securely with the account holder.
                     </small>
                 </div>
             </div>
@@ -856,25 +877,34 @@
                     </div>
                 </section>
 
-                <!-- Security Note -->
-                <div class="admin-edit-notice">
-                    <svg class="ui-icon"
-                         viewBox="0 0 24 24"
-                         fill="none"
-                         stroke="currentColor"
-                         stroke-width="1.8"
-                         stroke-linecap="round"
-                         stroke-linejoin="round"
-                         aria-hidden="true">
-                        <circle cx="12" cy="12" r="9"/>
-                        <path d="M12 11v5M12 8h.01"/>
-                    </svg>
-                    <p>
-                        For security, password changes should be handled
-                        through your application's password management
-                        process.
-                    </p>
-                </div>
+                <!-- Password Reset Section (Optional) -->
+                <section class="admin-edit-section" aria-labelledby="edit-password-heading">
+                    <div class="admin-edit-section-heading">
+                        <span class="admin-edit-section-icon" aria-hidden="true">
+                            <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                        </span>
+                        <div>
+                            <h3 id="edit-password-heading">Reset Password (Optional)</h3>
+                            <p>Leave blank to keep the current user password unchanged.</p>
+                        </div>
+                    </div>
+
+                    <div class="admin-edit-field">
+                        <label for="edit-user-new-password">New Password</label>
+                        <div style="position: relative; display: flex; align-items: center;">
+                            <input id="edit-user-new-password" name="new_password" type="password" minlength="8" placeholder="Enter new password (min. 8 characters)" autocomplete="new-password" style="width: 100%; padding-right: 42px;">
+                            <button type="button" class="admin-pw-toggle-btn" data-target-input="edit-user-new-password" aria-label="Toggle password visibility" style="position: absolute; right: 8px; background: none; border: none; cursor: pointer; color: #6b7280; display: flex; align-items: center; padding: 4px;">
+                                <svg class="ui-icon" style="width: 18px; height: 18px;" aria-hidden="true">
+                                    <use href="#icon-eye"></use>
+                                </svg>
+                            </button>
+                        </div>
+                        <small>Must be at least 8 characters long if provided.</small>
+                    </div>
+                </section>
 
             </div>
 
@@ -1262,6 +1292,7 @@
 
 <script src="{{ url_for('static', filename='js/admindashboard.js') }}"></script>
 <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+<script src="{{ url_for('static', filename='js/adminlogout.js') }}"></script>
 <script>
     function updateDeviceTime() {
         const timeEl = document.getElementById("time");

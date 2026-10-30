@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#126b4f">
+    <title>Audit &amp; System Logs | ShrimpGuard Admin</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="dashboard-page admin-page">
+
+{% include "_icon_sprite.html" %}
+
+<div class="dashboard-layout">
+
+<!-- SIDEBAR -->
+<aside class="sidebar dashboard-sidebar">
+    <a href="/admin/dashboard" class="logo dashboard-logo" aria-label="ShrimpGuard administration">
+        <span class="dashboard-logo-mark">
+            <svg class="ui-icon brand-icon" aria-hidden="true">
+                <use href="#icon-shrimp"></use>
+            </svg>
+        </span>
+        <span>ShrimpGuard</span>
+    </a>
+
+    <p class="subtitle">Administration</p>
+
+    <div class="sidebar-section-label">ADMIN MENU</div>
+
+    <nav class="dashboard-nav" aria-label="Admin navigation">
+        <a href="/admin/dashboard">
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-dashboard"></use>
+            </svg>
+            <span>Admin Dashboard</span>
+        </a>
+
+        <a href="/admin">
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-users"></use>
+            </svg>
+            <span>User Management</span>
+        </a>
+
+        <a href="/admin/telemetry">
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-monitor"></use>
+            </svg>
+            <span>IoT &amp; Telemetry Control</span>
+        </a>
+
+        <a href="/admin/logs" class="active" aria-current="page">
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-history"></use>
+            </svg>
+            <span>Audit &amp; System Logs</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-bottom">
+        <div class="sidebar-help">
+            <span class="sidebar-help-icon">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-history"></use>
+                </svg>
+            </span>
+            <div>
+                <strong>Security Logs</strong>
+                <p>System audit trail.</p>
+            </div>
+        </div>
+
+        {% include "adminlogout.html" %}
+    </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main-content dashboard-main">
+
+    <!-- PAGE HEADER -->
+    <header class="dashboard-header admin-header">
+        <div class="dashboard-heading">
+            <div class="dashboard-eyebrow">
+                <span class="eyebrow-dot"></span>
+                ADMINISTRATION &bull; SECURITY AUDIT
+            </div>
+            <h1>Audit &amp; System Logs</h1>
+            <p class="admin-header-description">
+                Inspect system operations, user logins, administrative account modifications, and security events.
+            </p>
+        </div>
+
+        <div class="header-info dashboard-header-info">
+            <button class="dashboard-submit-button" type="button" id="open-purge-modal" style="background: #be123c; border-color: #be123c;">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-trash"></use>
+                </svg>
+                <span>Prune Logs</span>
+            </button>
+
+            <a href="/admin/logs/export" class="dashboard-submit-button" style="text-decoration: none;">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-download"></use>
+                </svg>
+                <span>Export Audit CSV</span>
+            </a>
+
+            <button
+                id="notification-button"
+                class="notification-button"
+                type="button"
+                aria-label="View notifications"
+                title="View notifications">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-bell"></use>
+                </svg>
+            </button>
+
+            <div class="dashboard-date-time">
+                <span class="date-time-label">LOCAL TIME</span>
+                <span id="time" class="time-value">Loading time...</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- FLASH MESSAGES -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="settings-notices" role="status" aria-live="polite">
+        {% for category, message in messages %}
+        <p class="settings-notice {{ category }}">
+            <svg class="ui-icon settings-notice-icon" aria-hidden="true">
+                <use href="#icon-check-circle"></use>
+            </svg>
+            <span>{{ message }}</span>
+        </p>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- SUMMARY METRICS -->
+    <section class="dashboard-section" aria-labelledby="audit-metrics-title">
+        <div class="section-heading-row">
+            <div>
+                <span class="section-eyebrow">AUDIT INDICATORS</span>
+                <h2 id="audit-metrics-title">Security &amp; Event Overview</h2>
+            </div>
+            <span class="section-count">4 indicators</span>
+        </div>
+
+        <div class="cards dashboard-metric-cards">
+
+            <!-- TOTAL EVENTS -->
+            <article class="card dashboard-metric-card users-card">
+                <div class="metric-card-top">
+                    <div class="metric-icon users-icon">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-history"></use>
+                        </svg>
+                    </div>
+                    <span class="metric-type">EVENT LOGS</span>
+                </div>
+                <div class="metric-card-content">
+                    <h3>Total Events</h3>
+                    <div class="metric-reading">
+                        <h2>{{ total_logs }}</h2>
+                    </div>
+                    <p class="metric-status status-optimal">
+                        Archived audit trail
+                    </p>
+                </div>
+                <div class="metric-card-footer">
+                    <span class="metric-footer-dot"></span>
+                    <span>Database table: activity_logs</span>
+                </div>
+            </article>
+
+            <!-- AUTH EVENTS -->
+            <article class="card dashboard-metric-card active-card">
+                <div class="metric-card-top">
+                    <div class="metric-icon active-icon">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-check-circle"></use>
+                        </svg>
+                    </div>
+                    <span class="metric-type">AUTHENTICATION</span>
+                </div>
+                <div class="metric-card-content">
+                    <h3>Auth Activity</h3>
+                    <div class="metric-reading">
+                        <h2>{{ auth_events }}</h2>
+                    </div>
+                    <p class="metric-status status-optimal">
+                        Sign-in &amp; sign-out events
+                    </p>
+                </div>
+                <div class="metric-card-footer">
+                    <span class="metric-footer-dot"></span>
+                    <span>Session lifecycle logs</span>
+                </div>
+            </article>
+
+            <!-- USER MGMT EVENTS -->
+            <article class="card dashboard-metric-card inactive-card">
+                <div class="metric-card-top">
+                    <div class="metric-icon inactive-icon">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-users"></use>
+                        </svg>
+                    </div>
+                    <span class="metric-type">ACCOUNT CONTROL</span>
+                </div>
+                <div class="metric-card-content">
+                    <h3>User Operations</h3>
+                    <div class="metric-reading">
+                        <h2>{{ user_mgmt_events }}</h2>
+                    </div>
+                    <p class="metric-status status-warning">
+                        Creates, edits &amp; deletions
+                    </p>
+                </div>
+                <div class="metric-card-footer">
+                    <span class="metric-footer-dot"></span>
+                    <span>Admin CRUD operations</span>
+                </div>
+            </article>
+
+            <!-- SYSTEM STATUS -->
+            <article class="card dashboard-metric-card system-card">
+                <div class="metric-card-top">
+                    <div class="metric-icon system-icon-online">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-activity"></use>
+                        </svg>
+                    </div>
+                    <span class="metric-type">COMPLIANCE</span>
+                </div>
+                <div class="metric-card-content">
+                    <h3>Audit Logging</h3>
+                    <div class="metric-reading">
+                        <h2>Active</h2>
+                    </div>
+                    <p class="metric-status status-optimal">
+                        Immutable event recording
+                    </p>
+                </div>
+                <div class="metric-card-footer">
+                    <span class="metric-footer-dot"></span>
+                    <span>Security audit trail</span>
+                </div>
+            </article>
+
+        </div>
+    </section>
+
+    <!-- AUDIT LOGS TABLE -->
+    <section class="dashboard-section" aria-labelledby="logs-table-title">
+        <div class="section-heading-row">
+            <div>
+                <span class="section-eyebrow">AUDIT RECORDS</span>
+                <h2 id="logs-table-title">Activity Trail</h2>
+            </div>
+            <span class="section-count" id="log-count"><strong>{{ logs|length }}</strong> events</span>
+        </div>
+
+        <article class="panel dashboard-panel admin-user-panel">
+            <div class="panel-heading">
+                <div class="panel-heading-icon users-heading-icon">
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-history"></use>
+                    </svg>
+                </div>
+                <div>
+                    <h2>System Audit Trail</h2>
+                    <p>Chronological security and activity log events recorded across the platform.</p>
+                </div>
+            </div>
+
+            <!-- SEARCH AND FILTER CONTROLS -->
+            <div class="admin-table-controls">
+                <div class="admin-search-wrap">
+                    <svg class="ui-icon admin-search-icon" aria-hidden="true">
+                        <use href="#icon-history"></use>
+                    </svg>
+                    <input
+                        id="log-search"
+                        class="admin-search-input"
+                        type="search"
+                        placeholder="Search by action, user, email, IP, or details..."
+                        aria-label="Search logs">
+                </div>
+
+                <div class="admin-filter-group">
+                    <select id="log-action-filter" class="admin-filter-select" aria-label="Filter by action">
+                        <option value="all" selected>All Actions</option>
+                        <option value="login">LOGIN</option>
+                        <option value="logout">LOGOUT</option>
+                        <option value="signup">SIGNUP</option>
+                        <option value="user_create">USER_CREATE</option>
+                        <option value="user_edit">USER_EDIT</option>
+                        <option value="user_delete">USER_DELETE</option>
+                        <option value="password_reset">PASSWORD_RESET</option>
+                        <option value="settings_update">SETTINGS_UPDATE</option>
+                        <option value="telemetry_simulate">TELEMETRY_SIMULATE</option>
+                        <option value="log_purge">LOG_PURGE</option>
+                    </select>
+
+                    <select id="log-role-filter" class="admin-filter-select" aria-label="Filter by role">
+                        <option value="all" selected>All Roles</option>
+                        <option value="admin">Admin</option>
+                        <option value="client">Client</option>
+                    </select>
+
+                    <select id="log-limit-select" class="admin-filter-select" aria-label="Items per page">
+                        <option value="15" selected>15 per page</option>
+                        <option value="30">30 per page</option>
+                        <option value="50">50 per page</option>
+                        <option value="all">Show All</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- TABLE -->
+            <div class="table-wrap admin-table-wrap">
+                <table class="uniform-table admin-table" id="logs-table">
+                    <thead>
+                        <tr>
+                            <th scope="col" style="width: 170px;">Timestamp</th>
+                            <th scope="col" style="width: 130px;">Action</th>
+                            <th scope="col">User</th>
+                            <th scope="col" style="width: 90px;">Role</th>
+                            <th scope="col" style="width: 120px;">IP Address</th>
+                            <th scope="col">Event Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logs-table-body">
+                        {% for l in logs %}
+                        <tr data-log-row data-action="{{ (l.action or '')|lower }}" data-role="{{ (l.role or '')|lower }}" data-search="{{ (l.user_name or '')|lower }} {{ (l.user_email or '')|lower }} {{ (l.action or '')|lower }} {{ (l.details or '')|lower }} {{ (l.ip_address or '')|lower }}">
+                            <td>
+                                <time datetime="{{ l.timestamp }}" style="font-size: 11.5px; font-weight: 600; color: #475a4e;">
+                                    {% if l.timestamp and l.timestamp.strftime is defined %}
+                                        {{ l.timestamp.strftime("%Y-%m-%d %H:%M:%S") }}
+                                    {% else %}
+                                        {{ l.timestamp }}
+                                    {% endif %}
+                                </time>
+                            </td>
+                            <td>
+                                <span class="table-status {% if l.action in ['LOGIN', 'SIGNUP'] %}status-optimal{% elif l.action in ['LOGOUT'] %}status-warning{% elif l.action in ['USER_CREATE', 'PASSWORD_RESET'] %}status-optimal{% elif l.action in ['USER_DELETE', 'LOG_PURGE'] %}status-critical{% else %}status-optimal{% endif %}" style="font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">
+                                    {{ l.action }}
+                                </span>
+                            </td>
+                            <td>
+                                <strong>{{ l.user_name or 'System' }}</strong>
+                                <small style="display: block; color: #6b7280; font-size: 11px;">{{ l.user_email or 'system@shrimpguard' }}</small>
+                            </td>
+                            <td>
+                                <span class="table-status {% if (l.role or '')|lower == 'admin' %}admin-role-badge{% else %}client-role-badge{% endif %}">
+                                    {{ l.role or 'User' }}
+                                </span>
+                            </td>
+                            <td>
+                                <code style="font-size: 11px; background: #eef2f0; padding: 2px 5px; border-radius: 4px;">{{ l.ip_address or '127.0.0.1' }}</code>
+                            </td>
+                            <td>
+                                <span style="font-size: 12px; color: #374151;">{{ l.details }}</span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td class="admin-empty" colspan="6">
+                                No activity logs recorded yet.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        <tr id="logs-filter-empty" hidden>
+                            <td class="admin-empty" colspan="6">
+                                No activity events match your filter criteria.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- PAGINATION -->
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; border-top: 1px solid #edf1ee; background: #fbfdfc; flex-wrap: wrap; gap: 10px;">
+                <span id="log-page-info" style="font-size: 12px; font-weight: 600; color: #64796b;">Showing logs...</span>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button type="button" id="log-prev-btn" class="activity-page-btn prev-btn" style="padding: 4px 10px; font-size: 11px;">Prev</button>
+                    <span id="log-current-page" style="font-size: 12px; font-weight: 700; color: #1e3a2b;">Page 1</span>
+                    <button type="button" id="log-next-btn" class="activity-page-btn next-btn" style="padding: 4px 10px; font-size: 11px;">Next</button>
+                </div>
+            </div>
+
+            <div class="panel-card-footer">
+                <span class="metric-footer-dot"></span>
+                <span>Security logs are retained automatically for accountability and tracking</span>
+            </div>
+        </article>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="dashboard-footer">
+        <span>
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-shrimp"></use>
+            </svg>
+            ShrimpGuard
+        </span>
+        <span>Administration Console &bull; Security &amp; Operations</span>
+    </footer>
+
+</main>
+
+</div>
+
+<!-- PURGE LOGS DIALOG -->
+<dialog class="admin-user-dialog" id="purge-dialog" aria-labelledby="purge-title">
+    <div class="admin-user-dialog-heading">
+        <div class="admin-modal-title-group">
+            <span class="admin-modal-icon-badge" style="background: #ffe4e6; color: #be123c;" aria-hidden="true">
+                <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <use href="#icon-trash"></use>
+                </svg>
+            </span>
+            <div class="admin-modal-heading-text">
+                <h2 id="purge-title">Prune System Audit Logs</h2>
+                <p class="admin-modal-subtitle">
+                    Select a time window to purge old activity records from the database.
+                </p>
+            </div>
+        </div>
+
+        <button class="admin-dialog-close" type="button" data-close-dialog="purge-dialog" aria-label="Close dialog">
+            <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m18 6-12 12M6 6l12 12"/>
+            </svg>
+        </button>
+    </div>
+
+    <form class="admin-user-form" method="post" action="{{ url_for('clear_admin_logs') }}">
+        <input type="hidden" name="csrf_token" value="{{ admin_csrf_token }}">
+
+        <div class="admin-form-section">
+            <div class="admin-form-field">
+                <label for="purge-range">Retention Window *</label>
+                <select id="purge-range" name="range" required>
+                    <option value="30" selected>Purge logs older than 30 days</option>
+                    <option value="60">Purge logs older than 60 days</option>
+                    <option value="90">Purge logs older than 90 days</option>
+                    <option value="all">Purge ALL logs (Total Reset)</option>
+                </select>
+                <small style="color: #be123c;">Warning: This action will permanently delete historical audit log records.</small>
+            </div>
+        </div>
+
+        <div class="admin-user-form-actions">
+            <button class="admin-user-cancel" type="button" data-close-dialog="purge-dialog">Cancel</button>
+            <button class="admin-user-submit" type="submit" style="background: #be123c; border-color: #be123c;">Confirm Log Prune</button>
+        </div>
+    </form>
+</dialog>
+
+<script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+<script src="{{ url_for('static', filename='js/adminlogout.js') }}"></script>
+<script>
+    function updateDeviceTime() {
+        const timeEl = document.getElementById("time");
+        if (timeEl) {
+            timeEl.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        }
+    }
+    updateDeviceTime();
+    setInterval(updateDeviceTime, 1000);
+
+    // Modal control
+    const purgeModal = document.getElementById("purge-dialog");
+    const openPurgeBtn = document.getElementById("open-purge-modal");
+    if (openPurgeBtn && purgeModal) {
+        openPurgeBtn.addEventListener("click", () => {
+            purgeModal.showModal();
+        });
+    }
+
+    document.querySelectorAll("[data-close-dialog]").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const d = document.getElementById(btn.dataset.closeDialog);
+            if (d && d.open) d.close();
+        });
+    });
+
+    // Pagination & Search
+    const searchInput = document.getElementById("log-search");
+    const actionSelect = document.getElementById("log-action-filter");
+    const roleSelect = document.getElementById("log-role-filter");
+    const limitSelect = document.getElementById("log-limit-select");
+    const allRows = Array.from(document.querySelectorAll("[data-log-row]"));
+    const emptyRow = document.getElementById("logs-filter-empty");
+    const countEl = document.getElementById("log-count");
+    const pageInfo = document.getElementById("log-page-info");
+    const currentPageEl = document.getElementById("log-current-page");
+    const prevBtn = document.getElementById("log-prev-btn");
+    const nextBtn = document.getElementById("log-next-btn");
+
+    let currentPage = 1;
+    let itemsPerPage = 15;
+    let filteredRows = allRows;
+
+    function applyFilter() {
+        const q = (searchInput ? searchInput.value : "").trim().toLowerCase();
+        const act = actionSelect ? actionSelect.value.toLowerCase() : "all";
+        const role = roleSelect ? roleSelect.value.toLowerCase() : "all";
+
+        filteredRows = allRows.filter(r => {
+            const rowSearch = (r.dataset.search || "").toLowerCase();
+            const rowAction = (r.dataset.action || "").toLowerCase();
+            const rowRole = (r.dataset.role || "").toLowerCase();
+
+            const matchesQ = !q || rowSearch.includes(q);
+            const matchesAct = act === "all" || rowAction === act;
+            const matchesRole = role === "all" || rowRole === role;
+
+            return matchesQ && matchesAct && matchesRole;
+        });
+
+        currentPage = 1;
+        renderPagination();
+    }
+
+    function renderPagination() {
+        const total = filteredRows.length;
+        const perPage = itemsPerPage === "all" ? total : itemsPerPage;
+        const totalPages = Math.ceil(total / perPage) || 1;
+
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+
+        const startIdx = (currentPage - 1) * perPage;
+        const endIdx = itemsPerPage === "all" ? total : Math.min(startIdx + perPage, total);
+
+        allRows.forEach(r => { r.hidden = true; });
+        for (let i = startIdx; i < endIdx; i++) {
+            if (filteredRows[i]) filteredRows[i].hidden = false;
+        }
+
+        if (emptyRow) {
+            emptyRow.hidden = total > 0;
+        }
+        if (countEl) {
+            countEl.innerHTML = `<strong>${total}</strong> event${total === 1 ? "" : "s"}`;
+        }
+        if (pageInfo) {
+            pageInfo.textContent = total > 0 ? `Showing ${startIdx + 1}–${endIdx} of ${total} events` : "No events to display";
+        }
+        if (currentPageEl) {
+            currentPageEl.textContent = `Page ${currentPage} of ${totalPages}`;
+        }
+        if (prevBtn) prevBtn.disabled = currentPage <= 1;
+        if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
+    }
+
+    if (searchInput) searchInput.addEventListener("input", applyFilter);
+    if (actionSelect) actionSelect.addEventListener("change", applyFilter);
+    if (roleSelect) roleSelect.addEventListener("change", applyFilter);
+    if (limitSelect) {
+        limitSelect.addEventListener("change", () => {
+            const v = limitSelect.value;
+            itemsPerPage = v === "all" ? "all" : parseInt(v, 10);
+            currentPage = 1;
+            renderPagination();
+        });
+    }
+
+    if (prevBtn) {
+        prevBtn.addEventListener("click", () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderPagination();
+            }
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener("click", () => {
+            const perPage = itemsPerPage === "all" ? filteredRows.length : itemsPerPage;
+            const totalPages = Math.ceil(filteredRows.length / perPage) || 1;
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderPagination();
+            }
+        });
+    }
+
+    applyFilter();
+</script>
+
+</body>
+</html>

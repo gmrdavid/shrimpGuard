@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#126b4f">
+    <title>IoT &amp; Telemetry Control | ShrimpGuard Admin</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="dashboard-page admin-page">
+
+{% include "_icon_sprite.html" %}
+
+<div class="dashboard-layout">
+
+<!-- SIDEBAR -->
+<aside class="sidebar dashboard-sidebar">
+    <a href="/admin/dashboard" class="logo dashboard-logo" aria-label="ShrimpGuard administration">
+        <span class="dashboard-logo-mark">
+            <svg class="ui-icon brand-icon" aria-hidden="true">
+                <use href="#icon-shrimp"></use>
+            </svg>
+        </span>
+        <span>ShrimpGuard</span>
+    </a>
+
+    <p class="subtitle">Administration</p>
+
+    <div class="sidebar-section-label">ADMIN MENU</div>
+
+    <nav class="dashboard-nav" aria-label="Admin navigation">
+        <a href="/admin/dashboard">
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-dashboard"></use>
+            </svg>
+            <span>Admin Dashboard</span>
+        </a>
+
+        <a href="/admin">
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-users"></use>
+            </svg>
+            <span>User Management</span>
+        </a>
+
+        <a href="/admin/telemetry" class="active" aria-current="page">
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-monitor"></use>
+            </svg>
+            <span>IoT &amp; Telemetry Control</span>
+        </a>
+
+        <a href="/admin/logs">
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-history"></use>
+            </svg>
+            <span>Audit &amp; System Logs</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-bottom">
+        <div class="sidebar-help">
+            <span class="sidebar-help-icon">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-monitor"></use>
+                </svg>
+            </span>
+            <div>
+                <strong>Telemetry Console</strong>
+                <p>Sensors &amp; ML diagnostics.</p>
+            </div>
+        </div>
+
+        {% include "adminlogout.html" %}
+    </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main-content dashboard-main">
+
+    <!-- PAGE HEADER -->
+    <header class="dashboard-header admin-header">
+        <div class="dashboard-heading">
+            <div class="dashboard-eyebrow">
+                <span class="eyebrow-dot"></span>
+                ADMINISTRATION &bull; HARDWARE &amp; SENSORS
+            </div>
+            <h1>IoT &amp; Telemetry Control</h1>
+            <p class="admin-header-description">
+                Monitor live microcontroller sensor ingestion, inspect ML Decision Tree classifications, and export telemetry data.
+            </p>
+        </div>
+
+        <div class="header-info dashboard-header-info">
+            <button class="dashboard-submit-button" type="button" id="open-simulate-modal" style="background: #0284c7; border-color: #0284c7;">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-plus"></use>
+                </svg>
+                <span>Ingest Test Reading</span>
+            </button>
+
+            <a href="/admin/telemetry/export" class="dashboard-submit-button" style="text-decoration: none;">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-download"></use>
+                </svg>
+                <span>Export Telemetry CSV</span>
+            </a>
+
+            <button
+                id="notification-button"
+                class="notification-button"
+                type="button"
+                aria-label="View notifications"
+                title="View notifications">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-bell"></use>
+                </svg>
+            </button>
+
+            <div class="dashboard-date-time">
+                <span class="date-time-label">LOCAL TIME</span>
+                <span id="time" class="time-value">Loading time...</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- FLASH MESSAGES -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="settings-notices" role="status" aria-live="polite">
+        {% for category, message in messages %}
+        <p class="settings-notice {{ category }}">
+            <svg class="ui-icon settings-notice-icon" aria-hidden="true">
+                <use href="#icon-check-circle"></use>
+            </svg>
+            <span>{{ message }}</span>
+        </p>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- 4 SUMMARY CARDS -->
+    <section class="dashboard-section" aria-labelledby="telemetry-metrics-title">
+        <div class="section-heading-row">
+            <div>
+                <span class="section-eyebrow">TELEMETRY &amp; HARDWARE GATEWAY</span>
+                <h2 id="telemetry-metrics-title">Sensor Gateway Indicators</h2>
+            </div>
+            <span class="section-count">4 indicators</span>
+        </div>
+
+        <div class="cards dashboard-metric-cards">
+
+            <!-- GATEWAY STATUS -->
+            <article class="card dashboard-metric-card system-card">
+                <div class="metric-card-top">
+                    <div class="metric-icon {% if gateway_online %}system-icon-online{% else %}system-icon-offline{% endif %}">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-monitor"></use>
+                        </svg>
+                    </div>
+                    <span class="metric-type">HARDWARE GATEWAY</span>
+                </div>
+                <div class="metric-card-content">
+                    <h3>IoT Ingestion Port</h3>
+                    <div class="metric-reading">
+                        <h2>{{ "Online" if gateway_online else "Standby" }}</h2>
+                    </div>
+                    <p class="metric-status {% if gateway_online %}status-optimal{% else %}status-warning{% endif %}">
+                        {{ "Receiving sensor telemetry" if gateway_online else "Waiting for new sensor packets" }}
+                    </p>
+                </div>
+                <div class="metric-card-footer">
+                    <span class="metric-footer-dot"></span>
+                    <span>Endpoint: POST /api/readings</span>
+                </div>
+            </article>
+
+            <!-- TOTAL READINGS -->
+            <article class="card dashboard-metric-card users-card">
+                <div class="metric-card-top">
+                    <div class="metric-icon users-icon">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-database"></use>
+                        </svg>
+                    </div>
+                    <span class="metric-type">DATABASE TELEMETRY</span>
+                </div>
+                <div class="metric-card-content">
+                    <h3>Total Readings</h3>
+                    <div class="metric-reading">
+                        <h2>{{ total_readings }}</h2>
+                    </div>
+                    <p class="metric-status status-optimal">
+                        Archived sensor measurements
+                    </p>
+                </div>
+                <div class="metric-card-footer">
+                    <span class="metric-footer-dot"></span>
+                    <span>Database table: sensors</span>
+                </div>
+            </article>
+
+            <!-- ML CLASSIFIER -->
+            <article class="card dashboard-metric-card active-card">
+                <div class="metric-card-top">
+                    <div class="metric-icon active-icon">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-cpu"></use>
+                        </svg>
+                    </div>
+                    <span class="metric-type">INTELLIGENCE</span>
+                </div>
+                <div class="metric-card-content">
+                    <h3>DecisionTree ML</h3>
+                    <div class="metric-reading">
+                        <h2>Operational</h2>
+                    </div>
+                    <p class="metric-status status-optimal">
+                        best_water_quality_model.joblib
+                    </p>
+                </div>
+                <div class="metric-card-footer">
+                    <span class="metric-footer-dot"></span>
+                    <span>Species: Penaeus vannamei</span>
+                </div>
+            </article>
+
+            <!-- LATEST VALUE -->
+            <article class="card dashboard-metric-card inactive-card">
+                <div class="metric-card-top">
+                    <div class="metric-icon inactive-icon">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-clock"></use>
+                        </svg>
+                    </div>
+                    <span class="metric-type">LATEST PACKET</span>
+                </div>
+                <div class="metric-card-content">
+                    <h3>Recent Reading</h3>
+                    <div class="metric-reading">
+                        <h2 style="font-size: 20px;">
+                            {% if latest_reading %}
+                                {{ latest_reading.temperature }}°C · pH {{ latest_reading.ph }}
+                            {% else %}
+                                --
+                            {% endif %}
+                        </h2>
+                    </div>
+                    <p class="metric-status {% if latest_reading and latest_reading.status == 'Optimal' %}status-optimal{% elif latest_reading and latest_reading.status == 'Warning' %}status-warning{% else %}status-critical{% endif %}">
+                        {{ latest_reading.status if latest_reading else "No telemetry yet" }}
+                    </p>
+                </div>
+                <div class="metric-card-footer">
+                    <span class="metric-footer-dot"></span>
+                    <span>WQI Score: {{ latest_reading.wqi_score if latest_reading else "--" }}%</span>
+                </div>
+            </article>
+
+        </div>
+    </section>
+
+    <!-- ML DIAGNOSTICS & STATUS DISTRIBUTION -->
+    <section class="dashboard-grid admin-dashboard-grid" aria-label="ML and Gateway Diagnostics" style="margin-bottom: 24px;">
+
+        <!-- ML CLASSIFICATION DISTRIBUTION -->
+        <article class="panel dashboard-panel">
+            <div class="panel-heading">
+                <div class="panel-heading-icon users-heading-icon">
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-chart"></use>
+                    </svg>
+                </div>
+                <div>
+                    <h2>ML Classification Distribution</h2>
+                    <p>Historical proportion of water quality classifications evaluated by the DecisionTree model.</p>
+                </div>
+            </div>
+
+            <div style="padding: 16px 20px;">
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <!-- Optimal -->
+                    <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; margin-bottom: 6px;">
+                            <span style="color: #16a34a; display: flex; align-items: center; gap: 6px;">
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #16a34a; display: inline-block;"></span>
+                                Optimal Quality (Safe)
+                            </span>
+                            <span>{{ optimal_count }} ({{ optimal_pct }}%)</span>
+                        </div>
+                        <div style="height: 10px; width: 100%; background: #eef3f0; border-radius: 5px; overflow: hidden;">
+                            <div style="width: {{ optimal_pct }}%; height: 100%; background: #16a34a; border-radius: 5px; transition: width 0.5s ease;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Warning -->
+                    <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; margin-bottom: 6px;">
+                            <span style="color: #d97706; display: flex; align-items: center; gap: 6px;">
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #d97706; display: inline-block;"></span>
+                                Warning Condition (Attention)
+                            </span>
+                            <span>{{ warning_count }} ({{ warning_pct }}%)</span>
+                        </div>
+                        <div style="height: 10px; width: 100%; background: #eef3f0; border-radius: 5px; overflow: hidden;">
+                            <div style="width: {{ warning_pct }}%; height: 100%; background: #d97706; border-radius: 5px; transition: width 0.5s ease;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Critical -->
+                    <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; margin-bottom: 6px;">
+                            <span style="color: #dc2626; display: flex; align-items: center; gap: 6px;">
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #dc2626; display: inline-block;"></span>
+                                Critical Condition (Hazard)
+                            </span>
+                            <span>{{ critical_count }} ({{ critical_pct }}%)</span>
+                        </div>
+                        <div style="height: 10px; width: 100%; background: #eef3f0; border-radius: 5px; overflow: hidden;">
+                            <div style="width: {{ critical_pct }}%; height: 100%; background: #dc2626; border-radius: 5px; transition: width 0.5s ease;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px; padding: 12px; background: #f8faf9; border-radius: 8px; border: 1px solid #e2ece6; font-size: 12px; color: #475a4e;">
+                    <strong>Model Parameters:</strong> Features: <code>['Water Temperature (°C)', 'pH']</code> &bull; Optimal Range: <code>28.0–32.0 °C</code>, <code>7.50–8.50 pH</code>.
+                </div>
+            </div>
+
+            <div class="panel-card-footer">
+                <span class="metric-footer-dot"></span>
+                <span>Trained scikit-learn DecisionTreeClassifier analytics</span>
+            </div>
+        </article>
+
+        <!-- HARDWARE GATEWAY & API SPECS -->
+        <article class="panel dashboard-panel">
+            <div class="panel-heading">
+                <div class="panel-heading-icon" style="background: #e0f2fe; color: #0284c7;">
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-settings"></use>
+                    </svg>
+                </div>
+                <div>
+                    <h2>Hardware Gateway Specifications</h2>
+                    <p>Microcontroller communication protocols and API authentication specs.</p>
+                </div>
+            </div>
+
+            <div style="padding: 16px 20px; display: flex; flex-direction: column; gap: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #eef2f0;">
+                    <span style="font-weight: 600; font-size: 13px; color: #374151;">Ingestion Endpoint</span>
+                    <code style="background: #eef2f0; padding: 3px 8px; border-radius: 5px; font-size: 12px;">POST /api/readings</code>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #eef2f0;">
+                    <span style="font-weight: 600; font-size: 13px; color: #374151;">Payload Schema (JSON)</span>
+                    <code style="background: #eef2f0; padding: 3px 8px; border-radius: 5px; font-size: 12px;">{"temperature": 29.5, "ph": 8.0}</code>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #eef2f0;">
+                    <span style="font-weight: 600; font-size: 13px; color: #374151;">Hardware Auth</span>
+                    <span class="detail-badge active">API Key / Bearer Secret</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #eef2f0;">
+                    <span style="font-weight: 600; font-size: 13px; color: #374151;">Automated Alert Dispatch</span>
+                    <span class="detail-badge active">ntfy.sh Daemon Worker</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 600; font-size: 13px; color: #374151;">Push Dispatch Threshold</span>
+                    <span style="font-weight: 700; font-size: 12px; color: #b45309;">Warning &amp; Critical Breaches</span>
+                </div>
+            </div>
+
+            <div class="panel-card-footer">
+                <span class="metric-footer-dot"></span>
+                <span>ESP32 / Arduino / IoT Microcontroller Integration</span>
+            </div>
+        </article>
+
+    </section>
+
+    <!-- LIVE TELEMETRY TABLE -->
+    <section class="dashboard-section" aria-labelledby="telemetry-table-title">
+        <div class="section-heading-row">
+            <div>
+                <span class="section-eyebrow">SENSOR RECORDS</span>
+                <h2 id="telemetry-table-title">Recent Ingested Telemetry (Latest {{ recent_readings|length }})</h2>
+            </div>
+            <span class="section-count" id="telemetry-count"><strong>{{ recent_readings|length }}</strong> records</span>
+        </div>
+
+        <article class="panel dashboard-panel admin-user-panel">
+            <div class="panel-heading">
+                <div class="panel-heading-icon users-heading-icon">
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-monitor"></use>
+                    </svg>
+                </div>
+                <div>
+                    <h2>Ingested Sensor Measurements</h2>
+                    <p>Real-time telemetry stream classified by the Machine Learning engine.</p>
+                </div>
+            </div>
+
+            <!-- SEARCH AND FILTER CONTROLS -->
+            <div class="admin-table-controls">
+                <div class="admin-search-wrap">
+                    <svg class="ui-icon admin-search-icon" aria-hidden="true">
+                        <use href="#icon-monitor"></use>
+                    </svg>
+                    <input
+                        id="telemetry-search"
+                        class="admin-search-input"
+                        type="search"
+                        placeholder="Filter by date or status..."
+                        aria-label="Search telemetry">
+                </div>
+
+                <div class="admin-filter-group">
+                    <select id="telemetry-status-filter" class="admin-filter-select" aria-label="Filter by ML status">
+                        <option value="all" selected>All ML Statuses</option>
+                        <option value="optimal">Optimal</option>
+                        <option value="warning">Warning</option>
+                        <option value="critical">Critical</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- TABLE -->
+            <div class="table-wrap admin-table-wrap">
+                <table class="uniform-table admin-table" id="telemetry-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Recorded Timestamp</th>
+                            <th scope="col">Water Temp (°C)</th>
+                            <th scope="col">pH Level</th>
+                            <th scope="col">Overall ML Status</th>
+                            <th scope="col">Parameter Status</th>
+                            <th scope="col">WQI Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in recent_readings %}
+                        <tr data-telemetry-row data-status="{{ r.status|lower }}" data-date="{{ r.recorded_at }}">
+                            <td>
+                                <strong>{{ r.recorded_at }}</strong>
+                            </td>
+                            <td>
+                                <span style="font-weight: 700; color: #2f6fbd;">{{ r.temperature }} °C</span>
+                            </td>
+                            <td>
+                                <span style="font-weight: 700; color: #16a34a;">{{ r.ph }}</span>
+                            </td>
+                            <td>
+                                <span class="detail-badge {{ r.status|lower }}">
+                                    {{ r.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                    <span class="metric-status status-{{ (r.temperature_status or 'optimal')|lower }}" style="padding: 3px 7px; font-size: 10px;">
+                                        Temp: {{ r.temperature_status or 'Optimal' }}
+                                    </span>
+                                    <span class="metric-status status-{{ (r.ph_status or 'optimal')|lower }}" style="padding: 3px 7px; font-size: 10px;">
+                                        pH: {{ r.ph_status or 'Optimal' }}
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                <strong style="font-size: 13px;">{{ r.wqi_score }}%</strong>
+                                <small style="display: block; color: #6b7280; font-size: 10px;">{{ r.wqi_status }}</small>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td class="admin-empty" colspan="6">
+                                No sensor readings recorded yet. Connect a sensor or use "Ingest Test Reading".
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        <tr id="telemetry-filter-empty" hidden>
+                            <td class="admin-empty" colspan="6">
+                                No telemetry matches your filter criteria.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="panel-card-footer">
+                <span class="metric-footer-dot"></span>
+                <span>Telemetry data synchronized directly with Machine Learning models</span>
+            </div>
+        </article>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="dashboard-footer">
+        <span>
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-shrimp"></use>
+            </svg>
+            ShrimpGuard
+        </span>
+        <span>Administration Console &bull; Security &amp; Operations</span>
+    </footer>
+
+</main>
+
+</div>
+
+<!-- SIMULATE TELEMETRY DIALOG -->
+<dialog class="admin-user-dialog" id="simulate-dialog" aria-labelledby="simulate-title">
+    <div class="admin-user-dialog-heading">
+        <div class="admin-modal-title-group">
+            <span class="admin-modal-icon-badge edit" aria-hidden="true">
+                <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 5v14M5 12h14"/>
+                </svg>
+            </span>
+            <div class="admin-modal-heading-text">
+                <h2 id="simulate-title">Ingest Test Telemetry</h2>
+                <p class="admin-modal-subtitle">
+                    Send test sensor readings to verify ML classification and automated alert triggers.
+                </p>
+            </div>
+        </div>
+
+        <button class="admin-dialog-close" type="button" data-close-dialog="simulate-dialog" aria-label="Close dialog">
+            <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m18 6-12 12M6 6l12 12"/>
+            </svg>
+        </button>
+    </div>
+
+    <form class="admin-user-form" method="post" action="{{ url_for('simulate_admin_telemetry') }}">
+        <input type="hidden" name="csrf_token" value="{{ admin_csrf_token }}">
+
+        <div class="admin-form-section">
+            <div class="admin-form-field">
+                <label for="sim-temp">Water Temperature (°C) *</label>
+                <input id="sim-temp" name="temperature" type="number" step="0.1" min="0" max="50" placeholder="e.g. 29.5" required>
+                <small>Optimal range: 28.0–32.0 °C. Warning below 28°C or above 32°C. Critical below 25°C or above 33.5°C.</small>
+            </div>
+
+            <div class="admin-form-field" style="margin-top: 14px;">
+                <label for="sim-ph">pH Level *</label>
+                <input id="sim-ph" name="ph" type="number" step="0.01" min="0" max="14" placeholder="e.g. 8.10" required>
+                <small>Optimal range: 7.50–8.50. Warning outside 7.5–8.5. Critical below 6.50 or above 9.00.</small>
+            </div>
+        </div>
+
+        <div class="admin-user-form-actions">
+            <button class="admin-user-cancel" type="button" data-close-dialog="simulate-dialog">Cancel</button>
+            <button class="admin-user-submit" type="submit">Ingest &amp; Classify Telemetry</button>
+        </div>
+    </form>
+</dialog>
+
+<script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+<script src="{{ url_for('static', filename='js/adminlogout.js') }}"></script>
+<script>
+    function updateDeviceTime() {
+        const timeEl = document.getElementById("time");
+        if (timeEl) {
+            timeEl.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        }
+    }
+    updateDeviceTime();
+    setInterval(updateDeviceTime, 1000);
+
+    // Modal control
+    const simModal = document.getElementById("simulate-dialog");
+    const openSimBtn = document.getElementById("open-simulate-modal");
+    if (openSimBtn && simModal) {
+        openSimBtn.addEventListener("click", () => {
+            simModal.showModal();
+        });
+    }
+
+    document.querySelectorAll("[data-close-dialog]").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const d = document.getElementById(btn.dataset.closeDialog);
+            if (d && d.open) d.close();
+        });
+    });
+
+    // Client-side filtering
+    const searchInput = document.getElementById("telemetry-search");
+    const statusSelect = document.getElementById("telemetry-status-filter");
+    const rows = Array.from(document.querySelectorAll("[data-telemetry-row]"));
+    const emptyRow = document.getElementById("telemetry-filter-empty");
+    const countEl = document.getElementById("telemetry-count");
+
+    function filterTelemetry() {
+        const q = (searchInput ? searchInput.value : "").trim().toLowerCase();
+        const stat = statusSelect ? statusSelect.value.toLowerCase() : "all";
+        let visibleCount = 0;
+
+        rows.forEach(r => {
+            const dateText = (r.dataset.date || "").toLowerCase();
+            const statusText = (r.dataset.status || "").toLowerCase();
+
+            const matchesQuery = !q || dateText.includes(q) || statusText.includes(q);
+            const matchesStatus = stat === "all" || statusText === stat;
+
+            const visible = matchesQuery && matchesStatus;
+            r.hidden = !visible;
+            if (visible) visibleCount++;
+        });
+
+        if (emptyRow) {
+            emptyRow.hidden = rows.length === 0 || visibleCount > 0;
+        }
+        if (countEl) {
+            countEl.innerHTML = `<strong>${visibleCount}</strong> record${visibleCount === 1 ? "" : "s"}`;
+        }
+    }
+
+    if (searchInput) searchInput.addEventListener("input", filterTelemetry);
+    if (statusSelect) statusSelect.addEventListener("change", filterTelemetry);
+</script>
+
+</body>
+</html>

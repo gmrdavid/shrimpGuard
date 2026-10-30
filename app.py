@@ -1,3 +1,4 @@
+import csv
 import hmac
 import io
 import math
@@ -12,7 +13,7 @@ from xml.sax.saxutils import escape
 
 from flask import Flask, flash, has_request_context, jsonify, redirect, render_template, request, send_file, session, url_for
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import insert, select, text
+from sqlalchemy import func, insert, select, text
 from sqlalchemy.engine import URL
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -1059,6 +1060,7 @@ def edit_user():
     email = request.form.get("email", "").strip().lower()
     role = request.form.get("role", "").strip()
     status = request.form.get("status", "").strip()
+    new_password = request.form.get("new_password", "").strip()
 
     if not user_name or len(user_name) > 80:
         flash("Enter a name between 1 and 80 characters.", "error")
@@ -1068,6 +1070,8 @@ def edit_user():
         flash("Choose Admin or Client as the role.", "error")
     elif status not in {"Active", "Inactive"}:
         flash("Choose Active or Inactive as the status.", "error")
+    elif new_password and len(new_password) < 8:
+        flash("New password must contain at least 8 characters.", "error")
     elif User.query.filter(User.email != current_email, User.email == email).first():
         flash("An account with that email already exists.", "error")
     elif User.query.filter(User.email != current_email, User.user_name == user_name).first():
@@ -1079,6 +1083,8 @@ def edit_user():
         user.email = email
         user.role = role
         user.status = status
+        if new_password:
+            user.set_password(new_password)
         try:
             db.session.commit()
         except SQLAlchemyError:
@@ -1088,13 +1094,16 @@ def edit_user():
             if session.get("user_id") == current_email:
                 session["user_id"] = email
             session["admin_csrf_token"] = secrets.token_urlsafe(32)
+            action_desc = f"Updated account {user_name} ({email}) - Role: {role}, Status: {status}."
+            if new_password:
+                action_desc += " [Password reset by Admin]"
             log_activity(
-                action="USER_EDIT",
-                details=f"Updated account {user_name} ({email}) - Role: {role}, Status: {status}.",
+                action="USER_EDIT" if not new_password else "PASSWORD_RESET",
+                details=action_desc,
                 user_email=session.get("user_id"),
                 role="Admin",
             )
-            flash("User updated successfully.", "success")
+            flash("User updated successfully." if not new_password else "User account and password updated successfully.", "success")
 
     return redirect(url_for("admin_dashboard"))
 
@@ -1178,6 +1187,277 @@ def admin_home():
         recent_activities=recent_activities,
         system_online=system_online,
     )
+
+
+@app.route("/admin/telemetry")
+@role_required("Admin")
+def admin_telemetry():
+    try:
+        readings_query = db.session.execute(
+            select(sensor_readings).order_by(sensor_readings.c.date.desc())
+        ).mappings().all()
+
+        total_readings = len(readings_query)
+        recent_serialized = [
+            serialize_sensor_reading(r) for r in readings_query[:100]
+        ]
+        latest_reading = recent_serialized[0] if recent_serialized else None
+
+        # Check if gateway is online (reading within last 2 hours or readings exist)
+        gateway_online = False
+        if readings_query:
+            try:
+                latest_dt = parse_reading_datetime(readings_query[0])
+                if datetime.now() - latest_dt < timedelta(hours=2):
+                    gateway_online = True
+            except Exception:
+                gateway_online = total_readings > 0
+        elif total_readings > 0:
+            gateway_online = True
+
+        # ML Classification Distribution across evaluated readings
+        optimal_count = sum(1 for r in recent_serialized if r["status"] == "Optimal")
+        warning_count = sum(1 for r in recent_serialized if r["status"] == "Warning")
+        critical_count = sum(1 for r in recent_serialized if r["status"] == "Critical")
+        total_eval = len(recent_serialized) or 1
+
+        optimal_pct = round((optimal_count / total_eval) * 100, 1)
+        warning_pct = round((warning_count / total_eval) * 100, 1)
+        critical_pct = round((critical_count / total_eval) * 100, 1)
+
+    except SQLAlchemyError:
+        db.session.rollback()
+        total_readings = 0
+        recent_serialized = []
+        latest_reading = None
+        gateway_online = False
+        optimal_count = warning_count = critical_count = 0
+        optimal_pct = warning_pct = critical_pct = 0.0
+
+    return render_template(
+        "admin_telemetry.html",
+        gateway_online=gateway_online,
+        total_readings=total_readings,
+        latest_reading=latest_reading,
+        optimal_count=optimal_count,
+        optimal_pct=optimal_pct,
+        warning_count=warning_count,
+        warning_pct=warning_pct,
+        critical_count=critical_count,
+        critical_pct=critical_pct,
+        recent_readings=recent_serialized,
+        admin_csrf_token=session.setdefault("admin_csrf_token", secrets.token_urlsafe(32)),
+    )
+
+
+@app.route("/admin/telemetry/export")
+@role_required("Admin")
+def admin_telemetry_export():
+    try:
+        readings = db.session.execute(
+            select(sensor_readings).order_by(sensor_readings.c.date.desc())
+        ).mappings().all()
+
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow([
+            "Recorded Timestamp",
+            "Water Temperature (C)",
+            "pH Level",
+            "Overall ML Status",
+            "Temperature ML Status",
+            "pH ML Status",
+            "WQI Score (%)",
+            "WQI Classification",
+        ])
+
+        for r in readings:
+            s = serialize_sensor_reading(r)
+            writer.writerow([
+                s.get("recorded_at", ""),
+                s.get("temperature", ""),
+                s.get("ph", ""),
+                s.get("status", ""),
+                s.get("temperature_status", ""),
+                s.get("ph_status", ""),
+                s.get("wqi_score", ""),
+                s.get("wqi_status", ""),
+            ])
+
+        output.seek(0)
+        filename = f"shrimpguard_telemetry_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        return send_file(
+            io.BytesIO(output.getvalue().encode("utf-8")),
+            mimetype="text/csv",
+            as_attachment=True,
+            download_name=filename,
+        )
+    except SQLAlchemyError:
+        db.session.rollback()
+        flash("Unable to export telemetry records.", "error")
+        return redirect(url_for("admin_telemetry"))
+
+
+@app.route("/admin/telemetry/simulate", methods=["POST"])
+@role_required("Admin")
+def simulate_admin_telemetry():
+    expected_token = session.get("admin_csrf_token", "")
+    submitted_token = request.form.get("csrf_token", "")
+    if not expected_token or not hmac.compare_digest(expected_token, submitted_token):
+        flash("Your request expired. Please try again.", "error")
+        return redirect(url_for("admin_telemetry"))
+
+    temp_raw = request.form.get("temperature", "").strip()
+    ph_raw = request.form.get("ph", "").strip()
+
+    try:
+        temp = float(temp_raw)
+        ph = float(ph_raw)
+    except ValueError:
+        flash("Please enter valid numeric values for temperature and pH.", "error")
+        return redirect(url_for("admin_telemetry"))
+
+    if not (0 <= temp <= 50) or not (0 <= ph <= 14):
+        flash("Values are out of plausible physical range (Temp: 0–50°C, pH: 0–14).", "error")
+        return redirect(url_for("admin_telemetry"))
+
+    try:
+        analysis = calculate_ml_water_quality_analysis(temp, ph)
+        overall_status = analysis["overall_status"]
+    except Exception:
+        overall_status = "Optimal"
+
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    try:
+        stmt = insert(sensor_readings).values(
+            temperature=temp,
+            ph_level=ph,
+            date=now_str,
+            status=overall_status,
+        )
+        db.session.execute(stmt)
+        db.session.commit()
+
+        log_activity(
+            action="TELEMETRY_INGEST",
+            details=f"Admin ingested test telemetry: Temp={temp}°C, pH={ph}, ML Status={overall_status}.",
+            user_email=session.get("user_id"),
+            role="Admin",
+        )
+        flash(f"Test telemetry ingested: {temp}°C, pH {ph} classified as {overall_status}.", "success")
+    except SQLAlchemyError:
+        db.session.rollback()
+        flash("Failed to record simulated telemetry.", "error")
+
+    return redirect(url_for("admin_telemetry"))
+
+
+@app.route("/admin/logs")
+@role_required("Admin")
+def admin_logs():
+    try:
+        logs = ActivityLog.query.order_by(ActivityLog.timestamp.desc()).all()
+        total_logs = len(logs)
+        auth_events = sum(1 for l in logs if l.action in ("LOGIN", "LOGOUT", "SIGNUP"))
+        user_mgmt_events = sum(1 for l in logs if l.action in ("USER_CREATE", "USER_EDIT", "USER_DELETE", "PASSWORD_RESET"))
+    except SQLAlchemyError:
+        db.session.rollback()
+        logs = []
+        total_logs = 0
+        auth_events = 0
+        user_mgmt_events = 0
+
+    return render_template(
+        "admin_logs.html",
+        logs=logs,
+        total_logs=total_logs,
+        auth_events=auth_events,
+        user_mgmt_events=user_mgmt_events,
+        admin_csrf_token=session.setdefault("admin_csrf_token", secrets.token_urlsafe(32)),
+    )
+
+
+@app.route("/admin/logs/export")
+@role_required("Admin")
+def admin_logs_export():
+    try:
+        logs = ActivityLog.query.order_by(ActivityLog.timestamp.desc()).all()
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow([
+            "Log ID",
+            "Timestamp",
+            "User Name",
+            "User Email",
+            "Role",
+            "Action",
+            "Details",
+            "IP Address",
+        ])
+
+        for l in logs:
+            ts = l.timestamp.strftime("%Y-%m-%d %H:%M:%S") if l.timestamp else ""
+            writer.writerow([
+                l.id,
+                ts,
+                l.user_name or "System",
+                l.user_email or "system@shrimpguard",
+                l.role or "System",
+                l.action,
+                l.details or "",
+                l.ip_address or "127.0.0.1",
+            ])
+
+        output.seek(0)
+        filename = f"shrimpguard_audit_logs_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        return send_file(
+            io.BytesIO(output.getvalue().encode("utf-8")),
+            mimetype="text/csv",
+            as_attachment=True,
+            download_name=filename,
+        )
+    except SQLAlchemyError:
+        db.session.rollback()
+        flash("Unable to export audit log records.", "error")
+        return redirect(url_for("admin_logs"))
+
+
+@app.route("/admin/logs/clear", methods=["POST"])
+@role_required("Admin")
+def clear_admin_logs():
+    expected_token = session.get("admin_csrf_token", "")
+    submitted_token = request.form.get("csrf_token", "")
+    if not expected_token or not hmac.compare_digest(expected_token, submitted_token):
+        flash("Your request expired. Please try again.", "error")
+        return redirect(url_for("admin_logs"))
+
+    purge_range = request.form.get("range", "30").strip()
+    try:
+        if purge_range == "all":
+            deleted_count = db.session.query(ActivityLog).delete()
+            details_msg = f"Pruned all {deleted_count} audit log records."
+        else:
+            days = int(purge_range)
+            cutoff = datetime.now() - timedelta(days=days)
+            deleted_count = db.session.query(ActivityLog).filter(ActivityLog.timestamp < cutoff).delete()
+            details_msg = f"Pruned {deleted_count} audit logs older than {days} days."
+
+        db.session.commit()
+
+        # Log the purge event
+        log_activity(
+            action="LOG_PURGE",
+            details=details_msg,
+            user_email=session.get("user_id"),
+            role="Admin",
+        )
+        flash(f"Log maintenance complete. {details_msg}", "success")
+    except (ValueError, SQLAlchemyError) as exc:
+        db.session.rollback()
+        flash("Unable to purge audit logs. Please try again.", "error")
+
+    return redirect(url_for("admin_logs"))
 
 
 

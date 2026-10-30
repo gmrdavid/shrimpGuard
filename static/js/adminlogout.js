@@ -1,4 +1,7 @@
-    document.addEventListener("DOMContentLoaded", function () {
+(() => {
+    "use strict";
+
+    function initLogout() {
         const logoutForm = document.getElementById("logoutForm");
         const logoutButton = document.getElementById("logoutButton");
         const logoutModal = document.getElementById("logoutModal");
@@ -59,24 +62,34 @@
                 return;
             }
 
-            const focusableButtons = [
-                cancelLogout,
-                confirmLogout
-            ];
+            const focusableElements = logoutModal.querySelectorAll(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
 
-            const firstButton = focusableButtons[0];
-            const lastButton = focusableButtons[1];
+            if (focusableElements.length === 0) {
+                return;
+            }
 
-            if (event.shiftKey && document.activeElement === firstButton) {
-                event.preventDefault();
-                lastButton.focus();
-            } else if (
-                !event.shiftKey &&
-                document.activeElement === lastButton
-            ) {
-                event.preventDefault();
-                firstButton.focus();
+            const firstElement = focusableElements[0];
+            const lastElement = focusableElements[focusableElements.length - 1];
+
+            if (event.shiftKey) {
+                if (document.activeElement === firstElement) {
+                    event.preventDefault();
+                    lastElement.focus();
+                }
+            } else {
+                if (document.activeElement === lastElement) {
+                    event.preventDefault();
+                    firstElement.focus();
+                }
             }
         });
-    });
+    }
 
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initLogout);
+    } else {
+        initLogout();
+    }
+})();
