@@ -351,26 +351,81 @@ function initChartEvents() {
 }
 
 function updateRecommendations(reading, recommendation) {
-    const recommendationsList = document.getElementById("monitoring-recommendations");
+    const container = document.getElementById("monitoring-recommendations");
+    if (!container) return;
 
     if (!reading) {
-        recommendationsList.innerHTML =
-            "<li>No reading available yet. Submit dashboard readings to receive AI recommendations.</li>";
+        container.innerHTML = `
+            <div class="rec-empty-box">
+                <p>No reading available yet. Submit dashboard readings to receive AI recommendations for <em>Penaeus vannamei</em>.</p>
+            </div>
+        `;
         return;
     }
 
     if (!recommendation) {
-        recommendationsList.textContent = "";
-        const item = document.createElement("li");
-        item.textContent = "AI recommendations are temporarily unavailable.";
-        recommendationsList.appendChild(item);
+        container.innerHTML = `
+            <div class="rec-error-box">
+                <p>AI recommendations are temporarily unavailable. Please verify your connection.</p>
+            </div>
+        `;
         return;
     }
 
-    recommendationsList.textContent = "";
-    const item = document.createElement("li");
-    item.textContent = `${recommendation.classification}: ${recommendation.recommendation}`;
-    recommendationsList.appendChild(item);
+    const classification = recommendation.classification || "Assessment";
+    const badgeClass = classification.toLowerCase();
+    const recommendationText = recommendation.recommendation || "Maintain standard pond monitoring protocols.";
+    const provider = recommendation.source || "OpenAI API";
+    const species = recommendation.species || "Penaeus vannamei (Pacific White Shrimp)";
+
+    let solutionsList = [];
+    if (Array.isArray(recommendation.actionable_solutions) && recommendation.actionable_solutions.length > 0) {
+        solutionsList = recommendation.actionable_solutions;
+    } else if (recommendation.actionable_solution) {
+        solutionsList = [recommendation.actionable_solution];
+    }
+
+    let solutionsHtml = "";
+    if (solutionsList.length > 0) {
+        solutionsHtml = `
+            <div class="rec-action-panel">
+                <div class="rec-action-header">
+                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
+                    <span>ACTIONABLE SOLUTIONS FOR PENAEUS VANNAMEI</span>
+                </div>
+                <ul class="rec-action-items">
+                    ${solutionsList.map((step) => `
+                        <li class="rec-action-item">
+                            <span class="action-check-badge">✓</span>
+                            <span class="action-step-text">${step}</span>
+                        </li>
+                    `).join("")}
+                </ul>
+            </div>
+        `;
+    }
+
+    container.innerHTML = `
+        <div class="rec-card-container">
+            <div class="rec-header-row">
+                <div class="rec-badge-wrap">
+                    <span class="table-status ${badgeClass}">${classification} Status</span>
+                    <span class="rec-species-chip">Target: <em>${species}</em></span>
+                </div>
+                <span class="rec-source-badge">${provider}</span>
+            </div>
+
+            <div class="rec-content-section">
+                <h4 class="rec-content-title">
+                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-lightbulb"></use></svg>
+                    Biological Assessment &amp; Recommendation
+                </h4>
+                <p class="rec-text-body">${recommendationText}</p>
+            </div>
+
+            ${solutionsHtml}
+        </div>
+    `;
 }
 
 async function loadRecommendation(reading) {

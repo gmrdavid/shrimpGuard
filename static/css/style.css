@@ -16456,3 +16456,410 @@ nav a {
 .historical-page .status-menu-dot.dot-critical {
     background: #dc2626;
 }
+
+/* =========================================
+   DASHBOARD WATER QUALITY INDEX & EQUATION LAYOUT
+   ========================================= */
+
+.dashboard-page .wqi-content-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 24px;
+    align-items: center;
+    margin-top: 14px;
+}
+
+.dashboard-page .wqi-summary-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 10px 16px 10px 0;
+    border-right: 1px solid #e5eee8;
+}
+
+.dashboard-page .dashboard-wqi-circle {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 120px;
+    height: 120px;
+    border: 8px solid #cce8d7;
+    border-radius: 50%;
+    background: #f4faf6;
+    box-shadow: inset 0 0 0 1px #e0f0e6, 0 4px 16px rgba(27, 81, 69, 0.08);
+    flex-shrink: 0;
+}
+
+.dashboard-page .dashboard-wqi-circle span#wqi-value {
+    color: #143d34;
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.5px;
+}
+
+.dashboard-page .dashboard-wqi-circle .wqi-circle-label {
+    color: #4a775f;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    margin-top: 3px;
+}
+
+.dashboard-page .wqi-status-heading {
+    margin: 12px 0 0;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+
+.dashboard-page .wqi-status-heading.status-optimal {
+    color: #16a34a;
+}
+
+.dashboard-page .wqi-status-heading.status-warning {
+    color: #d97706;
+}
+
+.dashboard-page .wqi-status-heading.status-critical {
+    color: #dc2626;
+}
+
+.dashboard-page .wqi-description {
+    max-width: 220px;
+    margin: 6px 0 0;
+    color: #6b8274;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.dashboard-page .wqi-details-col {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+}
+
+/* Formula Card */
+.dashboard-page .wqi-formula-card {
+    background: #f7faf8;
+    border: 1px solid #dce9e1;
+    border-radius: 12px;
+    padding: 14px 16px;
+}
+
+.dashboard-page .wqi-formula-heading {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11px;
+    font-weight: 750;
+    color: #1b5145;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.dashboard-page .wqi-formula-heading .ui-icon {
+    width: 14px;
+    height: 14px;
+    color: #24744d;
+}
+
+.dashboard-page .wqi-equation-display {
+    background: #ffffff;
+    border: 1px solid #d0e4d7;
+    border-left: 4px solid #1b5145;
+    border-radius: 8px;
+    padding: 9px 13px;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 3px rgba(20, 61, 52, 0.04);
+}
+
+.dashboard-page .wqi-formula-code {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #143d34;
+    line-height: 1.4;
+    display: block;
+}
+
+.dashboard-page .wqi-formula-explanation {
+    font-size: 11px;
+    color: #5a7063;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Metrics Grid */
+.dashboard-page .wqi-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.dashboard-page .wqi-metric-card {
+    background: #ffffff;
+    border: 1px solid #dce9e1;
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 6px;
+    box-shadow: 0 1px 4px rgba(20, 61, 52, 0.04);
+    transition: transform 120ms ease, border-color 120ms ease;
+}
+
+.dashboard-page .wqi-metric-card:hover {
+    border-color: #24744d;
+    transform: translateY(-1px);
+}
+
+.dashboard-page .wqi-metric-label {
+    font-size: 9.5px;
+    font-weight: 750;
+    color: #6b8274;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.3;
+}
+
+.dashboard-page .wqi-metric-value-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.dashboard-page .wqi-metric-percent {
+    font-size: 22px;
+    font-weight: 800;
+    color: #143d34;
+    line-height: 1;
+    letter-spacing: -0.02em;
+}
+
+.dashboard-page .wqi-metric-badge {
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
+.dashboard-page .wqi-metric-badge.badge-normal,
+.dashboard-page .wqi-metric-badge.badge-optimal {
+    background: #eaf6ef;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.dashboard-page .wqi-metric-badge.badge-warning {
+    background: #fffbeb;
+    color: #b45309;
+    border: 1px solid #fde68a;
+}
+
+.dashboard-page .wqi-metric-badge.badge-critical {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+.dashboard-page .wqi-metric-detail {
+    font-size: 10px;
+    color: #6e8377;
+    line-height: 1.4;
+    margin: 0;
+}
+
+@media (max-width: 900px) {
+    .dashboard-page .wqi-content-layout {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .dashboard-page .wqi-summary-col {
+        border-right: none;
+        border-bottom: 1px solid #e5eee8;
+        padding: 0 0 16px 0;
+    }
+
+    .dashboard-page .wqi-metrics-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =========================================
+   MONITORING OPENAI RECOMMENDATIONS & ACTIONABLE SOLUTIONS
+   ========================================= */
+
+.monitoring-page .monitoring-recommendations-panel {
+    margin-top: 24px;
+    padding: 22px;
+}
+
+.monitoring-page .monitoring-species-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    background: #eaf5ee;
+    border: 1px solid #c2e2ce;
+    color: #1b5145;
+    font-size: 11px;
+    font-weight: 750;
+    font-style: italic;
+}
+
+.monitoring-page .species-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #16a34a;
+}
+
+.monitoring-page .rec-card-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin: 14px 0 6px;
+}
+
+.monitoring-page .rec-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eaf0eb;
+}
+
+.monitoring-page .rec-badge-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.monitoring-page .rec-species-chip {
+    font-size: 11px;
+    font-weight: 650;
+    color: #3f5e4c;
+    background: #f0f7f3;
+    padding: 4px 9px;
+    border-radius: 6px;
+    border: 1px solid #d4e7dc;
+}
+
+.monitoring-page .rec-source-badge {
+    font-size: 10px;
+    font-weight: 750;
+    color: #1b5145;
+    background: #eaf5ee;
+    border: 1px solid #bce1cb;
+    padding: 3px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.02em;
+}
+
+.monitoring-page .rec-content-section {
+    background: #fbfdfb;
+    border: 1px solid #e1ede5;
+    border-radius: 12px;
+    padding: 16px 18px;
+    border-left: 4px solid #24744d;
+}
+
+.monitoring-page .rec-content-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12.5px;
+    font-weight: 800;
+    color: #143d34;
+    margin: 0 0 8px 0;
+}
+
+.monitoring-page .rec-content-title .ui-icon {
+    width: 16px;
+    height: 16px;
+    color: #24744d;
+}
+
+.monitoring-page .rec-text-body {
+    font-size: 12.5px;
+    color: #334d3f;
+    line-height: 1.65;
+    margin: 0;
+}
+
+.monitoring-page .rec-action-panel {
+    background: #f7faf8;
+    border: 1px solid #dce9e1;
+    border-radius: 12px;
+    padding: 16px 18px;
+}
+
+.monitoring-page .rec-action-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11.5px;
+    font-weight: 800;
+    color: #1b5145;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+.monitoring-page .rec-action-header .ui-icon {
+    width: 16px;
+    height: 16px;
+    color: #16a34a;
+}
+
+.monitoring-page .rec-action-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.monitoring-page .rec-action-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 12px;
+    color: #2d4537;
+    line-height: 1.55;
+    background: #ffffff;
+    border: 1px solid #e3ede6;
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.monitoring-page .action-check-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background: #16a34a;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 800;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 1px;
+}

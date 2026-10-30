@@ -775,7 +775,8 @@ function applyFilters() {
     currentFilteredParameters = parameters;
     const hasData = history.length > 0;
     document.getElementById("history-count").textContent = `${history.length} reading${history.length === 1 ? "" : "s"}`;
-    document.getElementById("history-export-button").disabled = sensorHistory.length === 0;
+    const chartExportBtn = document.getElementById("history-export-button");
+    if (chartExportBtn) chartExportBtn.disabled = sensorHistory.length === 0;
     document.getElementById("history-empty").hidden = hasData;
     if (hasData) {
         initHistoricalChartEvents();

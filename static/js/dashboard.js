@@ -90,29 +90,140 @@ function updateStatus(data) {
 
 
 function calculateWQI(data) {
+    const temp = Number(data.temperature);
+    const ph = Number(data.ph);
 
+    // 1. Calculate Overall Water Quality Index Accuracy Score
     let wqi = 100;
-
-    if (data.temperature < 26 || data.temperature > 32) {
-        wqi -= 15;
+    // Temperature: optimal 28–32; warning 25–28; critical <= 25 or > 32
+    if (temp <= 25.0 || temp > 32.0) {
+        wqi -= 25; // Critical penalty
+    } else if (temp < 28.0) {
+        wqi -= 10; // Warning penalty
     }
 
-    if (data.ph < 7.5 || data.ph > 8.5) {
-        wqi -= 20;
+    // pH: optimal 7.50–8.50; warning 6.50–7.49 or 8.51–9.0; critical <= 6.49 or > 9.0
+    if (ph <= 6.49 || ph > 9.0) {
+        wqi -= 25; // Critical penalty
+    } else if (ph < 7.50 || ph > 8.50) {
+        wqi -= 10; // Warning penalty
     }
 
-    document.getElementById("wqi-value").textContent =
-        Math.max(0, wqi);
+    const accuracyScore = Math.max(0, wqi);
 
-    let status = "GOOD";
-
-    if (wqi < 70) {
-        status = "WARNING";
+    // Update Circle Value
+    const wqiValueEl = document.getElementById("wqi-value");
+    if (wqiValueEl) {
+        wqiValueEl.textContent = `${accuracyScore}%`;
     }
 
-    document.getElementById("wqi-status").textContent =
-        status;
+    // Determine status label & theme
+    let statusLabel = "OPTIMAL QUALITY";
+    let statusTheme = "optimal";
+    if (accuracyScore < 70) {
+        statusLabel = "CRITICAL CONDITION";
+        statusTheme = "critical";
+    } else if (accuracyScore < 90) {
+        statusLabel = "WARNING CONDITION";
+        statusTheme = "warning";
+    }
 
+    const wqiStatusEl = document.getElementById("wqi-status");
+    if (wqiStatusEl) {
+        wqiStatusEl.textContent = statusLabel;
+        wqiStatusEl.className = `wqi-status-heading status-${statusTheme}`;
+    }
+
+    // 2. Mathematical Equation for Temperature Normalization Percentage:
+    // Optimal normal range: [28.0 °C, 32.0 °C]
+    // Δ% = (|Boundary - Current| / Current) * 100%
+    const tempMin = 28.0;
+    const tempMax = 32.0;
+    let tempDiffPercent = 0.0;
+    let tempBadgeText = "Normal";
+    let tempBadgeClass = "badge-normal";
+    let tempDetailText = `Current: ${temp.toFixed(1)} °C · Within optimal range (28.0–32.0 °C)`;
+
+    if (temp < tempMin) {
+        const diff = tempMin - temp;
+        tempDiffPercent = (diff / temp) * 100;
+        tempBadgeText = `+${tempDiffPercent.toFixed(1)}% Needed`;
+        tempBadgeClass = "badge-warning";
+        tempDetailText = `Increase by +${diff.toFixed(1)} °C to reach normal 28.0 °C`;
+    } else if (temp > tempMax) {
+        const diff = temp - tempMax;
+        tempDiffPercent = (diff / temp) * 100;
+        tempBadgeText = `-${tempDiffPercent.toFixed(1)}% Needed`;
+        tempBadgeClass = "badge-warning";
+        tempDetailText = `Decrease by -${diff.toFixed(1)} °C to reach normal 32.0 °C`;
+    }
+
+    const tempPercentEl = document.getElementById("temp-norm-percent");
+    if (tempPercentEl) {
+        tempPercentEl.textContent = tempDiffPercent === 0 ? "0.0%" : (temp < tempMin ? `+${tempDiffPercent.toFixed(1)}%` : `-${tempDiffPercent.toFixed(1)}%`);
+    }
+    const tempBadgeEl = document.getElementById("temp-norm-badge");
+    if (tempBadgeEl) {
+        tempBadgeEl.textContent = tempBadgeText;
+        tempBadgeEl.className = `wqi-metric-badge ${tempBadgeClass}`;
+    }
+    const tempDetailEl = document.getElementById("temp-norm-detail");
+    if (tempDetailEl) {
+        tempDetailEl.textContent = tempDetailText;
+    }
+
+    // 3. Mathematical Equation for pH Level Normalization Percentage:
+    // Optimal normal range: [7.50, 8.50]
+    // Δ% = (|Boundary - Current| / Current) * 100%
+    const phMin = 7.50;
+    const phMax = 8.50;
+    let phDiffPercent = 0.0;
+    let phBadgeText = "Normal";
+    let phBadgeClass = "badge-normal";
+    let phDetailText = `Current: ${ph.toFixed(2)} · Within optimal range (7.50–8.50 pH)`;
+
+    if (ph < phMin) {
+        const diff = phMin - ph;
+        phDiffPercent = (diff / ph) * 100;
+        phBadgeText = `+${phDiffPercent.toFixed(1)}% Needed`;
+        phBadgeClass = "badge-warning";
+        phDetailText = `Increase by +${diff.toFixed(2)} to reach normal 7.50 pH`;
+    } else if (ph > phMax) {
+        const diff = ph - phMax;
+        phDiffPercent = (diff / ph) * 100;
+        phBadgeText = `-${phDiffPercent.toFixed(1)}% Needed`;
+        phBadgeClass = "badge-warning";
+        phDetailText = `Decrease by -${diff.toFixed(2)} to reach normal 8.50 pH`;
+    }
+
+    const phPercentEl = document.getElementById("ph-norm-percent");
+    if (phPercentEl) {
+        phPercentEl.textContent = phDiffPercent === 0 ? "0.0%" : (ph < phMin ? `+${phDiffPercent.toFixed(1)}%` : `-${phDiffPercent.toFixed(1)}%`);
+    }
+    const phBadgeEl = document.getElementById("ph-norm-badge");
+    if (phBadgeEl) {
+        phBadgeEl.textContent = phBadgeText;
+        phBadgeEl.className = `wqi-metric-badge ${phBadgeClass}`;
+    }
+    const phDetailEl = document.getElementById("ph-norm-detail");
+    if (phDetailEl) {
+        phDetailEl.textContent = phDetailText;
+    }
+
+    // 4. Update Overall Assessment Accuracy Metric Card
+    const accuracyPercentEl = document.getElementById("wqi-accuracy-percent");
+    if (accuracyPercentEl) {
+        accuracyPercentEl.textContent = `${accuracyScore}%`;
+    }
+    const accuracyBadgeEl = document.getElementById("wqi-accuracy-badge");
+    if (accuracyBadgeEl) {
+        accuracyBadgeEl.textContent = statusLabel;
+        accuracyBadgeEl.className = `wqi-metric-badge badge-${statusTheme}`;
+    }
+    const accuracyDetailEl = document.getElementById("wqi-accuracy-detail");
+    if (accuracyDetailEl) {
+        accuracyDetailEl.textContent = `Water Quality Index assessment accuracy rating`;
+    }
 }
 
 

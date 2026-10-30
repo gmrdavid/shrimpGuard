@@ -413,17 +413,81 @@
                         </div>
                     </div>
 
-                    <div class="wqi-content">
+                    <div class="wqi-content-layout">
 
-                        <div class="wqi-circle dashboard-wqi-circle">
-                            <span id="wqi-value">--</span>
+                        <!-- LEFT: WQI ACCURACY CIRCLE & STATUS -->
+                        <div class="wqi-summary-col">
+                            <div class="wqi-circle dashboard-wqi-circle">
+                                <span id="wqi-value">--</span>
+                                <span class="wqi-circle-label">ACCURACY</span>
+                            </div>
+
+                            <h3 id="wqi-status">Awaiting assessment</h3>
+
+                            <p class="wqi-description">
+                                Overall water quality evaluation accuracy and parameter health score.
+                            </p>
                         </div>
 
-                        <h3 id="wqi-status">Awaiting assessment</h3>
+                        <!-- RIGHT: MATHEMATICAL EQUATION & PARAMETER NORMALIZATION CARDS -->
+                        <div class="wqi-details-col">
 
-                        <p class="wqi-description">
-                            Index based on the system's available assessment.
-                        </p>
+                            <!-- MATHEMATICAL NORMALIZATION EQUATION CARD -->
+                            <div class="wqi-formula-card">
+                                <div class="wqi-formula-heading">
+                                    <svg class="ui-icon" aria-hidden="true">
+                                        <use href="#icon-settings"></use>
+                                    </svg>
+                                    <span>PARAMETER NORMALIZATION EQUATION</span>
+                                </div>
+
+                                <div class="wqi-equation-display">
+                                    <span class="wqi-formula-code">
+                                        Percent Needed (%) = (|Target Boundary &minus; Current Reading| &divide; Current Reading) &times; 100%
+                                    </span>
+                                </div>
+
+                                <p class="wqi-formula-explanation">
+                                    Calculates the percentage change required to restore each parameter to optimal shrimp pond range (<strong>Temperature: 28.0&ndash;32.0 &deg;C</strong>, <strong>pH: 7.50&ndash;8.50</strong>). Readings within range require <strong>0.0%</strong> adjustment.
+                                </p>
+                            </div>
+
+                            <!-- PERCENTAGE METRICS GRID -->
+                            <div class="wqi-metrics-grid">
+
+                                <!-- TEMPERATURE PERCENTAGE CARD -->
+                                <div class="wqi-metric-card" id="temp-norm-card">
+                                    <span class="wqi-metric-label">TEMPERATURE NORMALIZATION NEEDED</span>
+                                    <div class="wqi-metric-value-row">
+                                        <span id="temp-norm-percent" class="wqi-metric-percent">0.0%</span>
+                                        <span id="temp-norm-badge" class="wqi-metric-badge badge-normal">Normal</span>
+                                    </div>
+                                    <p id="temp-norm-detail" class="wqi-metric-detail">Optimal range: 28.0&ndash;32.0 &deg;C</p>
+                                </div>
+
+                                <!-- PH LEVEL PERCENTAGE CARD -->
+                                <div class="wqi-metric-card" id="ph-norm-card">
+                                    <span class="wqi-metric-label">PH LEVEL NORMALIZATION NEEDED</span>
+                                    <div class="wqi-metric-value-row">
+                                        <span id="ph-norm-percent" class="wqi-metric-percent">0.0%</span>
+                                        <span id="ph-norm-badge" class="wqi-metric-badge badge-normal">Normal</span>
+                                    </div>
+                                    <p id="ph-norm-detail" class="wqi-metric-detail">Optimal range: 7.50&ndash;8.50 pH</p>
+                                </div>
+
+                                <!-- WQI ACCURACY PERCENTAGE CARD -->
+                                <div class="wqi-metric-card" id="accuracy-card">
+                                    <span class="wqi-metric-label">OVERALL ACCURACY PERCENTAGE</span>
+                                    <div class="wqi-metric-value-row">
+                                        <span id="wqi-accuracy-percent" class="wqi-metric-percent">--</span>
+                                        <span id="wqi-accuracy-badge" class="wqi-metric-badge badge-normal">Assessment</span>
+                                    </div>
+                                    <p id="wqi-accuracy-detail" class="wqi-metric-detail">Water quality assessment accuracy</p>
+                                </div>
+
+                            </div>
+
+                        </div>
 
                     </div>
 
