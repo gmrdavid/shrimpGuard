@@ -102,12 +102,12 @@
                 <span>Prune Logs</span>
             </button>
 
-            <a href="/admin/logs/export" class="dashboard-submit-button" style="text-decoration: none;">
+            <button class="dashboard-submit-button" type="button" id="open-export-modal" style="background: #0284c7; border-color: #0284c7;">
                 <svg class="ui-icon" aria-hidden="true">
                     <use href="#icon-download"></use>
                 </svg>
                 <span>Export Audit CSV</span>
-            </a>
+            </button>
 
             <button
                 id="notification-button"
@@ -535,6 +535,81 @@
         </div>
     </form>
 </dialog>
+<!-- EXPORT AUDIT LOGS DIALOG (TARGET USER, SCOPE, TIMEFRAME) -->
+<dialog class="admin-user-dialog" id="export-logs-dialog" aria-labelledby="export-dialog-title">
+    <div class="admin-user-dialog-heading">
+        <div class="admin-modal-title-group">
+            <span class="admin-modal-icon-badge" style="background: #e0f2fe; color: #0284c7;" aria-hidden="true">
+                <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <use href="#icon-download"></use>
+                </svg>
+            </span>
+            <div class="admin-modal-heading-text">
+                <h2 id="export-dialog-title">Export Audit Trail (CSV)</h2>
+                <p class="admin-modal-subtitle">
+                    Select a specific user account or download the full platform audit logs.
+                </p>
+            </div>
+        </div>
+
+        <button class="admin-dialog-close" type="button" data-close-dialog="export-logs-dialog" aria-label="Close dialog">
+            <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m18 6-12 12M6 6l12 12"/>
+            </svg>
+        </button>
+    </div>
+
+    <form class="admin-user-form" method="get" action="{{ url_for('admin_logs_export') }}">
+        <div class="admin-form-section">
+            <!-- TARGET USER SELECTION -->
+            <div class="admin-form-field">
+                <label for="export-user-select">Target User Account *</label>
+                <select id="export-user-select" name="user">
+                    <option value="all" selected>All Users (Full System Audit Trail)</option>
+                    <option value="system">System (Automated Daemon &amp; Hardware Gateway)</option>
+                    {% for u in users %}
+                    <option value="{{ u.email }}">{{ u.user_name }} ({{ u.email }}) &bull; {{ u.role }}</option>
+                    {% endfor %}
+                </select>
+                <small>Select an individual user to export only their authentications, profile updates, and actions.</small>
+            </div>
+
+            <!-- ACTIVITY CATEGORY FILTER -->
+            <div class="admin-form-field" style="margin-top: 14px;">
+                <label for="export-action-category">Activity Scope</label>
+                <select id="export-action-category" name="action_category">
+                    <option value="all" selected>All Activity Types</option>
+                    <option value="auth">Authentication Only (LOGIN, LOGOUT, SIGNUP)</option>
+                    <option value="mgmt">Account Control (USER_CREATE, USER_EDIT, USER_DELETE, PASSWORD_RESET)</option>
+                    <option value="telemetry">IoT Telemetry Ingestion</option>
+                    <option value="security">Security &amp; Maintenance (LOG_PURGE)</option>
+                </select>
+                <small>Optionally filter exported rows by operation category.</small>
+            </div>
+
+            <!-- DATE WINDOW -->
+            <div class="admin-form-field" style="margin-top: 14px;">
+                <label for="export-date-window">Date Window</label>
+                <select id="export-date-window" name="date_window">
+                    <option value="all" selected>All Time Records</option>
+                    <option value="today">Today Only</option>
+                    <option value="7">Last 7 Days</option>
+                    <option value="30">Last 30 Days</option>
+                    <option value="90">Last 90 Days</option>
+                </select>
+                <small>Limit audit history to a specific timeframe.</small>
+            </div>
+        </div>
+
+        <div class="admin-user-form-actions">
+            <button class="admin-user-cancel" type="button" data-close-dialog="export-logs-dialog">Cancel</button>
+            <button class="admin-user-submit" type="submit" style="background: #0284c7; border-color: #0284c7;">
+                <svg class="ui-icon" aria-hidden="true" style="margin-right: 6px;"><use href="#icon-download"></use></svg>
+                Generate &amp; Download CSV
+            </button>
+        </div>
+    </form>
+</dialog>
 
 <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
 <script src="{{ url_for('static', filename='js/adminlogout.js') }}"></script>
@@ -554,6 +629,14 @@
     if (openPurgeBtn && purgeModal) {
         openPurgeBtn.addEventListener("click", () => {
             purgeModal.showModal();
+        });
+    }
+
+    const exportModal = document.getElementById("export-logs-dialog");
+    const openExportBtn = document.getElementById("open-export-modal");
+    if (openExportBtn && exportModal) {
+        openExportBtn.addEventListener("click", () => {
+            exportModal.showModal();
         });
     }
 

@@ -82,6 +82,13 @@
                 statusElement.className = "detail-badge " + status.toLowerCase();
             }
 
+            const exportBtn = get("view-user-export-btn");
+            if (exportBtn) {
+                const email = button.dataset.email || "";
+                exportBtn.href = `/admin/logs/export?user=${encodeURIComponent(email)}`;
+                exportBtn.title = `Export audit logs for ${email}`;
+            }
+
             viewDialog.showModal();
         });
     });

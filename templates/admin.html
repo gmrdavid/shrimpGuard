@@ -675,7 +675,17 @@
         </div>
 
         <!-- Footer -->
-        <footer class="admin-modal-footer">
+        <footer class="admin-modal-footer" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+            <a id="view-user-export-btn"
+               class="btn btn-secondary"
+               href="/admin/logs/export"
+               style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; font-size: 12.5px;">
+                <svg class="ui-icon" aria-hidden="true" style="width: 15px; height: 15px;">
+                    <use href="#icon-download"></use>
+                </svg>
+                <span>Export User Audit CSV</span>
+            </a>
+
             <button class="btn btn-secondary admin-view-close-btn"
                     type="button"
                     data-close-dialog="view-user-dialog">

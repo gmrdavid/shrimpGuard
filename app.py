@@ -1358,12 +1358,14 @@ def simulate_admin_telemetry():
 def admin_logs():
     try:
         logs = ActivityLog.query.order_by(ActivityLog.timestamp.desc()).all()
+        users = User.query.order_by(User.user_name.asc()).all()
         total_logs = len(logs)
         auth_events = sum(1 for l in logs if l.action in ("LOGIN", "LOGOUT", "SIGNUP"))
         user_mgmt_events = sum(1 for l in logs if l.action in ("USER_CREATE", "USER_EDIT", "USER_DELETE", "PASSWORD_RESET"))
     except SQLAlchemyError:
         db.session.rollback()
         logs = []
+        users = []
         total_logs = 0
         auth_events = 0
         user_mgmt_events = 0
@@ -1371,6 +1373,7 @@ def admin_logs():
     return render_template(
         "admin_logs.html",
         logs=logs,
+        users=users,
         total_logs=total_logs,
         auth_events=auth_events,
         user_mgmt_events=user_mgmt_events,
@@ -1382,7 +1385,50 @@ def admin_logs():
 @role_required("Admin")
 def admin_logs_export():
     try:
-        logs = ActivityLog.query.order_by(ActivityLog.timestamp.desc()).all()
+        target_user = request.args.get("user", "all").strip()
+        action_cat = request.args.get("action_category", "all").strip().lower()
+        date_window = request.args.get("date_window", "all").strip().lower()
+
+        query = ActivityLog.query
+
+        # Filter by target user
+        user_label = "all_users"
+        if target_user and target_user.lower() != "all":
+            if target_user.lower() == "system":
+                query = query.filter(
+                    db.or_(
+                        ActivityLog.user_email == None,
+                        ActivityLog.user_email == "",
+                        ActivityLog.user_email == "system@shrimpguard",
+                        ActivityLog.user_name == "System",
+                    )
+                )
+                user_label = "system"
+            else:
+                query = query.filter(ActivityLog.user_email == target_user.lower())
+                user_label = re.sub(r"[^a-zA-Z0-9_-]", "_", target_user.lower())
+
+        # Filter by action category
+        if action_cat == "auth":
+            query = query.filter(ActivityLog.action.in_(["LOGIN", "LOGOUT", "SIGNUP"]))
+        elif action_cat == "mgmt":
+            query = query.filter(ActivityLog.action.in_(["USER_CREATE", "USER_EDIT", "USER_DELETE", "PASSWORD_RESET"]))
+        elif action_cat == "telemetry":
+            query = query.filter(ActivityLog.action.in_(["TELEMETRY_INGEST"]))
+        elif action_cat == "security":
+            query = query.filter(ActivityLog.action.in_(["LOG_PURGE"]))
+
+        # Filter by date window
+        now = datetime.now()
+        if date_window == "today":
+            start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
+            query = query.filter(ActivityLog.timestamp >= start_of_day)
+        elif date_window in ("7", "30", "60", "90"):
+            cutoff = now - timedelta(days=int(date_window))
+            query = query.filter(ActivityLog.timestamp >= cutoff)
+
+        logs = query.order_by(ActivityLog.timestamp.desc()).all()
+
         output = io.StringIO()
         writer = csv.writer(output)
         writer.writerow([
@@ -1410,7 +1456,7 @@ def admin_logs_export():
             ])
 
         output.seek(0)
-        filename = f"shrimpguard_audit_logs_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        filename = f"shrimpguard_audit_{user_label}_{now.strftime('%Y%m%d_%H%M%S')}.csv"
         return send_file(
             io.BytesIO(output.getvalue().encode("utf-8")),
             mimetype="text/csv",
