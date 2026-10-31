@@ -2113,62 +2113,7 @@ document.addEventListener("DOMContentLoaded", function () {
         growthTooltip.style.top = `${Math.round(topPos)}px`;
     }
 
-    function updateGrowthChartLegend() {
-        const legendEl = document.getElementById("growth-chart-legend");
-        if (!legendEl) return;
-        const activeKeys = Array.from(selectedGrowthMetrics);
-        legendEl.innerHTML = activeKeys.map(key => {
-            const conf = GROWTH_METRICS_CONFIG[key];
-            return `
-                <span>
-                    <i style="background:${conf.color};"></i>
-                    ${conf.eq}: ${conf.label} ${conf.unit ? '(' + conf.unit + ')' : ''}
-                </span>
-            `;
-        }).join("");
-    }
 
-    function updateGrowthMiniStats() {
-        const cur = collectCurrentCalculations();
-        const setEl = (id, text) => {
-            const el = document.getElementById(id);
-            if (el) el.textContent = text;
-        };
-
-        setEl("mini-stat-sr", `${cur.eq1_sr_pct.toFixed(2)} %`);
-        setEl("mini-stat-fabw", `${cur.eq2_fabw_g.toFixed(2)} g`);
-        setEl("mini-sub-fabw", `${cur.eq2_count_per_kg.toFixed(1)}/kg`);
-        setEl("mini-stat-adwg", `${cur.eq3_adwg_g_day.toFixed(3)} g/d`);
-        setEl("mini-stat-sgr", `${cur.eq4_sgr_pct_day.toFixed(2)} %/d`);
-        setEl("mini-stat-fb", `${cur.eq6_fb_kg.toLocaleString(undefined, {maximumFractionDigits: 1})} kg`);
-        setEl("mini-stat-fcr", cur.eq7_fcr.toFixed(2));
-        setEl("mini-stat-k", cur.eq8_fulton_k.toFixed(4));
-
-        const badgeSr = document.getElementById("mini-badge-sr");
-        if (badgeSr) {
-            const evalSr = GROWTH_METRICS_CONFIG.sr.evaluator(cur.eq1_sr_pct);
-            badgeSr.textContent = evalSr.status;
-            badgeSr.className = `mini-badge ${evalSr.badgeClass}`;
-        }
-        const badgeAdwg = document.getElementById("mini-badge-adwg");
-        if (badgeAdwg) {
-            const evalAdwg = GROWTH_METRICS_CONFIG.adwg.evaluator(cur.eq3_adwg_g_day);
-            badgeAdwg.textContent = evalAdwg.status;
-            badgeAdwg.className = `mini-badge ${evalAdwg.badgeClass}`;
-        }
-        const badgeFcr = document.getElementById("mini-badge-fcr");
-        if (badgeFcr) {
-            const evalFcr = GROWTH_METRICS_CONFIG.fcr.evaluator(cur.eq7_fcr);
-            badgeFcr.textContent = evalFcr.status;
-            badgeFcr.className = `mini-badge ${evalFcr.badgeClass}`;
-        }
-        const badgeK = document.getElementById("mini-badge-k");
-        if (badgeK) {
-            const evalK = GROWTH_METRICS_CONFIG.k.evaluator(cur.eq8_fulton_k);
-            badgeK.textContent = evalK.status;
-            badgeK.className = `mini-badge ${evalK.badgeClass}`;
-        }
-    }
 
     async function openGrowthGraphModal() {
         if (!growthGraphModal) return;
@@ -2185,8 +2130,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const docPill = document.getElementById("graph-doc-pill");
         if (docPill) docPill.textContent = docTotal;
 
-        updateGrowthMiniStats();
-        updateGrowthChartLegend();
         growthGraphModal.hidden = false;
         document.body.style.overflow = "hidden";
 
@@ -2280,8 +2223,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 selectedGrowthMetrics.add(metric);
                 chip.classList.add("active");
             }
-            updateGrowthChartLegend();
-            renderGrowthChart();
+                renderGrowthChart();
         });
     });
 
@@ -2289,8 +2231,7 @@ document.addEventListener("DOMContentLoaded", function () {
         btnToggleAllGrowthMetrics.addEventListener("click", () => {
             selectedGrowthMetrics = new Set(["sr", "fabw", "adwg", "sgr", "fb", "fcr", "k"]);
             growthMetricChips.forEach(chip => chip.classList.add("active"));
-            updateGrowthChartLegend();
-            renderGrowthChart();
+                renderGrowthChart();
         });
     }
 
