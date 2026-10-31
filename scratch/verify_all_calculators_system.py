@@ -165,3 +165,4 @@ with app.test_client() as client:
 print("=" * 60)
 print("ALL AQUACULTURE SYSTEM VERIFICATION CHECKS PASSED PERFECTLY!")
 print("=" * 60)
+
