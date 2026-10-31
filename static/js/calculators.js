@@ -632,13 +632,14 @@ document.addEventListener("DOMContentLoaded", function () {
     // TOOL 2: Shrimp Growth & Zootechnical Performance (Eqs. 1–8)
     // -------------------------------------------------------------
 
-    // Tab Switching for Growth Calculators
-    const growthTabButtons = document.querySelectorAll(".growth-tabs-bar .growth-tab-item");
-    const growthTabPanes = document.querySelectorAll(".growth-section .growth-tab-pane");
+    // Tab Switching for Growth Calculators (Uniform Chip Pills)
+    const growthTabButtons = document.querySelectorAll(".tools-tab-chips .preset-chip, .growth-tabs-bar .growth-tab-item");
+    const growthTabPanes = document.querySelectorAll(".growth-tab-pane");
 
     growthTabButtons.forEach(btn => {
         btn.addEventListener("click", () => {
-            const targetPaneId = btn.getAttribute("aria-controls");
+            const paneKey = btn.dataset.pane || "";
+            const targetPaneId = paneKey ? `pane-growth-${paneKey}` : btn.getAttribute("aria-controls");
             growthTabButtons.forEach(b => {
                 b.classList.remove("active");
                 b.setAttribute("aria-selected", "false");
@@ -646,6 +647,7 @@ document.addEventListener("DOMContentLoaded", function () {
             growthTabPanes.forEach(p => {
                 p.classList.remove("active");
                 p.hidden = true;
+                p.style.display = "none";
             });
 
             btn.classList.add("active");
@@ -654,6 +656,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (activePane) {
                 activePane.classList.add("active");
                 activePane.hidden = false;
+                activePane.style.display = "block";
             }
         });
     });
@@ -1151,7 +1154,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Preset Buttons
-    const growthPresetButtons = document.querySelectorAll(".btn-preset-growth");
+    const growthPresetButtons = document.querySelectorAll("#growth-master-presets .preset-chip, .btn-preset-growth");
     growthPresetButtons.forEach(btn => {
         btn.addEventListener("click", () => {
             growthPresetButtons.forEach(b => b.classList.remove("active"));
