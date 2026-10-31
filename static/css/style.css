@@ -17901,6 +17901,12 @@ nav a {
     border: 1px solid #bceae0;
 }
 
+.co2-heading-icon {
+    background: #e1f5fe;
+    color: #0277bd;
+    border: 1px solid #b3e5fc;
+}
+
 .ammonia-calc-grid {
     display: grid;
     grid-template-columns: 1.1fr 1fr;

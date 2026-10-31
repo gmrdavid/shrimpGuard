@@ -130,6 +130,14 @@ CREATE TABLE IF NOT EXISTS aquaculture_calculations (
     ammonia_nh3_ppm FLOAT NULL,
     ammonia_status VARCHAR(50) NULL,
 
+    -- 8. Free Carbon Dioxide (CO2)
+    co2_alkalinity_mg_l FLOAT NULL,
+    co2_temp_c FLOAT NULL,
+    co2_ph FLOAT NULL,
+    co2_factor FLOAT NULL,
+    co2_concentration_mg_l FLOAT NULL,
+    co2_status VARCHAR(50) NULL,
+
     PRIMARY KEY (id),
     KEY idx_aqua_calc_created (created_at),
     KEY idx_aqua_calc_user (user_email)
