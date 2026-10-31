@@ -626,42 +626,11 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // -------------------------------------------------------------
-
-    // -------------------------------------------------------------
+// -------------------------------------------------------------
     // TOOL 2: Shrimp Growth & Zootechnical Performance (Eqs. 1–8)
+    // All-in-One Engine with 8 Separate Metric Cards & Popup Dialog
     // -------------------------------------------------------------
 
-    // Tab Switching for Growth Calculators (Uniform Chip Pills)
-    const growthTabButtons = document.querySelectorAll(".tools-tab-chips .preset-chip, .growth-tabs-bar .growth-tab-item");
-    const growthTabPanes = document.querySelectorAll(".growth-tab-pane");
-
-    growthTabButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
-            const paneKey = btn.dataset.pane || "";
-            const targetPaneId = paneKey ? `pane-growth-${paneKey}` : btn.getAttribute("aria-controls");
-            growthTabButtons.forEach(b => {
-                b.classList.remove("active");
-                b.setAttribute("aria-selected", "false");
-            });
-            growthTabPanes.forEach(p => {
-                p.classList.remove("active");
-                p.hidden = true;
-                p.style.display = "none";
-            });
-
-            btn.classList.add("active");
-            btn.setAttribute("aria-selected", "true");
-            const activePane = document.getElementById(targetPaneId);
-            if (activePane) {
-                activePane.classList.add("active");
-                activePane.hidden = false;
-                activePane.style.display = "block";
-            }
-        });
-    });
-
-    // Preset Configurations for Penaeus vannamei
     const GROWTH_PRESETS = {
         commercial: {
             is: 100000,
@@ -696,6 +665,37 @@ document.addEventListener("DOMContentLoaded", function () {
             feed_unit: "kg",
             tl: 5.8
         }
+    };
+
+    // Shared state storing current live calculation results
+    let currentGrowthState = {
+        isCount: 100000,
+        lhcCount: 85000,
+        docDays: 90,
+        ibwVal: 0.010,
+        bwInput: 1700,
+        bwGrams: 1700000,
+        bwKg: 1700,
+        tfgInput: 2125,
+        tfgKg: 2125,
+        tlCm: 12.9,
+        sr: 85.0,
+        mortalityCount: 15000,
+        mortalityPct: 15.0,
+        fabw: 20.0,
+        countPerKg: 50.0,
+        adwg: 0.2221,
+        weeklyGain: 1.555,
+        sgr: 8.445,
+        weightMult: 2000,
+        ibGrams: 1000,
+        ibKg: 1.0,
+        fbGrams: 1700000,
+        fbKg: 1700.0,
+        netGainKg: 1699.0,
+        fcr: 1.251,
+        feedEfficiency: 79.95,
+        kFactor: 0.9317
     };
 
     // Master Engine (All-in-One Eqs. 1–8)
@@ -748,47 +748,51 @@ document.addEventListener("DOMContentLoaded", function () {
         // Eq. 8: Fulton's Condition Factor (K) = (FABW / TL^3) * 100
         const kFactor = (fabw / Math.pow(tlCm, 3)) * 100.0;
 
-        // DOM Updates - Eq. 1
+        // Update state
+        currentGrowthState = {
+            isCount, lhcCount, docDays, ibwVal, bwInput, bwGrams, bwKg,
+            tfgInput, tfgKg, tlCm, sr, mortalityCount, mortalityPct,
+            fabw, countPerKg, adwg, weeklyGain, sgr, weightMult,
+            ibGrams, ibKg, fbGrams, fbKg, netGainKg, fcr, feedEfficiency, kFactor
+        };
+
+        // DOM Updates - Eq. 1: Survival Rate
         const srValEl = document.getElementById("gm-res-sr-val");
         const srBadgeEl = document.getElementById("gm-res-sr-badge");
         const mortCountEl = document.getElementById("gm-res-mortality-count");
         const mortPctEl = document.getElementById("gm-res-mortality-pct");
-        const subSrEl = document.getElementById("gm-sub-sr");
         if (srValEl) srValEl.textContent = sr.toFixed(2);
         if (mortCountEl) mortCountEl.textContent = Math.round(mortalityCount).toLocaleString();
         if (mortPctEl) mortPctEl.textContent = `${mortalityPct.toFixed(2)}%`;
-        if (subSrEl) subSrEl.innerHTML = `(${lhcCount.toLocaleString()} / ${isCount.toLocaleString()}) &times; 100 = ${sr.toFixed(2)}%`;
         if (srBadgeEl) {
             if (sr >= 80.0) {
-                srBadgeEl.textContent = "Optimal";
+                srBadgeEl.textContent = "Optimal (≥80%)";
                 srBadgeEl.className = "wqi-metric-badge badge-optimal";
             } else if (sr >= 65.0) {
-                srBadgeEl.textContent = "Acceptable";
+                srBadgeEl.textContent = "Acceptable (65–79%)";
                 srBadgeEl.className = "wqi-metric-badge badge-warning";
             } else {
-                srBadgeEl.textContent = "Suboptimal";
+                srBadgeEl.textContent = "Suboptimal (<65%)";
                 srBadgeEl.className = "wqi-metric-badge badge-critical";
             }
         }
 
-        // DOM Updates - Eq. 2
+        // DOM Updates - Eq. 2: FABW
         const fabwValEl = document.getElementById("gm-res-fabw-val");
         const countKgEl = document.getElementById("gm-res-count-per-kg");
-        const subFabwEl = document.getElementById("gm-sub-fabw");
+        const bulkSummaryEl = document.getElementById("gm-res-bulk-summary");
         if (fabwValEl) fabwValEl.textContent = fabw.toFixed(2);
         if (countKgEl) countKgEl.textContent = countPerKg.toFixed(1);
-        if (subFabwEl) subFabwEl.innerHTML = `${Math.round(bwGrams).toLocaleString()} g / ${lhcCount.toLocaleString()} = ${fabw.toFixed(2)} g`;
+        if (bulkSummaryEl) bulkSummaryEl.textContent = `${bwKg.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} kg (${Math.round(bwGrams).toLocaleString()} g)`;
 
-        // DOM Updates - Eq. 3
+        // DOM Updates - Eq. 3: ADWG (SEPARATE)
         const adwgValEl = document.getElementById("gm-res-adwg-val");
         const adwgBadgeEl = document.getElementById("gm-res-adwg-badge");
         const weeklyGainEl = document.getElementById("gm-res-weekly-gain");
-        const subAdwgEl = document.getElementById("gm-sub-adwg");
         if (adwgValEl) adwgValEl.textContent = adwg.toFixed(4);
         if (weeklyGainEl) weeklyGainEl.textContent = weeklyGain.toFixed(3);
-        if (subAdwgEl) subAdwgEl.innerHTML = `(${fabw.toFixed(2)} - ${ibwVal.toFixed(3)}) / ${docDays} = ${adwg.toFixed(4)} g/day`;
         if (adwgBadgeEl) {
-            if (adwg >= 0.25) {
+            if (adwg >= 0.22) {
                 adwgBadgeEl.textContent = "Fast Growth";
                 adwgBadgeEl.className = "wqi-metric-badge badge-optimal";
             } else if (adwg >= 0.18) {
@@ -800,32 +804,34 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
 
-        // DOM Updates - Eq. 4
+        // DOM Updates - Eq. 4: SGR (SEPARATE)
         const sgrValEl = document.getElementById("gm-res-sgr-val");
         const weightMultEl = document.getElementById("gm-res-weight-mult");
-        const subSgrEl = document.getElementById("gm-sub-sgr");
         if (sgrValEl) sgrValEl.textContent = sgr.toFixed(3);
         if (weightMultEl) weightMultEl.textContent = `${Math.round(weightMult).toLocaleString()}×`;
-        if (subSgrEl) subSgrEl.innerHTML = `((ln ${fabw.toFixed(2)} - ln ${ibwVal.toFixed(3)}) / ${docDays}) &times; 100 = ${sgr.toFixed(3)}%`;
 
-        // DOM Updates - Eqs. 5 & 6
+        // DOM Updates - Eq. 5: Initial Biomass (SEPARATE)
         const ibKgEl = document.getElementById("gm-res-ib-kg");
+        const ibGramsEl = document.getElementById("gm-res-ib-grams");
+        if (ibKgEl) ibKgEl.textContent = ibKg.toFixed(2);
+        if (ibGramsEl) ibGramsEl.textContent = Math.round(ibGrams).toLocaleString();
+
+        // DOM Updates - Eq. 6: Final Biomass (SEPARATE)
         const fbKgEl = document.getElementById("gm-res-fb-kg");
         const netBioEl = document.getElementById("gm-res-net-biomass");
-        const subBioEl = document.getElementById("gm-sub-biomass");
-        if (ibKgEl) ibKgEl.textContent = ibKg.toFixed(2);
         if (fbKgEl) fbKgEl.textContent = fbKg.toFixed(2);
         if (netBioEl) netBioEl.textContent = netGainKg.toFixed(2);
-        if (subBioEl) subBioEl.innerHTML = `Gain: ${fbKg.toFixed(2)} kg - ${ibKg.toFixed(2)} kg = ${netGainKg.toFixed(2)} kg`;
 
-        // DOM Updates - Eq. 7
+        // DOM Updates - Eq. 7: Feed Conversion Ratio
         const fcrValEl = document.getElementById("gm-res-fcr-val");
         const fcrBadgeEl = document.getElementById("gm-res-fcr-badge");
         const feedEffEl = document.getElementById("gm-res-feed-efficiency");
-        const subFcrEl = document.getElementById("gm-sub-fcr");
+        const tfgSummaryEl = document.getElementById("gm-res-tfg-summary");
+        const gainSummaryEl = document.getElementById("gm-res-gain-summary");
         if (fcrValEl) fcrValEl.textContent = fcr.toFixed(3);
         if (feedEffEl) feedEffEl.textContent = `${feedEfficiency.toFixed(2)}%`;
-        if (subFcrEl) subFcrEl.innerHTML = `${tfgKg.toFixed(1)} kg / ${netGainKg.toFixed(2)} kg = ${fcr.toFixed(3)}`;
+        if (tfgSummaryEl) tfgSummaryEl.textContent = `${tfgKg.toFixed(1)} kg`;
+        if (gainSummaryEl) gainSummaryEl.textContent = `${netGainKg.toFixed(1)} kg`;
         if (fcrBadgeEl) {
             if (fcr < 1.20) {
                 fcrBadgeEl.textContent = "Exceptional (<1.20)";
@@ -842,296 +848,234 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
 
-        // DOM Updates - Eq. 8
+        // DOM Updates - Eq. 8: Fulton's Condition Factor
         const kValEl = document.getElementById("gm-res-k-val");
         const kBadgeEl = document.getElementById("gm-res-k-badge");
         const kProfileEl = document.getElementById("gm-res-k-profile");
-        const subKEl = document.getElementById("gm-sub-k");
         if (kValEl) kValEl.textContent = kFactor.toFixed(4);
-        if (subKEl) subKEl.innerHTML = `(${fabw.toFixed(2)} / ${tlCm.toFixed(1)}&sup3;) &times; 100 = ${kFactor.toFixed(4)}`;
         if (kBadgeEl && kProfileEl) {
             if (kFactor >= 0.80 && kFactor <= 1.15) {
-                kBadgeEl.textContent = "Optimal Condition";
+                kBadgeEl.textContent = "Optimal Condition (0.80–1.15)";
                 kBadgeEl.className = "wqi-metric-badge badge-optimal";
                 kProfileEl.textContent = "Healthy, well-proportioned robust girth";
             } else if (kFactor < 0.80) {
-                kBadgeEl.textContent = "Slender / Lean";
+                kBadgeEl.textContent = "Slender / Lean (<0.80)";
                 kBadgeEl.className = "wqi-metric-badge badge-warning";
-                kProfileEl.textContent = "Slender body profile; check feeding assimilation or post-molt state";
+                kProfileEl.textContent = "Slender body profile; check post-molt phase or dietary energy";
             } else {
-                kBadgeEl.textContent = "Heavy / Plump";
+                kBadgeEl.textContent = "Heavy / Plump (>1.15)";
                 kBadgeEl.className = "wqi-metric-badge badge-optimal";
                 kProfileEl.textContent = "High muscle density and heavy carapace girth";
             }
         }
-
-        // Sync to individual calculators
-        syncMasterToIndividual({
-            isCount, lhcCount, docDays, ibwVal, bwInput, bwUnit, tfgInput, feedUnit, tlCm,
-            fabw, ibKg, fbKg, tfgKg
-        });
     }
 
-    function syncMasterToIndividual(data) {
-        const indivIs = document.getElementById("indiv-is");
-        const indivLhc = document.getElementById("indiv-lhc");
-        if (indivIs && !indivIs.dataset.manualEdited) indivIs.value = data.isCount;
-        if (indivLhc && !indivLhc.dataset.manualEdited) indivLhc.value = data.lhcCount;
-
-        const indivBw = document.getElementById("indiv-bw");
-        const indivBwUnit = document.getElementById("indiv-bw-unit");
-        const indivFabwLhc = document.getElementById("indiv-fabw-lhc");
-        if (indivBw && !indivBw.dataset.manualEdited) indivBw.value = data.bwInput;
-        if (indivBwUnit && !indivBwUnit.dataset.manualEdited) indivBwUnit.value = data.bwUnit;
-        if (indivFabwLhc && !indivFabwLhc.dataset.manualEdited) indivFabwLhc.value = data.lhcCount;
-
-        const indivGrowIbw = document.getElementById("indiv-grow-ibw");
-        const indivGrowFabw = document.getElementById("indiv-grow-fabw");
-        const indivGrowDoc = document.getElementById("indiv-grow-doc");
-        if (indivGrowIbw && !indivGrowIbw.dataset.manualEdited) indivGrowIbw.value = data.ibwVal;
-        if (indivGrowFabw && !indivGrowFabw.dataset.manualEdited) indivGrowFabw.value = data.fabw.toFixed(2);
-        if (indivGrowDoc && !indivGrowDoc.dataset.manualEdited) indivGrowDoc.value = data.docDays;
-
-        const indivBioIs = document.getElementById("indiv-bio-is");
-        const indivBioIbw = document.getElementById("indiv-bio-ibw");
-        const indivBioLhc = document.getElementById("indiv-bio-lhc");
-        const indivBioFabw = document.getElementById("indiv-bio-fabw");
-        if (indivBioIs && !indivBioIs.dataset.manualEdited) indivBioIs.value = data.isCount;
-        if (indivBioIbw && !indivBioIbw.dataset.manualEdited) indivBioIbw.value = data.ibwVal;
-        if (indivBioLhc && !indivBioLhc.dataset.manualEdited) indivBioLhc.value = data.lhcCount;
-        if (indivBioFabw && !indivBioFabw.dataset.manualEdited) indivBioFabw.value = data.fabw.toFixed(2);
-
-        const indivFcrTfg = document.getElementById("indiv-fcr-tfg");
-        const indivFcrTfgUnit = document.getElementById("indiv-fcr-tfg-unit");
-        const indivFcrFb = document.getElementById("indiv-fcr-fb");
-        const indivFcrIb = document.getElementById("indiv-fcr-ib");
-        if (indivFcrTfg && !indivFcrTfg.dataset.manualEdited) indivFcrTfg.value = data.tfgInput;
-        if (indivFcrTfgUnit && !indivFcrTfgUnit.dataset.manualEdited) indivFcrTfgUnit.value = data.feedUnit;
-        if (indivFcrFb && !indivFcrFb.dataset.manualEdited) indivFcrFb.value = data.fbKg.toFixed(2);
-        if (indivFcrIb && !indivFcrIb.dataset.manualEdited) indivFcrIb.value = data.ibKg.toFixed(2);
-
-        const indivKFabw = document.getElementById("indiv-k-fabw");
-        const indivKTl = document.getElementById("indiv-k-tl");
-        if (indivKFabw && !indivKFabw.dataset.manualEdited) indivKFabw.value = data.fabw.toFixed(2);
-        if (indivKTl && !indivKTl.dataset.manualEdited) indivKTl.value = data.tlCm.toFixed(1);
-
-        calculateIndividualSR();
-        calculateIndividualFABW();
-        calculateIndividualGrowth();
-        calculateIndividualBiomass();
-        calculateIndividualFCR();
-        calculateIndividualK();
-    }
-
-    // Individual Eq. 1: Survival Rate
-    function calculateIndividualSR() {
-        const isCount = Math.max(1, Number(document.getElementById("indiv-is")?.value || 100000));
-        const lhcCount = Math.max(1, Number(document.getElementById("indiv-lhc")?.value || 85000));
-
-        const sr = (lhcCount / isCount) * 100.0;
-        const mortalityCount = Math.max(0, isCount - lhcCount);
-        const mortalityPct = Math.max(0, 100.0 - sr);
-
-        const resEl = document.getElementById("indiv-sr-result");
-        const badgeEl = document.getElementById("indiv-sr-badge");
-        const mortCountEl = document.getElementById("indiv-sr-mortality-count");
-        const mortPctEl = document.getElementById("indiv-sr-mortality-pct");
-        const stepMathEl = document.getElementById("indiv-sr-step-math");
-        const ratingEl = document.getElementById("indiv-sr-rating");
-
-        if (resEl) resEl.textContent = sr.toFixed(2);
-        if (mortCountEl) mortCountEl.textContent = `${Math.round(mortalityCount).toLocaleString()} shrimp`;
-        if (mortPctEl) mortPctEl.textContent = `${mortalityPct.toFixed(2)}%`;
-        if (stepMathEl) stepMathEl.innerHTML = `SR = (${lhcCount.toLocaleString()} / ${isCount.toLocaleString()}) &times; 100 = ${sr.toFixed(2)}%`;
-
-        if (badgeEl && ratingEl) {
-            if (sr >= 80.0) {
-                badgeEl.textContent = "Optimal";
-                badgeEl.className = "wqi-metric-badge badge-optimal";
-                ratingEl.textContent = "Optimal survival rate exceeding typical commercial benchmark (≥80%). Favorable pond conditions and healthy stock transition.";
-            } else if (sr >= 65.0) {
-                badgeEl.textContent = "Acceptable";
-                badgeEl.className = "wqi-metric-badge badge-warning";
-                ratingEl.textContent = "Moderate survival rate (65%–79%). Review benthic sediment conditions, feeding tray consumption, and stocking density.";
-            } else {
-                badgeEl.textContent = "Suboptimal";
-                badgeEl.className = "wqi-metric-badge badge-critical";
-                ratingEl.textContent = "Low survival rate (<65%). Investigate potential pathogen pressure, nocturnal hypoxia, or predator interference.";
-            }
+    // Modal popup dialog definitions for Equations 1 to 8
+    const EQUATION_SPECS = {
+        "1": {
+            title: "Equation 1: Survival Rate (SR)",
+            subtitle: "Percentage of stocked post-larvae that survive until harvest",
+            formula: "SR = (LHC / IS) × 100",
+            variables: [
+                "<strong>LHC</strong> = Live harvest count (shrimp)",
+                "<strong>IS</strong> = Initial stocking (shrimp)",
+                "<strong>SR</strong> = Survival rate (%)"
+            ],
+            getSubstitution: (s) => `SR = (${s.lhcCount.toLocaleString()} shrimp / ${s.isCount.toLocaleString()} shrimp) × 100 = <strong>${s.sr.toFixed(2)}%</strong><br><small style="color:#64748b;">Mortality: ${s.mortalityCount.toLocaleString()} shrimp (${s.mortalityPct.toFixed(2)}%)</small>`,
+            getEval: (s) => ({
+                badge: s.sr >= 80 ? "Optimal (≥80%)" : (s.sr >= 65 ? "Acceptable (65–79%)" : "Suboptimal (<65%)"),
+                badgeClass: s.sr >= 80 ? "badge-optimal" : (s.sr >= 65 ? "badge-warning" : "badge-critical"),
+                text: s.sr >= 80
+                    ? `Optimal survival rate (${s.sr.toFixed(2)}%) exceeding typical commercial Penaeus vannamei benchmarks (≥80%). Mortality was contained to ${s.mortalityCount.toLocaleString()} shrimp (${s.mortalityPct.toFixed(2)}%), indicating stable water quality, clean bottom soil, and strong biosecurity.`
+                    : (s.sr >= 65
+                        ? `Moderate survival rate (${s.sr.toFixed(2)}%). Total cumulative loss is ${s.mortalityCount.toLocaleString()} shrimp (${s.mortalityPct.toFixed(2)}%). Check for dissolved oxygen drops during night hours (22:00–06:00) and monitor benthic sediment accumulation.`
+                        : `Suboptimal survival rate (${s.sr.toFixed(2)}%). High mortality (${s.mortalityCount.toLocaleString()} shrimp lost, ${s.mortalityPct.toFixed(2)}%). Investigate sudden salinity or temperature swings, unionized ammonia toxicity, or pathogen challenge.`),
+                tip: "<strong>Pond Action Tip:</strong> Ensure paddlewheel aerators maintain DO > 4.0 ppm continuously throughout molting cycles to prevent cannibalism and hypoxic mortality."
+            })
+        },
+        "2": {
+            title: "Equation 2: Final Average Body Weight (FABW)",
+            subtitle: "Average weight of individual shrimp at harvest",
+            formula: "FABW = BW / LHC",
+            variables: [
+                "<strong>BW</strong> = Bulk harvested biomass weight (g)",
+                "<strong>LHC</strong> = Live harvest count (shrimp)",
+                "<strong>FABW</strong> = Final average body weight (g)"
+            ],
+            getSubstitution: (s) => `FABW = ${Math.round(s.bwGrams).toLocaleString()} g / ${s.lhcCount.toLocaleString()} shrimp = <strong>${s.fabw.toFixed(2)} g/shrimp</strong><br><small style="color:#64748b;">Market Count: ${s.countPerKg.toFixed(1)} pcs/kg (${Math.round(s.countPerKg)} count)</small>`,
+            getEval: (s) => ({
+                badge: s.fabw >= 18 ? "Optimal Commercial Size" : "Sub-Commercial Size",
+                badgeClass: s.fabw >= 18 ? "badge-optimal" : "badge-warning",
+                text: `Harvested average body weight of ${s.fabw.toFixed(2)} g corresponds to Size ${s.countPerKg.toFixed(0)} count (${s.countPerKg.toFixed(1)} pieces per kilogram). In high-density vannamei farming, 18–25 g represents the premium commercial export grade.`,
+                tip: "<strong>Pond Action Tip:</strong> Uniform size distribution is achieved by distributing feed across check trays and wide feeding lanes, preventing dominant individuals from monopolizing feed."
+            })
+        },
+        "3": {
+            title: "Equation 3: Average Daily Weight Gain (ADWG)",
+            subtitle: "Linear daily weight increment across the culture period",
+            formula: "ADWG = (FABW - IBW) / DOC",
+            variables: [
+                "<strong>FABW</strong> = Final average body weight (g)",
+                "<strong>IBW</strong> = Initial body weight at stocking (g)",
+                "<strong>DOC</strong> = Days of culture (days)",
+                "<strong>ADWG</strong> = Average daily weight gain (g/day)"
+            ],
+            getSubstitution: (s) => `ADWG = (${s.fabw.toFixed(2)} g - ${s.ibwVal.toFixed(3)} g) / ${s.docDays} days = <strong>${s.adwg.toFixed(4)} g/day</strong><br><small style="color:#64748b;">Weekly Gain: ${s.weeklyGain.toFixed(3)} g/week</small>`,
+            getEval: (s) => ({
+                badge: s.adwg >= 0.22 ? "Fast Growth (≥0.22 g/d)" : (s.adwg >= 0.18 ? "Optimal (0.18–0.22 g/d)" : "Slow (<0.18 g/d)"),
+                badgeClass: s.adwg >= 0.18 ? "badge-optimal" : "badge-warning",
+                text: s.adwg >= 0.18
+                    ? `Average daily gain of ${s.adwg.toFixed(4)} g/day (${s.weeklyGain.toFixed(3)} g/week) is within or above the optimal standard for Penaeus vannamei. Digestive enzymes and feed intake have operated efficiently.`
+                    : `Average daily gain of ${s.adwg.toFixed(4)} g/day is lower than standard commercial targets (<0.18 g/day). Growth may have been dampened by low water temperatures (<26 °C), reduced natural productivity, or high stocking density.`,
+                tip: "<strong>Pond Action Tip:</strong> Monitor water temperature regularly; digestive protease activity drops significantly below 28 °C. Adjust feeding rations dynamically using temperature telemetry."
+            })
+        },
+        "4": {
+            title: "Equation 4: Specific Growth Rate (SGR)",
+            subtitle: "Logarithmic biological compounding rate per day",
+            formula: "SGR = [(ln FABW - ln IBW) / DOC] × 100",
+            variables: [
+                "<strong>FABW</strong> = Final average body weight (g)",
+                "<strong>IBW</strong> = Initial body weight at stocking (g)",
+                "<strong>DOC</strong> = Days of culture (days)",
+                "<strong>ln</strong> = Natural logarithm",
+                "<strong>SGR</strong> = Specific growth rate (%/day)"
+            ],
+            getSubstitution: (s) => `SGR = [(ln ${s.fabw.toFixed(2)} - ln ${s.ibwVal.toFixed(3)}) / ${s.docDays}] × 100 = <strong>${s.sgr.toFixed(3)}% / day</strong><br><small style="color:#64748b;">Weight Multiplication: ${Math.round(s.weightMult).toLocaleString()}× stocking weight</small>`,
+            getEval: (s) => ({
+                badge: "Logarithmic Growth Index",
+                badgeClass: "badge-optimal",
+                text: `Specific growth rate evaluates relative percentage growth compounding each day. Over the ${s.docDays}-day cycle, individual shrimp increased in weight by ${Math.round(s.weightMult).toLocaleString()} times their stocking mass.`,
+                tip: "<strong>Pond Action Tip:</strong> SGR is steepest during nursery/early juvenile stages (DOC 1–30) and gradually flattens during late growout as metabolic maintenance increases."
+            })
+        },
+        "5": {
+            title: "Equation 5: Initial Biomass (IB)",
+            subtitle: "Total biological mass introduced at pond stocking",
+            formula: "IB = IS × IBW",
+            variables: [
+                "<strong>IS</strong> = Initial stocking count (shrimp)",
+                "<strong>IBW</strong> = Initial body weight per shrimp (g)",
+                "<strong>IB</strong> = Initial total biomass (g / kg)"
+            ],
+            getSubstitution: (s) => `IB = ${s.isCount.toLocaleString()} shrimp × ${s.ibwVal.toFixed(3)} g = ${Math.round(s.ibGrams).toLocaleString()} g = <strong>${s.ibKg.toFixed(2)} kg</strong>`,
+            getEval: (s) => ({
+                badge: "Stocking Base Biomass",
+                badgeClass: "badge-optimal",
+                text: `Total initial biological load stocked into the pond was ${s.ibKg.toFixed(2)} kg (${Math.round(s.ibGrams).toLocaleString()} grams). This establishes the base baseline from which total biological production is measured.`,
+                tip: "<strong>Pond Action Tip:</strong> Proper acclimatization of post-larvae (gradual temperature and salinity equalization over 1–2 hours) directly protects this initial investment."
+            })
+        },
+        "6": {
+            title: "Equation 6: Final Biomass (FB)",
+            subtitle: "Total standing biological biomass harvested from the pond",
+            formula: "FB = LHC × FABW",
+            variables: [
+                "<strong>LHC</strong> = Live harvest count (shrimp)",
+                "<strong>FABW</strong> = Final average body weight (g)",
+                "<strong>FB</strong> = Final total biomass (g / kg)"
+            ],
+            getSubstitution: (s) => `FB = ${s.lhcCount.toLocaleString()} shrimp × ${s.fabw.toFixed(2)} g = ${Math.round(s.fbGrams).toLocaleString()} g = <strong>${s.fbKg.toFixed(2)} kg</strong><br><small style="color:#64748b;">Net Live Yield Gain: ${s.netGainKg.toFixed(2)} kg</small>`,
+            getEval: (s) => ({
+                badge: "Harvest Standing Crop",
+                badgeClass: "badge-optimal",
+                text: `Total harvest standing crop yielded ${s.fbKg.toFixed(2)} kg (${(s.fbKg / 1000.0).toFixed(2)} metric tons). Subtracting initial biomass (${s.ibKg.toFixed(2)} kg) reveals a net live biomass gain of ${s.netGainKg.toFixed(2)} kg.`,
+                tip: "<strong>Pond Action Tip:</strong> Ensure paddlewheel aeration maintains at least 1 HP per 350–400 kg of standing biomass in the final month to prevent hypoxic crashes."
+            })
+        },
+        "7": {
+            title: "Equation 7: Feed Conversion Ratio (FCR)",
+            subtitle: "Feed utilization efficiency: kg of feed per kg of live weight gain",
+            formula: "FCR = TFG / (FB - IB)",
+            variables: [
+                "<strong>TFG</strong> = Total feed given across crop (kg)",
+                "<strong>FB</strong> = Final harvest biomass (kg)",
+                "<strong>IB</strong> = Initial stocking biomass (kg)",
+                "<strong>FCR</strong> = Feed conversion ratio"
+            ],
+            getSubstitution: (s) => `FCR = ${s.tfgKg.toFixed(1)} kg feed / (${s.fbKg.toFixed(1)} kg - ${s.ibKg.toFixed(1)} kg) net gain = <strong>${s.fcr.toFixed(3)}</strong><br><small style="color:#64748b;">Feed Assimilation Efficiency: ${s.feedEfficiency.toFixed(2)}%</small>`,
+            getEval: (s) => ({
+                badge: s.fcr < 1.20 ? "Exceptional (<1.20)" : (s.fcr <= 1.50 ? "Optimal (1.20–1.50)" : (s.fcr <= 1.80 ? "Acceptable (1.51–1.80)" : "Suboptimal (>1.80)")),
+                badgeClass: s.fcr <= 1.50 ? "badge-optimal" : (s.fcr <= 1.80 ? "badge-warning" : "badge-critical"),
+                text: s.fcr <= 1.50
+                    ? `Excellent FCR of ${s.fcr.toFixed(3)}. Standard commercial targets for Penaeus vannamei range between 1.20 and 1.50. High feed efficiency (${s.feedEfficiency.toFixed(2)}%) indicates minimal feed wastage, healthy gut microbiota, and low ammonia generation.`
+                    : (s.fcr <= 1.80
+                        ? `Acceptable FCR of ${s.fcr.toFixed(3)}. Feed utilization was moderate (${s.feedEfficiency.toFixed(2)}%). Regularly monitor feeding check trays to ensure feed is fully consumed within 2 hours.`
+                        : `Suboptimal FCR of ${s.fcr.toFixed(3)} (>1.80). Indicates feed wastage, overfeeding, or poor water quality reducing appetite. Excess unconsumed pellets decay on pond bottom, driving up toxic unionized ammonia.`),
+                tip: "<strong>Pond Action Tip:</strong> Check feed trays 1.5–2 hours after every meal. If >10% remains uneaten, immediately reduce the next feeding by 20%."
+            })
+        },
+        "8": {
+            title: "Equation 8: Fulton's Condition Factor (K)",
+            subtitle: "Morphometric body condition, tail meat fullness, and muscle density",
+            formula: "K = (FABW / TL³) × 100",
+            variables: [
+                "<strong>FABW</strong> = Final average body weight (g)",
+                "<strong>TL</strong> = Total length from rostrum tip to telson tip (cm)",
+                "<strong>K</strong> = Fulton's body condition factor"
+            ],
+            getSubstitution: (s) => `K = (${s.fabw.toFixed(2)} g / ${s.tlCm.toFixed(1)}³ cm³) × 100 = (${s.fabw.toFixed(2)} / ${Math.pow(s.tlCm, 3).toFixed(3)}) × 100 = <strong>${s.kFactor.toFixed(4)}</strong>`,
+            getEval: (s) => ({
+                badge: (s.kFactor >= 0.80 && s.kFactor <= 1.15) ? "Optimal Robust (0.80–1.15)" : (s.kFactor < 0.80 ? "Slender / Lean (<0.80)" : "Heavy Plump (>1.15)"),
+                badgeClass: (s.kFactor >= 0.80 && s.kFactor <= 1.15) ? "badge-optimal" : (s.kFactor < 0.80 ? "badge-warning" : "badge-optimal"),
+                text: (s.kFactor >= 0.80 && s.kFactor <= 1.15)
+                    ? `Optimal Fulton's condition factor (${s.kFactor.toFixed(4)}). A K factor between 0.80 and 1.15 is the ideal biological index for healthy Penaeus vannamei, denoting dense abdominal tail meat filling, firm muscle texture, and a well-proportioned carapace.`
+                    : (s.kFactor < 0.80
+                        ? `Slender body profile (K = ${s.kFactor.toFixed(4)} < 0.80). Shrimp may have recently completed ecdysis (molting) where carapace expands before flesh fills out, or they may require higher dietary energy/protein.`
+                        : `Heavy plump body profile (K = ${s.kFactor.toFixed(4)} > 1.15). Indicates high muscle girth and thick abdominal flesh.`),
+                tip: "<strong>Pond Action Tip:</strong> Sample 30–50 shrimp during weekly cast-net sampling to track K factor trends and verify tail meat fullness before scheduling commercial harvest."
+            })
         }
-    }
+    };
 
-    // Individual Eq. 2: Final Average Body Weight
-    function calculateIndividualFABW() {
-        const bwInput = Math.max(0.1, Number(document.getElementById("indiv-bw")?.value || 1700));
-        const bwUnit = document.getElementById("indiv-bw-unit")?.value || "kg";
-        const lhcCount = Math.max(1, Number(document.getElementById("indiv-fabw-lhc")?.value || 85000));
+    // Modal Opening & Closing Functions
+    function openGrowthModal(eqNumber) {
+        const modal = document.getElementById("growth-equation-modal");
+        const spec = EQUATION_SPECS[String(eqNumber)];
+        if (!modal || !spec) return;
 
-        const bwGrams = bwUnit === "kg" ? bwInput * 1000.0 : bwInput;
-        const bwKg = bwGrams / 1000.0;
-        const fabw = bwGrams / lhcCount;
-        const countPerKg = fabw > 0 ? (1000.0 / fabw) : 0;
+        const titleEl = document.getElementById("growth-modal-title");
+        const subtitleEl = document.getElementById("growth-modal-subtitle");
+        const formulaEl = document.getElementById("growth-modal-formula");
+        const varsEl = document.getElementById("growth-modal-variables");
+        const subEl = document.getElementById("growth-modal-substitution");
+        const badgeEl = document.getElementById("growth-modal-badge");
+        const recEl = document.getElementById("growth-modal-recommendation");
+        const tipEl = document.getElementById("growth-modal-action-tip");
 
-        const resEl = document.getElementById("indiv-fabw-result");
-        const countEl = document.getElementById("indiv-fabw-count-per-kg");
-        const bulkEl = document.getElementById("indiv-fabw-bulk-kg");
-        const stepEl = document.getElementById("indiv-fabw-step-math");
+        if (titleEl) titleEl.textContent = spec.title;
+        if (subtitleEl) subtitleEl.textContent = spec.subtitle;
+        if (formulaEl) formulaEl.innerHTML = spec.formula;
 
-        if (resEl) resEl.textContent = fabw.toFixed(2);
-        if (countEl) countEl.textContent = `${countPerKg.toFixed(1)} pcs / kg`;
-        if (bulkEl) bulkEl.textContent = `${bwKg.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} kg (${Math.round(bwGrams).toLocaleString()} g)`;
-        if (stepEl) stepEl.innerHTML = `FABW = ${Math.round(bwGrams).toLocaleString()} g / ${lhcCount.toLocaleString()} shrimp = ${fabw.toFixed(2)} g`;
-    }
-
-    // Individual Eqs. 3 & 4: ADWG & SGR
-    function calculateIndividualGrowth() {
-        const ibw = Math.max(0.0001, Number(document.getElementById("indiv-grow-ibw")?.value || 0.010));
-        const fabw = Math.max(0.01, Number(document.getElementById("indiv-grow-fabw")?.value || 20.00));
-        const doc = Math.max(1, Number(document.getElementById("indiv-grow-doc")?.value || 90));
-
-        const adwg = (fabw - ibw) / doc;
-        const weeklyGain = adwg * 7.0;
-        const sgr = ((Math.log(fabw) - Math.log(ibw)) / doc) * 100.0;
-        const mult = fabw / ibw;
-
-        const adwgEl = document.getElementById("indiv-adwg-result");
-        const adwgBadgeEl = document.getElementById("indiv-adwg-badge");
-        const weeklyEl = document.getElementById("indiv-adwg-weekly");
-        const sgrEl = document.getElementById("indiv-sgr-result");
-        const sgrMultEl = document.getElementById("indiv-sgr-mult");
-        const adwgStepEl = document.getElementById("indiv-adwg-step-math");
-        const sgrStepEl = document.getElementById("indiv-sgr-step-math");
-
-        if (adwgEl) adwgEl.textContent = adwg.toFixed(4);
-        if (weeklyEl) weeklyEl.textContent = `${weeklyGain.toFixed(3)} g / week`;
-        if (sgrEl) sgrEl.textContent = sgr.toFixed(3);
-        if (sgrMultEl) sgrMultEl.textContent = `${Math.round(mult).toLocaleString()}×`;
-        if (adwgStepEl) adwgStepEl.innerHTML = `(${fabw.toFixed(2)} - ${ibw.toFixed(3)}) / ${doc} = ${adwg.toFixed(4)} g/day`;
-        if (sgrStepEl) sgrStepEl.innerHTML = `[(ln ${fabw.toFixed(2)} - ln ${ibw.toFixed(3)}) / ${doc}] &times; 100 = ${sgr.toFixed(3)}%/day`;
-
-        if (adwgBadgeEl) {
-            if (adwg >= 0.25) {
-                adwgBadgeEl.textContent = "Fast Growth";
-                adwgBadgeEl.className = "wqi-metric-badge badge-optimal";
-            } else if (adwg >= 0.18) {
-                adwgBadgeEl.textContent = "Optimal Growth";
-                adwgBadgeEl.className = "wqi-metric-badge badge-optimal";
-            } else {
-                adwgBadgeEl.textContent = "Slow Growth";
-                adwgBadgeEl.className = "wqi-metric-badge badge-warning";
-            }
+        if (varsEl) {
+            varsEl.innerHTML = spec.variables.map(v => `<div>${v}</div>`).join("");
         }
-    }
 
-    // Individual Eqs. 5 & 6: Biomass (IB & FB)
-    function calculateIndividualBiomass() {
-        const isCount = Math.max(1, Number(document.getElementById("indiv-bio-is")?.value || 100000));
-        const ibw = Math.max(0.0001, Number(document.getElementById("indiv-bio-ibw")?.value || 0.010));
-        const lhcCount = Math.max(1, Number(document.getElementById("indiv-bio-lhc")?.value || 85000));
-        const fabw = Math.max(0.01, Number(document.getElementById("indiv-bio-fabw")?.value || 20.00));
-
-        const ibGrams = isCount * ibw;
-        const ibKg = ibGrams / 1000.0;
-        const fbGrams = lhcCount * fabw;
-        const fbKg = fbGrams / 1000.0;
-        const gainKg = Math.max(0, fbKg - ibKg);
-
-        const ibEl = document.getElementById("indiv-bio-ib-val");
-        const ibSubEl = document.getElementById("indiv-bio-ib-sub");
-        const fbEl = document.getElementById("indiv-bio-fb-val");
-        const fbSubEl = document.getElementById("indiv-bio-fb-sub");
-        const gainEl = document.getElementById("indiv-bio-gain-val");
-        const ibStepEl = document.getElementById("indiv-bio-ib-step");
-        const fbStepEl = document.getElementById("indiv-bio-fb-step");
-
-        if (ibEl) ibEl.textContent = `${ibKg.toFixed(2)} kg`;
-        if (ibSubEl) ibSubEl.textContent = `(${Math.round(ibGrams).toLocaleString()} g)`;
-        if (fbEl) fbEl.textContent = `${fbKg.toFixed(2)} kg`;
-        if (fbSubEl) fbSubEl.textContent = `(${Math.round(fbGrams).toLocaleString()} g)`;
-        if (gainEl) gainEl.textContent = `${gainKg.toFixed(2)} kg (${(gainKg / 1000.0).toFixed(2)} metric tons)`;
-        if (ibStepEl) ibStepEl.innerHTML = `${isCount.toLocaleString()} &times; ${ibw.toFixed(3)} g = ${Math.round(ibGrams).toLocaleString()} g (${ibKg.toFixed(2)} kg)`;
-        if (fbStepEl) fbStepEl.innerHTML = `${lhcCount.toLocaleString()} &times; ${fabw.toFixed(2)} g = ${Math.round(fbGrams).toLocaleString()} g (${fbKg.toFixed(2)} kg)`;
-    }
-
-    // Individual Eq. 7: Feed Conversion Ratio
-    function calculateIndividualFCR() {
-        const tfgInput = Math.max(0.1, Number(document.getElementById("indiv-fcr-tfg")?.value || 2125));
-        const feedUnit = document.getElementById("indiv-fcr-tfg-unit")?.value || "kg";
-        const fbKg = Math.max(0.1, Number(document.getElementById("indiv-fcr-fb")?.value || 1700));
-        const ibKg = Math.max(0.001, Number(document.getElementById("indiv-fcr-ib")?.value || 1.0));
-
-        const tfgKg = feedUnit === "kg" ? tfgInput : tfgInput / 1000.0;
-        const gainKg = Math.max(0.001, fbKg - ibKg);
-        const fcr = tfgKg / gainKg;
-        const efficiency = fcr > 0 ? (100.0 / fcr) : 0;
-
-        const resEl = document.getElementById("indiv-fcr-result");
-        const badgeEl = document.getElementById("indiv-fcr-badge");
-        const effEl = document.getElementById("indiv-fcr-efficiency");
-        const gainDescEl = document.getElementById("indiv-fcr-gain-desc");
-        const stepEl = document.getElementById("indiv-fcr-step-math");
-        const ratingEl = document.getElementById("indiv-fcr-rating");
-
-        if (resEl) resEl.textContent = fcr.toFixed(3);
-        if (effEl) effEl.textContent = `${efficiency.toFixed(2)}%`;
-        if (gainDescEl) gainDescEl.textContent = `${gainKg.toFixed(2)} kg`;
-        if (stepEl) stepEl.innerHTML = `FCR = ${tfgKg.toFixed(1)} kg / (${fbKg.toFixed(1)} - ${ibKg.toFixed(1)}) kg = ${fcr.toFixed(3)}`;
-
-        if (badgeEl && ratingEl) {
-            if (fcr < 1.20) {
-                badgeEl.textContent = "Exceptional (<1.20)";
-                badgeEl.className = "wqi-metric-badge badge-optimal";
-                ratingEl.textContent = "Outstanding feed efficiency (<1.20). Excellent nutrient assimilation and minimum uneaten pellet degradation.";
-            } else if (fcr <= 1.50) {
-                badgeEl.textContent = "Optimal (1.20–1.50)";
-                badgeEl.className = "wqi-metric-badge badge-optimal";
-                ratingEl.textContent = "Standard target commercial FCR (1.20–1.50) for Penaeus vannamei culture.";
-            } else if (fcr <= 1.80) {
-                badgeEl.textContent = "Acceptable (1.51–1.80)";
-                badgeEl.className = "wqi-metric-badge badge-warning";
-                ratingEl.textContent = "Moderate feed efficiency (1.51–1.80). Regularly inspect feed check trays to prevent overfeeding and ammonia spikes.";
-            } else {
-                badgeEl.textContent = "Suboptimal (>1.80)";
-                badgeEl.className = "wqi-metric-badge badge-critical";
-                ratingEl.textContent = "High FCR (>1.80). Signals feed wastage, biological stress, low dissolved oxygen, or pellet disintegration.";
-            }
+        if (subEl) {
+            subEl.innerHTML = spec.getSubstitution(currentGrowthState);
         }
+
+        const evaluation = spec.getEval(currentGrowthState);
+        if (badgeEl) {
+            badgeEl.textContent = evaluation.badge;
+            badgeEl.className = `wqi-metric-badge ${evaluation.badgeClass}`;
+        }
+        if (recEl) {
+            recEl.textContent = evaluation.text;
+        }
+        if (tipEl) {
+            tipEl.innerHTML = evaluation.tip;
+        }
+
+        modal.hidden = false;
+        document.body.style.overflow = "hidden";
     }
 
-    // Individual Eq. 8: Fulton's Condition Factor
-    function calculateIndividualK() {
-        const fabw = Math.max(0.1, Number(document.getElementById("indiv-k-fabw")?.value || 20.00));
-        const tlCm = Math.max(0.1, Number(document.getElementById("indiv-k-tl")?.value || 12.9));
-
-        const tlCubed = Math.pow(tlCm, 3);
-        const kFactor = (fabw / tlCubed) * 100.0;
-
-        const resEl = document.getElementById("indiv-k-result");
-        const badgeEl = document.getElementById("indiv-k-badge");
-        const sumEl = document.getElementById("indiv-k-summary");
-        const stepEl = document.getElementById("indiv-k-step-math");
-        const ratingEl = document.getElementById("indiv-k-rating");
-
-        if (resEl) resEl.textContent = kFactor.toFixed(4);
-        if (stepEl) stepEl.innerHTML = `K = (${fabw.toFixed(2)} / ${tlCm.toFixed(1)}&sup3;) &times; 100 = (${fabw.toFixed(2)} / ${tlCubed.toFixed(3)}) &times; 100 = ${kFactor.toFixed(4)}`;
-
-        if (badgeEl && sumEl && ratingEl) {
-            if (kFactor >= 0.80 && kFactor <= 1.15) {
-                badgeEl.textContent = "Optimal Condition";
-                badgeEl.className = "wqi-metric-badge badge-optimal";
-                sumEl.textContent = "Robust & Well-proportioned";
-                ratingEl.textContent = "A Fulton's condition factor between 0.80 and 1.15 is the ideal biological index for healthy commercial Penaeus vannamei, denoting dense muscle tissue and robust carapace girth.";
-            } else if (kFactor < 0.80) {
-                badgeEl.textContent = "Slender / Lean";
-                badgeEl.className = "wqi-metric-badge badge-warning";
-                sumEl.textContent = "Slender Body Profile";
-                ratingEl.textContent = "K < 0.80 suggests lean body mass. Check if shrimp recently completed ecdysis (molting) or require increased dietary protein/energy.";
-            } else {
-                badgeEl.textContent = "Heavy / Plump";
-                badgeEl.className = "wqi-metric-badge badge-optimal";
-                sumEl.textContent = "High Carapace Girth & Muscle Density";
-                ratingEl.textContent = "K > 1.15 indicates dense muscle filling and excellent abdominal meat ratio.";
-            }
+    function closeGrowthModal() {
+        const modal = document.getElementById("growth-equation-modal");
+        if (modal) {
+            modal.hidden = true;
+            document.body.style.overflow = "";
         }
     }
 
@@ -1147,11 +1091,6 @@ document.addEventListener("DOMContentLoaded", function () {
             el.addEventListener("change", calculateMasterGrowth);
         }
     });
-
-    const gmBtnCalc = document.getElementById("gm-btn-calculate");
-    if (gmBtnCalc) {
-        gmBtnCalc.addEventListener("click", calculateMasterGrowth);
-    }
 
     // Preset Buttons
     const growthPresetButtons = document.querySelectorAll("#growth-master-presets .preset-chip, .btn-preset-growth");
@@ -1184,11 +1123,6 @@ document.addEventListener("DOMContentLoaded", function () {
             if (feedUnitSelect) feedUnitSelect.value = p.feed_unit;
             if (tlInput) tlInput.value = p.tl;
 
-            // Clear manual edited dataset on individual inputs so preset propagates
-            document.querySelectorAll(".individual-growth-panel input, .individual-growth-panel select").forEach(el => {
-                delete el.dataset.manualEdited;
-            });
-
             calculateMasterGrowth();
         });
     });
@@ -1220,110 +1154,32 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Individual Input Event Listeners
-    // Eq. 1
-    ["indiv-is", "indiv-lhc"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.addEventListener("input", () => {
-                el.dataset.manualEdited = "true";
-                calculateIndividualSR();
-            });
-            el.addEventListener("change", () => {
-                el.dataset.manualEdited = "true";
-                calculateIndividualSR();
-            });
+    // Modal Trigger Buttons on each of the 8 cards
+    document.querySelectorAll(".growth-calc-details-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const eqNum = btn.dataset.eq;
+            openGrowthModal(eqNum);
+        });
+    });
+
+    const closeGrowthModalBtn = document.getElementById("close-growth-modal");
+    const closeGrowthActionBtn = document.getElementById("growth-modal-close-action");
+    const growthModalBackdrop = document.getElementById("growth-equation-modal");
+
+    if (closeGrowthModalBtn) closeGrowthModalBtn.addEventListener("click", closeGrowthModal);
+    if (closeGrowthActionBtn) closeGrowthActionBtn.addEventListener("click", closeGrowthModal);
+    if (growthModalBackdrop) {
+        growthModalBackdrop.addEventListener("click", (e) => {
+            if (e.target === growthModalBackdrop) closeGrowthModal();
+        });
+    }
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && growthModalBackdrop && !growthModalBackdrop.hidden) {
+            closeGrowthModal();
         }
     });
-    const btnEq1 = document.getElementById("btn-calc-eq1");
-    if (btnEq1) btnEq1.addEventListener("click", calculateIndividualSR);
 
-    // Eq. 2
-    ["indiv-bw", "indiv-bw-unit", "indiv-fabw-lhc"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.addEventListener("input", () => {
-                el.dataset.manualEdited = "true";
-                calculateIndividualFABW();
-            });
-            el.addEventListener("change", () => {
-                el.dataset.manualEdited = "true";
-                calculateIndividualFABW();
-            });
-        }
-    });
-    const btnEq2 = document.getElementById("btn-calc-eq2");
-    if (btnEq2) btnEq2.addEventListener("click", calculateIndividualFABW);
-
-    // Eqs. 3 & 4
-    ["indiv-grow-ibw", "indiv-grow-fabw", "indiv-grow-doc"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.addEventListener("input", () => {
-                el.dataset.manualEdited = "true";
-                calculateIndividualGrowth();
-            });
-            el.addEventListener("change", () => {
-                el.dataset.manualEdited = "true";
-                calculateIndividualGrowth();
-            });
-        }
-    });
-    const btnEq34 = document.getElementById("btn-calc-eq34");
-    if (btnEq34) btnEq34.addEventListener("click", calculateIndividualGrowth);
-
-    // Eqs. 5 & 6
-    ["indiv-bio-is", "indiv-bio-ibw", "indiv-bio-lhc", "indiv-bio-fabw"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.addEventListener("input", () => {
-                el.dataset.manualEdited = "true";
-                calculateIndividualBiomass();
-            });
-            el.addEventListener("change", () => {
-                el.dataset.manualEdited = "true";
-                calculateIndividualBiomass();
-            });
-        }
-    });
-    const btnEq56 = document.getElementById("btn-calc-eq56");
-    if (btnEq56) btnEq56.addEventListener("click", calculateIndividualBiomass);
-
-    // Eq. 7
-    ["indiv-fcr-tfg", "indiv-fcr-tfg-unit", "indiv-fcr-fb", "indiv-fcr-ib"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.addEventListener("input", () => {
-                el.dataset.manualEdited = "true";
-                calculateIndividualFCR();
-            });
-            el.addEventListener("change", () => {
-                el.dataset.manualEdited = "true";
-                calculateIndividualFCR();
-            });
-        }
-    });
-    const btnEq7 = document.getElementById("btn-calc-eq7");
-    if (btnEq7) btnEq7.addEventListener("click", calculateIndividualFCR);
-
-    // Eq. 8
-    ["indiv-k-fabw", "indiv-k-tl"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.addEventListener("input", () => {
-                el.dataset.manualEdited = "true";
-                calculateIndividualK();
-            });
-            el.addEventListener("change", () => {
-                el.dataset.manualEdited = "true";
-                calculateIndividualK();
-            });
-        }
-    });
-    const btnEq8 = document.getElementById("btn-calc-eq8");
-    if (btnEq8) btnEq8.addEventListener("click", calculateIndividualK);
-
-
+// -------------------------------------------------------------
     // Initial Load & Boot
     // -------------------------------------------------------------
     async function boot() {
@@ -1350,4 +1206,3 @@ document.addEventListener("DOMContentLoaded", function () {
     boot();
     setInterval(fetchLatestTelemetry, 15000);
 });
-
