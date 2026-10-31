@@ -1751,6 +1751,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let currentGrowthChartData = [];
     let currentGrowthChartPoints = {};
     let growthChartHoverIndex = null;
+    let growthChartHoveredParam = null;
     let growthHistoryRecords = [];
 
     // DOM Elements for Graph Modal
@@ -1758,7 +1759,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const closeGrowthGraphModalBtn = document.getElementById("close-growth-graph-modal");
     const closeGrowthGraphActionBtn = document.getElementById("close-growth-graph-action-btn");
     const btnOpenGrowthChart = document.getElementById("btn-open-growth-chart");
-    const btnOpenGrowthChartTop = document.getElementById("btn-open-growth-chart-top");
     const btnGraphModeTrajectory = document.getElementById("btn-graph-mode-trajectory");
     const btnGraphModeHistory = document.getElementById("btn-graph-mode-history");
     const btnToggleAllGrowthMetrics = document.getElementById("btn-toggle-all-growth-metrics");
@@ -2012,19 +2012,22 @@ document.addEventListener("DOMContentLoaded", function () {
             context.lineJoin = "round";
             context.stroke();
 
-            // Circular points with hover halo
+            // Circular points with hover halo and focused item glow
             pts.forEach((pt, idx) => {
                 const isHovered = growthChartHoverIndex === idx;
+                const isFocused = isHovered && (growthChartHoveredParam === key || growthChartHoveredParam === null);
 
+                // Halo glow for hovered point
                 if (isHovered) {
                     context.beginPath();
-                    context.arc(pt.x, pt.y, 9.5, 0, Math.PI * 2);
+                    context.arc(pt.x, pt.y, isFocused ? 11 : 7, 0, Math.PI * 2);
                     context.fillStyle = conf.glow;
                     context.fill();
                 }
 
+                // Outer point ring & dot
                 context.beginPath();
-                context.arc(pt.x, pt.y, isHovered ? 5.5 : 3.5, 0, Math.PI * 2);
+                context.arc(pt.x, pt.y, isHovered ? (isFocused ? 5.5 : 4.5) : 3.5, 0, Math.PI * 2);
                 context.fillStyle = isHovered ? "#ffffff" : conf.color;
                 context.fill();
                 context.strokeStyle = conf.color;
@@ -2034,7 +2037,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    function renderGrowthTooltip(index, pointX, mouseY, containerWidth, containerHeight) {
+    function renderGrowthTooltip(index, pointX, mouseY, focusedParam, containerWidth, containerHeight) {
         if (!growthTooltip) return;
         const dataItem = currentGrowthChartData[index];
         if (!dataItem) return;
@@ -2046,25 +2049,40 @@ document.addEventListener("DOMContentLoaded", function () {
             const conf = GROWTH_METRICS_CONFIG[key];
             const val = dataItem[key];
             const evalInfo = conf.evaluator(val);
-            const formattedVal = key === "k" ? Number(val).toFixed(4) : (key === "adwg" ? Number(val).toFixed(3) : Number(val).toLocaleString(undefined, { maximumFractionDigits: 2 }));
+            const formattedVal = key === "k"
+                ? Number(val).toFixed(4)
+                : (key === "adwg"
+                    ? Number(val).toFixed(3)
+                    : (key === "sr" || key === "fabw" || key === "sgr" || key === "fcr"
+                        ? Number(val).toFixed(2)
+                        : Number(val).toLocaleString(undefined, { maximumFractionDigits: 1 })
+                      )
+                  );
+
+            const isItemFocused = focusedParam === key;
+            const statusClass = evalInfo.badgeClass ? evalInfo.badgeClass.replace("badge-", "status-") : "status-optimal";
 
             itemsHtml += `
-                <div class="tooltip-item">
+                <div class="tooltip-item ${isItemFocused ? 'tooltip-item-focused' : ''}">
                     <div class="tooltip-item-left">
                         <span class="tooltip-dot" style="background:${conf.color};"></span>
                         <span class="tooltip-param-label">${conf.eq}: ${conf.label}</span>
                     </div>
                     <div class="tooltip-item-right">
                         <span class="tooltip-param-value">${formattedVal} ${conf.unit}</span>
-                        <span class="tooltip-param-status ${evalInfo.badgeClass.replace('badge-', 'status-')}">${evalInfo.status}</span>
+                        <span class="tooltip-param-status ${statusClass}">${evalInfo.status}</span>
                     </div>
                 </div>
             `;
         });
 
+        const timeBadge = dataItem.timeStr
+            ? `${dataItem.label} • ${dataItem.timeStr}`
+            : (dataItem.day ? `DOC ${dataItem.day} • Culture Day ${dataItem.day}` : dataItem.label);
+
         growthTooltip.innerHTML = `
             <div class="tooltip-header">
-                <span class="tooltip-time-badge">${dataItem.label || `DOC ${dataItem.day}`}</span>
+                <span class="tooltip-time-badge">${timeBadge}</span>
                 <span class="tooltip-status-pill pill-optimal">P. vannamei</span>
             </div>
             <div class="tooltip-content">
@@ -2075,15 +2093,21 @@ document.addEventListener("DOMContentLoaded", function () {
         growthTooltip.hidden = false;
         growthTooltip.classList.add("visible");
 
-        const tooltipWidth = 285;
-        let left = pointX + 16;
-        if (left + tooltipWidth > containerWidth - 10) {
-            left = pointX - tooltipWidth - 16;
-        }
-        const top = Math.max(10, Math.min(mouseY - 30, containerHeight - 160));
+        // Calculate dynamic dimensions matching water quality trends
+        const tooltipWidth = growthTooltip.offsetWidth || 285;
+        const tooltipHeight = growthTooltip.offsetHeight || 210;
 
-        growthTooltip.style.left = `${left}px`;
-        growthTooltip.style.top = `${top}px`;
+        let leftPos = pointX + 16;
+        if (leftPos + tooltipWidth > containerWidth - 12) {
+            leftPos = pointX - tooltipWidth - 16;
+        }
+        if (leftPos < 12) leftPos = 12;
+
+        let topPos = mouseY - (tooltipHeight / 2);
+        topPos = Math.max(8, Math.min(containerHeight - tooltipHeight - 8, topPos));
+
+        growthTooltip.style.left = `${leftPos}px`;
+        growthTooltip.style.top = `${topPos}px`;
     }
 
     function updateGrowthChartLegend() {
@@ -2190,11 +2214,11 @@ document.addEventListener("DOMContentLoaded", function () {
             growthTooltip.hidden = true;
         }
         growthChartHoverIndex = null;
+        growthChartHoveredParam = null;
     }
 
     // Graph Modal Event Listeners
     if (btnOpenGrowthChart) btnOpenGrowthChart.addEventListener("click", openGrowthGraphModal);
-    if (btnOpenGrowthChartTop) btnOpenGrowthChartTop.addEventListener("click", openGrowthGraphModal);
     if (closeGrowthGraphModalBtn) closeGrowthGraphModalBtn.addEventListener("click", closeGrowthGraphModal);
     if (closeGrowthGraphActionBtn) closeGrowthGraphActionBtn.addEventListener("click", closeGrowthGraphModal);
     if (growthGraphModal) {
@@ -2263,60 +2287,90 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Pointer hover interactions on canvas
-    if (growthChartCanvas) {
-        growthChartCanvas.addEventListener("pointermove", (e) => {
-            if (!currentGrowthChartData || currentGrowthChartData.length === 0) return;
-            const rect = growthChartCanvas.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
+    function handleGrowthPointerMove(event) {
+        if (!currentGrowthChartData || currentGrowthChartData.length === 0) return;
+        const rect = growthChartCanvas.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+        const width = growthChartCanvas.clientWidth || 750;
+        const height = growthChartCanvas.clientHeight || 320;
 
-            const padding = { top: 28, right: 35, bottom: 38, left: 48 };
-            const chartW = (growthChartCanvas.clientWidth || 750) - padding.left - padding.right;
-            const dataCount = currentGrowthChartData.length;
+        const padding = { top: 28, right: 35, bottom: 38, left: 48 };
+        const chartW = width - padding.left - padding.right;
+        const dataCount = currentGrowthChartData.length;
 
-            if (mouseX < padding.left - 10 || mouseX > padding.left + chartW + 10) {
-                if (growthTooltip) {
-                    growthTooltip.classList.remove("visible");
-                    growthTooltip.hidden = true;
+        if (
+            mouseX < padding.left - 15 ||
+            mouseX > width - padding.right + 15 ||
+            mouseY < padding.top - 15 ||
+            mouseY > height - padding.bottom + 15
+        ) {
+            handleGrowthPointerLeave();
+            return;
+        }
+
+        let nearestIndex = 0;
+        if (dataCount > 1) {
+            const ratio = (mouseX - padding.left) / chartW;
+            nearestIndex = Math.round(ratio * (dataCount - 1));
+            nearestIndex = Math.max(0, Math.min(dataCount - 1, nearestIndex));
+        }
+
+        const dataItem = currentGrowthChartData[nearestIndex];
+        if (!dataItem) {
+            handleGrowthPointerLeave();
+            return;
+        }
+
+        // Determine closest metric point along vertical crosshair
+        const activeKeys = Array.from(selectedGrowthMetrics).filter(
+            k => currentGrowthChartPoints[k] && currentGrowthChartPoints[k][nearestIndex]
+        );
+
+        let closestParam = null;
+        let pointX = dataCount === 1 ? padding.left + chartW / 2 : padding.left + (nearestIndex / (dataCount - 1)) * chartW;
+
+        if (activeKeys.length > 0) {
+            pointX = currentGrowthChartPoints[activeKeys[0]][nearestIndex].x;
+            let minDistance = Infinity;
+            activeKeys.forEach(k => {
+                const pt = currentGrowthChartPoints[k][nearestIndex];
+                if (pt) {
+                    const dist = Math.hypot(mouseX - pt.x, mouseY - pt.y);
+                    if (dist < minDistance) {
+                        minDistance = dist;
+                        closestParam = k;
+                    }
                 }
-                growthChartHoverIndex = null;
-                renderGrowthChart();
-                return;
+            });
+
+            if (minDistance >= 40) {
+                closestParam = null;
             }
+        }
 
-            let closestIndex = 0;
-            let closestDist = Infinity;
+        growthChartHoverIndex = nearestIndex;
+        growthChartHoveredParam = closestParam;
+        renderGrowthChart();
+        renderGrowthTooltip(nearestIndex, pointX, mouseY, closestParam, width, height);
+    }
 
-            for (let i = 0; i < dataCount; i++) {
-                const ptX = dataCount === 1
-                    ? padding.left + chartW / 2
-                    : padding.left + (i / (dataCount - 1)) * chartW;
-                const dist = Math.abs(mouseX - ptX);
-                if (dist < closestDist) {
-                    closestDist = dist;
-                    closestIndex = i;
-                }
-            }
-
-            growthChartHoverIndex = closestIndex;
-            renderGrowthChart();
-
-            const pointX = dataCount === 1
-                ? padding.left + chartW / 2
-                : padding.left + (closestIndex / (dataCount - 1)) * chartW;
-
-            renderGrowthTooltip(closestIndex, pointX, mouseY, growthChartCanvas.clientWidth || 750, growthChartCanvas.clientHeight || 300);
-        });
-
-        growthChartCanvas.addEventListener("pointerleave", () => {
-            if (growthTooltip) {
-                growthTooltip.classList.remove("visible");
-                growthTooltip.hidden = true;
-            }
+    function handleGrowthPointerLeave() {
+        if (growthTooltip) {
+            growthTooltip.classList.remove("visible");
+            growthTooltip.hidden = true;
+        }
+        if (growthChartHoverIndex !== null || growthChartHoveredParam !== null) {
             growthChartHoverIndex = null;
+            growthChartHoveredParam = null;
             renderGrowthChart();
-        });
+        }
+    }
+
+    // Pointer hover interactions on canvas matching Water Quality Trends
+    if (growthChartCanvas) {
+        growthChartCanvas.addEventListener("pointermove", handleGrowthPointerMove);
+        growthChartCanvas.addEventListener("pointerleave", handleGrowthPointerLeave);
     }
 
     // Shortcut button to export Growth parameters

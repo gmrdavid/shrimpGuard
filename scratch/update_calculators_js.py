@@ -1,735 +1,454 @@
-# -*- coding: utf-8 -*-
-"""
-Script to insert Shrimp Growth Calculators logic into static/js/calculators.js.
-"""
+# Update static/js/calculators.js and static/css/style.css
 
-growth_js = '''
-    // -------------------------------------------------------------
-    // TOOL 2: Shrimp Growth & Zootechnical Performance (Eqs. 1–8)
-    // -------------------------------------------------------------
+with open("static/js/calculators.js", "r", encoding="utf-8") as f:
+    js_content = f.read()
 
-    // Tab Switching for Growth Calculators
-    const growthTabButtons = document.querySelectorAll(".growth-tabs-bar .growth-tab-item");
-    const growthTabPanes = document.querySelectorAll(".growth-section .growth-tab-pane");
+# 1. Add growthChartHoveredParam
+old_decl = """    let selectedGrowthMetrics = new Set(["sr", "fabw", "adwg", "sgr", "fb", "fcr", "k"]);
+    let growthChartMode = "trajectory"; // "trajectory" or "history"
+    let currentGrowthChartData = [];
+    let currentGrowthChartPoints = {};
+    let growthChartHoverIndex = null;
+    let growthHistoryRecords = [];
 
-    growthTabButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
-            const targetPaneId = btn.getAttribute("aria-controls");
-            growthTabButtons.forEach(b => {
-                b.classList.remove("active");
-                b.setAttribute("aria-selected", "false");
-            });
-            growthTabPanes.forEach(p => {
-                p.classList.remove("active");
-                p.hidden = true;
-            });
+    // DOM Elements for Graph Modal
+    const growthGraphModal = document.getElementById("growth-trend-graph-modal");
+    const closeGrowthGraphModalBtn = document.getElementById("close-growth-graph-modal");
+    const closeGrowthGraphActionBtn = document.getElementById("close-growth-graph-action-btn");
+    const btnOpenGrowthChart = document.getElementById("btn-open-growth-chart");
+    const btnOpenGrowthChartTop = document.getElementById("btn-open-growth-chart-top");"""
 
-            btn.classList.add("active");
-            btn.setAttribute("aria-selected", "true");
-            const activePane = document.getElementById(targetPaneId);
-            if (activePane) {
-                activePane.classList.add("active");
-                activePane.hidden = false;
-            }
+new_decl = """    let selectedGrowthMetrics = new Set(["sr", "fabw", "adwg", "sgr", "fb", "fcr", "k"]);
+    let growthChartMode = "trajectory"; // "trajectory" or "history"
+    let currentGrowthChartData = [];
+    let currentGrowthChartPoints = {};
+    let growthChartHoverIndex = null;
+    let growthChartHoveredParam = null;
+    let growthHistoryRecords = [];
+
+    // DOM Elements for Graph Modal
+    const growthGraphModal = document.getElementById("growth-trend-graph-modal");
+    const closeGrowthGraphModalBtn = document.getElementById("close-growth-graph-modal");
+    const closeGrowthGraphActionBtn = document.getElementById("close-growth-graph-action-btn");
+    const btnOpenGrowthChart = document.getElementById("btn-open-growth-chart");"""
+
+if old_decl in js_content:
+    js_content = js_content.replace(old_decl, new_decl)
+    print("Replaced declaration in calculators.js")
+else:
+    print("WARNING: old_decl not found!")
+
+# 2. Update dots in renderGrowthChart
+old_dots = """            // Circular points with hover halo
+            pts.forEach((pt, idx) => {
+                const isHovered = growthChartHoverIndex === idx;
+
+                if (isHovered) {
+                    context.beginPath();
+                    context.arc(pt.x, pt.y, 9.5, 0, Math.PI * 2);
+                    context.fillStyle = conf.glow;
+                    context.fill();
+                }
+
+                context.beginPath();
+                context.arc(pt.x, pt.y, isHovered ? 5.5 : 3.5, 0, Math.PI * 2);
+                context.fillStyle = isHovered ? "#ffffff" : conf.color;
+                context.fill();
+                context.strokeStyle = conf.color;
+                context.lineWidth = isHovered ? 2.5 : 1.5;
+                context.stroke();
+            });"""
+
+new_dots = """            // Circular points with hover halo and focused item glow
+            pts.forEach((pt, idx) => {
+                const isHovered = growthChartHoverIndex === idx;
+                const isFocused = isHovered && (growthChartHoveredParam === key || growthChartHoveredParam === null);
+
+                // Halo glow for hovered point
+                if (isHovered) {
+                    context.beginPath();
+                    context.arc(pt.x, pt.y, isFocused ? 11 : 7, 0, Math.PI * 2);
+                    context.fillStyle = conf.glow;
+                    context.fill();
+                }
+
+                // Outer point ring & dot
+                context.beginPath();
+                context.arc(pt.x, pt.y, isHovered ? (isFocused ? 5.5 : 4.5) : 3.5, 0, Math.PI * 2);
+                context.fillStyle = isHovered ? "#ffffff" : conf.color;
+                context.fill();
+                context.strokeStyle = conf.color;
+                context.lineWidth = isHovered ? 2.5 : 1.5;
+                context.stroke();
+            });"""
+
+if old_dots in js_content:
+    js_content = js_content.replace(old_dots, new_dots)
+    print("Replaced dots in renderGrowthChart")
+else:
+    print("WARNING: old_dots not found!")
+
+# 3. Update renderGrowthTooltip
+old_tooltip = """    function renderGrowthTooltip(index, pointX, mouseY, containerWidth, containerHeight) {
+        if (!growthTooltip) return;
+        const dataItem = currentGrowthChartData[index];
+        if (!dataItem) return;
+
+        const activeKeys = Array.from(selectedGrowthMetrics);
+        let itemsHtml = "";
+
+        activeKeys.forEach(key => {
+            const conf = GROWTH_METRICS_CONFIG[key];
+            const val = dataItem[key];
+            const evalInfo = conf.evaluator(val);
+            const formattedVal = key === "k" ? Number(val).toFixed(4) : (key === "adwg" ? Number(val).toFixed(3) : Number(val).toLocaleString(undefined, { maximumFractionDigits: 2 }));
+
+            itemsHtml += `
+                <div class="tooltip-item">
+                    <div class="tooltip-item-left">
+                        <span class="tooltip-dot" style="background:${conf.color};"></span>
+                        <span class="tooltip-param-label">${conf.eq}: ${conf.label}</span>
+                    </div>
+                    <div class="tooltip-item-right">
+                        <span class="tooltip-param-value">${formattedVal} ${conf.unit}</span>
+                        <span class="tooltip-param-status ${evalInfo.badgeClass.replace('badge-', 'status-')}">${evalInfo.status}</span>
+                    </div>
+                </div>
+            `;
         });
-    });
 
-    // Preset Configurations for Penaeus vannamei
-    const GROWTH_PRESETS = {
-        commercial: {
-            is: 100000,
-            lhc: 85000,
-            doc: 90,
-            ibw: 0.010,
-            bw: 1700,
-            bw_unit: "kg",
-            tfg: 2125,
-            feed_unit: "kg",
-            tl: 12.9
-        },
-        intensive: {
-            is: 150000,
-            lhc: 132000,
-            doc: 75,
-            ibw: 0.015,
-            bw: 2376,
-            bw_unit: "kg",
-            tfg: 2950,
-            feed_unit: "kg",
-            tl: 12.4
-        },
-        nursery: {
-            is: 200000,
-            lhc: 180000,
-            doc: 30,
-            ibw: 0.005,
-            bw: 270,
-            bw_unit: "kg",
-            tfg: 280,
-            feed_unit: "kg",
-            tl: 5.8
+        growthTooltip.innerHTML = `
+            <div class="tooltip-header">
+                <span class="tooltip-time-badge">${dataItem.label || `DOC ${dataItem.day}`}</span>
+                <span class="tooltip-status-pill pill-optimal">P. vannamei</span>
+            </div>
+            <div class="tooltip-content">
+                ${itemsHtml}
+            </div>
+        `;
+
+        growthTooltip.hidden = false;
+        growthTooltip.classList.add("visible");
+
+        const tooltipWidth = 285;
+        let left = pointX + 16;
+        if (left + tooltipWidth > containerWidth - 10) {
+            left = pointX - tooltipWidth - 16;
         }
-    };
+        const top = Math.max(10, Math.min(mouseY - 30, containerHeight - 160));
 
-    // Master Engine (All-in-One Eqs. 1–8)
-    function calculateMasterGrowth() {
-        const isCount = Math.max(1, Number(document.getElementById("gm-initial-stocking")?.value || 100000));
-        const lhcCount = Math.max(1, Number(document.getElementById("gm-live-harvest-count")?.value || 85000));
-        const docDays = Math.max(1, Number(document.getElementById("gm-days-of-culture")?.value || 90));
-        const ibwVal = Math.max(0.0001, Number(document.getElementById("gm-initial-weight")?.value || 0.010));
-        const bwInput = Math.max(0.1, Number(document.getElementById("gm-bulk-weight")?.value || 1700));
-        const bwUnit = document.getElementById("gm-bw-unit")?.value || "kg";
-        const tfgInput = Math.max(0.1, Number(document.getElementById("gm-total-feed")?.value || 2125));
-        const feedUnit = document.getElementById("gm-feed-unit")?.value || "kg";
-        const tlCm = Math.max(0.1, Number(document.getElementById("gm-total-length")?.value || 12.9));
+        growthTooltip.style.left = `${left}px`;
+        growthTooltip.style.top = `${top}px`;
+    }"""
 
-        // Normalizations
-        const bwGrams = bwUnit === "kg" ? bwInput * 1000.0 : bwInput;
-        const bwKg = bwGrams / 1000.0;
-        const tfgKg = feedUnit === "kg" ? tfgInput : tfgInput / 1000.0;
+new_tooltip = """    function renderGrowthTooltip(index, pointX, mouseY, focusedParam, containerWidth, containerHeight) {
+        if (!growthTooltip) return;
+        const dataItem = currentGrowthChartData[index];
+        if (!dataItem) return;
 
-        // Eq. 1: Survival Rate (SR) = (LHC / IS) * 100
-        const sr = (lhcCount / isCount) * 100.0;
-        const mortalityCount = Math.max(0, isCount - lhcCount);
-        const mortalityPct = Math.max(0, 100.0 - sr);
+        const activeKeys = Array.from(selectedGrowthMetrics);
+        let itemsHtml = "";
 
-        // Eq. 2: Final Average Body Weight (FABW) = BW / LHC
-        const fabw = bwGrams / lhcCount;
-        const countPerKg = fabw > 0 ? (1000.0 / fabw) : 0;
+        activeKeys.forEach(key => {
+            const conf = GROWTH_METRICS_CONFIG[key];
+            const val = dataItem[key];
+            const evalInfo = conf.evaluator(val);
+            const formattedVal = key === "k"
+                ? Number(val).toFixed(4)
+                : (key === "adwg"
+                    ? Number(val).toFixed(3)
+                    : (key === "sr" || key === "fabw" || key === "sgr" || key === "fcr"
+                        ? Number(val).toFixed(2)
+                        : Number(val).toLocaleString(undefined, { maximumFractionDigits: 1 })
+                      )
+                  );
 
-        // Eq. 3: Average Daily Weight Gain (ADWG) = (FABW - IBW) / DOC
-        const adwg = (fabw - ibwVal) / docDays;
-        const weeklyGain = adwg * 7.0;
+            const isItemFocused = focusedParam === key;
+            const statusClass = evalInfo.badgeClass ? evalInfo.badgeClass.replace("badge-", "status-") : "status-optimal";
 
-        // Eq. 4: Specific Growth Rate (SGR) = ((ln FABW - ln IBW) / DOC) * 100
-        const sgr = ((Math.log(fabw) - Math.log(ibwVal)) / docDays) * 100.0;
-        const weightMult = fabw / ibwVal;
-
-        // Eq. 5: Initial Biomass (IB) = IS * IBW
-        const ibGrams = isCount * ibwVal;
-        const ibKg = ibGrams / 1000.0;
-
-        // Eq. 6: Final Biomass (FB) = LHC * FABW
-        const fbGrams = lhcCount * fabw;
-        const fbKg = fbGrams / 1000.0;
-        const netGainKg = Math.max(0.0001, fbKg - ibKg);
-
-        // Eq. 7: Feed Conversion Ratio (FCR) = TFG / (FB - IB)
-        const fcr = tfgKg / netGainKg;
-        const feedEfficiency = fcr > 0 ? (100.0 / fcr) : 0;
-
-        // Eq. 8: Fulton's Condition Factor (K) = (FABW / TL^3) * 100
-        const kFactor = (fabw / Math.pow(tlCm, 3)) * 100.0;
-
-        // DOM Updates - Eq. 1
-        const srValEl = document.getElementById("gm-res-sr-val");
-        const srBadgeEl = document.getElementById("gm-res-sr-badge");
-        const mortCountEl = document.getElementById("gm-res-mortality-count");
-        const mortPctEl = document.getElementById("gm-res-mortality-pct");
-        const subSrEl = document.getElementById("gm-sub-sr");
-        if (srValEl) srValEl.textContent = sr.toFixed(2);
-        if (mortCountEl) mortCountEl.textContent = Math.round(mortalityCount).toLocaleString();
-        if (mortPctEl) mortPctEl.textContent = `${mortalityPct.toFixed(2)}%`;
-        if (subSrEl) subSrEl.innerHTML = `(${lhcCount.toLocaleString()} / ${isCount.toLocaleString()}) &times; 100 = ${sr.toFixed(2)}%`;
-        if (srBadgeEl) {
-            if (sr >= 80.0) {
-                srBadgeEl.textContent = "Optimal";
-                srBadgeEl.className = "wqi-metric-badge badge-optimal";
-            } else if (sr >= 65.0) {
-                srBadgeEl.textContent = "Acceptable";
-                srBadgeEl.className = "wqi-metric-badge badge-warning";
-            } else {
-                srBadgeEl.textContent = "Suboptimal";
-                srBadgeEl.className = "wqi-metric-badge badge-critical";
-            }
-        }
-
-        // DOM Updates - Eq. 2
-        const fabwValEl = document.getElementById("gm-res-fabw-val");
-        const countKgEl = document.getElementById("gm-res-count-per-kg");
-        const subFabwEl = document.getElementById("gm-sub-fabw");
-        if (fabwValEl) fabwValEl.textContent = fabw.toFixed(2);
-        if (countKgEl) countKgEl.textContent = countPerKg.toFixed(1);
-        if (subFabwEl) subFabwEl.innerHTML = `${Math.round(bwGrams).toLocaleString()} g / ${lhcCount.toLocaleString()} = ${fabw.toFixed(2)} g`;
-
-        // DOM Updates - Eq. 3
-        const adwgValEl = document.getElementById("gm-res-adwg-val");
-        const adwgBadgeEl = document.getElementById("gm-res-adwg-badge");
-        const weeklyGainEl = document.getElementById("gm-res-weekly-gain");
-        const subAdwgEl = document.getElementById("gm-sub-adwg");
-        if (adwgValEl) adwgValEl.textContent = adwg.toFixed(4);
-        if (weeklyGainEl) weeklyGainEl.textContent = weeklyGain.toFixed(3);
-        if (subAdwgEl) subAdwgEl.innerHTML = `(${fabw.toFixed(2)} - ${ibwVal.toFixed(3)}) / ${docDays} = ${adwg.toFixed(4)} g/day`;
-        if (adwgBadgeEl) {
-            if (adwg >= 0.25) {
-                adwgBadgeEl.textContent = "Fast Growth";
-                adwgBadgeEl.className = "wqi-metric-badge badge-optimal";
-            } else if (adwg >= 0.18) {
-                adwgBadgeEl.textContent = "Optimal Growth";
-                adwgBadgeEl.className = "wqi-metric-badge badge-optimal";
-            } else {
-                adwgBadgeEl.textContent = "Slow Growth";
-                adwgBadgeEl.className = "wqi-metric-badge badge-warning";
-            }
-        }
-
-        // DOM Updates - Eq. 4
-        const sgrValEl = document.getElementById("gm-res-sgr-val");
-        const weightMultEl = document.getElementById("gm-res-weight-mult");
-        const subSgrEl = document.getElementById("gm-sub-sgr");
-        if (sgrValEl) sgrValEl.textContent = sgr.toFixed(3);
-        if (weightMultEl) weightMultEl.textContent = `${Math.round(weightMult).toLocaleString()}\u00D7`;
-        if (subSgrEl) subSgrEl.innerHTML = `((ln ${fabw.toFixed(2)} - ln ${ibwVal.toFixed(3)}) / ${docDays}) &times; 100 = ${sgr.toFixed(3)}%`;
-
-        // DOM Updates - Eqs. 5 & 6
-        const ibKgEl = document.getElementById("gm-res-ib-kg");
-        const fbKgEl = document.getElementById("gm-res-fb-kg");
-        const netBioEl = document.getElementById("gm-res-net-biomass");
-        const subBioEl = document.getElementById("gm-sub-biomass");
-        if (ibKgEl) ibKgEl.textContent = ibKg.toFixed(2);
-        if (fbKgEl) fbKgEl.textContent = fbKg.toFixed(2);
-        if (netBioEl) netBioEl.textContent = netGainKg.toFixed(2);
-        if (subBioEl) subBioEl.innerHTML = `Gain: ${fbKg.toFixed(2)} kg - ${ibKg.toFixed(2)} kg = ${netGainKg.toFixed(2)} kg`;
-
-        // DOM Updates - Eq. 7
-        const fcrValEl = document.getElementById("gm-res-fcr-val");
-        const fcrBadgeEl = document.getElementById("gm-res-fcr-badge");
-        const feedEffEl = document.getElementById("gm-res-feed-efficiency");
-        const subFcrEl = document.getElementById("gm-sub-fcr");
-        if (fcrValEl) fcrValEl.textContent = fcr.toFixed(3);
-        if (feedEffEl) feedEffEl.textContent = `${feedEfficiency.toFixed(2)}%`;
-        if (subFcrEl) subFcrEl.innerHTML = `${tfgKg.toFixed(1)} kg / ${netGainKg.toFixed(2)} kg = ${fcr.toFixed(3)}`;
-        if (fcrBadgeEl) {
-            if (fcr < 1.20) {
-                fcrBadgeEl.textContent = "Exceptional (<1.20)";
-                fcrBadgeEl.className = "wqi-metric-badge badge-optimal";
-            } else if (fcr <= 1.50) {
-                fcrBadgeEl.textContent = "Optimal (1.20–1.50)";
-                fcrBadgeEl.className = "wqi-metric-badge badge-optimal";
-            } else if (fcr <= 1.80) {
-                fcrBadgeEl.textContent = "Acceptable (1.51–1.80)";
-                fcrBadgeEl.className = "wqi-metric-badge badge-warning";
-            } else {
-                fcrBadgeEl.textContent = "Suboptimal (>1.80)";
-                fcrBadgeEl.className = "wqi-metric-badge badge-critical";
-            }
-        }
-
-        // DOM Updates - Eq. 8
-        const kValEl = document.getElementById("gm-res-k-val");
-        const kBadgeEl = document.getElementById("gm-res-k-badge");
-        const kProfileEl = document.getElementById("gm-res-k-profile");
-        const subKEl = document.getElementById("gm-sub-k");
-        if (kValEl) kValEl.textContent = kFactor.toFixed(4);
-        if (subKEl) subKEl.innerHTML = `(${fabw.toFixed(2)} / ${tlCm.toFixed(1)}&sup3;) &times; 100 = ${kFactor.toFixed(4)}`;
-        if (kBadgeEl && kProfileEl) {
-            if (kFactor >= 0.80 && kFactor <= 1.15) {
-                kBadgeEl.textContent = "Optimal Condition";
-                kBadgeEl.className = "wqi-metric-badge badge-optimal";
-                kProfileEl.textContent = "Healthy, well-proportioned robust girth";
-            } else if (kFactor < 0.80) {
-                kBadgeEl.textContent = "Slender / Lean";
-                kBadgeEl.className = "wqi-metric-badge badge-warning";
-                kProfileEl.textContent = "Slender body profile; check feeding assimilation or post-molt state";
-            } else {
-                kBadgeEl.textContent = "Heavy / Plump";
-                kBadgeEl.className = "wqi-metric-badge badge-optimal";
-                kProfileEl.textContent = "High muscle density and heavy carapace girth";
-            }
-        }
-
-        // Sync to individual calculators
-        syncMasterToIndividual({
-            isCount, lhcCount, docDays, ibwVal, bwInput, bwUnit, tfgInput, feedUnit, tlCm,
-            fabw, ibKg, fbKg, tfgKg
+            itemsHtml += `
+                <div class="tooltip-item ${isItemFocused ? 'tooltip-item-focused' : ''}">
+                    <div class="tooltip-item-left">
+                        <span class="tooltip-dot" style="background:${conf.color};"></span>
+                        <span class="tooltip-param-label">${conf.eq}: ${conf.label}</span>
+                    </div>
+                    <div class="tooltip-item-right">
+                        <span class="tooltip-param-value">${formattedVal} ${conf.unit}</span>
+                        <span class="tooltip-param-status ${statusClass}">${evalInfo.status}</span>
+                    </div>
+                </div>
+            `;
         });
-    }
 
-    function syncMasterToIndividual(data) {
-        const indivIs = document.getElementById("indiv-is");
-        const indivLhc = document.getElementById("indiv-lhc");
-        if (indivIs && !indivIs.dataset.manualEdited) indivIs.value = data.isCount;
-        if (indivLhc && !indivLhc.dataset.manualEdited) indivLhc.value = data.lhcCount;
+        const timeBadge = dataItem.timeStr
+            ? `${dataItem.label} • ${dataItem.timeStr}`
+            : (dataItem.day ? `DOC ${dataItem.day} • Culture Day ${dataItem.day}` : dataItem.label);
 
-        const indivBw = document.getElementById("indiv-bw");
-        const indivBwUnit = document.getElementById("indiv-bw-unit");
-        const indivFabwLhc = document.getElementById("indiv-fabw-lhc");
-        if (indivBw && !indivBw.dataset.manualEdited) indivBw.value = data.bwInput;
-        if (indivBwUnit && !indivBwUnit.dataset.manualEdited) indivBwUnit.value = data.bwUnit;
-        if (indivFabwLhc && !indivFabwLhc.dataset.manualEdited) indivFabwLhc.value = data.lhcCount;
+        growthTooltip.innerHTML = `
+            <div class="tooltip-header">
+                <span class="tooltip-time-badge">${timeBadge}</span>
+                <span class="tooltip-status-pill pill-optimal">P. vannamei</span>
+            </div>
+            <div class="tooltip-content">
+                ${itemsHtml}
+            </div>
+        `;
 
-        const indivGrowIbw = document.getElementById("indiv-grow-ibw");
-        const indivGrowFabw = document.getElementById("indiv-grow-fabw");
-        const indivGrowDoc = document.getElementById("indiv-grow-doc");
-        if (indivGrowIbw && !indivGrowIbw.dataset.manualEdited) indivGrowIbw.value = data.ibwVal;
-        if (indivGrowFabw && !indivGrowFabw.dataset.manualEdited) indivGrowFabw.value = data.fabw.toFixed(2);
-        if (indivGrowDoc && !indivGrowDoc.dataset.manualEdited) indivGrowDoc.value = data.docDays;
+        growthTooltip.hidden = false;
+        growthTooltip.classList.add("visible");
 
-        const indivBioIs = document.getElementById("indiv-bio-is");
-        const indivBioIbw = document.getElementById("indiv-bio-ibw");
-        const indivBioLhc = document.getElementById("indiv-bio-lhc");
-        const indivBioFabw = document.getElementById("indiv-bio-fabw");
-        if (indivBioIs && !indivBioIs.dataset.manualEdited) indivBioIs.value = data.isCount;
-        if (indivBioIbw && !indivBioIbw.dataset.manualEdited) indivBioIbw.value = data.ibwVal;
-        if (indivBioLhc && !indivBioLhc.dataset.manualEdited) indivBioLhc.value = data.lhcCount;
-        if (indivBioFabw && !indivBioFabw.dataset.manualEdited) indivBioFabw.value = data.fabw.toFixed(2);
+        // Calculate dynamic dimensions matching water quality trends
+        const tooltipWidth = growthTooltip.offsetWidth || 285;
+        const tooltipHeight = growthTooltip.offsetHeight || 210;
 
-        const indivFcrTfg = document.getElementById("indiv-fcr-tfg");
-        const indivFcrTfgUnit = document.getElementById("indiv-fcr-tfg-unit");
-        const indivFcrFb = document.getElementById("indiv-fcr-fb");
-        const indivFcrIb = document.getElementById("indiv-fcr-ib");
-        if (indivFcrTfg && !indivFcrTfg.dataset.manualEdited) indivFcrTfg.value = data.tfgInput;
-        if (indivFcrTfgUnit && !indivFcrTfgUnit.dataset.manualEdited) indivFcrTfgUnit.value = data.feedUnit;
-        if (indivFcrFb && !indivFcrFb.dataset.manualEdited) indivFcrFb.value = data.fbKg.toFixed(2);
-        if (indivFcrIb && !indivFcrIb.dataset.manualEdited) indivFcrIb.value = data.ibKg.toFixed(2);
+        let leftPos = pointX + 16;
+        if (leftPos + tooltipWidth > containerWidth - 12) {
+            leftPos = pointX - tooltipWidth - 16;
+        }
+        if (leftPos < 12) leftPos = 12;
 
-        const indivKFabw = document.getElementById("indiv-k-fabw");
-        const indivKTl = document.getElementById("indiv-k-tl");
-        if (indivKFabw && !indivKFabw.dataset.manualEdited) indivKFabw.value = data.fabw.toFixed(2);
-        if (indivKTl && !indivKTl.dataset.manualEdited) indivKTl.value = data.tlCm.toFixed(1);
+        let topPos = mouseY - (tooltipHeight / 2);
+        topPos = Math.max(8, Math.min(containerHeight - tooltipHeight - 8, topPos));
 
-        calculateIndividualSR();
-        calculateIndividualFABW();
-        calculateIndividualGrowth();
-        calculateIndividualBiomass();
-        calculateIndividualFCR();
-        calculateIndividualK();
-    }
+        growthTooltip.style.left = `${leftPos}px`;
+        growthTooltip.style.top = `${topPos}px`;
+    }"""
 
-    // Individual Eq. 1: Survival Rate
-    function calculateIndividualSR() {
-        const isCount = Math.max(1, Number(document.getElementById("indiv-is")?.value || 100000));
-        const lhcCount = Math.max(1, Number(document.getElementById("indiv-lhc")?.value || 85000));
+if old_tooltip in js_content:
+    js_content = js_content.replace(old_tooltip, new_tooltip)
+    print("Replaced renderGrowthTooltip")
+else:
+    print("WARNING: old_tooltip not found!")
 
-        const sr = (lhcCount / isCount) * 100.0;
-        const mortalityCount = Math.max(0, isCount - lhcCount);
-        const mortalityPct = Math.max(0, 100.0 - sr);
+# 4. Update closeGrowthGraphModal
+old_close = """    function closeGrowthGraphModal() {
+        if (!growthGraphModal) return;
+        growthGraphModal.hidden = true;
+        document.body.style.overflow = "";
+        if (growthTooltip) {
+            growthTooltip.classList.remove("visible");
+            growthTooltip.hidden = true;
+        }
+        growthChartHoverIndex = null;
+    }"""
 
-        const resEl = document.getElementById("indiv-sr-result");
-        const badgeEl = document.getElementById("indiv-sr-badge");
-        const mortCountEl = document.getElementById("indiv-sr-mortality-count");
-        const mortPctEl = document.getElementById("indiv-sr-mortality-pct");
-        const stepMathEl = document.getElementById("indiv-sr-step-math");
-        const ratingEl = document.getElementById("indiv-sr-rating");
+new_close = """    function closeGrowthGraphModal() {
+        if (!growthGraphModal) return;
+        growthGraphModal.hidden = true;
+        document.body.style.overflow = "";
+        if (growthTooltip) {
+            growthTooltip.classList.remove("visible");
+            growthTooltip.hidden = true;
+        }
+        growthChartHoverIndex = null;
+        growthChartHoveredParam = null;
+    }"""
 
-        if (resEl) resEl.textContent = sr.toFixed(2);
-        if (mortCountEl) mortCountEl.textContent = `${Math.round(mortalityCount).toLocaleString()} shrimp`;
-        if (mortPctEl) mortPctEl.textContent = `${mortalityPct.toFixed(2)}%`;
-        if (stepMathEl) stepMathEl.innerHTML = `SR = (${lhcCount.toLocaleString()} / ${isCount.toLocaleString()}) &times; 100 = ${sr.toFixed(2)}%`;
+if old_close in js_content:
+    js_content = js_content.replace(old_close, new_close)
+    print("Replaced closeGrowthGraphModal")
+else:
+    print("WARNING: old_close not found!")
 
-        if (badgeEl && ratingEl) {
-            if (sr >= 80.0) {
-                badgeEl.textContent = "Optimal";
-                badgeEl.className = "wqi-metric-badge badge-optimal";
-                ratingEl.textContent = "Optimal survival rate exceeding typical commercial benchmark (\u226580%). Favorable pond conditions and healthy stock transition.";
-            } else if (sr >= 65.0) {
-                badgeEl.textContent = "Acceptable";
-                badgeEl.className = "wqi-metric-badge badge-warning";
-                ratingEl.textContent = "Moderate survival rate (65%\u201379%). Review benthic sediment conditions, feeding tray consumption, and stocking density.";
-            } else {
-                badgeEl.textContent = "Suboptimal";
-                badgeEl.className = "wqi-metric-badge badge-critical";
-                ratingEl.textContent = "Low survival rate (<65%). Investigate potential pathogen pressure, nocturnal hypoxia, or predator interference.";
+# 5. Remove btnOpenGrowthChartTop listener
+old_listener = """    if (btnOpenGrowthChart) btnOpenGrowthChart.addEventListener("click", openGrowthGraphModal);
+    if (btnOpenGrowthChartTop) btnOpenGrowthChartTop.addEventListener("click", openGrowthGraphModal);"""
+
+new_listener = """    if (btnOpenGrowthChart) btnOpenGrowthChart.addEventListener("click", openGrowthGraphModal);"""
+
+if old_listener in js_content:
+    js_content = js_content.replace(old_listener, new_listener)
+    print("Removed btnOpenGrowthChartTop listener")
+else:
+    print("WARNING: old_listener not found!")
+
+# 6. Update canvas pointer interaction
+old_events = """    // Pointer hover interactions on canvas
+    if (growthChartCanvas) {
+        growthChartCanvas.addEventListener("pointermove", (e) => {
+            if (!currentGrowthChartData || currentGrowthChartData.length === 0) return;
+            const rect = growthChartCanvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            const padding = { top: 28, right: 35, bottom: 38, left: 48 };
+            const chartW = (growthChartCanvas.clientWidth || 750) - padding.left - padding.right;
+            const dataCount = currentGrowthChartData.length;
+
+            if (mouseX < padding.left - 10 || mouseX > padding.left + chartW + 10) {
+                if (growthTooltip) {
+                    growthTooltip.classList.remove("visible");
+                    growthTooltip.hidden = true;
+                }
+                growthChartHoverIndex = null;
+                renderGrowthChart();
+                return;
             }
-        }
-    }
 
-    // Individual Eq. 2: Final Average Body Weight
-    function calculateIndividualFABW() {
-        const bwInput = Math.max(0.1, Number(document.getElementById("indiv-bw")?.value || 1700));
-        const bwUnit = document.getElementById("indiv-bw-unit")?.value || "kg";
-        const lhcCount = Math.max(1, Number(document.getElementById("indiv-fabw-lhc")?.value || 85000));
+            let closestIndex = 0;
+            let closestDist = Infinity;
 
-        const bwGrams = bwUnit === "kg" ? bwInput * 1000.0 : bwInput;
-        const bwKg = bwGrams / 1000.0;
-        const fabw = bwGrams / lhcCount;
-        const countPerKg = fabw > 0 ? (1000.0 / fabw) : 0;
-
-        const resEl = document.getElementById("indiv-fabw-result");
-        const countEl = document.getElementById("indiv-fabw-count-per-kg");
-        const bulkEl = document.getElementById("indiv-fabw-bulk-kg");
-        const stepEl = document.getElementById("indiv-fabw-step-math");
-
-        if (resEl) resEl.textContent = fabw.toFixed(2);
-        if (countEl) countEl.textContent = `${countPerKg.toFixed(1)} pcs / kg`;
-        if (bulkEl) bulkEl.textContent = `${bwKg.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} kg (${Math.round(bwGrams).toLocaleString()} g)`;
-        if (stepEl) stepEl.innerHTML = `FABW = ${Math.round(bwGrams).toLocaleString()} g / ${lhcCount.toLocaleString()} shrimp = ${fabw.toFixed(2)} g`;
-    }
-
-    // Individual Eqs. 3 & 4: ADWG & SGR
-    function calculateIndividualGrowth() {
-        const ibw = Math.max(0.0001, Number(document.getElementById("indiv-grow-ibw")?.value || 0.010));
-        const fabw = Math.max(0.01, Number(document.getElementById("indiv-grow-fabw")?.value || 20.00));
-        const doc = Math.max(1, Number(document.getElementById("indiv-grow-doc")?.value || 90));
-
-        const adwg = (fabw - ibw) / doc;
-        const weeklyGain = adwg * 7.0;
-        const sgr = ((Math.log(fabw) - Math.log(ibw)) / doc) * 100.0;
-        const mult = fabw / ibw;
-
-        const adwgEl = document.getElementById("indiv-adwg-result");
-        const adwgBadgeEl = document.getElementById("indiv-adwg-badge");
-        const weeklyEl = document.getElementById("indiv-adwg-weekly");
-        const sgrEl = document.getElementById("indiv-sgr-result");
-        const sgrMultEl = document.getElementById("indiv-sgr-mult");
-        const adwgStepEl = document.getElementById("indiv-adwg-step-math");
-        const sgrStepEl = document.getElementById("indiv-sgr-step-math");
-
-        if (adwgEl) adwgEl.textContent = adwg.toFixed(4);
-        if (weeklyEl) weeklyEl.textContent = `${weeklyGain.toFixed(3)} g / week`;
-        if (sgrEl) sgrEl.textContent = sgr.toFixed(3);
-        if (sgrMultEl) sgrMultEl.textContent = `${Math.round(mult).toLocaleString()}\u00D7`;
-        if (adwgStepEl) adwgStepEl.innerHTML = `(${fabw.toFixed(2)} - ${ibw.toFixed(3)}) / ${doc} = ${adwg.toFixed(4)} g/day`;
-        if (sgrStepEl) sgrStepEl.innerHTML = `[(ln ${fabw.toFixed(2)} - ln ${ibw.toFixed(3)}) / ${doc}] &times; 100 = ${sgr.toFixed(3)}%/day`;
-
-        if (adwgBadgeEl) {
-            if (adwg >= 0.25) {
-                adwgBadgeEl.textContent = "Fast Growth";
-                adwgBadgeEl.className = "wqi-metric-badge badge-optimal";
-            } else if (adwg >= 0.18) {
-                adwgBadgeEl.textContent = "Optimal Growth";
-                adwgBadgeEl.className = "wqi-metric-badge badge-optimal";
-            } else {
-                adwgBadgeEl.textContent = "Slow Growth";
-                adwgBadgeEl.className = "wqi-metric-badge badge-warning";
+            for (let i = 0; i < dataCount; i++) {
+                const ptX = dataCount === 1
+                    ? padding.left + chartW / 2
+                    : padding.left + (i / (dataCount - 1)) * chartW;
+                const dist = Math.abs(mouseX - ptX);
+                if (dist < closestDist) {
+                    closestDist = dist;
+                    closestIndex = i;
+                }
             }
-        }
-    }
 
-    // Individual Eqs. 5 & 6: Biomass (IB & FB)
-    function calculateIndividualBiomass() {
-        const isCount = Math.max(1, Number(document.getElementById("indiv-bio-is")?.value || 100000));
-        const ibw = Math.max(0.0001, Number(document.getElementById("indiv-bio-ibw")?.value || 0.010));
-        const lhcCount = Math.max(1, Number(document.getElementById("indiv-bio-lhc")?.value || 85000));
-        const fabw = Math.max(0.01, Number(document.getElementById("indiv-bio-fabw")?.value || 20.00));
+            growthChartHoverIndex = closestIndex;
+            renderGrowthChart();
 
-        const ibGrams = isCount * ibw;
-        const ibKg = ibGrams / 1000.0;
-        const fbGrams = lhcCount * fabw;
-        const fbKg = fbGrams / 1000.0;
-        const gainKg = Math.max(0, fbKg - ibKg);
+            const pointX = dataCount === 1
+                ? padding.left + chartW / 2
+                : padding.left + (closestIndex / (dataCount - 1)) * chartW;
 
-        const ibEl = document.getElementById("indiv-bio-ib-val");
-        const ibSubEl = document.getElementById("indiv-bio-ib-sub");
-        const fbEl = document.getElementById("indiv-bio-fb-val");
-        const fbSubEl = document.getElementById("indiv-bio-fb-sub");
-        const gainEl = document.getElementById("indiv-bio-gain-val");
-        const ibStepEl = document.getElementById("indiv-bio-ib-step");
-        const fbStepEl = document.getElementById("indiv-bio-fb-step");
-
-        if (ibEl) ibEl.textContent = `${ibKg.toFixed(2)} kg`;
-        if (ibSubEl) ibSubEl.textContent = `(${Math.round(ibGrams).toLocaleString()} g)`;
-        if (fbEl) fbEl.textContent = `${fbKg.toFixed(2)} kg`;
-        if (fbSubEl) fbSubEl.textContent = `(${Math.round(fbGrams).toLocaleString()} g)`;
-        if (gainEl) gainEl.textContent = `${gainKg.toFixed(2)} kg (${(gainKg / 1000.0).toFixed(2)} metric tons)`;
-        if (ibStepEl) ibStepEl.innerHTML = `${isCount.toLocaleString()} &times; ${ibw.toFixed(3)} g = ${Math.round(ibGrams).toLocaleString()} g (${ibKg.toFixed(2)} kg)`;
-        if (fbStepEl) fbStepEl.innerHTML = `${lhcCount.toLocaleString()} &times; ${fabw.toFixed(2)} g = ${Math.round(fbGrams).toLocaleString()} g (${fbKg.toFixed(2)} kg)`;
-    }
-
-    // Individual Eq. 7: Feed Conversion Ratio
-    function calculateIndividualFCR() {
-        const tfgInput = Math.max(0.1, Number(document.getElementById("indiv-fcr-tfg")?.value || 2125));
-        const feedUnit = document.getElementById("indiv-fcr-tfg-unit")?.value || "kg";
-        const fbKg = Math.max(0.1, Number(document.getElementById("indiv-fcr-fb")?.value || 1700));
-        const ibKg = Math.max(0.001, Number(document.getElementById("indiv-fcr-ib")?.value || 1.0));
-
-        const tfgKg = feedUnit === "kg" ? tfgInput : tfgInput / 1000.0;
-        const gainKg = Math.max(0.001, fbKg - ibKg);
-        const fcr = tfgKg / gainKg;
-        const efficiency = fcr > 0 ? (100.0 / fcr) : 0;
-
-        const resEl = document.getElementById("indiv-fcr-result");
-        const badgeEl = document.getElementById("indiv-fcr-badge");
-        const effEl = document.getElementById("indiv-fcr-efficiency");
-        const gainDescEl = document.getElementById("indiv-fcr-gain-desc");
-        const stepEl = document.getElementById("indiv-fcr-step-math");
-        const ratingEl = document.getElementById("indiv-fcr-rating");
-
-        if (resEl) resEl.textContent = fcr.toFixed(3);
-        if (effEl) effEl.textContent = `${efficiency.toFixed(2)}%`;
-        if (gainDescEl) gainDescEl.textContent = `${gainKg.toFixed(2)} kg`;
-        if (stepEl) stepEl.innerHTML = `FCR = ${tfgKg.toFixed(1)} kg / (${fbKg.toFixed(1)} - ${ibKg.toFixed(1)}) kg = ${fcr.toFixed(3)}`;
-
-        if (badgeEl && ratingEl) {
-            if (fcr < 1.20) {
-                badgeEl.textContent = "Exceptional (<1.20)";
-                badgeEl.className = "wqi-metric-badge badge-optimal";
-                ratingEl.textContent = "Outstanding feed efficiency (<1.20). Excellent nutrient assimilation and minimum uneaten pellet degradation.";
-            } else if (fcr <= 1.50) {
-                badgeEl.textContent = "Optimal (1.20–1.50)";
-                badgeEl.className = "wqi-metric-badge badge-optimal";
-                ratingEl.textContent = "Standard target commercial FCR (1.20\u20131.50) for Penaeus vannamei culture.";
-            } else if (fcr <= 1.80) {
-                badgeEl.textContent = "Acceptable (1.51–1.80)";
-                badgeEl.className = "wqi-metric-badge badge-warning";
-                ratingEl.textContent = "Moderate feed efficiency (1.51\u20131.80). Regularly inspect feed check trays to prevent overfeeding and ammonia spikes.";
-            } else {
-                badgeEl.textContent = "Suboptimal (>1.80)";
-                badgeEl.className = "wqi-metric-badge badge-critical";
-                ratingEl.textContent = "High FCR (>1.80). Signals feed wastage, biological stress, low dissolved oxygen, or pellet disintegration.";
-            }
-        }
-    }
-
-    // Individual Eq. 8: Fulton's Condition Factor
-    function calculateIndividualK() {
-        const fabw = Math.max(0.1, Number(document.getElementById("indiv-k-fabw")?.value || 20.00));
-        const tlCm = Math.max(0.1, Number(document.getElementById("indiv-k-tl")?.value || 12.9));
-
-        const tlCubed = Math.pow(tlCm, 3);
-        const kFactor = (fabw / tlCubed) * 100.0;
-
-        const resEl = document.getElementById("indiv-k-result");
-        const badgeEl = document.getElementById("indiv-k-badge");
-        const sumEl = document.getElementById("indiv-k-summary");
-        const stepEl = document.getElementById("indiv-k-step-math");
-        const ratingEl = document.getElementById("indiv-k-rating");
-
-        if (resEl) resEl.textContent = kFactor.toFixed(4);
-        if (stepEl) stepEl.innerHTML = `K = (${fabw.toFixed(2)} / ${tlCm.toFixed(1)}&sup3;) &times; 100 = (${fabw.toFixed(2)} / ${tlCubed.toFixed(3)}) &times; 100 = ${kFactor.toFixed(4)}`;
-
-        if (badgeEl && sumEl && ratingEl) {
-            if (kFactor >= 0.80 && kFactor <= 1.15) {
-                badgeEl.textContent = "Optimal Condition";
-                badgeEl.className = "wqi-metric-badge badge-optimal";
-                sumEl.textContent = "Robust & Well-proportioned";
-                ratingEl.textContent = "A Fulton's condition factor between 0.80 and 1.15 is the ideal biological index for healthy commercial Penaeus vannamei, denoting dense muscle tissue and robust carapace girth.";
-            } else if (kFactor < 0.80) {
-                badgeEl.textContent = "Slender / Lean";
-                badgeEl.className = "wqi-metric-badge badge-warning";
-                sumEl.textContent = "Slender Body Profile";
-                ratingEl.textContent = "K < 0.80 suggests lean body mass. Check if shrimp recently completed ecdysis (molting) or require increased dietary protein/energy.";
-            } else {
-                badgeEl.textContent = "Heavy / Plump";
-                badgeEl.className = "wqi-metric-badge badge-optimal";
-                sumEl.textContent = "High Carapace Girth & Muscle Density";
-                ratingEl.textContent = "K > 1.15 indicates dense muscle filling and excellent abdominal meat ratio.";
-            }
-        }
-    }
-
-    // Input Listeners for Master Engine
-    [
-        "gm-initial-stocking", "gm-live-harvest-count", "gm-days-of-culture",
-        "gm-initial-weight", "gm-bulk-weight", "gm-bw-unit",
-        "gm-total-feed", "gm-feed-unit", "gm-total-length"
-    ].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.addEventListener("input", calculateMasterGrowth);
-            el.addEventListener("change", calculateMasterGrowth);
-        }
-    });
-
-    const gmBtnCalc = document.getElementById("gm-btn-calculate");
-    if (gmBtnCalc) {
-        gmBtnCalc.addEventListener("click", calculateMasterGrowth);
-    }
-
-    // Preset Buttons
-    const growthPresetButtons = document.querySelectorAll(".btn-preset-growth");
-    growthPresetButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
-            growthPresetButtons.forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-
-            const presetKey = btn.dataset.preset;
-            const p = GROWTH_PRESETS[presetKey];
-            if (!p) return;
-
-            const isInput = document.getElementById("gm-initial-stocking");
-            const lhcInput = document.getElementById("gm-live-harvest-count");
-            const docInput = document.getElementById("gm-days-of-culture");
-            const ibwInput = document.getElementById("gm-initial-weight");
-            const bwInput = document.getElementById("gm-bulk-weight");
-            const bwUnitSelect = document.getElementById("gm-bw-unit");
-            const tfgInput = document.getElementById("gm-total-feed");
-            const feedUnitSelect = document.getElementById("gm-feed-unit");
-            const tlInput = document.getElementById("gm-total-length");
-
-            if (isInput) isInput.value = p.is;
-            if (lhcInput) lhcInput.value = p.lhc;
-            if (docInput) docInput.value = p.doc;
-            if (ibwInput) ibwInput.value = p.ibw;
-            if (bwInput) bwInput.value = p.bw;
-            if (bwUnitSelect) bwUnitSelect.value = p.bw_unit;
-            if (tfgInput) tfgInput.value = p.tfg;
-            if (feedUnitSelect) feedUnitSelect.value = p.feed_unit;
-            if (tlInput) tlInput.value = p.tl;
-
-            // Clear manual edited dataset on individual inputs so preset propagates
-            document.querySelectorAll(".individual-growth-panel input, .individual-growth-panel select").forEach(el => {
-                delete el.dataset.manualEdited;
-            });
-
-            calculateMasterGrowth();
+            renderGrowthTooltip(closestIndex, pointX, mouseY, growthChartCanvas.clientWidth || 750, growthChartCanvas.clientHeight || 300);
         });
-    });
 
-    // Sync from Biomass Tool (Section 1)
-    const btnSyncFromBiomass = document.getElementById("btn-sync-from-biomass");
-    if (btnSyncFromBiomass) {
-        btnSyncFromBiomass.addEventListener("click", () => {
-            const area = Number(document.getElementById("feed-pond-area")?.value || 1000);
-            const density = Number(document.getElementById("feed-stocking-density")?.value || 60);
-            const survival = Number(document.getElementById("feed-survival-rate")?.value || 85);
-            const abw = Number(document.getElementById("feed-abw")?.value || 15.0);
-
-            const isCount = Math.round(area * density);
-            const lhcCount = Math.round(isCount * (survival / 100.0));
-            const bwKg = (lhcCount * abw) / 1000.0;
-
-            const isInput = document.getElementById("gm-initial-stocking");
-            const lhcInput = document.getElementById("gm-live-harvest-count");
-            const bwInput = document.getElementById("gm-bulk-weight");
-            const bwUnitSelect = document.getElementById("gm-bw-unit");
-
-            if (isInput) isInput.value = isCount;
-            if (lhcInput) lhcInput.value = lhcCount;
-            if (bwInput) bwInput.value = bwKg.toFixed(1);
-            if (bwUnitSelect) bwUnitSelect.value = "kg";
-
-            calculateMasterGrowth();
+        growthChartCanvas.addEventListener("pointerleave", () => {
+            if (growthTooltip) {
+                growthTooltip.classList.remove("visible");
+                growthTooltip.hidden = true;
+            }
+            growthChartHoverIndex = null;
+            renderGrowthChart();
         });
+    }"""
+
+new_events = """    function handleGrowthPointerMove(event) {
+        if (!currentGrowthChartData || currentGrowthChartData.length === 0) return;
+        const rect = growthChartCanvas.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+        const width = growthChartCanvas.clientWidth || 750;
+        const height = growthChartCanvas.clientHeight || 320;
+
+        const padding = { top: 28, right: 35, bottom: 38, left: 48 };
+        const chartW = width - padding.left - padding.right;
+        const dataCount = currentGrowthChartData.length;
+
+        if (
+            mouseX < padding.left - 15 ||
+            mouseX > width - padding.right + 15 ||
+            mouseY < padding.top - 15 ||
+            mouseY > height - padding.bottom + 15
+        ) {
+            handleGrowthPointerLeave();
+            return;
+        }
+
+        let nearestIndex = 0;
+        if (dataCount > 1) {
+            const ratio = (mouseX - padding.left) / chartW;
+            nearestIndex = Math.round(ratio * (dataCount - 1));
+            nearestIndex = Math.max(0, Math.min(dataCount - 1, nearestIndex));
+        }
+
+        const dataItem = currentGrowthChartData[nearestIndex];
+        if (!dataItem) {
+            handleGrowthPointerLeave();
+            return;
+        }
+
+        // Determine closest metric point along vertical crosshair
+        const activeKeys = Array.from(selectedGrowthMetrics).filter(
+            k => currentGrowthChartPoints[k] && currentGrowthChartPoints[k][nearestIndex]
+        );
+
+        let closestParam = null;
+        let pointX = dataCount === 1 ? padding.left + chartW / 2 : padding.left + (nearestIndex / (dataCount - 1)) * chartW;
+
+        if (activeKeys.length > 0) {
+            pointX = currentGrowthChartPoints[activeKeys[0]][nearestIndex].x;
+            let minDistance = Infinity;
+            activeKeys.forEach(k => {
+                const pt = currentGrowthChartPoints[k][nearestIndex];
+                if (pt) {
+                    const dist = Math.hypot(mouseX - pt.x, mouseY - pt.y);
+                    if (dist < minDistance) {
+                        minDistance = dist;
+                        closestParam = k;
+                    }
+                }
+            });
+
+            if (minDistance >= 40) {
+                closestParam = null;
+            }
+        }
+
+        growthChartHoverIndex = nearestIndex;
+        growthChartHoveredParam = closestParam;
+        renderGrowthChart();
+        renderGrowthTooltip(nearestIndex, pointX, mouseY, closestParam, width, height);
     }
 
-    // Individual Input Event Listeners
-    // Eq. 1
-    ["indiv-is", "indiv-lhc"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.addEventListener("input", () => {
-                el.dataset.manualEdited = "true";
-                calculateIndividualSR();
-            });
-            el.addEventListener("change", () => {
-                el.dataset.manualEdited = "true";
-                calculateIndividualSR();
-            });
+    function handleGrowthPointerLeave() {
+        if (growthTooltip) {
+            growthTooltip.classList.remove("visible");
+            growthTooltip.hidden = true;
         }
-    });
-    const btnEq1 = document.getElementById("btn-calc-eq1");
-    if (btnEq1) btnEq1.addEventListener("click", calculateIndividualSR);
-
-    // Eq. 2
-    ["indiv-bw", "indiv-bw-unit", "indiv-fabw-lhc"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.addEventListener("input", () => {
-                el.dataset.manualEdited = "true";
-                calculateIndividualFABW();
-            });
-            el.addEventListener("change", () => {
-                el.dataset.manualEdited = "true";
-                calculateIndividualFABW();
-            });
+        if (growthChartHoverIndex !== null || growthChartHoveredParam !== null) {
+            growthChartHoverIndex = null;
+            growthChartHoveredParam = null;
+            renderGrowthChart();
         }
-    });
-    const btnEq2 = document.getElementById("btn-calc-eq2");
-    if (btnEq2) btnEq2.addEventListener("click", calculateIndividualFABW);
+    }
 
-    // Eqs. 3 & 4
-    ["indiv-grow-ibw", "indiv-grow-fabw", "indiv-grow-doc"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.addEventListener("input", () => {
-                el.dataset.manualEdited = "true";
-                calculateIndividualGrowth();
-            });
-            el.addEventListener("change", () => {
-                el.dataset.manualEdited = "true";
-                calculateIndividualGrowth();
-            });
-        }
-    });
-    const btnEq34 = document.getElementById("btn-calc-eq34");
-    if (btnEq34) btnEq34.addEventListener("click", calculateIndividualGrowth);
+    // Pointer hover interactions on canvas matching Water Quality Trends
+    if (growthChartCanvas) {
+        growthChartCanvas.addEventListener("pointermove", handleGrowthPointerMove);
+        growthChartCanvas.addEventListener("pointerleave", handleGrowthPointerLeave);
+    }"""
 
-    // Eqs. 5 & 6
-    ["indiv-bio-is", "indiv-bio-ibw", "indiv-bio-lhc", "indiv-bio-fabw"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.addEventListener("input", () => {
-                el.dataset.manualEdited = "true";
-                calculateIndividualBiomass();
-            });
-            el.addEventListener("change", () => {
-                el.dataset.manualEdited = "true";
-                calculateIndividualBiomass();
-            });
-        }
-    });
-    const btnEq56 = document.getElementById("btn-calc-eq56");
-    if (btnEq56) btnEq56.addEventListener("click", calculateIndividualBiomass);
+if old_events in js_content:
+    js_content = js_content.replace(old_events, new_events)
+    print("Replaced canvas pointer interaction in calculators.js")
+else:
+    print("WARNING: old_events not found!")
 
-    // Eq. 7
-    ["indiv-fcr-tfg", "indiv-fcr-tfg-unit", "indiv-fcr-fb", "indiv-fcr-ib"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.addEventListener("input", () => {
-                el.dataset.manualEdited = "true";
-                calculateIndividualFCR();
-            });
-            el.addEventListener("change", () => {
-                el.dataset.manualEdited = "true";
-                calculateIndividualFCR();
-            });
-        }
-    });
-    const btnEq7 = document.getElementById("btn-calc-eq7");
-    if (btnEq7) btnEq7.addEventListener("click", calculateIndividualFCR);
+with open("static/js/calculators.js", "w", encoding="utf-8", newline="\r\n") as f:
+    f.write(js_content)
 
-    // Eq. 8
-    ["indiv-k-fabw", "indiv-k-tl"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.addEventListener("input", () => {
-                el.dataset.manualEdited = "true";
-                calculateIndividualK();
-            });
-            el.addEventListener("change", () => {
-                el.dataset.manualEdited = "true";
-                calculateIndividualK();
-            });
-        }
-    });
-    const btnEq8 = document.getElementById("btn-calc-eq8");
-    if (btnEq8) btnEq8.addEventListener("click", calculateIndividualK);
+print("Updated static/js/calculators.js successfully.")
 
-'''
+# Update CSS for .growth-chart-wrap
+with open("static/css/style.css", "r", encoding="utf-8") as f:
+    css_content = f.read()
 
-def update_calculators_js():
-    with open('static/js/calculators.js', 'r', encoding='utf-8') as f:
-        content = f.read()
+old_css = """.growth-chart-wrap {
+    position: relative;
+    width: 100%;
+    height: 310px;
+    min-height: 240px;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    box-sizing: border-box;
+    overflow: hidden;
+}"""
 
-    marker = '// TOOL 2: Shrimp Growth & Zootechnical Performance'
-    if marker in content:
-        print("Growth code already exists in calculators.js.")
-        return
+new_css = """.growth-chart-wrap {
+    position: relative;
+    width: 100%;
+    height: 320px;
+    min-height: 240px;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    box-sizing: border-box;
+    overflow: visible;
+    cursor: crosshair;
+}"""
 
-    # Find where btnSyncLive event listener ends or before boot()
-    target_boot = '    // Initial Load & Boot\n    // -------------------------------------------------------------\n    async function boot() {'
-    if target_boot not in content:
-        # try CRLF
-        target_boot = '    // Initial Load & Boot\r\n    // -------------------------------------------------------------\r\n    async function boot() {'
-
-    if target_boot not in content:
-        print("Could not find boot function marker.")
-        return
-
-    # Insert growth_js before boot
-    updated = content.replace(target_boot, growth_js + '\n' + target_boot)
-
-    # In boot(), add calculateMasterGrowth();
-    boot_calc_marker = 'calculateAmmoniaTool();'
-    if boot_calc_marker in updated:
-        updated = updated.replace(boot_calc_marker, 'calculateAmmoniaTool();\n        calculateMasterGrowth();')
-
-    with open('static/js/calculators.js', 'w', encoding='utf-8') as f:
-        f.write(updated)
-
-    print("Successfully updated static/js/calculators.js!")
-
-if __name__ == '__main__':
-    update_calculators_js()
-
+if old_css in css_content:
+    css_content = css_content.replace(old_css, new_css)
+    print("Updated .growth-chart-wrap in style.css")
+    with open("static/css/style.css", "w", encoding="utf-8", newline="\r\n") as f:
+        f.write(css_content)
+else:
+    print("WARNING: old_css not found in style.css!")

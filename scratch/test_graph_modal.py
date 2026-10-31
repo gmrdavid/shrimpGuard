@@ -1,8 +1,11 @@
 with open("templates/calculators.html", "r", encoding="utf-8") as f:
     html = f.read()
 
-assert "btn-open-growth-chart" in html
-assert "btn-open-growth-chart-top" in html
+# Verify single performance graph button exists and duplicate is removed
+assert "btn-open-growth-chart" in html, "Kept button #btn-open-growth-chart missing!"
+assert "btn-open-growth-chart-top" not in html, "Duplicate button #btn-open-growth-chart-top still exists!"
+
+# Verify growth modal exists and Eq 5 is strictly excluded
 assert "growth-trend-graph-modal" in html
 assert "growth-trend-chart" in html
 
@@ -17,4 +20,23 @@ assert "Initial Biomass" not in modal_text, "Found Initial Biomass in graph moda
 assert "Eq. 5" not in modal_text, "Found Eq. 5 in graph modal!"
 assert "dot-ib" not in modal_text, "Found dot-ib in graph modal!"
 
-print("All template assertions passed! Eqs. 1-4, 6-8 are present and Eq. 5 Initial Biomass is 100% excluded.")
+# Verify that under Computed Performance Metrics, detail labels like Mortality, Market Count, etc. are removed
+grid_start = html.find('class="growth-metrics-grid"')
+grid_end = html.find('<!-- MODAL DIALOGS FOR AQUACULTURE CALCULATORS -->', grid_start)
+grid_text = html[grid_start:grid_end]
+
+removed_labels = [
+    "Mortality:",
+    "Market Count:",
+    "Weekly Gain:",
+    "Weight Multiplier:",
+    "Released:",
+    "Net Live Gain:",
+    "Feed Efficiency:",
+    "Profile:"
+]
+
+for label in removed_labels:
+    assert label not in grid_text, f"Detail label '{label}' should be removed from cards under Computed Performance Metrics!"
+
+print("All tests in test_graph_modal.py passed successfully!")
