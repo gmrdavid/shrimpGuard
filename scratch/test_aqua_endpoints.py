@@ -104,3 +104,4 @@ with app.test_client() as client:
         }
     })
     print("Export Current Screen XLSX:", resp_cur.status_code, len(resp_cur.data), "bytes")
+
