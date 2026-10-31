@@ -184,12 +184,19 @@ def log_activity(action, details=None, user_email=None, user_name=None, role=Non
 
 @app.context_processor
 def inject_logout_csrf_token():
-    if session.get("user_id") is None:
-        return {"logout_csrf_token": ""}
+    user_email = session.get("user_id")
+    if user_email is None:
+        return {"logout_csrf_token": "", "current_user": None}
+    current_u = None
+    try:
+        current_u = db.session.get(User, user_email)
+    except Exception:
+        pass
     return {
         "logout_csrf_token": session.setdefault(
             "logout_csrf_token", secrets.token_urlsafe(32)
-        )
+        ),
+        "current_user": current_u,
     }
 
 
@@ -794,7 +801,12 @@ def export_historical_data():
     ]
     for reading in readings:
         try:
-            recorded_at = datetime.fromisoformat(reading["date"])
+            recorded_at = parse_reading_datetime(reading)
+            if recorded_at == datetime.min:
+                try:
+                    recorded_at = datetime.fromisoformat(reading["date"])
+                except Exception:
+                    recorded_at = datetime.now()
             temperature = float(reading["temperature"])
             ph = float(reading["ph_level"])
         except (TypeError, ValueError):
@@ -1691,25 +1703,42 @@ def logout():
 @app.route("/monitoring")
 @role_required("Client")
 def monitoring():
-    return render_template("monitoring.html")
+    user_email = session.get("user_id")
+    user = db.session.get(User, user_email) if user_email else None
+    return render_template("monitoring.html", user=user)
 
 
 @app.route("/historical")
 @role_required("Client")
 def historical():
-    return render_template("historical.html")
+    user_email = session.get("user_id")
+    user = db.session.get(User, user_email) if user_email else None
+    return render_template("historical.html", user=user)
 
 
 @app.route("/alerts")
 @role_required("Client")
 def alerts():
-    return render_template("alerts.html")
+    user_email = session.get("user_id")
+    user = db.session.get(User, user_email) if user_email else None
+    return render_template("alerts.html", user=user)
 
 
 @app.route("/analytics")
 @role_required("Client")
 def analytics():
-    return render_template("analytics.html")
+    user_email = session.get("user_id")
+    user = db.session.get(User, user_email) if user_email else None
+    return render_template("analytics.html", user=user)
+
+
+@app.route("/calculators")
+@app.route("/aquaculture-tools")
+@role_required("Client")
+def calculators():
+    user_email = session.get("user_id")
+    user = db.session.get(User, user_email) if user_email else None
+    return render_template("calculators.html", user=user)
 
 
 @app.route("/settings", methods=["GET", "POST"])

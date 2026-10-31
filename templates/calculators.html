@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#126b4f">
+
+    <title>Aquaculture Tools &amp; Calculators | ShrimpGuard</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="dashboard-page calculators-page">
+
+{% include "_icon_sprite.html" %}
+
+<div class="dashboard-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar dashboard-sidebar">
+
+        <a href="/dashboard" class="logo dashboard-logo" aria-label="ShrimpGuard dashboard">
+            <span class="dashboard-logo-mark">
+                <svg class="ui-icon brand-icon" aria-hidden="true">
+                    <use href="#icon-shrimp"></use>
+                </svg>
+            </span>
+            <span>ShrimpGuard</span>
+        </a>
+
+        <p class="subtitle">Water Quality Monitoring</p>
+
+        <div class="sidebar-section-label">MAIN MENU</div>
+
+        <nav class="dashboard-nav" aria-label="Main navigation">
+
+            <a href="/dashboard">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-dashboard"></use>
+                </svg>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="/monitoring">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-monitor"></use>
+                </svg>
+                <span>Real-time Monitoring</span>
+            </a>
+
+            <a href="/historical">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-history"></use>
+                </svg>
+                <span>Historical Data</span>
+            </a>
+
+            <a href="/analytics">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-chart"></use>
+                </svg>
+                <span>Analytics &amp; Reports</span>
+            </a>
+
+            <a href="/alerts">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-alert"></use>
+                </svg>
+                <span>Alerts and Notifications</span>
+            </a>
+
+            <a href="/calculators" class="active" aria-current="page">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-calculator"></use>
+                </svg>
+                <span>Aquaculture Tools</span>
+            </a>
+
+            <a href="/settings">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-settings"></use>
+                </svg>
+                <span>Settings</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="sidebar-help">
+                <span class="sidebar-help-icon">
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-calculator"></use>
+                    </svg>
+                </span>
+                <div>
+                    <strong>Decision Support</strong>
+                    <p>Pond tools for <em>P. vannamei</em></p>
+                </div>
+            </div>
+
+            {% include "userlogout.html" %}
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content dashboard-main">
+
+        <!-- TOP HEADER -->
+        <header class="dashboard-header">
+
+            <div class="dashboard-heading">
+                <div class="dashboard-eyebrow">
+                    <span class="eyebrow-dot"></span>
+                    AQUACULTURE DECISION SUPPORT
+                </div>
+
+                <h1>Aquaculture Tools &amp; Calculators</h1>
+
+                <p>
+                    Practical computational tools, feeding ration adjustments, chemical remediation, and ammonia toxicity simulation designed specifically for <em>Penaeus vannamei</em> shrimp ponds.
+                </p>
+            </div>
+
+            <div class="header-info dashboard-header-info">
+
+                <button
+                    id="notification-button"
+                    class="notification-button"
+                    type="button"
+                    aria-label="View notifications"
+                    title="View notifications">
+
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-bell"></use>
+                    </svg>
+
+                </button>
+
+                <div class="dashboard-date-time">
+                    <span class="date-time-label">LOCAL TIME</span>
+                    <span id="time" class="time-value">Loading time...</span>
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- LIVE SENSOR TELEMETRY SYNC STRIP -->
+        <section class="dashboard-section tools-telemetry-section" aria-labelledby="live-sync-heading">
+
+            <div class="tools-sync-banner">
+                <div class="sync-banner-info">
+                    <div class="sync-banner-icon">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-monitor"></use>
+                        </svg>
+                    </div>
+                    <div>
+                        <span class="tools-eyebrow">LIVE TELEMETRY CONNECTION</span>
+                        <h2 id="live-sync-heading">Real-Time Sensor Telemetry</h2>
+                        <p>Calculators dynamically sync with latest sensor measurements from your pond database.</p>
+                    </div>
+                </div>
+
+                <div class="sync-telemetry-badges">
+                    <div class="telemetry-badge">
+                        <span class="telemetry-label">TEMPERATURE</span>
+                        <span class="telemetry-value"><span id="telemetry-temp">--</span> °C</span>
+                        <span id="telemetry-temp-status" class="telemetry-substatus status-optimal">Optimal</span>
+                    </div>
+
+                    <div class="telemetry-badge">
+                        <span class="telemetry-label">pH LEVEL</span>
+                        <span class="telemetry-value"><span id="telemetry-ph">--</span> pH</span>
+                        <span id="telemetry-ph-status" class="telemetry-substatus status-optimal">Optimal</span>
+                    </div>
+
+                    <div class="telemetry-badge">
+                        <span class="telemetry-label">ML OVERALL STATUS</span>
+                        <span id="telemetry-overall-status" class="telemetry-value telemetry-status-optimal">Optimal</span>
+                        <span id="telemetry-updated" class="telemetry-substatus">Awaiting data</span>
+                    </div>
+
+                    <button type="button" id="btn-sync-live" class="tools-btn-secondary" title="Re-fetch and synchronize latest sensor readings across all calculators">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-history"></use>
+                        </svg>
+                        <span>Sync Live Data</span>
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- 1. BIOMASS & FEEDING ESTIMATOR -->
+        <section class="dashboard-section" aria-labelledby="biomass-calculator-title">
+
+            <div class="section-heading-row">
+                <div>
+                    <span class="section-eyebrow">POND PRODUCTIVITY &bull; PENAEUS VANNAMEI</span>
+                    <h2 id="biomass-calculator-title">Biomass, Feed Ration &amp; Temperature Adjustment Calculator</h2>
+                    <p>Computes standing pond biomass, daily feed requirement, meal division, and biological feed adjustments based on water temperature.</p>
+                </div>
+                <div class="monitoring-species-pill">
+                    <span class="species-dot"></span>
+                    <span>Penaeus vannamei</span>
+                </div>
+            </div>
+
+            <article class="panel dashboard-panel tools-calc-panel">
+
+                <div class="tools-panel-header">
+                    <div class="panel-heading-icon tools-icon-biomass">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-shrimp"></use>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2>Pond Biomass &amp; Feeding Management</h2>
+                        <p>Adjusts feeding rate according to vannamei digestive enzyme response to temperature (Optimal 28–32 °C).</p>
+                    </div>
+                </div>
+
+                <div class="tools-grid-split">
+
+                    <!-- INPUTS COLUMN -->
+                    <div class="tools-input-column">
+                        <h3 class="tools-subheading">Pond &amp; Stocking Parameters</h3>
+
+                        <div class="tools-form-grid">
+
+                            <!-- Pond Area -->
+                            <label class="tools-field-label" for="feed-pond-area">
+                                <span class="field-label-text">Pond Surface Area</span>
+                                <span class="dashboard-field-wrap">
+                                    <input type="number" id="feed-pond-area" min="10" max="100000" step="10" value="1000" placeholder="e.g. 1000">
+                                    <span class="input-unit">m²</span>
+                                </span>
+                            </label>
+
+                            <!-- Average Depth -->
+                            <label class="tools-field-label" for="feed-pond-depth">
+                                <span class="field-label-text">Average Water Depth</span>
+                                <span class="dashboard-field-wrap">
+                                    <input type="number" id="feed-pond-depth" min="0.5" max="3.0" step="0.1" value="1.2" placeholder="e.g. 1.2">
+                                    <span class="input-unit">m</span>
+                                </span>
+                            </label>
+
+                            <!-- Stocking Density -->
+                            <label class="tools-field-label" for="feed-stocking-density">
+                                <span class="field-label-text">Stocking Density</span>
+                                <span class="dashboard-field-wrap">
+                                    <input type="number" id="feed-stocking-density" min="5" max="300" step="5" value="60" placeholder="e.g. 60">
+                                    <span class="input-unit">PL/m²</span>
+                                </span>
+                            </label>
+
+                            <!-- Estimated Survival Rate -->
+                            <label class="tools-field-label" for="feed-survival-rate">
+                                <span class="field-label-text">Estimated Survival Rate</span>
+                                <span class="dashboard-field-wrap">
+                                    <input type="number" id="feed-survival-rate" min="10" max="100" step="1" value="85" placeholder="e.g. 85">
+                                    <span class="input-unit">%</span>
+                                </span>
+                            </label>
+
+                            <!-- Average Body Weight (ABW) -->
+                            <label class="tools-field-label" for="feed-abw">
+                                <span class="field-label-text">Average Body Weight (ABW)</span>
+                                <span class="dashboard-field-wrap">
+                                    <input type="number" id="feed-abw" min="0.1" max="50" step="0.1" value="15.0" placeholder="e.g. 15.0">
+                                    <span class="input-unit">grams</span>
+                                </span>
+                            </label>
+
+                            <!-- Base Feeding Rate (% of Biomass) -->
+                            <label class="tools-field-label" for="feed-rate-percent">
+                                <span class="field-label-text">Base Feeding Rate</span>
+                                <span class="dashboard-field-wrap">
+                                    <input type="number" id="feed-rate-percent" min="1.0" max="10.0" step="0.1" value="3.2" placeholder="e.g. 3.2">
+                                    <span class="input-unit">% body wt</span>
+                                </span>
+                            </label>
+
+                            <!-- Feed Meals Per Day -->
+                            <label class="tools-field-label" for="feed-meals-day">
+                                <span class="field-label-text">Feedings Per Day</span>
+                                <span class="dashboard-field-wrap">
+                                    <input type="number" id="feed-meals-day" min="1" max="8" step="1" value="4" placeholder="e.g. 4">
+                                    <span class="input-unit">meals/day</span>
+                                </span>
+                            </label>
+
+                            <!-- Water Temperature Source -->
+                            <div class="tools-temp-source-box">
+                                <label class="tools-field-label" for="feed-current-temp">
+                                    <span class="field-label-text">Water Temperature</span>
+                                    <span class="dashboard-field-wrap">
+                                        <input type="number" id="feed-current-temp" min="15" max="42" step="0.1" value="29.5">
+                                        <span class="input-unit">°C</span>
+                                    </span>
+                                </label>
+                                <button type="button" id="btn-use-live-temp" class="tools-chip-btn">
+                                    Use Live Sensor Temp
+                                </button>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- OUTPUTS COLUMN -->
+                    <div class="tools-output-column">
+                        <h3 class="tools-subheading">Estimated Yield &amp; Feeding Schedule</h3>
+
+                        <div class="tools-result-cards">
+
+                            <!-- Pond Biomass Card -->
+                            <div class="tools-res-card">
+                                <span class="res-card-label">ESTIMATED STANDING BIOMASS</span>
+                                <div class="res-value-row">
+                                    <strong id="res-biomass-kg" class="res-big-value">765.0</strong>
+                                    <span class="res-unit">kg</span>
+                                    <span id="res-biomass-tons" class="res-secondary-val">(0.77 metric tons)</span>
+                                </div>
+                                <p id="res-shrimp-count" class="res-card-detail">Estimated 51,000 active shrimp in 1,200 m³ water</p>
+                            </div>
+
+                            <!-- Temperature Feeding Factor Card -->
+                            <div class="tools-res-card" id="temp-factor-card">
+                                <div class="res-card-header">
+                                    <span class="res-card-label">TEMPERATURE FEEDING ADJUSTMENT</span>
+                                    <span id="res-temp-badge" class="wqi-metric-badge badge-optimal">100% (Optimal)</span>
+                                </div>
+                                <div class="res-value-row">
+                                    <strong id="res-temp-factor" class="res-big-value">1.00×</strong>
+                                    <span class="res-unit">factor</span>
+                                </div>
+                                <p id="res-temp-guideline" class="res-card-detail">
+                                    At 29.5 °C, water temperature is within the ML optimal range (28.0–32.0 °C). Full normal feed ration recommended.
+                                </p>
+                            </div>
+
+                            <!-- Daily Feed Requirement Card -->
+                            <div class="tools-res-card highlight-card">
+                                <span class="res-card-label">ADJUSTED DAILY FEED REQUIREMENT</span>
+                                <div class="res-value-row">
+                                    <strong id="res-adjusted-feed" class="res-big-value res-accent-value">24.5</strong>
+                                    <span class="res-unit">kg / day</span>
+                                </div>
+                                <div class="res-meal-breakdown">
+                                    <span>Per meal (4 meals): <strong id="res-per-meal">6.1 kg / meal</strong></span>
+                                    <span class="res-base-note">Base unadjusted: <span id="res-base-feed">24.5</span> kg/day</span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Feeding Tray Monitoring Tip -->
+                        <div class="tools-callout-tip">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-lightbulb"></use>
+                            </svg>
+                            <p id="feed-tray-tip">
+                                <strong>Feeding Tray Protocol:</strong> Place 4 feed check trays per 1,000 m² pond area. Check trays 1.5–2 hours after feeding. If &gt;10% feed remains, reduce next feeding by 20% to prevent ammonia spikes.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </article>
+
+        </section>
+
+
+        <!-- 2. WATER TREATMENT & DOSING CALCULATORS -->
+        <section class="dashboard-section" aria-labelledby="treatment-calculators-title">
+
+            <div class="section-heading-row">
+                <div>
+                    <span class="section-eyebrow">POND REMEDIATION &bull; CHEMICAL DOSING</span>
+                    <h2 id="treatment-calculators-title">Water Remediation &amp; Treatment Dosing Calculators</h2>
+                    <p>Precise chemical dosages for pH correction, biofloc carbon-to-nitrogen stabilization, and aeration horsepower sizing.</p>
+                </div>
+                <span class="section-count">3 remediation tools</span>
+            </div>
+
+            <div class="tools-treatment-grid">
+
+                <!-- TOOL A: AGRICULTURAL LIME (CaCO3 / DOLOMITE) -->
+                <article class="panel dashboard-panel treatment-card">
+
+                    <div class="tools-panel-header">
+                        <div class="panel-heading-icon tools-icon-lime">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-droplet"></use>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2>pH Liming Dosage Calculator</h2>
+                            <p>Corrects low water pH to ML optimal (7.50–8.50)</p>
+                        </div>
+                    </div>
+
+                    <div class="treatment-body">
+                        <div class="treatment-inputs">
+
+                            <label class="tools-field-label" for="lime-pond-vol">
+                                <span class="field-label-text">Pond Water Volume</span>
+                                <span class="dashboard-field-wrap">
+                                    <input type="number" id="lime-pond-vol" min="10" max="500000" step="50" value="1200">
+                                    <span class="input-unit">m³</span>
+                                </span>
+                            </label>
+
+                            <label class="tools-field-label" for="lime-current-ph">
+                                <span class="field-label-text">Current Water pH</span>
+                                <span class="dashboard-field-wrap">
+                                    <input type="number" id="lime-current-ph" min="5.0" max="10.0" step="0.05" value="7.10">
+                                    <span class="input-unit">pH</span>
+                                </span>
+                            </label>
+
+                            <label class="tools-field-label" for="lime-target-ph">
+                                <span class="field-label-text">Target pH (ML Midpoint)</span>
+                                <span class="dashboard-field-wrap">
+                                    <input type="number" id="lime-target-ph" min="7.5" max="8.5" step="0.05" value="8.00">
+                                    <span class="input-unit">pH</span>
+                                </span>
+                            </label>
+
+                            <label class="tools-field-label" for="lime-chemical-type">
+                                <span class="field-label-text">Liming Agent</span>
+                                <select id="lime-chemical-type" class="tools-select">
+                                    <option value="caco3" selected>Agricultural Limestone (CaCO₃) - Gentle buffer</option>
+                                    <option value="dolomite">Dolomite [CaMg(CO₃)₂] - Adds Magnesium</option>
+                                    <option value="caoh2">Hydrated Lime [Ca(OH)₂] - Rapid acting</option>
+                                </select>
+                            </label>
+
+                        </div>
+
+                        <div class="treatment-result-box">
+                            <span class="res-card-label">RECOMMENDED DOSAGE</span>
+                            <div class="res-value-row">
+                                <strong id="lime-dosage-kg" class="res-big-value">54.0</strong>
+                                <span class="res-unit">kg</span>
+                                <span class="res-secondary-val">(<span id="lime-dosage-ppm">45.0</span> ppm)</span>
+                            </div>
+                            <p id="lime-instruction" class="treatment-instruction">
+                                Slurry 54.0 kg in pond water and distribute evenly across paddlewheel aerator wash in the early morning.
+                            </p>
+                        </div>
+                    </div>
+
+                </article>
+
+
+                <!-- TOOL B: BIOFLOC ORGANIC CARBON (MOLASSES) DOSING -->
+                <article class="panel dashboard-panel treatment-card">
+
+                    <div class="tools-panel-header">
+                        <div class="panel-heading-icon tools-icon-carbon">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-sparkles"></use>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2>Organic Carbon (Molasses) Dosing</h2>
+                            <p>C:N ratio optimization (12:1 to 15:1) for TAN assimilation</p>
+                        </div>
+                    </div>
+
+                    <div class="treatment-body">
+                        <div class="treatment-inputs">
+
+                            <label class="tools-field-label" for="molasses-daily-feed">
+                                <span class="field-label-text">Daily Feed Input</span>
+                                <span class="dashboard-field-wrap">
+                                    <input type="number" id="molasses-daily-feed" min="1" max="1000" step="1" value="25.0">
+                                    <span class="input-unit">kg/day</span>
+                                </span>
+                            </label>
+
+                            <label class="tools-field-label" for="molasses-protein-pct">
+                                <span class="field-label-text">Feed Crude Protein</span>
+                                <span class="dashboard-field-wrap">
+                                    <input type="number" id="molasses-protein-pct" min="20" max="50" step="1" value="35">
+                                    <span class="input-unit">% CP</span>
+                                </span>
+                            </label>
+
+                            <label class="tools-field-label" for="molasses-target-cn">
+                                <span class="field-label-text">Target C:N Ratio</span>
+                                <select id="molasses-target-cn" class="tools-select">
+                                    <option value="12">12:1 (Moderate Biofloc Density)</option>
+                                    <option value="15" selected>15:1 (Optimal Heterotrophic TAN Control)</option>
+                                    <option value="18">18:1 (High TAN Emergency Remediation)</option>
+                                </select>
+                            </label>
+
+                            <label class="tools-field-label" for="molasses-carbon-source">
+                                <span class="field-label-text">Carbon Source</span>
+                                <select id="molasses-carbon-source" class="tools-select">
+                                    <option value="cane_molasses" selected>Cane Molasses (~40% Carbon)</option>
+                                    <option value="white_sugar">Refined Sugar (~42% Carbon)</option>
+                                    <option value="cassava_flour">Cassava / Rice Flour (~45% Carbon)</option>
+                                </select>
+                            </label>
+
+                        </div>
+
+                        <div class="treatment-result-box">
+                            <span class="res-card-label">REQUIRED CARBON SOURCE</span>
+                            <div class="res-value-row">
+                                <strong id="molasses-dosage-kg" class="res-big-value">18.4</strong>
+                                <span class="res-unit">kg / day</span>
+                            </div>
+                            <p id="molasses-instruction" class="treatment-instruction">
+                                Dissolve 18.4 kg molasses in warm water with probiotic consortium, ferment 4 hours, and apply during morning aeration.
+                            </p>
+                        </div>
+                    </div>
+
+                </article>
+
+
+                <!-- TOOL C: AERATOR HORSEPOWER & CAPACITY ESTIMATOR -->
+                <article class="panel dashboard-panel treatment-card">
+
+                    <div class="tools-panel-header">
+                        <div class="panel-heading-icon tools-icon-aerator">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-cpu"></use>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2>Aerator Power Requirement</h2>
+                            <p>Sizing paddlewheel aeration for dissolved oxygen</p>
+                        </div>
+                    </div>
+
+                    <div class="treatment-body">
+                        <div class="treatment-inputs">
+
+                            <label class="tools-field-label" for="aero-biomass-input">
+                                <span class="field-label-text">Shrimp Biomass</span>
+                                <span class="dashboard-field-wrap">
+                                    <input type="number" id="aero-biomass-input" min="50" max="50000" step="50" value="765">
+                                    <span class="input-unit">kg</span>
+                                </span>
+                            </label>
+
+                            <label class="tools-field-label" for="aero-temp-input">
+                                <span class="field-label-text">Water Temperature</span>
+                                <span class="dashboard-field-wrap">
+                                    <input type="number" id="aero-temp-input" min="20" max="38" step="0.5" value="29.5">
+                                    <span class="input-unit">°C</span>
+                                </span>
+                            </label>
+
+                            <label class="tools-field-label" for="aero-salinity-input">
+                                <span class="field-label-text">Salinity</span>
+                                <span class="dashboard-field-wrap">
+                                    <input type="number" id="aero-salinity-input" min="0" max="45" step="1" value="20">
+                                    <span class="input-unit">ppt</span>
+                                </span>
+                            </label>
+
+                            <label class="tools-field-label" for="aero-target-do">
+                                <span class="field-label-text">Target Minimum DO</span>
+                                <span class="dashboard-field-wrap">
+                                    <input type="number" id="aero-target-do" min="3.0" max="8.0" step="0.5" value="5.0">
+                                    <span class="input-unit">mg/L</span>
+                                </span>
+                            </label>
+
+                        </div>
+
+                        <div class="treatment-result-box">
+                            <span class="res-card-label">RECOMMENDED AERATOR POWER</span>
+                            <div class="res-value-row">
+                                <strong id="aero-power-hp" class="res-big-value">2.0</strong>
+                                <span class="res-unit">HP</span>
+                                <span class="res-secondary-val">(<span id="aero-units">1 × 2-HP</span> unit)</span>
+                            </div>
+                            <p id="aero-instruction" class="treatment-instruction">
+                                Minimum 1 HP per 400 kg biomass for vannamei. Run continuously from 22:00 to 07:00 when algae respiration consumes DO.
+                            </p>
+                        </div>
+                    </div>
+
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- 3. UNIONIZED AMMONIA (NH3) CALCULATOR & VAN WYK MATRIX -->
+        <section class="dashboard-section" id="tools-ammonia-section" aria-labelledby="tools-ammonia-title">
+
+            <div class="section-heading-row">
+                <div>
+                    <span class="section-eyebrow">TOXICITY ASSESSMENT &bull; VAN WYK ET AL., 1999</span>
+                    <h2 id="tools-ammonia-title">Unionized Ammonia (NH₃) Toxicity Calculator</h2>
+                    <p>Accurately estimates toxic unionized ammonia from Total Ammonia Nitrogen (TAN), water temperature, and pH.</p>
+                </div>
+                <span class="section-count">Van Wyk et al., 1999 Model</span>
+            </div>
+
+            <article class="panel dashboard-panel ammonia-panel">
+
+                <div class="panel-heading">
+                    <div class="panel-heading-icon ammonia-heading-icon">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-droplet"></use>
+                        </svg>
+                    </div>
+
+                    <div>
+                        <h2>Unionized Ammonia Estimation</h2>
+                        <p>Formula: NH₃ (ppm) = Factor (<em>f</em>) &times; TAN (ppm) &bull; Acceptable safety threshold for <em>P. vannamei</em>: &lt; 0.03 ppm</p>
+                    </div>
+                </div>
+
+                <div class="ammonia-calc-grid">
+
+                    <!-- INPUT CARD -->
+                    <div class="ammonia-card ammonia-card-input">
+                        <div class="ammonia-card-header">
+                            <span class="ammonia-card-label">INPUT TAN &amp; SENSOR PARAMETERS</span>
+                        </div>
+
+                        <!-- TAN INPUT -->
+                        <div class="ammonia-field-group">
+                            <div class="ammonia-input-label-row">
+                                <label for="tools-ammonia-tan" class="ammonia-input-label">Total Ammonia Nitrogen (TAN)</label>
+                                <span class="ammonia-input-unit">ppm (mg/L)</span>
+                            </div>
+                            <div class="ammonia-input-controls">
+                                <input
+                                    type="number"
+                                    id="tools-ammonia-tan"
+                                    class="ammonia-number-input"
+                                    min="0"
+                                    max="20"
+                                    step="0.01"
+                                    value="0.8"
+                                    placeholder="e.g. 0.80">
+                                <button type="button" id="tools-ammonia-calc-btn" class="ammonia-btn-primary">
+                                    Calculate
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- PRESETS -->
+                        <div class="ammonia-presets-row">
+                            <span class="ammonia-presets-label">Common TAN Presets:</span>
+                            <div class="ammonia-preset-chips" id="tools-preset-chips">
+                                <button type="button" class="preset-chip" data-tan="0.25">0.25 ppm</button>
+                                <button type="button" class="preset-chip" data-tan="0.5">0.50 ppm</button>
+                                <button type="button" class="preset-chip active" data-tan="0.8">0.80 ppm</button>
+                                <button type="button" class="preset-chip" data-tan="1.0">1.00 ppm</button>
+                                <button type="button" class="preset-chip" data-tan="1.5">1.50 ppm</button>
+                                <button type="button" class="preset-chip" data-tan="2.0">2.00 ppm</button>
+                            </div>
+                        </div>
+
+                        <!-- LIVE SENSORS SYNC INDICATORS -->
+                        <div class="ammonia-live-sensors">
+                            <div class="ammonia-sensor-badge">
+                                <span class="sensor-badge-title">LIVE SENSOR TEMP</span>
+                                <span class="sensor-badge-val"><span id="tools-ammonia-live-temp">--</span> °C</span>
+                            </div>
+                            <div class="ammonia-sensor-badge">
+                                <span class="sensor-badge-title">LIVE SENSOR pH</span>
+                                <span class="sensor-badge-val"><span id="tools-ammonia-live-ph">--</span> pH</span>
+                            </div>
+                        </div>
+
+                        <!-- SIMULATION / OVERRIDE TOGGLE -->
+                        <div class="ammonia-override-box">
+                            <label class="ammonia-checkbox-label">
+                                <input type="checkbox" id="tools-ammonia-override-cb">
+                                <span>Simulate custom temperature &amp; pH (What-if scenario)</span>
+                            </label>
+                            <div id="tools-ammonia-override-fields" class="ammonia-override-fields" hidden>
+                                <div class="override-field">
+                                    <label for="tools-custom-temp">Temp (°C):</label>
+                                    <input type="number" id="tools-custom-temp" min="20" max="40" step="0.1" value="28.0" class="override-input">
+                                </div>
+                                <div class="override-field">
+                                    <label for="tools-custom-ph">pH Level:</label>
+                                    <input type="number" id="tools-custom-ph" min="6.0" max="11.0" step="0.05" value="7.60" class="override-input">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- OUTPUT CARD -->
+                    <div class="ammonia-card ammonia-card-result">
+                        <div class="ammonia-card-header">
+                            <span class="ammonia-card-label">ESTIMATED UNIONIZED AMMONIA (NH₃)</span>
+                            <span id="tools-ammonia-badge" class="wqi-metric-badge badge-normal">Safe (&lt; 0.03 ppm)</span>
+                        </div>
+
+                        <div class="ammonia-result-display">
+                            <span id="tools-ammonia-result" class="ammonia-big-value">0.0224</span>
+                            <span class="ammonia-big-unit">ppm</span>
+                        </div>
+
+                        <!-- BREAKDOWN STEPS -->
+                        <div class="ammonia-formula-breakdown">
+                            <div class="formula-step">
+                                <span class="step-tag">Step 1</span>
+                                <span>Table factor at <strong id="tools-step-temp">28.0°C</strong> &amp; pH <strong id="tools-step-ph">7.60</strong>: <strong><em>f</em> = <span id="tools-step-factor">0.028</span></strong></span>
+                            </div>
+                            <div class="formula-step">
+                                <span class="step-tag">Step 2</span>
+                                <span>Multiply by TAN: <span id="tools-step-math">0.028 × 0.80 ppm</span> = <strong id="tools-step-final">0.0224 ppm</strong></span>
+                            </div>
+                        </div>
+
+                        <!-- BIOLOGICAL ASSESSMENT -->
+                        <div id="tools-ammonia-assessment" class="ammonia-assessment is-safe">
+                            <p id="tools-ammonia-assessment-text">
+                                This level (0.0224 ppm) is lower than the acceptable level (&lt;0.03 ppm), hence no corrective action would need to be taken.
+                            </p>
+                        </div>
+
+                        <!-- SENSITIVITY CALLOUT -->
+                        <div class="ammonia-sensitivity-callout">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-lightbulb"></use>
+                            </svg>
+                            <p id="tools-ammonia-sensitivity">
+                                <strong>Sensitivity Insight:</strong> At 28 °C, an increase in pH of only +0.2 (to 7.8) yields <strong>0.0344 ppm</strong>, which exceeds the acceptable limit (&lt;0.03 ppm) and requires immediate aeration &amp; mitigation.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- CARD FOOTER WITH MODAL TRIGGER -->
+                <div class="ammonia-dialog-trigger-row">
+                    <button type="button" id="open-tools-van-wyk" class="ammonia-matrix-popup-btn">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-chart"></use>
+                        </svg>
+                        <span>View Van Wyk Reference Matrix</span>
+                    </button>
+                    <span class="matrix-hint-text">Opens reference table with dynamic sensor temperature &amp; pH highlighting</span>
+                </div>
+
+            </article>
+
+        </section>
+
+
+        <!-- 4. PENAEUS VANNAMEI SPECIES WATER QUALITY STANDARDS & PROTOCOLS -->
+        <section class="dashboard-section" aria-labelledby="standards-heading">
+
+            <div class="section-heading-row">
+                <div>
+                    <span class="section-eyebrow">AQUACULTURE REFERENCE STANDARDS</span>
+                    <h2 id="standards-heading"><em>Penaeus vannamei</em> Parameter Tolerances &amp; Action Matrix</h2>
+                    <p>Authoritative biological ranges, stress thresholds, and emergency mitigation checklists.</p>
+                </div>
+                <span class="section-count">7 key parameters</span>
+            </div>
+
+            <div class="panel dashboard-panel tools-standards-panel">
+
+                <div class="table-wrap">
+                    <table class="tools-standards-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Parameter</th>
+                                <th scope="col">ML Optimal Range</th>
+                                <th scope="col">Warning (Stress)</th>
+                                <th scope="col">Critical (Lethal)</th>
+                                <th scope="col">Standard Farming Mitigation Protocol</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="param-cell-title">
+                                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-thermometer"></use></svg>
+                                        <strong>Water Temperature</strong>
+                                    </div>
+                                </td>
+                                <td><span class="tools-badge-opt">28.0 – 32.0 °C</span></td>
+                                <td>25.1–27.9 °C &bull; 32.1–33.5 °C</td>
+                                <td>&le; 25.0 °C or &gt; 33.5 °C</td>
+                                <td>If high: increase water depth (&gt;1.2m), run paddlewheels, reduce feed by 20–50%. If low: cease feeding, maintain high bottom DO.</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="param-cell-title">
+                                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-droplet"></use></svg>
+                                        <strong>pH Level</strong>
+                                    </div>
+                                </td>
+                                <td><span class="tools-badge-opt">7.50 – 8.50 pH</span></td>
+                                <td>6.50–7.49 &bull; 8.51–9.00 pH</td>
+                                <td>&lt; 6.50 or &gt; 9.00 pH</td>
+                                <td>If low (&lt;7.5): apply Agricultural Lime (CaCO₃) or Dolomite at 20–50 ppm. If high (&gt;8.5): apply fermented molasses/sugar, exchange surface water.</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="param-cell-title">
+                                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
+                                        <strong>Dissolved Oxygen (DO)</strong>
+                                    </div>
+                                </td>
+                                <td><span class="tools-badge-opt">&gt; 5.0 mg/L</span></td>
+                                <td>3.0 – 4.9 mg/L</td>
+                                <td>&lt; 3.0 mg/L (asphyxia)</td>
+                                <td>Deploy all paddlewheels, apply emergency sodium percarbonate (granular oxygen), cease feeding immediately until DO recovers &gt;4.0 mg/L.</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="param-cell-title">
+                                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg>
+                                        <strong>Unionized Ammonia (NH₃)</strong>
+                                    </div>
+                                </td>
+                                <td><span class="tools-badge-opt">&lt; 0.03 ppm</span></td>
+                                <td>0.03 – 0.05 ppm</td>
+                                <td>&gt; 0.05 ppm (gill damage)</td>
+                                <td>Apply molasses to stimulate biofloc heterotrophic uptake (C:N 15:1), increase bottom aeration, avoid high pH during peak afternoon heat.</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="param-cell-title">
+                                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-chart"></use></svg>
+                                        <strong>Total Ammonia Nitrogen (TAN)</strong>
+                                    </div>
+                                </td>
+                                <td><span class="tools-badge-opt">&lt; 1.0 ppm</span></td>
+                                <td>1.0 – 2.5 ppm</td>
+                                <td>&gt; 2.5 ppm</td>
+                                <td>Syphon central pond sludge drain, adjust feed input downwards, dose beneficial nitrifying probiotic bacteria (Nitrosomonas/Nitrobacter).</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="param-cell-title">
+                                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-droplet"></use></svg>
+                                        <strong>Salinity</strong>
+                                    </div>
+                                </td>
+                                <td><span class="tools-badge-opt">15 – 25 ppt</span></td>
+                                <td>5–14 ppt &bull; 26–32 ppt</td>
+                                <td>&lt; 2 ppt or &gt; 38 ppt</td>
+                                <td>Euryhaline species. Maintain ionic ratios: Ca (400 mg/L), Mg (1200 mg/L), K (380 mg/L) at full seawater; scale proportionately for lower salinity.</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="param-cell-title">
+                                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
+                                        <strong>Total Alkalinity</strong>
+                                    </div>
+                                </td>
+                                <td><span class="tools-badge-opt">120 – 160 mg/L CaCO₃</span></td>
+                                <td>80 – 119 mg/L</td>
+                                <td>&lt; 80 mg/L (soft shell)</td>
+                                <td>Apply sodium bicarbonate (NaHCO₃) to elevate alkalinity without raising pH excessively; essential for regular shrimp molting cycles.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- FOOTER -->
+        <footer class="dashboard-footer">
+            <span>
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-shrimp"></use>
+                </svg>
+                ShrimpGuard
+            </span>
+            <span>Water Quality Monitoring &amp; Decision Support</span>
+        </footer>
+
+    </main>
+
+</div>
+
+
+<!-- VAN WYK REFERENCE MATRIX POPUP DIALOG -->
+<div id="tools-van-wyk-modal" class="modal-dialog-backdrop" hidden>
+    <div class="modal-dialog-container" role="dialog" aria-modal="true" aria-labelledby="tools-modal-matrix-title">
+
+        <div class="modal-dialog-header">
+            <div class="modal-header-text">
+                <div class="panel-heading-icon ammonia-heading-icon modal-icon">
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-chart"></use>
+                    </svg>
+                </div>
+                <div>
+                    <h3 id="tools-modal-matrix-title">Van Wyk et al. (1999) Reference Matrix</h3>
+                    <p>Proportion of Total Ammonia Nitrogen in Unionized Toxic Form (NH₃ Factor <em>f</em>)</p>
+                </div>
+            </div>
+            <button type="button" id="close-tools-van-wyk" class="modal-close-btn" aria-label="Close dialog">
+                &times;
+            </button>
+        </div>
+
+        <div class="modal-dialog-body">
+
+            <div class="table-legend-row">
+                <span class="legend-text">Active values highlighted:</span>
+                <div class="legend-badges">
+                    <span class="legend-chip chip-col">Active Temp Column</span>
+                    <span class="legend-chip chip-row">Active pH Row</span>
+                    <span class="legend-chip chip-intersect">Intersection Factor (<em>f</em>)</span>
+                </div>
+            </div>
+
+            <div class="table-responsive van-wyk-table-scroll">
+                <table class="van-wyk-grid" id="tools-van-wyk-matrix">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" class="th-ph">pH</th>
+                            <th colspan="5" class="th-temp-header">Temperature (°C)</th>
+                        </tr>
+                        <tr class="th-temp-sub">
+                            <th data-temp="24">24</th>
+                            <th data-temp="26">26</th>
+                            <th data-temp="28">28</th>
+                            <th data-temp="30">30</th>
+                            <th data-temp="32">32</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-ph="7.0"><td class="td-ph">7.0</td><td data-temp="24">0.005</td><td data-temp="26">0.006</td><td data-temp="28">0.007</td><td data-temp="30">0.008</td><td data-temp="32">0.009</td></tr>
+                        <tr data-ph="7.2"><td class="td-ph">7.2</td><td data-temp="24">0.008</td><td data-temp="26">0.010</td><td data-temp="28">0.011</td><td data-temp="30">0.013</td><td data-temp="32">0.015</td></tr>
+                        <tr data-ph="7.4"><td class="td-ph">7.4</td><td data-temp="24">0.013</td><td data-temp="26">0.015</td><td data-temp="28">0.018</td><td data-temp="30">0.020</td><td data-temp="32">0.023</td></tr>
+                        <tr data-ph="7.6"><td class="td-ph">7.6</td><td data-temp="24">0.021</td><td data-temp="26">0.024</td><td data-temp="28">0.028</td><td data-temp="30">0.031</td><td data-temp="32">0.036</td></tr>
+                        <tr data-ph="7.8"><td class="td-ph">7.8</td><td data-temp="24">0.033</td><td data-temp="26">0.038</td><td data-temp="28">0.043</td><td data-temp="30">0.049</td><td data-temp="32">0.056</td></tr>
+                        <tr data-ph="8.0"><td class="td-ph">8.0</td><td data-temp="24">0.051</td><td data-temp="26">0.058</td><td data-temp="28">0.066</td><td data-temp="30">0.075</td><td data-temp="32">0.085</td></tr>
+                        <tr data-ph="8.2"><td class="td-ph">8.2</td><td data-temp="24">0.078</td><td data-temp="26">0.089</td><td data-temp="28">0.101</td><td data-temp="30">0.114</td><td data-temp="32">0.129</td></tr>
+                        <tr data-ph="8.4"><td class="td-ph">8.4</td><td data-temp="24">0.119</td><td data-temp="26">0.134</td><td data-temp="28">0.151</td><td data-temp="30">0.170</td><td data-temp="32">0.190</td></tr>
+                        <tr data-ph="8.6"><td class="td-ph">8.6</td><td data-temp="24">0.176</td><td data-temp="26">0.197</td><td data-temp="28">0.220</td><td data-temp="30">0.245</td><td data-temp="32">0.271</td></tr>
+                        <tr data-ph="8.8"><td class="td-ph">8.8</td><td data-temp="24">0.253</td><td data-temp="26">0.281</td><td data-temp="28">0.309</td><td data-temp="30">0.340</td><td data-temp="32">0.371</td></tr>
+                        <tr data-ph="9.0"><td class="td-ph">9.0</td><td data-temp="24">0.349</td><td data-temp="26">0.382</td><td data-temp="28">0.415</td><td data-temp="30">0.449</td><td data-temp="32">0.483</td></tr>
+                        <tr data-ph="9.2"><td class="td-ph">9.2</td><td data-temp="24">0.460</td><td data-temp="26">0.495</td><td data-temp="28">0.530</td><td data-temp="30">0.564</td><td data-temp="32">0.597</td></tr>
+                        <tr data-ph="9.4"><td class="td-ph">9.4</td><td data-temp="24">0.574</td><td data-temp="26">0.608</td><td data-temp="28">0.641</td><td data-temp="30">0.672</td><td data-temp="32">0.701</td></tr>
+                        <tr data-ph="9.6"><td class="td-ph">9.6</td><td data-temp="24">0.681</td><td data-temp="26">0.711</td><td data-temp="28">0.739</td><td data-temp="30">0.764</td><td data-temp="32">0.788</td></tr>
+                        <tr data-ph="10.0"><td class="td-ph">10.0</td><td data-temp="24">0.843</td><td data-temp="26">0.861</td><td data-temp="28">0.877</td><td data-temp="30">0.891</td><td data-temp="32">0.903</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="van-wyk-source-credit">
+                Source: Van Wyk et al., 1999 &bull; Recirculating Aquaculture Systems for Marine Shrimp
+            </div>
+
+        </div>
+
+        <div class="modal-dialog-footer">
+            <button type="button" id="tools-modal-close-action" class="ammonia-btn-primary">
+                Close Matrix
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/calculators.js') }}"></script>
+<script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+
+</body>
+</html>
+

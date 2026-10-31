@@ -72,7 +72,7 @@ function updateGreeting() {
     } else if (hour >= 12 && hour < 18) {
         timeGreeting = "Good afternoon";
     }
-    const userName = greetingEl.dataset.userName || "Admin";
+    const userName = greetingEl.dataset.userName || "Rio";
     greetingEl.textContent = `${timeGreeting}, ${userName}!`;
 }
 

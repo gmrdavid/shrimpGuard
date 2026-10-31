@@ -4,6 +4,7 @@ const ML_RANGES = {
         optimalMin: 28.0,
         optimalMax: 32.0,
         warningMin: 25.0,
+        warningMax: 33.5,
         unit: "°C"
     },
     ph: {
@@ -36,7 +37,7 @@ function getAdjustmentStatus(key, value, min, max) {
 
     if (val > max) {
         const diff = val - max;
-        const text = isTemp ? "Critical: Too hot" : (val > ML_RANGES.ph.warningMax ? "Critical: Too alkaline" : "Warning: Too alkaline");
+        const text = isTemp ? (val > ML_RANGES.temperature.warningMax ? "Critical: Too hot" : "Warning: Too warm") : (val > ML_RANGES.ph.warningMax ? "Critical: Too alkaline" : "Warning: Too alkaline");
         return {
             text: text,
             amount: diff,
@@ -61,9 +62,9 @@ function getReadingQuality(reading) {
     const ph = Number(reading.ph);
 
     // Temperature penalties based on ML boundaries
-    if (temp <= ML_RANGES.temperature.warningMin || temp > ML_RANGES.temperature.optimalMax) {
+    if (temp <= ML_RANGES.temperature.warningMin || temp > ML_RANGES.temperature.warningMax) {
         score -= 25; // Critical
-    } else if (temp < ML_RANGES.temperature.optimalMin) {
+    } else if (temp < ML_RANGES.temperature.optimalMin || temp > ML_RANGES.temperature.optimalMax) {
         score -= 10; // Warning
     }
 
@@ -82,8 +83,8 @@ function getAlertCounts(history) {
         const temp = Number(reading.temperature);
         const ph = Number(reading.ph);
 
-        const tempCritical = temp <= ML_RANGES.temperature.warningMin || temp > ML_RANGES.temperature.optimalMax;
-        const tempWarning = !tempCritical && temp < ML_RANGES.temperature.optimalMin;
+        const tempCritical = temp <= ML_RANGES.temperature.warningMin || temp > ML_RANGES.temperature.warningMax;
+        const tempWarning = !tempCritical && (temp < ML_RANGES.temperature.optimalMin || temp > ML_RANGES.temperature.optimalMax);
 
         const phCritical = ph <= 6.49 || ph > ML_RANGES.ph.warningMax;
         const phWarning = !phCritical && (ph < ML_RANGES.ph.optimalMin || ph > ML_RANGES.ph.optimalMax);
