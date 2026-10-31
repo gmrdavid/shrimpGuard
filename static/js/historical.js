@@ -70,7 +70,7 @@ function localDate(reading) {
 }
 
 function filterHistory(history) {
-    const selectedDate = tableFilterDate || document.getElementById("history-date").value;
+    const selectedDate = document.getElementById("history-date").value;
     const interval = document.getElementById("history-interval").value;
     const now = Date.now();
     return history.filter((reading) => {
@@ -488,14 +488,10 @@ function selectDateFilter(dateStr) {
     } else {
         tableFilterDate = dateStr;
     }
-    const historyDateInput = document.getElementById("history-date");
-    if (historyDateInput) {
-        historyDateInput.value = tableFilterDate || "";
-    }
     updateDateFilterUI();
     closeCalendarPopup();
     historyPage = 1;
-    applyFilters();
+    updateTable();
 }
 
 function updateDateFilterUI() {
@@ -523,12 +519,10 @@ function updateDateFilterUI() {
 
 function clearDateFilter() {
     tableFilterDate = null;
-    const historyDateInput = document.getElementById("history-date");
-    if (historyDateInput) historyDateInput.value = "";
     updateDateFilterUI();
     closeCalendarPopup();
     historyPage = 1;
-    applyFilters();
+    updateTable();
 }
 
 function prevMonth() {
@@ -573,7 +567,7 @@ function selectStatusFilter(status) {
 
     closeStatusDropdown();
     historyPage = 1;
-    updateTable(currentFilteredHistory);
+    updateTable();
 }
 
 function openCalendarPopup() {
@@ -633,12 +627,12 @@ function toggleStatusDropdown() {
     }
 }
 
-function updateTable(history) {
+function updateTable() {
     const body = document.getElementById("readings-body");
     const pagination = document.getElementById("readings-pagination");
-    const hasDemoData = history.some((reading) => reading.status === "Demo");
+    const hasDemoData = sensorHistory.some((reading) => reading.status === "Demo");
 
-    let filteredItems = Array.isArray(history) ? history.slice() : [];
+    let filteredItems = Array.isArray(sensorHistory) ? sensorHistory.slice() : [];
 
     // Table-level date filter
     if (tableFilterDate) {
@@ -729,7 +723,7 @@ function updateTable(history) {
         if (options.disabled) button.disabled = true;
         button.addEventListener("click", () => {
             historyPage = page;
-            updateTable(history);
+            updateTable();
         });
         pagination.appendChild(button);
     };
@@ -788,7 +782,6 @@ function applyFilters() {
     }
     updateLegend(parameters);
     updateSummary(history, parameters);
-    updateTable(history);
 }
 
 // ==========================================
@@ -1074,7 +1067,7 @@ if (tableLimitSelect) {
     tableLimitSelect.addEventListener("change", (e) => {
         readingsPerPage = e.target.value;
         historyPage = 1;
-        updateTable(currentFilteredHistory);
+        updateTable();
     });
 }
 
@@ -1149,15 +1142,11 @@ document.addEventListener("keydown", (e) => {
     }
 });
 
-// Filter form submit listener
+// Filter form submit listener (only updates Historical Review & Visual Trend)
 const historyFilterForm = document.getElementById("history-filter");
 if (historyFilterForm) {
     historyFilterForm.addEventListener("submit", (event) => {
         event.preventDefault();
-        historyPage = 1;
-        const formDate = document.getElementById("history-date").value;
-        tableFilterDate = formDate || null;
-        updateDateFilterUI();
         applyFilters();
     });
 }
@@ -1210,6 +1199,7 @@ async function loadHistory() {
     }
 
     applyFilters();
+    updateTable();
 }
 
 closeCalendarPopup();
