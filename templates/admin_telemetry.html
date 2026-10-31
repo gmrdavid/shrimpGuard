@@ -405,27 +405,87 @@
                 </div>
             </div>
 
-            <!-- SEARCH AND FILTER CONTROLS -->
-            <div class="admin-table-controls">
+            <!-- UNIFIED SEARCH, DATE FILTER, STATUS & SORT CONTROLS -->
+            <div class="admin-toolbar">
                 <div class="admin-search-wrap">
                     <svg class="ui-icon admin-search-icon" aria-hidden="true">
-                        <use href="#icon-monitor"></use>
+                        <use href="#icon-search"></use>
                     </svg>
                     <input
                         id="telemetry-search"
                         class="admin-search-input"
                         type="search"
-                        placeholder="Filter by date or status..."
+                        placeholder="Search telemetry records..."
                         aria-label="Search telemetry">
                 </div>
 
-                <div class="admin-filter-group">
-                    <select id="telemetry-status-filter" class="admin-filter-select" aria-label="Filter by ML status">
-                        <option value="all" selected>All ML Statuses</option>
-                        <option value="optimal">Optimal</option>
-                        <option value="warning">Warning</option>
-                        <option value="critical">Critical</option>
-                    </select>
+                <div class="admin-toolbar-filters">
+                    <!-- Date Filter -->
+                    <div class="admin-filter-item">
+                        <span class="admin-filter-item-label">Date:</span>
+                        <div class="admin-input-with-icon">
+                            <svg class="ui-icon admin-control-icon" aria-hidden="true">
+                                <use href="#icon-calendar"></use>
+                            </svg>
+                            <select id="telemetry-date-preset" class="admin-filter-select" aria-label="Filter by date range">
+                                <option value="all" selected>All Dates</option>
+                                <option value="today">Today</option>
+                                <option value="yesterday">Yesterday</option>
+                                <option value="last7">Last 7 Days</option>
+                                <option value="last30">Last 30 Days</option>
+                                <option value="custom">Specific Date...</option>
+                            </select>
+                        </div>
+                        <input
+                            id="telemetry-date-picker"
+                            class="admin-date-input"
+                            type="date"
+                            aria-label="Pick specific date"
+                            title="Filter by specific date"
+                            style="display: none;">
+                    </div>
+
+                    <!-- ML Status Filter -->
+                    <div class="admin-filter-item">
+                        <span class="admin-filter-item-label">Status:</span>
+                        <div class="admin-input-with-icon">
+                            <svg class="ui-icon admin-control-icon" aria-hidden="true">
+                                <use href="#icon-filter"></use>
+                            </svg>
+                            <select id="telemetry-status-filter" class="admin-filter-select" aria-label="Filter by ML status">
+                                <option value="all" selected>All ML Statuses</option>
+                                <option value="optimal">Optimal</option>
+                                <option value="warning">Warning</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Sort -->
+                    <div class="admin-filter-item">
+                        <span class="admin-filter-item-label">Sort:</span>
+                        <div class="admin-input-with-icon">
+                            <svg class="ui-icon admin-control-icon" aria-hidden="true">
+                                <use href="#icon-sort"></use>
+                            </svg>
+                            <select id="telemetry-sort" class="admin-filter-select" aria-label="Sort telemetry records">
+                                <option value="date-desc" selected>Date: Newest First</option>
+                                <option value="date-asc">Date: Oldest First</option>
+                                <option value="temp-desc">Temp: Highest First</option>
+                                <option value="temp-asc">Temp: Lowest First</option>
+                                <option value="ph-desc">pH: Highest First</option>
+                                <option value="ph-asc">pH: Lowest First</option>
+                                <option value="wqi-desc">WQI Score: Highest First</option>
+                                <option value="wqi-asc">WQI Score: Lowest First</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Reset Button -->
+                    <button id="telemetry-reset-btn" class="admin-filter-reset-btn" type="button" title="Reset all filters">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-x"></use></svg>
+                        <span>Reset</span>
+                    </button>
                 </div>
             </div>
 
@@ -444,7 +504,7 @@
                     </thead>
                     <tbody>
                         {% for r in recent_readings %}
-                        <tr data-telemetry-row data-status="{{ r.status|lower }}" data-date="{{ r.recorded_at }}">
+                        <tr data-telemetry-row data-status="{{ r.status|lower }}" data-date="{{ r.recorded_at }}" data-temp="{{ r.temperature }}" data-ph="{{ r.ph }}" data-wqi="{{ r.wqi_score }}">
                             <td>
                                 <strong>{{ r.recorded_at }}</strong>
                             </td>
@@ -588,40 +648,175 @@
         });
     });
 
-    // Client-side filtering
-    const searchInput = document.getElementById("telemetry-search");
-    const statusSelect = document.getElementById("telemetry-status-filter");
-    const rows = Array.from(document.querySelectorAll("[data-telemetry-row]"));
-    const emptyRow = document.getElementById("telemetry-filter-empty");
-    const countEl = document.getElementById("telemetry-count");
+    // Unified Telemetry Filtering, Date Range & Sorting
+    (() => {
+        const searchInput = document.getElementById("telemetry-search");
+        const datePresetSelect = document.getElementById("telemetry-date-preset");
+        const datePicker = document.getElementById("telemetry-date-picker");
+        const statusSelect = document.getElementById("telemetry-status-filter");
+        const sortSelect = document.getElementById("telemetry-sort");
+        const resetBtn = document.getElementById("telemetry-reset-btn");
+        const tbody = document.querySelector("#telemetry-table tbody");
+        const rows = Array.from(document.querySelectorAll("[data-telemetry-row]"));
+        const emptyRow = document.getElementById("telemetry-filter-empty");
+        const countEl = document.getElementById("telemetry-count");
 
-    function filterTelemetry() {
-        const q = (searchInput ? searchInput.value : "").trim().toLowerCase();
-        const stat = statusSelect ? statusSelect.value.toLowerCase() : "all";
-        let visibleCount = 0;
-
-        rows.forEach(r => {
-            const dateText = (r.dataset.date || "").toLowerCase();
-            const statusText = (r.dataset.status || "").toLowerCase();
-
-            const matchesQuery = !q || dateText.includes(q) || statusText.includes(q);
-            const matchesStatus = stat === "all" || statusText === stat;
-
-            const visible = matchesQuery && matchesStatus;
-            r.hidden = !visible;
-            if (visible) visibleCount++;
-        });
-
-        if (emptyRow) {
-            emptyRow.hidden = rows.length === 0 || visibleCount > 0;
+        function getRowDate(row) {
+            const raw = (row.dataset.date || "").trim();
+            // Expected format YYYY-MM-DD ...
+            return raw ? new Date(raw.replace(" ", "T")) : new Date(0);
         }
-        if (countEl) {
-            countEl.innerHTML = `<strong>${visibleCount}</strong> record${visibleCount === 1 ? "" : "s"}`;
-        }
-    }
 
-    if (searchInput) searchInput.addEventListener("input", filterTelemetry);
-    if (statusSelect) statusSelect.addEventListener("change", filterTelemetry);
+        function formatLocalDate(d) {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, "0");
+            const day = String(d.getDate()).padStart(2, "0");
+            return `${y}-${m}-${day}`;
+        }
+
+        function applyTelemetryFilters() {
+            const q = (searchInput ? searchInput.value : "").trim().toLowerCase();
+            const stat = statusSelect ? statusSelect.value.toLowerCase() : "all";
+            const preset = datePresetSelect ? datePresetSelect.value : "all";
+            const customDateVal = datePicker ? datePicker.value : "";
+
+            const now = new Date();
+            const todayStr = formatLocalDate(now);
+            const yesterdayDate = new Date();
+            yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+            const yesterdayStr = formatLocalDate(yesterdayDate);
+
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+            let visibleCount = 0;
+
+            rows.forEach(r => {
+                const dateText = (r.dataset.date || "").trim();
+                const statusText = (r.dataset.status || "").toLowerCase();
+                const tempText = (r.dataset.temp || "").toLowerCase();
+                const phText = (r.dataset.ph || "").toLowerCase();
+                const rowDate = getRowDate(r);
+                const rowDateStr = dateText.substring(0, 10);
+
+                // Search query match
+                const rowHaystack = `${dateText} ${statusText} ${tempText} ${phText}`.toLowerCase();
+                const matchesQuery = !q || rowHaystack.includes(q);
+
+                // Status match
+                const matchesStatus = stat === "all" || statusText === stat;
+
+                // Date filter match
+                let matchesDate = true;
+                if (preset === "today") {
+                    matchesDate = rowDateStr === todayStr;
+                } else if (preset === "yesterday") {
+                    matchesDate = rowDateStr === yesterdayStr;
+                } else if (preset === "last7") {
+                    matchesDate = rowDate >= sevenDaysAgo;
+                } else if (preset === "last30") {
+                    matchesDate = rowDate >= thirtyDaysAgo;
+                } else if (preset === "custom" && customDateVal) {
+                    matchesDate = rowDateStr === customDateVal;
+                }
+
+                const visible = matchesQuery && matchesStatus && matchesDate;
+                r.hidden = !visible;
+                if (visible) visibleCount++;
+            });
+
+            if (emptyRow) {
+                emptyRow.hidden = rows.length === 0 || visibleCount > 0;
+            }
+            if (countEl) {
+                countEl.innerHTML = `<strong>${visibleCount}</strong> record${visibleCount === 1 ? "" : "s"}`;
+            }
+
+            sortTelemetryRows();
+        }
+
+        function sortTelemetryRows() {
+            if (!tbody || !sortSelect) return;
+            const sortMode = sortSelect.value;
+
+            const sorted = rows.slice().sort((a, b) => {
+                if (sortMode === "date-desc") {
+                    return getRowDate(b) - getRowDate(a);
+                }
+                if (sortMode === "date-asc") {
+                    return getRowDate(a) - getRowDate(b);
+                }
+                if (sortMode === "temp-desc") {
+                    return parseFloat(b.dataset.temp || 0) - parseFloat(a.dataset.temp || 0);
+                }
+                if (sortMode === "temp-asc") {
+                    return parseFloat(a.dataset.temp || 0) - parseFloat(b.dataset.temp || 0);
+                }
+                if (sortMode === "ph-desc") {
+                    return parseFloat(b.dataset.ph || 0) - parseFloat(a.dataset.ph || 0);
+                }
+                if (sortMode === "ph-asc") {
+                    return parseFloat(a.dataset.ph || 0) - parseFloat(b.dataset.ph || 0);
+                }
+                if (sortMode === "wqi-desc") {
+                    return parseFloat(b.dataset.wqi || 0) - parseFloat(a.dataset.wqi || 0);
+                }
+                if (sortMode === "wqi-asc") {
+                    return parseFloat(a.dataset.wqi || 0) - parseFloat(b.dataset.wqi || 0);
+                }
+                return 0;
+            });
+
+            sorted.forEach(row => {
+                tbody.appendChild(row);
+            });
+            if (emptyRow) tbody.appendChild(emptyRow);
+        }
+
+        // Event listeners
+        if (searchInput) searchInput.addEventListener("input", applyTelemetryFilters);
+        if (statusSelect) statusSelect.addEventListener("change", applyTelemetryFilters);
+        if (sortSelect) sortSelect.addEventListener("change", sortTelemetryRows);
+
+        if (datePresetSelect) {
+            datePresetSelect.addEventListener("change", () => {
+                if (datePresetSelect.value === "custom") {
+                    if (datePicker) {
+                        datePicker.style.display = "inline-block";
+                        datePicker.focus();
+                    }
+                } else {
+                    if (datePicker) {
+                        datePicker.style.display = "none";
+                        datePicker.value = "";
+                    }
+                }
+                applyTelemetryFilters();
+            });
+        }
+
+        if (datePicker) {
+            datePicker.addEventListener("change", applyTelemetryFilters);
+        }
+
+        if (resetBtn) {
+            resetBtn.addEventListener("click", () => {
+                if (searchInput) searchInput.value = "";
+                if (datePresetSelect) datePresetSelect.value = "all";
+                if (datePicker) {
+                    datePicker.value = "";
+                    datePicker.style.display = "none";
+                }
+                if (statusSelect) statusSelect.value = "all";
+                if (sortSelect) sortSelect.value = "date-desc";
+                applyTelemetryFilters();
+            });
+        }
+
+        applyTelemetryFilters();
+    })();
 </script>
 
 </body>

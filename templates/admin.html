@@ -1114,27 +1114,73 @@
                 </div>
             </div>
 
-            <!-- SEARCH AND FILTERS -->
-            <div class="admin-user-toolbar">
-                <div class="admin-search">
-                    <span class="admin-search-icon" aria-hidden="true">
-                        <svg class="ui-icon"><use href="#icon-dashboard"></use></svg>
-                    </span>
+            <!-- UNIFIED SEARCH, ROLE, STATUS & SORT CONTROLS -->
+            <div class="admin-toolbar">
+                <div class="admin-search-wrap">
+                    <svg class="ui-icon admin-search-icon" aria-hidden="true">
+                        <use href="#icon-search"></use>
+                    </svg>
                     <input id="user-search"
+                           class="admin-search-input"
                            type="search"
                            placeholder="Search name, email, or role..."
-                           autocomplete="off">
+                           autocomplete="off"
+                           aria-label="Search user accounts">
                 </div>
 
                 <div class="admin-toolbar-filters">
-                    <label class="admin-filter-label">
-                        <span class="sr-only">Filter by role</span>
-                        <select id="user-role-filter" aria-label="Filter by role">
-                            <option value="all">All Roles</option>
-                            <option value="admin">Admin</option>
-                            <option value="client">Client</option>
-                        </select>
-                    </label>
+                    <!-- Role Filter -->
+                    <div class="admin-filter-item">
+                        <span class="admin-filter-item-label">Role:</span>
+                        <div class="admin-input-with-icon">
+                            <svg class="ui-icon admin-control-icon" aria-hidden="true">
+                                <use href="#icon-filter"></use>
+                            </svg>
+                            <select id="user-role-filter" class="admin-filter-select" aria-label="Filter by role">
+                                <option value="all" selected>All Roles</option>
+                                <option value="admin">Admin</option>
+                                <option value="client">Client</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div class="admin-filter-item">
+                        <span class="admin-filter-item-label">Status:</span>
+                        <div class="admin-input-with-icon">
+                            <svg class="ui-icon admin-control-icon" aria-hidden="true">
+                                <use href="#icon-users"></use>
+                            </svg>
+                            <select id="user-status-filter" class="admin-filter-select" aria-label="Filter by status">
+                                <option value="all" selected>All Statuses</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Sort -->
+                    <div class="admin-filter-item">
+                        <span class="admin-filter-item-label">Sort:</span>
+                        <div class="admin-input-with-icon">
+                            <svg class="ui-icon admin-control-icon" aria-hidden="true">
+                                <use href="#icon-sort"></use>
+                            </svg>
+                            <select id="user-sort" class="admin-filter-select" aria-label="Sort users">
+                                <option value="name-asc" selected>Name: A to Z</option>
+                                <option value="name-desc">Name: Z to A</option>
+                                <option value="email-asc">Email: A to Z</option>
+                                <option value="role-admin">Role: Admin First</option>
+                                <option value="status-active">Status: Active First</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Reset Button -->
+                    <button id="user-reset-btn" class="admin-filter-reset-btn" type="button" title="Reset all filters">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-x"></use></svg>
+                        <span>Reset</span>
+                    </button>
                 </div>
             </div>
 

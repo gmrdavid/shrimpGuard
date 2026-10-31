@@ -281,47 +281,117 @@
                 </div>
             </div>
 
-            <!-- SEARCH AND FILTER CONTROLS -->
-            <div class="admin-table-controls">
+            <!-- UNIFIED SEARCH, DATE FILTER, ACTION, ROLE, SORT & PAGE SIZE CONTROLS -->
+            <div class="admin-toolbar">
                 <div class="admin-search-wrap">
                     <svg class="ui-icon admin-search-icon" aria-hidden="true">
-                        <use href="#icon-history"></use>
+                        <use href="#icon-search"></use>
                     </svg>
                     <input
                         id="log-search"
                         class="admin-search-input"
                         type="search"
-                        placeholder="Search by action, user, email, IP, or details..."
+                        placeholder="Search by action, user, email, IP, details..."
                         aria-label="Search logs">
                 </div>
 
-                <div class="admin-filter-group">
-                    <select id="log-action-filter" class="admin-filter-select" aria-label="Filter by action">
-                        <option value="all" selected>All Actions</option>
-                        <option value="login">LOGIN</option>
-                        <option value="logout">LOGOUT</option>
-                        <option value="signup">SIGNUP</option>
-                        <option value="user_create">USER_CREATE</option>
-                        <option value="user_edit">USER_EDIT</option>
-                        <option value="user_delete">USER_DELETE</option>
-                        <option value="password_reset">PASSWORD_RESET</option>
-                        <option value="settings_update">SETTINGS_UPDATE</option>
-                        <option value="telemetry_simulate">TELEMETRY_SIMULATE</option>
-                        <option value="log_purge">LOG_PURGE</option>
-                    </select>
+                <div class="admin-toolbar-filters">
+                    <!-- Date Filter -->
+                    <div class="admin-filter-item">
+                        <span class="admin-filter-item-label">Date:</span>
+                        <div class="admin-input-with-icon">
+                            <svg class="ui-icon admin-control-icon" aria-hidden="true">
+                                <use href="#icon-calendar"></use>
+                            </svg>
+                            <select id="log-date-preset" class="admin-filter-select" aria-label="Filter by date range">
+                                <option value="all" selected>All Dates</option>
+                                <option value="today">Today</option>
+                                <option value="yesterday">Yesterday</option>
+                                <option value="last7">Last 7 Days</option>
+                                <option value="last30">Last 30 Days</option>
+                                <option value="custom">Specific Date...</option>
+                            </select>
+                        </div>
+                        <input
+                            id="log-date-picker"
+                            class="admin-date-input"
+                            type="date"
+                            aria-label="Pick specific date"
+                            title="Filter by specific date"
+                            style="display: none;">
+                    </div>
 
-                    <select id="log-role-filter" class="admin-filter-select" aria-label="Filter by role">
-                        <option value="all" selected>All Roles</option>
-                        <option value="admin">Admin</option>
-                        <option value="client">Client</option>
-                    </select>
+                    <!-- Action Filter -->
+                    <div class="admin-filter-item">
+                        <span class="admin-filter-item-label">Action:</span>
+                        <div class="admin-input-with-icon">
+                            <svg class="ui-icon admin-control-icon" aria-hidden="true">
+                                <use href="#icon-filter"></use>
+                            </svg>
+                            <select id="log-action-filter" class="admin-filter-select" aria-label="Filter by action">
+                                <option value="all" selected>All Actions</option>
+                                <option value="login">LOGIN</option>
+                                <option value="logout">LOGOUT</option>
+                                <option value="signup">SIGNUP</option>
+                                <option value="user_create">USER_CREATE</option>
+                                <option value="user_edit">USER_EDIT</option>
+                                <option value="user_delete">USER_DELETE</option>
+                                <option value="password_reset">PASSWORD_RESET</option>
+                                <option value="telemetry_ingest">TELEMETRY_INGEST</option>
+                                <option value="log_purge">LOG_PURGE</option>
+                            </select>
+                        </div>
+                    </div>
 
-                    <select id="log-limit-select" class="admin-filter-select" aria-label="Items per page">
-                        <option value="15" selected>15 per page</option>
-                        <option value="30">30 per page</option>
-                        <option value="50">50 per page</option>
-                        <option value="all">Show All</option>
-                    </select>
+                    <!-- Role Filter -->
+                    <div class="admin-filter-item">
+                        <span class="admin-filter-item-label">Role:</span>
+                        <div class="admin-input-with-icon">
+                            <svg class="ui-icon admin-control-icon" aria-hidden="true">
+                                <use href="#icon-users"></use>
+                            </svg>
+                            <select id="log-role-filter" class="admin-filter-select" aria-label="Filter by role">
+                                <option value="all" selected>All Roles</option>
+                                <option value="admin">Admin</option>
+                                <option value="client">Client</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Sort -->
+                    <div class="admin-filter-item">
+                        <span class="admin-filter-item-label">Sort:</span>
+                        <div class="admin-input-with-icon">
+                            <svg class="ui-icon admin-control-icon" aria-hidden="true">
+                                <use href="#icon-sort"></use>
+                            </svg>
+                            <select id="log-sort" class="admin-filter-select" aria-label="Sort audit logs">
+                                <option value="date-desc" selected>Newest First</option>
+                                <option value="date-asc">Oldest First</option>
+                                <option value="action-asc">Action: A to Z</option>
+                                <option value="action-desc">Action: Z to A</option>
+                                <option value="user-asc">User: A to Z</option>
+                                <option value="user-desc">User: Z to A</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Limit -->
+                    <div class="admin-filter-item">
+                        <span class="admin-filter-item-label">Page:</span>
+                        <select id="log-limit-select" class="admin-filter-select no-icon" aria-label="Items per page">
+                            <option value="15" selected>15 / page</option>
+                            <option value="30">30 / page</option>
+                            <option value="50">50 / page</option>
+                            <option value="all">Show All</option>
+                        </select>
+                    </div>
+
+                    <!-- Reset Button -->
+                    <button id="log-reset-btn" class="admin-filter-reset-btn" type="button" title="Reset all filters">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-x"></use></svg>
+                        <span>Reset</span>
+                    </button>
                 </div>
             </div>
 
@@ -340,7 +410,7 @@
                     </thead>
                     <tbody id="logs-table-body">
                         {% for l in logs %}
-                        <tr data-log-row data-action="{{ (l.action or '')|lower }}" data-role="{{ (l.role or '')|lower }}" data-search="{{ (l.user_name or '')|lower }} {{ (l.user_email or '')|lower }} {{ (l.action or '')|lower }} {{ (l.details or '')|lower }} {{ (l.ip_address or '')|lower }}">
+                        <tr data-log-row data-timestamp="{{ l.timestamp.strftime('%Y-%m-%d %H:%M:%S') if l.timestamp and l.timestamp.strftime is defined else l.timestamp }}" data-date="{{ l.timestamp.strftime('%Y-%m-%d') if l.timestamp and l.timestamp.strftime is defined else '' }}" data-action="{{ (l.action or '')|lower }}" data-role="{{ (l.role or '')|lower }}" data-user="{{ (l.user_name or 'System')|lower }}" data-search="{{ (l.user_name or '')|lower }} {{ (l.user_email or '')|lower }} {{ (l.action or '')|lower }} {{ (l.details or '')|lower }} {{ (l.ip_address or '')|lower }}">
                             <td>
                                 <time datetime="{{ l.timestamp }}" style="font-size: 11.5px; font-weight: 600; color: #475a4e;">
                                     {% if l.timestamp and l.timestamp.strftime is defined %}
@@ -494,109 +564,235 @@
         });
     });
 
-    // Pagination & Search
-    const searchInput = document.getElementById("log-search");
-    const actionSelect = document.getElementById("log-action-filter");
-    const roleSelect = document.getElementById("log-role-filter");
-    const limitSelect = document.getElementById("log-limit-select");
-    const allRows = Array.from(document.querySelectorAll("[data-log-row]"));
-    const emptyRow = document.getElementById("logs-filter-empty");
-    const countEl = document.getElementById("log-count");
-    const pageInfo = document.getElementById("log-page-info");
-    const currentPageEl = document.getElementById("log-current-page");
-    const prevBtn = document.getElementById("log-prev-btn");
-    const nextBtn = document.getElementById("log-next-btn");
+    // Unified Logs Filtering, Date Range, Sorting & Pagination
+    (() => {
+        const searchInput = document.getElementById("log-search");
+        const datePresetSelect = document.getElementById("log-date-preset");
+        const datePicker = document.getElementById("log-date-picker");
+        const actionSelect = document.getElementById("log-action-filter");
+        const roleSelect = document.getElementById("log-role-filter");
+        const sortSelect = document.getElementById("log-sort");
+        const limitSelect = document.getElementById("log-limit-select");
+        const resetBtn = document.getElementById("log-reset-btn");
+        const tbody = document.getElementById("logs-table-body");
+        const allRows = Array.from(document.querySelectorAll("[data-log-row]"));
+        const emptyRow = document.getElementById("logs-filter-empty");
+        const countEl = document.getElementById("log-count");
+        const pageInfo = document.getElementById("log-page-info");
+        const currentPageEl = document.getElementById("log-current-page");
+        const prevBtn = document.getElementById("log-prev-btn");
+        const nextBtn = document.getElementById("log-next-btn");
 
-    let currentPage = 1;
-    let itemsPerPage = 15;
-    let filteredRows = allRows;
+        let currentPage = 1;
+        let itemsPerPage = 15;
+        let filteredRows = allRows;
 
-    function applyFilter() {
-        const q = (searchInput ? searchInput.value : "").trim().toLowerCase();
-        const act = actionSelect ? actionSelect.value.toLowerCase() : "all";
-        const role = roleSelect ? roleSelect.value.toLowerCase() : "all";
-
-        filteredRows = allRows.filter(r => {
-            const rowSearch = (r.dataset.search || "").toLowerCase();
-            const rowAction = (r.dataset.action || "").toLowerCase();
-            const rowRole = (r.dataset.role || "").toLowerCase();
-
-            const matchesQ = !q || rowSearch.includes(q);
-            const matchesAct = act === "all" || rowAction === act;
-            const matchesRole = role === "all" || rowRole === role;
-
-            return matchesQ && matchesAct && matchesRole;
-        });
-
-        currentPage = 1;
-        renderPagination();
-    }
-
-    function renderPagination() {
-        const total = filteredRows.length;
-        const perPage = itemsPerPage === "all" ? total : itemsPerPage;
-        const totalPages = Math.ceil(total / perPage) || 1;
-
-        if (currentPage > totalPages) currentPage = totalPages;
-        if (currentPage < 1) currentPage = 1;
-
-        const startIdx = (currentPage - 1) * perPage;
-        const endIdx = itemsPerPage === "all" ? total : Math.min(startIdx + perPage, total);
-
-        allRows.forEach(r => { r.hidden = true; });
-        for (let i = startIdx; i < endIdx; i++) {
-            if (filteredRows[i]) filteredRows[i].hidden = false;
+        function getRowDate(row) {
+            const raw = (row.dataset.timestamp || "").trim();
+            return raw ? new Date(raw.replace(" ", "T")) : new Date(0);
         }
 
-        if (emptyRow) {
-            emptyRow.hidden = total > 0;
+        function formatLocalDate(d) {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, "0");
+            const day = String(d.getDate()).padStart(2, "0");
+            return `${y}-${m}-${day}`;
         }
-        if (countEl) {
-            countEl.innerHTML = `<strong>${total}</strong> event${total === 1 ? "" : "s"}`;
-        }
-        if (pageInfo) {
-            pageInfo.textContent = total > 0 ? `Showing ${startIdx + 1}–${endIdx} of ${total} events` : "No events to display";
-        }
-        if (currentPageEl) {
-            currentPageEl.textContent = `Page ${currentPage} of ${totalPages}`;
-        }
-        if (prevBtn) prevBtn.disabled = currentPage <= 1;
-        if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
-    }
 
-    if (searchInput) searchInput.addEventListener("input", applyFilter);
-    if (actionSelect) actionSelect.addEventListener("change", applyFilter);
-    if (roleSelect) roleSelect.addEventListener("change", applyFilter);
-    if (limitSelect) {
-        limitSelect.addEventListener("change", () => {
-            const v = limitSelect.value;
-            itemsPerPage = v === "all" ? "all" : parseInt(v, 10);
+        function applyFilter() {
+            const q = (searchInput ? searchInput.value : "").trim().toLowerCase();
+            const act = actionSelect ? actionSelect.value.toLowerCase() : "all";
+            const role = roleSelect ? roleSelect.value.toLowerCase() : "all";
+            const preset = datePresetSelect ? datePresetSelect.value : "all";
+            const customDateVal = datePicker ? datePicker.value : "";
+
+            const now = new Date();
+            const todayStr = formatLocalDate(now);
+            const yesterdayDate = new Date();
+            yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+            const yesterdayStr = formatLocalDate(yesterdayDate);
+
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+            filteredRows = allRows.filter(r => {
+                const rowSearch = (r.dataset.search || "").toLowerCase();
+                const rowAction = (r.dataset.action || "").toLowerCase();
+                const rowRole = (r.dataset.role || "").toLowerCase();
+                const rowDate = getRowDate(r);
+                const rowDateStr = (r.dataset.date || "").trim();
+
+                const matchesQ = !q || rowSearch.includes(q);
+                const matchesAct = act === "all" || rowAction === act;
+                const matchesRole = role === "all" || rowRole === role;
+
+                let matchesDate = true;
+                if (preset === "today") {
+                    matchesDate = rowDateStr === todayStr;
+                } else if (preset === "yesterday") {
+                    matchesDate = rowDateStr === yesterdayStr;
+                } else if (preset === "last7") {
+                    matchesDate = rowDate >= sevenDaysAgo;
+                } else if (preset === "last30") {
+                    matchesDate = rowDate >= thirtyDaysAgo;
+                } else if (preset === "custom" && customDateVal) {
+                    matchesDate = rowDateStr === customDateVal;
+                }
+
+                return matchesQ && matchesAct && matchesRole && matchesDate;
+            });
+
+            sortFilteredRows();
             currentPage = 1;
             renderPagination();
-        });
-    }
+        }
 
-    if (prevBtn) {
-        prevBtn.addEventListener("click", () => {
-            if (currentPage > 1) {
-                currentPage--;
-                renderPagination();
+        function sortFilteredRows() {
+            if (!sortSelect) return;
+            const sortMode = sortSelect.value;
+
+            filteredRows.sort((a, b) => {
+                if (sortMode === "date-desc") {
+                    return getRowDate(b) - getRowDate(a);
+                }
+                if (sortMode === "date-asc") {
+                    return getRowDate(a) - getRowDate(b);
+                }
+                if (sortMode === "action-asc") {
+                    return (a.dataset.action || "").localeCompare(b.dataset.action || "");
+                }
+                if (sortMode === "action-desc") {
+                    return (b.dataset.action || "").localeCompare(a.dataset.action || "");
+                }
+                if (sortMode === "user-asc") {
+                    return (a.dataset.user || "").localeCompare(b.dataset.user || "");
+                }
+                if (sortMode === "user-desc") {
+                    return (b.dataset.user || "").localeCompare(a.dataset.user || "");
+                }
+                return 0;
+            });
+
+            // Reorder elements in DOM tbody
+            if (tbody) {
+                filteredRows.forEach(row => {
+                    tbody.appendChild(row);
+                });
+                if (emptyRow) tbody.appendChild(emptyRow);
             }
-        });
-    }
+        }
 
-    if (nextBtn) {
-        nextBtn.addEventListener("click", () => {
-            const perPage = itemsPerPage === "all" ? filteredRows.length : itemsPerPage;
-            const totalPages = Math.ceil(filteredRows.length / perPage) || 1;
-            if (currentPage < totalPages) {
-                currentPage++;
-                renderPagination();
+        function renderPagination() {
+            const total = filteredRows.length;
+            const perPage = itemsPerPage === "all" ? total : itemsPerPage;
+            const totalPages = Math.ceil(total / perPage) || 1;
+
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            const startIdx = (currentPage - 1) * perPage;
+            const endIdx = itemsPerPage === "all" ? total : Math.min(startIdx + perPage, total);
+
+            allRows.forEach(r => { r.hidden = true; });
+            for (let i = startIdx; i < endIdx; i++) {
+                if (filteredRows[i]) filteredRows[i].hidden = false;
             }
-        });
-    }
 
-    applyFilter();
+            if (emptyRow) {
+                emptyRow.hidden = total > 0;
+            }
+            if (countEl) {
+                countEl.innerHTML = `<strong>${total}</strong> event${total === 1 ? "" : "s"}`;
+            }
+            if (pageInfo) {
+                pageInfo.textContent = total > 0 ? `Showing ${startIdx + 1}–${endIdx} of ${total} events` : "No events to display";
+            }
+            if (currentPageEl) {
+                currentPageEl.textContent = `Page ${currentPage} of ${totalPages}`;
+            }
+            if (prevBtn) prevBtn.disabled = currentPage <= 1;
+            if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
+        }
+
+        if (searchInput) searchInput.addEventListener("input", applyFilter);
+        if (actionSelect) actionSelect.addEventListener("change", applyFilter);
+        if (roleSelect) roleSelect.addEventListener("change", applyFilter);
+        if (sortSelect) sortSelect.addEventListener("change", () => {
+            sortFilteredRows();
+            renderPagination();
+        });
+
+        if (datePresetSelect) {
+            datePresetSelect.addEventListener("change", () => {
+                if (datePresetSelect.value === "custom") {
+                    if (datePicker) {
+                        datePicker.style.display = "inline-block";
+                        datePicker.focus();
+                    }
+                } else {
+                    if (datePicker) {
+                        datePicker.style.display = "none";
+                        datePicker.value = "";
+                    }
+                }
+                applyFilter();
+            });
+        }
+
+        if (datePicker) {
+            datePicker.addEventListener("change", applyFilter);
+        }
+
+        if (limitSelect) {
+            limitSelect.addEventListener("change", () => {
+                const v = limitSelect.value;
+                itemsPerPage = v === "all" ? "all" : parseInt(v, 10);
+                currentPage = 1;
+                renderPagination();
+            });
+        }
+
+        if (resetBtn) {
+            resetBtn.addEventListener("click", () => {
+                if (searchInput) searchInput.value = "";
+                if (datePresetSelect) datePresetSelect.value = "all";
+                if (datePicker) {
+                    datePicker.value = "";
+                    datePicker.style.display = "none";
+                }
+                if (actionSelect) actionSelect.value = "all";
+                if (roleSelect) roleSelect.value = "all";
+                if (sortSelect) sortSelect.value = "date-desc";
+                if (limitSelect) limitSelect.value = "15";
+                itemsPerPage = 15;
+                applyFilter();
+            });
+        }
+
+        if (prevBtn) {
+            prevBtn.addEventListener("click", () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderPagination();
+                }
+            });
+        }
+
+        if (nextBtn) {
+            nextBtn.addEventListener("click", () => {
+                const perPage = itemsPerPage === "all" ? filteredRows.length : itemsPerPage;
+                const totalPages = Math.ceil(filteredRows.length / perPage) || 1;
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderPagination();
+                }
+            });
+        }
+
+        applyFilter();
+    })();
 </script>
 
 </body>

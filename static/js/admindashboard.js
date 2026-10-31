@@ -152,10 +152,13 @@
         });
     });
 
-    // SEARCH AND FILTER
+    // SEARCH, FILTER, SORT & RESET
     const search = get("user-search");
     const roleFilter = get("user-role-filter");
     const statusFilter = get("user-status-filter");
+    const sortSelect = get("user-sort");
+    const resetBtn = get("user-reset-btn");
+    const tbody = document.querySelector(".admin-table tbody");
     const rows = Array.from(document.querySelectorAll("[data-user-row]"));
 
     const emptyRow = get("user-filter-empty");
@@ -207,6 +210,35 @@
         if (userCount) {
             userCount.innerHTML = `<strong>${visibleCount}</strong> account${visibleCount === 1 ? "" : "s"}`;
         }
+
+        sortUsers();
+    }
+
+    function sortUsers() {
+        if (!tbody || !sortSelect) return;
+        const mode = sortSelect.value;
+
+        const sorted = rows.slice().sort((a, b) => {
+            const nameA = (a.dataset.name || "").toLowerCase();
+            const nameB = (b.dataset.name || "").toLowerCase();
+            const emailA = (a.dataset.email || "").toLowerCase();
+            const emailB = (b.dataset.email || "").toLowerCase();
+            const roleA = (a.dataset.role || "").toLowerCase();
+            const roleB = (b.dataset.role || "").toLowerCase();
+            const statusA = (a.dataset.status || "").toLowerCase();
+            const statusB = (b.dataset.status || "").toLowerCase();
+
+            if (mode === "name-asc") return nameA.localeCompare(nameB);
+            if (mode === "name-desc") return nameB.localeCompare(nameA);
+            if (mode === "email-asc") return emailA.localeCompare(emailB);
+            if (mode === "role-admin") return roleB.localeCompare(roleA); // 'admin' before 'client'
+            if (mode === "status-active") return statusA.localeCompare(statusB); // 'active' before 'inactive'
+            return 0;
+        });
+
+        sorted.forEach((r) => tbody.appendChild(r));
+        if (emptyRow) tbody.appendChild(emptyRow);
+        if (noUsersRow) tbody.appendChild(noUsersRow);
     }
 
     if (search) {
@@ -217,6 +249,18 @@
     }
     if (statusFilter) {
         statusFilter.addEventListener("change", filterUsers);
+    }
+    if (sortSelect) {
+        sortSelect.addEventListener("change", sortUsers);
+    }
+    if (resetBtn) {
+        resetBtn.addEventListener("click", () => {
+            if (search) search.value = "";
+            if (roleFilter) roleFilter.value = "all";
+            if (statusFilter) statusFilter.value = "all";
+            if (sortSelect) sortSelect.value = "name-asc";
+            filterUsers();
+        });
     }
 
     filterUsers();
