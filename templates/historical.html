@@ -319,6 +319,14 @@
                             0 readings
                         </span>
 
+                        <button id="history-export-button" class="historical-toolbar-btn historical-download-btn" type="button" aria-label="Export readings" title="Export readings by date & status">
+                            <svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 3v12"></path>
+                                <path d="m7 10 5 5 5-5"></path>
+                                <path d="M5 17v4h14v-4"></path>
+                            </svg>
+                            <span>Export</span>
+                        </button>
 
                     </div>
 
@@ -446,13 +454,13 @@
                         </div>
                     </div>
 
-                    <button id="table-export-button" class="historical-toolbar-btn historical-download-btn" type="button" aria-label="Download readings in Excel format" title="Export to Excel (.xlsx)">
+                    <button id="table-export-button" class="historical-toolbar-btn historical-download-btn" type="button" aria-label="Export historical readings" title="Export readings by date & status (Excel or CSV)">
                         <svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M12 3v12"></path>
                             <path d="m7 10 5 5 5-5"></path>
                             <path d="M5 17v4h14v-4"></path>
                         </svg>
-                        <span>Download Excel</span>
+                        <span>Export Data</span>
                     </button>
 
                 </div>
@@ -525,6 +533,185 @@
     </main>
 
 </div>
+
+<!-- EXPORT HISTORICAL READINGS MODAL DIALOG -->
+        <div id="historical-export-modal" class="modal-dialog-backdrop" hidden>
+            <div class="modal-dialog-container historical-export-dialog" role="dialog" aria-modal="true" aria-labelledby="export-modal-title">
+
+                <div class="modal-dialog-header">
+                    <div class="modal-header-text">
+                        <div class="panel-heading-icon export-modal-icon">
+                            <svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 3v12"></path>
+                                <path d="m7 10 5 5 5-5"></path>
+                                <path d="M5 17v4h14v-4"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 id="export-modal-title">Export Historical Readings</h3>
+                            <p>Customize date scope, water quality status, and download file format.</p>
+                        </div>
+                    </div>
+                    <button type="button" id="close-export-modal" class="modal-close-btn" aria-label="Close export dialog">
+                        &times;
+                    </button>
+                </div>
+
+                <div class="modal-dialog-body export-modal-body">
+                    <!-- 1. DATE SELECTION -->
+                    <div class="export-modal-section">
+                        <label class="export-section-label">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg>
+                            <span>1. Target Date Range</span>
+                        </label>
+                        <div class="export-scope-toggle-group">
+                            <label class="export-radio-card" id="card-date-all">
+                                <input type="radio" name="export-date-scope" id="export-date-all" value="all" checked>
+                                <div class="radio-card-content">
+                                    <span class="radio-card-title">All Logged Dates</span>
+                                    <span class="radio-card-desc">Download complete historical records across all time.</span>
+                                </div>
+                            </label>
+
+                            <label class="export-radio-card" id="card-date-single">
+                                <input type="radio" name="export-date-scope" id="export-date-single" value="single">
+                                <div class="radio-card-content">
+                                    <span class="radio-card-title">Specific Calendar Date</span>
+                                    <span class="radio-card-desc">Export readings recorded on one specific day.</span>
+                                </div>
+                            </label>
+                        </div>
+
+                        <!-- Single Date Picker Wrap -->
+                        <div class="export-single-date-box" id="export-single-date-wrap" hidden>
+                            <label for="export-target-date" class="export-input-sublabel">Select Target Date:</label>
+                            <div class="export-date-input-row">
+                                <input type="date" id="export-target-date" class="export-date-input" aria-label="Choose specific export date">
+                                <button type="button" id="export-date-sync-active" class="export-btn-sync" title="Sync with currently viewed table date">
+                                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-history"></use></svg>
+                                    <span>Use Active Table Date</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. STATUS FILTER -->
+                    <div class="export-modal-section">
+                        <label class="export-section-label">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
+                            <span>2. Water Quality Status (ML Model)</span>
+                        </label>
+                        <div class="export-status-grid">
+                            <label class="export-status-option" id="card-status-all">
+                                <input type="radio" name="export-status-filter" value="all" checked>
+                                <div class="status-option-content">
+                                    <span class="status-pill-dot dot-all"></span>
+                                    <div class="status-option-info">
+                                        <span class="status-option-title">All Statuses</span>
+                                        <span class="status-option-badge">Full dataset</span>
+                                    </div>
+                                </div>
+                            </label>
+
+                            <label class="export-status-option" id="card-status-optimal">
+                                <input type="radio" name="export-status-filter" value="optimal">
+                                <div class="status-option-content">
+                                    <span class="status-pill-dot dot-optimal"></span>
+                                    <div class="status-option-info">
+                                        <span class="status-option-title">Optimal Only</span>
+                                        <span class="status-option-badge badge-optimal">ML Optimal</span>
+                                    </div>
+                                </div>
+                            </label>
+
+                            <label class="export-status-option" id="card-status-warning">
+                                <input type="radio" name="export-status-filter" value="warning">
+                                <div class="status-option-content">
+                                    <span class="status-pill-dot dot-warning"></span>
+                                    <div class="status-option-info">
+                                        <span class="status-option-title">Warning Only</span>
+                                        <span class="status-option-badge badge-warning">Needs Attention</span>
+                                    </div>
+                                </div>
+                            </label>
+
+                            <label class="export-status-option" id="card-status-critical">
+                                <input type="radio" name="export-status-filter" value="critical">
+                                <div class="status-option-content">
+                                    <span class="status-pill-dot dot-critical"></span>
+                                    <div class="status-option-info">
+                                        <span class="status-option-title">Critical Only</span>
+                                        <span class="status-option-badge badge-critical">Action Required</span>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 3. FILE FORMAT -->
+                    <div class="export-modal-section">
+                        <label class="export-section-label">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-chart"></use></svg>
+                            <span>3. File Format</span>
+                        </label>
+                        <div class="export-format-toggle-group">
+                            <label class="export-format-pill" id="card-format-xlsx">
+                                <input type="radio" name="export-file-format" value="xlsx" checked>
+                                <div class="format-pill-content">
+                                    <span class="format-badge-icon xlsx-badge">XLSX</span>
+                                    <div class="format-text-meta">
+                                        <span class="format-name">Microsoft Excel (.xlsx)</span>
+                                        <span class="format-sub">Styled spreadsheet with ML status and WQI values</span>
+                                    </div>
+                                </div>
+                            </label>
+
+                            <label class="export-format-pill" id="card-format-csv">
+                                <input type="radio" name="export-file-format" value="csv">
+                                <div class="format-pill-content">
+                                    <span class="format-badge-icon csv-badge">CSV</span>
+                                    <div class="format-text-meta">
+                                        <span class="format-name">Comma-Separated Values (.csv)</span>
+                                        <span class="format-sub">Standard tabular format for Excel, Python &amp; statistical tools</span>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 4. LIVE PREVIEW BANNER -->
+                    <div id="export-preview-card" class="export-preview-card">
+                        <div class="preview-card-icon" id="export-preview-icon">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
+                        </div>
+                        <div class="preview-card-info">
+                            <div class="preview-card-header">
+                                <span class="preview-card-label">EXPORT PREVIEW</span>
+                                <span id="export-preview-badge" class="preview-badge preview-badge-ready">Calculating...</span>
+                            </div>
+                            <p id="export-preview-text" class="preview-card-desc">
+                                Matching readings based on selected date &amp; status...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-dialog-footer export-modal-footer">
+                    <button type="button" id="cancel-export-btn" class="export-btn-secondary">
+                        Cancel
+                    </button>
+                    <button type="button" id="confirm-export-btn" class="export-btn-primary">
+                        <svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 3v12"></path>
+                            <path d="m7 10 5 5 5-5"></path>
+                            <path d="M5 17v4h14v-4"></path>
+                        </svg>
+                        <span id="confirm-export-text">Download Excel (.xlsx)</span>
+                    </button>
+                </div>
+
+            </div>
+        </div>
 
 <script src="{{ url_for('static', filename='js/historical.js') }}"></script>
 <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>

@@ -787,6 +787,12 @@ def get_alerts():
 @app.route("/historical/export")
 @role_required("Client")
 def export_historical_data():
+    target_date = request.args.get("date", "all").strip()
+    target_status = request.args.get("status", "all").strip().lower()
+    export_format = request.args.get("format", "xlsx").strip().lower()
+    if export_format not in ("xlsx", "csv"):
+        export_format = "xlsx"
+
     try:
         readings = db.session.execute(
             select(sensor_readings).order_by(sensor_readings.c.date.asc())
@@ -797,7 +803,7 @@ def export_historical_data():
         return jsonify({"error": "Unable to load sensor readings for export."}), 503
 
     rows = [
-        ("Date", "Temperature (°C)", "pH", "Status"),
+        ("Date", "Temperature (°C)", "pH", "Status", "WQI Score (%)", "WQI Classification"),
     ]
     for reading in readings:
         try:
@@ -815,24 +821,71 @@ def export_historical_data():
         if not math.isfinite(temperature) or not math.isfinite(ph):
             app.logger.error("A stored sensor reading contains non-finite values.")
             return jsonify({"error": "A stored sensor reading contains invalid numeric values."}), 500
-        # ML-based classification: retrieve from reading or classify using ML model
-        status = reading["status"]
-        if not status or status.strip() in ("Normal", "Good"):
-            try:
-                status = classify_water_quality(temperature, ph)
-            except Exception:
-                status = "Optimal" 
-        if reading["status"].strip().casefold() == "demo":
-            status = f"Demo - {status}"
+
+        # Filter by specific calendar date (YYYY-MM-DD)
+        rec_date_str = recorded_at.strftime("%Y-%m-%d")
+        if target_date and target_date.lower() != "all" and rec_date_str != target_date:
+            continue
+
+        # ML-based classification and WQI calculation strictly from DecisionTreeClassifier
+        try:
+            analysis = calculate_ml_water_quality_analysis(temperature, ph)
+            status = analysis["overall_status"]
+            wqi_score = analysis.get("wqi_score", 100)
+            wqi_status = analysis.get("wqi_status", "Optimal")
+        except Exception:
+            status = reading["status"] or "Optimal"
+            if not status or status.strip() in ("Normal", "Good"):
+                status = "Optimal"
+            wqi_score = 100
+            wqi_status = "Optimal"
+
+        # Filter by water quality status ('optimal', 'warning', 'critical')
+        if target_status and target_status != "all" and target_status != status.lower():
+            continue
+
+        if reading["status"] and reading["status"].strip().casefold() == "demo":
+            display_status = f"Demo - {status}"
+        else:
+            display_status = status
+
         rows.append(
             (
                 recorded_at.strftime("%Y-%m-%d %H:%M:%S"),
                 format(temperature, ".15g"),
                 format(ph, ".15g"),
-                status,
+                display_status,
+                format(wqi_score, ".15g"),
+                str(wqi_status),
             )
         )
 
+    # Dynamic filename based on selected filters
+    is_all_dates = not target_date or target_date.lower() == "all"
+    is_all_statuses = not target_status or target_status.lower() == "all"
+
+    if is_all_dates and is_all_statuses:
+        download_name = f"shrimpguard-historical-data.{export_format}"
+    else:
+        date_slug = "all-dates" if is_all_dates else re.sub(r"[^a-zA-Z0-9_-]", "-", target_date)
+        status_slug = "all-statuses" if is_all_statuses else re.sub(r"[^a-zA-Z0-9_-]", "-", target_status)
+        download_name = f"shrimpguard-historical-{date_slug}-{status_slug}.{export_format}"
+
+    # CSV Export format
+    if export_format == "csv":
+        output = io.StringIO()
+        writer = csv.writer(output)
+        for row in rows:
+            writer.writerow(row)
+        output.seek(0)
+        return send_file(
+            io.BytesIO(output.getvalue().encode("utf-8-sig")),
+            as_attachment=True,
+            download_name=download_name,
+            mimetype="text/csv",
+        )
+
+    # Excel (.xlsx) Export format
     def text_cell(reference, value):
         return (
             f'<c r="{reference}" t="inlineStr"><is><t xml:space="preserve">'
@@ -841,12 +894,24 @@ def export_historical_data():
 
     worksheet_rows = []
     for row_number, row in enumerate(rows, start=1):
-        cells = [
-            text_cell(f"A{row_number}", row[0]),
-            text_cell(f"B{row_number}", row[1]) if row_number == 1 else f'<c r="B{row_number}"><v>{row[1]}</v></c>',
-            text_cell(f"C{row_number}", row[2]) if row_number == 1 else f'<c r="C{row_number}"><v>{row[2]}</v></c>',
-            text_cell(f"D{row_number}", row[3]),
-        ]
+        if row_number == 1:
+            cells = [
+                text_cell(f"A{row_number}", row[0]),
+                text_cell(f"B{row_number}", row[1]),
+                text_cell(f"C{row_number}", row[2]),
+                text_cell(f"D{row_number}", row[3]),
+                text_cell(f"E{row_number}", row[4]),
+                text_cell(f"F{row_number}", row[5]),
+            ]
+        else:
+            cells = [
+                text_cell(f"A{row_number}", row[0]),
+                f'<c r="B{row_number}"><v>{row[1]}</v></c>',
+                f'<c r="C{row_number}"><v>{row[2]}</v></c>',
+                text_cell(f"D{row_number}", row[3]),
+                f'<c r="E{row_number}"><v>{row[4]}</v></c>',
+                text_cell(f"F{row_number}", row[5]),
+            ]
         worksheet_rows.append(f'<row r="{row_number}">{"".join(cells)}</row>')
 
     worksheet = (
@@ -893,7 +958,7 @@ def export_historical_data():
     return send_file(
         workbook,
         as_attachment=True,
-        download_name="shrimpguard-historical-data.xlsx",
+        download_name=download_name,
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 

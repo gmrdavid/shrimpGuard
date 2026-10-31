@@ -777,6 +777,8 @@ function applyFilters() {
     document.getElementById("history-count").textContent = `${history.length} reading${history.length === 1 ? "" : "s"}`;
     const chartExportBtn = document.getElementById("history-export-button");
     if (chartExportBtn) chartExportBtn.disabled = sensorHistory.length === 0;
+    const tableExportBtn = document.getElementById("table-export-button");
+    if (tableExportBtn) tableExportBtn.disabled = sensorHistory.length === 0;
     document.getElementById("history-empty").hidden = hasData;
     if (hasData) {
         initHistoricalChartEvents();
@@ -789,61 +791,282 @@ function applyFilters() {
     updateTable(history);
 }
 
-async function downloadHistoricalExcel(button) {
-    if (!button) return;
-    const originalText = button.querySelector("span") ? button.querySelector("span").textContent : "";
-    button.disabled = true;
-    button.setAttribute("aria-busy", "true");
-    if (button.querySelector("span")) {
-        button.querySelector("span").textContent = "Exporting...";
+// ==========================================
+// HISTORICAL EXPORT MODAL & FILTER LOGIC
+// ==========================================
+
+const exportModal = document.getElementById("historical-export-modal");
+const closeExportBtn = document.getElementById("close-export-modal");
+const cancelExportBtn = document.getElementById("cancel-export-btn");
+const confirmExportBtn = document.getElementById("confirm-export-btn");
+const confirmExportText = document.getElementById("confirm-export-text");
+const exportDateScopeRadios = document.querySelectorAll('input[name="export-date-scope"]');
+const exportSingleDateWrap = document.getElementById("export-single-date-wrap");
+const exportTargetDateInput = document.getElementById("export-target-date");
+const exportDateSyncBtn = document.getElementById("export-date-sync-active");
+const exportStatusRadios = document.querySelectorAll('input[name="export-status-filter"]');
+const exportFormatRadios = document.querySelectorAll('input[name="export-file-format"]');
+
+function openExportModal() {
+    if (!exportModal) return;
+
+    // 1. Sync Date selection: if user has a tableFilterDate active, default to that single date
+    if (tableFilterDate) {
+        const singleRadio = document.getElementById("export-date-single");
+        if (singleRadio) singleRadio.checked = true;
+        if (exportSingleDateWrap) exportSingleDateWrap.hidden = false;
+        if (exportTargetDateInput) exportTargetDateInput.value = tableFilterDate;
+    } else {
+        const allRadio = document.getElementById("export-date-all");
+        if (allRadio) allRadio.checked = true;
+        if (exportSingleDateWrap) exportSingleDateWrap.hidden = true;
+        if (exportTargetDateInput && !exportTargetDateInput.value) {
+            if (sensorHistory.length > 0) {
+                exportTargetDateInput.value = localDate(sensorHistory[0]);
+            } else {
+                exportTargetDateInput.value = new Date().toISOString().split("T")[0];
+            }
+        }
     }
 
+    // 2. Sync Status selection: if user has a tableFilterStatus active ('optimal', 'warning', 'critical'), select it
+    if (tableFilterStatus && ["optimal", "warning", "critical"].includes(tableFilterStatus.toLowerCase())) {
+        const targetRadio = document.querySelector(`input[name="export-status-filter"][value="${tableFilterStatus.toLowerCase()}"]`);
+        if (targetRadio) targetRadio.checked = true;
+    } else {
+        const allStatusRadio = document.querySelector('input[name="export-status-filter"][value="all"]');
+        if (allStatusRadio) allStatusRadio.checked = true;
+    }
+
+    // 3. Reset format to xlsx default if not set
+    const xlsxRadio = document.querySelector('input[name="export-file-format"][value="xlsx"]');
+    if (xlsxRadio && !document.querySelector('input[name="export-file-format"]:checked')) {
+        xlsxRadio.checked = true;
+    }
+
+    // 4. Update preview count & button label
+    updateExportPreview();
+
+    // 5. Open dialog
+    exportModal.hidden = false;
+    document.body.style.overflow = "hidden";
+}
+
+function closeExportModal() {
+    if (!exportModal) return;
+    exportModal.hidden = true;
+    document.body.style.overflow = "";
+}
+
+function getSelectedExportFilters() {
+    const dateScopeRadio = document.querySelector('input[name="export-date-scope"]:checked');
+    const dateScope = dateScopeRadio ? dateScopeRadio.value : "all";
+    const targetDate = exportTargetDateInput ? exportTargetDateInput.value.trim() : "";
+
+    const statusRadio = document.querySelector('input[name="export-status-filter"]:checked');
+    const status = statusRadio ? statusRadio.value.toLowerCase() : "all";
+
+    const formatRadio = document.querySelector('input[name="export-file-format"]:checked');
+    const format = formatRadio ? formatRadio.value.toLowerCase() : "xlsx";
+
+    return {
+        dateScope,
+        targetDate: dateScope === "single" ? targetDate : "all",
+        status,
+        format
+    };
+}
+
+function calculateMatchingReadings(targetDate, targetStatus) {
+    if (!Array.isArray(sensorHistory) || sensorHistory.length === 0) return 0;
+    let count = 0;
+    sensorHistory.forEach((reading) => {
+        // Date match check
+        if (targetDate && targetDate !== "all") {
+            if (localDate(reading) !== targetDate) return;
+        }
+
+        // Status match check
+        if (targetStatus && targetStatus !== "all") {
+            const st = statusFor(reading).toLowerCase();
+            if (st !== targetStatus) return;
+        }
+
+        count++;
+    });
+    return count;
+}
+
+function updateExportPreview() {
+    const filters = getSelectedExportFilters();
+    const matchCount = calculateMatchingReadings(filters.targetDate, filters.status);
+
+    const previewCard = document.getElementById("export-preview-card");
+    const previewBadge = document.getElementById("export-preview-badge");
+    const previewText = document.getElementById("export-preview-text");
+
+    const formatLabel = filters.format === "csv" ? "CSV (.csv)" : "Excel (.xlsx)";
+    if (confirmExportText) {
+        confirmExportText.textContent = `Download ${formatLabel}`;
+    }
+
+    let dateDesc = "across all logged dates";
+    if (filters.dateScope === "single" && filters.targetDate && filters.targetDate !== "all") {
+        const parts = filters.targetDate.split("-");
+        if (parts.length === 3) {
+            const dObj = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+            dateDesc = `for ${isNaN(dObj.getTime()) ? filters.targetDate : dObj.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`;
+        } else {
+            dateDesc = `for ${filters.targetDate}`;
+        }
+    }
+
+    let statusDesc = "all statuses";
+    if (filters.status === "optimal") statusDesc = "Optimal water quality records";
+    else if (filters.status === "warning") statusDesc = "Warning alert records";
+    else if (filters.status === "critical") statusDesc = "Critical condition records";
+
+    if (matchCount > 0) {
+        if (previewCard) previewCard.classList.remove("no-matches");
+        if (previewBadge) {
+            previewBadge.textContent = `${matchCount} reading${matchCount === 1 ? "" : "s"} ready`;
+            previewBadge.className = "preview-badge preview-badge-ready";
+        }
+        if (previewText) {
+            previewText.textContent = `Ready to export ${matchCount} reading${matchCount === 1 ? "" : "s"} (${statusDesc}, ${dateDesc}) in ${formatLabel} format.`;
+        }
+        if (confirmExportBtn) confirmExportBtn.disabled = false;
+    } else {
+        if (previewCard) previewCard.classList.add("no-matches");
+        if (previewBadge) {
+            previewBadge.textContent = "0 readings found";
+            previewBadge.className = "preview-badge preview-badge-empty";
+        }
+        if (previewText) {
+            previewText.textContent = `No saved pond readings match ${statusDesc} ${dateDesc}. Please choose a different date or status.`;
+        }
+        if (confirmExportBtn) confirmExportBtn.disabled = true;
+    }
+}
+
+async function executeHistoricalExport() {
+    if (!confirmExportBtn || confirmExportBtn.disabled) return;
+    const filters = getSelectedExportFilters();
+
+    const originalText = confirmExportText ? confirmExportText.textContent : "Download Export";
+    confirmExportBtn.disabled = true;
+    confirmExportBtn.setAttribute("aria-busy", "true");
+    if (confirmExportText) confirmExportText.textContent = "Generating Export...";
+
     try {
-        const response = await fetch("/historical/export");
+        const url = `/historical/export?date=${encodeURIComponent(filters.targetDate)}&status=${encodeURIComponent(filters.status)}&format=${encodeURIComponent(filters.format)}`;
+        const response = await fetch(url);
         if (response.redirected) {
             throw new Error("Your session has expired. Sign in again to download historical data.");
         }
-        if (!response.ok || !(response.headers.get("Content-Type") || "").includes("spreadsheetml")) {
-            let message = "The historical data could not be exported.";
+        if (!response.ok) {
+            let message = "The historical readings could not be exported.";
             try {
                 const result = await response.json();
                 message = result.error || message;
-            } catch (error) {
-                console.error("The export server returned an unexpected response:", error);
+            } catch (err) {
+                console.error("Export error parsing:", err);
             }
             throw new Error(message);
         }
 
-        const downloadUrl = URL.createObjectURL(await response.blob());
+        // Determine filename from Content-Disposition header if available
+        let filename = `shrimpguard-historical-${filters.targetDate === 'all' ? 'all-dates' : filters.targetDate}-${filters.status}.${filters.format}`;
+        const disposition = response.headers.get("Content-Disposition");
+        if (disposition && disposition.includes("filename=")) {
+            const nameParts = disposition.split("filename=");
+            if (nameParts.length > 1) {
+                filename = nameParts[1].split(";")[0].replace(/['"]/g, "").trim();
+            }
+        }
+
+        const blob = await response.blob();
+        const downloadUrl = URL.createObjectURL(blob);
         const downloadLink = document.createElement("a");
         downloadLink.href = downloadUrl;
-        downloadLink.download = "shrimpguard-historical-data.xlsx";
+        downloadLink.download = filename;
         document.body.appendChild(downloadLink);
         downloadLink.click();
         downloadLink.remove();
         setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+
+        closeExportModal();
     } catch (error) {
         console.error("Unable to export historical readings:", error);
         window.alert(`Unable to download historical data: ${error.message}`);
     } finally {
-        button.disabled = sensorHistory.length === 0;
-        button.removeAttribute("aria-busy");
-        if (button.querySelector("span")) {
-            button.querySelector("span").textContent = originalText;
-        }
+        confirmExportBtn.removeAttribute("aria-busy");
+        if (confirmExportText) confirmExportText.textContent = originalText;
+        updateExportPreview();
     }
 }
 
 // Bind Chart and Table export buttons
 const chartExportBtn = document.getElementById("history-export-button");
 if (chartExportBtn) {
-    chartExportBtn.addEventListener("click", (e) => downloadHistoricalExcel(e.currentTarget));
+    chartExportBtn.addEventListener("click", () => openExportModal());
 }
 
 const tableExportBtn = document.getElementById("table-export-button");
 if (tableExportBtn) {
-    tableExportBtn.addEventListener("click", (e) => downloadHistoricalExcel(e.currentTarget));
+    tableExportBtn.addEventListener("click", () => openExportModal());
 }
+
+// Event Listeners for Export Modal
+if (closeExportBtn) closeExportBtn.addEventListener("click", closeExportModal);
+if (cancelExportBtn) cancelExportBtn.addEventListener("click", closeExportModal);
+if (confirmExportBtn) confirmExportBtn.addEventListener("click", executeHistoricalExport);
+
+if (exportModal) {
+    exportModal.addEventListener("click", (e) => {
+        if (e.target === exportModal) closeExportModal();
+    });
+}
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && exportModal && !exportModal.hidden) {
+        closeExportModal();
+    }
+});
+
+exportDateScopeRadios.forEach((radio) => {
+    radio.addEventListener("change", () => {
+        if (exportSingleDateWrap) {
+            exportSingleDateWrap.hidden = radio.value !== "single";
+        }
+        updateExportPreview();
+    });
+});
+
+if (exportTargetDateInput) {
+    exportTargetDateInput.addEventListener("input", updateExportPreview);
+    exportTargetDateInput.addEventListener("change", updateExportPreview);
+}
+
+if (exportDateSyncBtn) {
+    exportDateSyncBtn.addEventListener("click", () => {
+        if (tableFilterDate && exportTargetDateInput) {
+            exportTargetDateInput.value = tableFilterDate;
+            updateExportPreview();
+        } else if (sensorHistory.length > 0 && exportTargetDateInput) {
+            exportTargetDateInput.value = localDate(sensorHistory[0]);
+            updateExportPreview();
+        }
+    });
+}
+
+exportStatusRadios.forEach((radio) => {
+    radio.addEventListener("change", updateExportPreview);
+});
+
+exportFormatRadios.forEach((radio) => {
+    radio.addEventListener("change", updateExportPreview);
+});
 
 // Bind Limit selector
 const tableLimitSelect = document.getElementById("table-limit-select");
