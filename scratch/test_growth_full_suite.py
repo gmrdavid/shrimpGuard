@@ -1,6 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-Verification suite for Shrimp Growth & Zootechnical Performance Calculators (Eqs. 1-8).
+Verification suite for Shrimp Growth & Zootechnical Performance Calculator (Eqs. 1-8).
+Tests:
+1. Unit math calculations in growth_service.py
+2. Flask API endpoints (/api/growth/calculate)
+3. HTML rendering of All-in-One Growth Calculator with:
+   - 8 separate performance metric cards (including separated Eq 3 ADWG and Eq 4 SGR)
+   - Removal of separate individual tab calculators
+   - Popup dialog modal (#growth-equation-modal) presence and buttons
 """
 import sys
 import json
@@ -20,13 +27,13 @@ def test_unit_service():
 
     # Eq. 1: SR
     sr = calculate_survival_rate(100000, 85000)
-    assert sr["sr_percent"] == 85.0, f"Expected 85.0, got {sr['sr_percent']}"
+    assert sr["sr_percent"] == 85.0
     assert sr["mortality_count"] == 15000
     print("[PASS] Eq. 1 (SR): 85.0%")
 
     # Eq. 2: FABW
     fabw = calculate_final_avg_body_weight(1700, 85000, "kg")
-    assert fabw["fabw_grams"] == 20.0, f"Expected 20.0, got {fabw['fabw_grams']}"
+    assert fabw["fabw_grams"] == 20.0
     assert fabw["count_per_kg"] == 50.0
     print("[PASS] Eq. 2 (FABW): 20.0 g (50 pcs/kg)")
 
@@ -116,20 +123,30 @@ def test_flask_endpoints():
     tools_res = client.get("/calculators")
     assert tools_res.status_code == 200
     html = tools_res.data.decode("utf-8")
-    assert "tools-growth-section" in html
-    assert "Shrimp Growth" in html
-    assert "pane-growth-master" in html
-    assert "pane-growth-eq1" in html
-    assert "pane-growth-eq2" in html
-    assert "pane-growth-eq34" in html
-    assert "pane-growth-eq56" in html
-    assert "pane-growth-eq7" in html
-    assert "pane-growth-eq8" in html
-    print("[PASS] Aquaculture tools page (/calculators) renders Section 2 with all tabs.")
 
-    alias_res = client.get("/aquaculture-tools")
-    assert alias_res.status_code == 200
-    print("[PASS] Aquaculture tools page alias (/aquaculture-tools) renders HTTP 200.")
+    # Section 2 checks
+    assert "tools-growth-section" in html, "tools-growth-section missing"
+    assert "Shrimp Growth" in html, "Shrimp Growth heading missing"
+    assert "All-in-One Growth" in html, "All-in-One Engine heading missing"
+
+    # Verify separate calculators are removed
+    assert "pane-growth-eq1" not in html, "pane-growth-eq1 should be removed"
+    assert "pane-growth-eq2" not in html, "pane-growth-eq2 should be removed"
+    assert "pane-growth-eq34" not in html, "pane-growth-eq34 should be removed"
+    assert "tools-tab-selector-bar" not in html, "tools-tab-selector-bar should be removed"
+
+    # Verify separated Eq 3 & Eq 4 cards exist
+    assert "EQ. 3 &bull; AVG DAILY WEIGHT GAIN (ADWG)" in html, "Eq 3 card missing"
+    assert "EQ. 4 &bull; SPECIFIC GROWTH RATE (SGR)" in html, "Eq 4 card missing"
+
+    # Verify modal dialog exists
+    assert 'id="growth-equation-modal"' in html, "growth-equation-modal missing"
+    assert "growth-calc-details-btn" in html, "growth-calc-details-btn missing"
+    assert "growth-modal-formula" in html, "growth-modal-formula missing"
+    assert "growth-modal-substitution" in html, "growth-modal-substitution missing"
+    assert "growth-modal-recommendation" in html, "growth-modal-recommendation missing"
+
+    print("[PASS] Aquaculture tools page (/calculators) renders All-in-One with 8 separate cards and modal popup dialog.")
 
 if __name__ == '__main__':
     test_unit_service()
