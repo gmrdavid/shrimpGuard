@@ -70,8 +70,9 @@ function localDate(reading) {
 }
 
 function filterHistory(history) {
-    const selectedDate = document.getElementById("history-date").value;
-    const interval = document.getElementById("history-interval").value;
+    const selectedDate = document.getElementById("history-date")?.value;
+    const intervalEl = document.getElementById("history-interval");
+    const interval = intervalEl ? intervalEl.value : "all";
     const now = Date.now();
     return history.filter((reading) => {
         const recorded = new Date(reading.recorded_at).getTime();

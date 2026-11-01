@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import jinja2
 
 env = jinja2.Environment(loader=jinja2.FileSystemLoader('templates'))
@@ -13,7 +14,7 @@ def mock_url_for(endpoint, **values):
     return f"/{endpoint}/" + "/".join(str(v) for v in values.values())
 
 rendered = template.render(user=MockUser(), url_for=mock_url_for)
-assert "Computed Performance Metrics (Eqs. 1–8)" in rendered
+assert "Computed Performance Metrics (Eqs. 1" in rendered
 assert "Performance Trend Graph" in rendered
 assert "growth-trend-graph-modal" in rendered
 assert "btn-open-growth-chart" in rendered

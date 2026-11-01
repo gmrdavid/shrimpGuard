@@ -452,21 +452,30 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Reset highlights
         matrix.querySelectorAll("td, th").forEach(cell => {
-            cell.classList.remove("cell-highlight-col", "cell-highlight-row", "cell-highlight-intersect");
+            cell.classList.remove("cell-highlight-col", "cell-highlight-row", "cell-highlight-intersect", "active-col-cell", "active-col-header", "active-intersect-cell");
         });
+        matrix.querySelectorAll("tr").forEach(tr => tr.classList.remove("active-row"));
 
         // Highlight header col
         const thCol = matrix.querySelector(`th[data-temp="${closestTemp}"]`);
-        if (thCol) thCol.classList.add("cell-highlight-col");
+        if (thCol) {
+            thCol.classList.add("cell-highlight-col", "active-col-header");
+        }
+
+        // Highlight col cells in body
+        matrix.querySelectorAll(`tbody td[data-temp="${closestTemp}"]`).forEach(td => {
+            td.classList.add("cell-highlight-col", "active-col-cell");
+        });
 
         // Highlight row
         const trRow = matrix.querySelector(`tr[data-ph="${closestPh.toFixed(1)}"]`);
         if (trRow) {
+            trRow.classList.add("active-row");
             trRow.querySelectorAll("td").forEach(td => td.classList.add("cell-highlight-row"));
             const targetCell = trRow.querySelector(`td[data-temp="${closestTemp}"]`);
             if (targetCell) {
-                targetCell.classList.remove("cell-highlight-row", "cell-highlight-col");
-                targetCell.classList.add("cell-highlight-intersect");
+                targetCell.classList.remove("cell-highlight-row", "cell-highlight-col", "active-col-cell");
+                targetCell.classList.add("cell-highlight-intersect", "active-intersect-cell");
             }
         }
     }

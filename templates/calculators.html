@@ -683,19 +683,26 @@
         </section>
 
 <!-- 3. WATER TREATMENT & DOSING CALCULATORS -->
-        <section class="dashboard-section" aria-labelledby="treatment-calculators-title">
+        <section class="dashboard-section" id="tools-remediation-section" aria-labelledby="treatment-calculators-title">
 
-            <div class="section-heading-row">
-                <div>
-                    <h2 id="treatment-calculators-title">WATER REMEDIATION</h2>
+            <article class="panel dashboard-panel tools-calc-panel remediation-main-panel">
+
+                <div class="panel-heading">
+                    <div class="panel-heading-icon tools-icon-remediation">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-droplet"></use>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 id="treatment-calculators-title">Water Remediation</h2>
+                        <p>Chemical and biological dosing protocols for alkalinity buffering, heterotrophic TAN assimilation, and continuous DO aeration.</p>
+                    </div>
                 </div>
-                <span class="section-count">3 remediation tools</span>
-            </div>
 
-            <div class="tools-treatment-grid">
+                <div class="tools-treatment-grid">
 
-                <!-- TOOL A: AGRICULTURAL LIME (CaCO3 / DOLOMITE) -->
-                <article class="panel dashboard-panel treatment-card">
+                    <!-- TOOL A: AGRICULTURAL LIME (CaCO3 / DOLOMITE) -->
+                    <div class="treatment-card">
 
                     <div class="tools-panel-header">
                         <div class="panel-heading-icon tools-icon-lime">
@@ -759,11 +766,11 @@
                         </div>
                     </div>
 
-                </article>
+                    </div>
 
 
-                <!-- TOOL B: BIOFLOC ORGANIC CARBON (MOLASSES) DOSING -->
-                <article class="panel dashboard-panel treatment-card">
+                    <!-- TOOL B: BIOFLOC ORGANIC CARBON (MOLASSES) DOSING -->
+                    <div class="treatment-card">
 
                     <div class="tools-panel-header">
                         <div class="panel-heading-icon tools-icon-carbon">
@@ -827,11 +834,11 @@
                         </div>
                     </div>
 
-                </article>
+                    </div>
 
 
-                <!-- TOOL C: AERATOR HORSEPOWER & CAPACITY ESTIMATOR -->
-                <article class="panel dashboard-panel treatment-card">
+                    <!-- TOOL C: AERATOR HORSEPOWER & CAPACITY ESTIMATOR -->
+                    <div class="treatment-card">
 
                     <div class="tools-panel-header">
                         <div class="panel-heading-icon tools-icon-aerator">
@@ -894,9 +901,11 @@
                         </div>
                     </div>
 
-                </article>
+                    </div>
 
-            </div>
+                </div>
+
+            </article>
 
         </section>
 
