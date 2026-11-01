@@ -2778,5 +2778,24 @@ def calculate_growth_metrics():
         return jsonify({"error": str(e)}), 400
 
 
+@app.route("/api/calculators/ai-insight", methods=["POST"])
+def calculator_ai_insight():
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Authentication required."}), 401
+
+    payload = request.get_json(silent=True) or {}
+    module = str(payload.get("module", "feeding")).strip().lower()
+    data = payload.get("data") or {}
+
+    try:
+        from calculator_ai_service import get_calculator_ai_insight
+        result = get_calculator_ai_insight(module, data)
+        return jsonify(result)
+    except Exception as exc:
+        app.logger.exception("Error generating calculator AI insight: %s", exc)
+        return jsonify({"error": "Failed to generate AI evaluation.", "details": str(exc)}), 500
+
+
 if __name__ == "__main__":
     app.run(debug=True)
