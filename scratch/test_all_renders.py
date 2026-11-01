@@ -48,5 +48,18 @@ assert "Profile Information" in rendered_settings
 assert "Password &amp; Security" in rendered_settings
 print("settings.html rendered cleanly!")
 
+# 5. Test landing.html
+template_landing = env.get_template('landing.html')
+rendered_landing = template_landing.render(url_for=mock_url_for, current_year=2026)
+assert "ShrimpGuard" in rendered_landing
+assert "Penaeus vannamei" in rendered_landing
+assert "Google Gemini" in rendered_landing
+assert "landing-stats-strip" in rendered_landing
+assert "landing-workflow-section" in rendered_landing
+assert "landing-calc-section" in rendered_landing
+assert "landing-ai-section" in rendered_landing
+print("landing.html rendered cleanly!")
+
 print("All Jinja2 rendering tests passed with flying colors!")
+
 

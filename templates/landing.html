@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Monitor shrimp pond water temperature and pH with ShrimpGuard. View readings, explore trends, and receive helpful water quality alerts.">
+    <meta name="description" content="ShrimpGuard — Intelligent IoT telemetry, validated zootechnical calculators, and Google Gemini AI decision support engineered for Penaeus vannamei shrimp aquaculture.">
     <meta name="theme-color" content="#143d34">
-    <title>ShrimpGuard | Smarter Pond Care</title>
+    <title>ShrimpGuard | Intelligent Telemetry & AI Decision Support for Shrimp Aquaculture</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
@@ -14,6 +14,7 @@
 <body class="landing-page">
     {% include "_icon_sprite.html" %}
 
+    <!-- Top Sticky Navigation -->
     <header class="landing-header">
         <div class="landing-header-inner">
             <a class="landing-brand" href="{{ url_for('landing') }}" aria-label="ShrimpGuard home">
@@ -36,7 +37,11 @@
             </button>
 
             <nav class="landing-nav" id="landing-navigation" aria-label="Main navigation">
-                <a class="landing-nav-link" href="#features">What you can track</a>
+                <a class="landing-nav-link" href="#features">Features</a>
+                <a class="landing-nav-link" href="#calculators">Calculators</a>
+                <a class="landing-nav-link" href="#ai-support">AI Decision Support</a>
+                <a class="landing-nav-link" href="#workflow">How It Works</a>
+                <a class="landing-nav-link" href="#species">Species Standards</a>
                 <a class="landing-nav-login" href="{{ url_for('login') }}">Sign in</a>
                 <a class="landing-button landing-button-small" href="{{ url_for('signup') }}">
                     Get started
@@ -49,61 +54,66 @@
     </header>
 
     <main>
+        <!-- Hero Section -->
         <section class="landing-hero">
             <div class="landing-hero-inner">
                 <div class="landing-copy">
-                    <p class="landing-eyebrow">
+                    <div class="landing-eyebrow">
                         <span class="landing-eyebrow-icon" aria-hidden="true">
-                            <svg class="ui-icon"><use href="#icon-activity"></use></svg>
+                            <svg class="ui-icon"><use href="#icon-sparkles"></use></svg>
                         </span>
-                        Pond care, made clearer
-                    </p>
+                        <span>Google Gemini AI &bull; IoT Multi-Sensor Telemetry</span>
+                    </div>
 
                     <h1>
-                        Healthy water.
-                        <span>Stronger harvests.</span>
+                        Intelligent Pond Care.
+                        <span>Engineered for <em>Penaeus vannamei</em>.</span>
                     </h1>
 
                     <p class="landing-description">
-                        Know what is happening in your shrimp pond.
-                        Bring water readings, trends, and alerts together
-                        in one simple place.
+                        ShrimpGuard unites continuous multi-sensor water quality telemetry, validated zootechnical aquaculture equations, and real-time Google Gemini AI biological decision support—protecting water stability, preventing toxic ammonia crashes, and maximizing harvest yield.
                     </p>
 
                     <div class="landing-actions">
                         <a class="landing-button" href="{{ url_for('signup') }}">
-                            Create your account
+                            Create Free Account
                             <svg class="ui-icon" aria-hidden="true">
                                 <use href="#icon-arrow"></use>
                             </svg>
                         </a>
 
-                        <a class="landing-text-link" href="#features">
-                            Explore ShrimpGuard
+                        <a class="landing-secondary-button" href="#features">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-activity"></use>
+                            </svg>
+                            Explore Capabilities
                         </a>
                     </div>
 
-                    <div class="landing-reading-note">
-                        <span class="landing-reading-icon" aria-hidden="true">
-                            <svg class="ui-icon"><use href="#icon-activity"></use></svg>
-                        </span>
-
-                        <div>
-                            <p class="landing-reading-title">See the conditions that matter</p>
-                            <p class="landing-reading-description">
-                                Temperature and pH at a glance.
-                            </p>
+                    <div class="landing-trust-badges">
+                        <div class="trust-badge-item">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
+                            <span>Continuous Multi-Sensor Stream</span>
+                        </div>
+                        <div class="trust-badge-item">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
+                            <span>Van Wyk &amp; Tucker Matrices</span>
+                        </div>
+                        <div class="trust-badge-item">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
+                            <span>Sub-second AI Pond Diagnosis</span>
                         </div>
                     </div>
                 </div>
 
+                <!-- Hero Visual Showcase -->
                 <div class="landing-visual">
                     <div class="landing-orbit landing-orbit-one" aria-hidden="true"></div>
                     <div class="landing-orbit landing-orbit-two" aria-hidden="true"></div>
 
                     <div class="landing-telemetry-card"
                          role="region"
-                         aria-label="ShrimpGuard water quality monitoring preview">
+                         aria-label="ShrimpGuard water quality monitoring and AI preview">
 
                         <div class="telemetry-card-header">
                             <div class="telemetry-pond-info">
@@ -111,27 +121,28 @@
                                     <svg class="ui-icon brand-icon"><use href="#icon-shrimp"></use></svg>
                                 </span>
                                 <div>
-                                    <span class="telemetry-pond-eyebrow">LIVE TELEMETRY</span>
-                                    <h3 class="telemetry-pond-title">Pond 01 &bull; Vannamei</h3>
+                                    <span class="telemetry-pond-eyebrow">LIVE TELEMETRY STREAM &bull; DOC 42</span>
+                                    <h3 class="telemetry-pond-title">Pond 01 &bull; Vannamei Semi-Intensive</h3>
                                 </div>
                             </div>
                             <span class="telemetry-status-badge">
                                 <span class="telemetry-live-pulse" aria-hidden="true"></span>
-                                Optimal Quality
+                                Optimal Status
                             </span>
                         </div>
 
+                        <!-- 4-Sensor Telemetry Grid -->
                         <div class="telemetry-metrics-grid">
                             <div class="telemetry-metric-item">
                                 <div class="telemetry-metric-top">
-                                    <span class="telemetry-metric-label">TEMPERATURE</span>
+                                    <span class="telemetry-metric-label">WATER TEMPERATURE</span>
                                     <span class="telemetry-metric-icon temp" aria-hidden="true">
                                         <svg class="ui-icon"><use href="#icon-thermometer"></use></svg>
                                     </span>
                                 </div>
                                 <div class="telemetry-metric-val">28.5 <span class="unit">&deg;C</span></div>
                                 <div class="telemetry-metric-sub">
-                                    <span class="metric-pill good">Normal</span>
+                                    <span class="metric-pill good">Optimal</span>
                                     <span>Target: 26&ndash;32 &deg;C</span>
                                 </div>
                             </div>
@@ -149,21 +160,65 @@
                                     <span>Target: 7.5&ndash;8.5</span>
                                 </div>
                             </div>
+
+                            <div class="telemetry-metric-item">
+                                <div class="telemetry-metric-top">
+                                    <span class="telemetry-metric-label">SALINITY</span>
+                                    <span class="telemetry-metric-icon salinity" aria-hidden="true">
+                                        <svg class="ui-icon"><use href="#icon-activity"></use></svg>
+                                    </span>
+                                </div>
+                                <div class="telemetry-metric-val">20.0 <span class="unit">ppt</span></div>
+                                <div class="telemetry-metric-sub">
+                                    <span class="metric-pill good">Ideal Brackish</span>
+                                    <span>Target: 15&ndash;25 ppt</span>
+                                </div>
+                            </div>
+
+                            <div class="telemetry-metric-item">
+                                <div class="telemetry-metric-top">
+                                    <span class="telemetry-metric-label">UNIONIZED NH&sup3;</span>
+                                    <span class="telemetry-metric-icon nh3" aria-hidden="true">
+                                        <svg class="ui-icon"><use href="#icon-alert"></use></svg>
+                                    </span>
+                                </div>
+                                <div class="telemetry-metric-val">0.012 <span class="unit">mg/L</span></div>
+                                <div class="telemetry-metric-sub">
+                                    <span class="metric-pill good">Safe Zone</span>
+                                    <span>Limit: &lt; 0.05 mg/L</span>
+                                </div>
+                            </div>
                         </div>
 
+                        <!-- Composite Water Quality Index -->
                         <div class="telemetry-wqi-box">
                             <div class="telemetry-wqi-top">
-                                <span class="wqi-label">Water Quality Index (WQI)</span>
-                                <strong class="wqi-score">96 / 100 &bull; Good</strong>
+                                <span class="wqi-label">
+                                    <strong>Composite Water Quality Index (WQI)</strong>
+                                    <span class="wqi-tag">Weighted Arithmetic Model</span>
+                                </span>
+                                <strong class="wqi-score">96 / 100 &bull; Excellent</strong>
                             </div>
                             <div class="telemetry-wqi-bar" role="progressbar" aria-valuenow="96" aria-valuemin="0" aria-valuemax="100">
                                 <div class="telemetry-wqi-fill" style="width: 96%;"></div>
                             </div>
+                            <div class="telemetry-wqi-footer">
+                                <span>ML Classification: <strong>Normal Biomass Dynamics &bull; Low Stress</strong></span>
+                            </div>
                         </div>
 
-                        <div class="landing-visual-caption">
-                            <span class="landing-caption-dot" aria-hidden="true"></span>
-                            <span>A clearer, real-time view of your shrimp pond</span>
+                        <!-- Live AI Decision Preview Pill -->
+                        <div class="hero-ai-directive">
+                            <div class="hero-ai-header">
+                                <span class="hero-ai-badge">
+                                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg>
+                                    Google Gemini AI Operational Directive
+                                </span>
+                                <span class="hero-ai-timestamp">Just now</span>
+                            </div>
+                            <p class="hero-ai-text">
+                                &ldquo;Morning water balance is optimal. Nitrification cycle is active with safe unionized ammonia. Estimated biomass of 4,200 kg is well supported by 8.0 HP aeration. Maintain standard feed tray ration.&rdquo;
+                            </p>
                         </div>
                     </div>
 
@@ -173,97 +228,551 @@
             </div>
         </section>
 
+        <!-- Key Zootechnical & Telemetry Metrics Proof Strip -->
+        <section class="landing-stats-strip" aria-label="Key System Capabilities">
+            <div class="landing-stats-inner">
+                <div class="landing-stat-item">
+                    <span class="stat-number">4 Live</span>
+                    <span class="stat-label">Critical Sensor Metrics</span>
+                    <p class="stat-sub">Temperature, pH, Salinity &amp; TAN continuous streaming.</p>
+                </div>
+
+                <div class="landing-stat-item">
+                    <span class="stat-number">8 Proven</span>
+                    <span class="stat-label">Zootechnical Equations</span>
+                    <p class="stat-sub">FAO-calibrated biomass, FCR, ADG, liming, &amp; biofloc C:N.</p>
+                </div>
+
+                <div class="landing-stat-item">
+                    <span class="stat-number">&lt; 2s</span>
+                    <span class="stat-label">Gemini AI Synthesis</span>
+                    <p class="stat-sub">Instant multi-variable diagnosis and chemical treatment directives.</p>
+                </div>
+
+                <div class="landing-stat-item">
+                    <span class="stat-number">24 / 7</span>
+                    <span class="stat-label">Push Alerts &amp; Auditing</span>
+                    <p class="stat-sub">Real-time mobile push via ntfy.sh and certified Excel export.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Penaeus vannamei Species Spotlight Banner -->
+        <section class="landing-species-section" id="species" aria-labelledby="species-title">
+            <div class="landing-species-inner">
+                <div class="species-copy">
+                    <div class="landing-eyebrow">
+                        <span class="landing-eyebrow-icon" aria-hidden="true">
+                            <svg class="ui-icon"><use href="#icon-shrimp"></use></svg>
+                        </span>
+                        <span>Species-Specific Engineering</span>
+                    </div>
+
+                    <h2 id="species-title">Why generic pond monitoring fails shrimp aquaculture.</h2>
+
+                    <p>
+                        Pacific White Shrimp (<em>Penaeus vannamei</em>) are delicate, high-density organisms. Unlike finfish, their molting physiology, ionic osmoregulation, and feed tray consumption vary drastically under minute shifts in water chemistry.
+                    </p>
+
+                    <p>
+                        ShrimpGuard was engineered from the ground up to model the nonlinear interaction between water temperature, diurnal pH swings, and salinity—safeguarding against toxic unionized ammonia ($\text{NH}_3$) spikes before physical mortality occurs.
+                    </p>
+                </div>
+
+                <div class="species-standards-grid">
+                    <div class="species-param-card">
+                        <div class="param-card-header">
+                            <span class="param-name">Water Temperature</span>
+                            <span class="param-status optimal">Strict Window</span>
+                        </div>
+                        <div class="param-val-range">26.0 &ndash; 32.0 &deg;C</div>
+                        <p class="param-desc">Temperatures below 24&deg;C stall metabolism; above 33&deg;C hyper-accelerates respiration and ammonia excretion.</p>
+                    </div>
+
+                    <div class="species-param-card">
+                        <div class="param-card-header">
+                            <span class="param-name">pH Stability Range</span>
+                            <span class="param-status optimal">Equilibrium</span>
+                        </div>
+                        <div class="param-val-range">7.50 &ndash; 8.50 pH</div>
+                        <p class="param-desc">Maintains carapace integrity and prevents extreme swings that convert ammonium into lethal unionized ammonia.</p>
+                    </div>
+
+                    <div class="species-param-card">
+                        <div class="param-card-header">
+                            <span class="param-name">Salinity (Osmoregulation)</span>
+                            <span class="param-status optimal">Brackish</span>
+                        </div>
+                        <div class="param-val-range">15.0 &ndash; 25.0 ppt</div>
+                        <p class="param-desc">Optimal isosmotic zone minimizing metabolic expenditure on ion pumping, maximizing feed conversion.</p>
+                    </div>
+
+                    <div class="species-param-card">
+                        <div class="param-card-header">
+                            <span class="param-name">Unionized Ammonia (NH&sup3;)</span>
+                            <span class="param-status warning">Critical Limit</span>
+                        </div>
+                        <div class="param-val-range">&lt; 0.05 mg/L</div>
+                        <p class="param-desc">Modeled via Van Wyk &amp; Scarpa dissociation. Values above 0.1 mg/L cause gill necrosis and mass mortality.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Features Grid -->
         <section class="landing-features" id="features" aria-labelledby="features-title">
             <div class="landing-section-heading">
-                <p class="landing-eyebrow">
+                <div class="landing-eyebrow">
                     <span class="landing-eyebrow-icon" aria-hidden="true">
                         <svg class="ui-icon"><use href="#icon-activity"></use></svg>
                     </span>
-                    Everything in one view
-                </p>
+                    <span>Complete Aquaculture Intelligence</span>
+                </div>
 
-                <h2 id="features-title">Spend less time guessing.</h2>
+                <h2 id="features-title">Everything your farm needs. Zero guesswork.</h2>
 
                 <p>
-                    Keep the essentials close, from today’s pond conditions
-                    to the patterns that develop over time.
+                    ShrimpGuard replaces disconnected spreadsheets and delayed laboratory tests with a unified, real-time telemetry and decision-support command center.
                 </p>
             </div>
 
             <div class="landing-feature-grid">
-                <article class="landing-feature-card landing-feature-card-aqua">
-                    <span class="landing-feature-icon" aria-hidden="true">
-                        <svg class="ui-icon"><use href="#icon-monitor"></use></svg>
-                    </span>
+                <!-- Feature 1 -->
+                <article class="landing-feature-card">
+                    <div class="feature-card-top">
+                        <span class="landing-feature-icon" aria-hidden="true">
+                            <svg class="ui-icon"><use href="#icon-monitor"></use></svg>
+                        </span>
+                        <span class="feature-tag">IoT Sensing</span>
+                    </div>
 
-                    <h3>Current conditions</h3>
+                    <h3>Real-Time Telemetry &amp; WQI</h3>
 
                     <p>
-                        Review water temperature and pH readings together
-                        on your monitoring dashboard.
+                        Continuously monitor water temperature, pH, salinity, and TAN. The weighted arithmetic Water Quality Index instantly categorizes conditions into Optimal, Acceptable, or Critical.
                     </p>
                 </article>
 
-                <article class="landing-feature-card landing-feature-card-sand">
-                    <span class="landing-feature-icon" aria-hidden="true">
-                        <svg class="ui-icon"><use href="#icon-chart"></use></svg>
-                    </span>
+                <!-- Feature 2 -->
+                <article class="landing-feature-card">
+                    <div class="feature-card-top">
+                        <span class="landing-feature-icon" aria-hidden="true">
+                            <svg class="ui-icon"><use href="#icon-calculator"></use></svg>
+                        </span>
+                        <span class="feature-tag">Zootechnics</span>
+                    </div>
 
-                    <h3>Trends over time</h3>
+                    <h3>Growth &amp; Feeding Management</h3>
 
                     <p>
-                        Explore historical readings and understand how
-                        your pond conditions change.
+                        Track Day of Culture (DOC 1&ndash;90+), compute Average Daily Gain (ADG), Food Conversion Ratio (FCR), and adjust daily feed rations using integrated feed tray consumption tables.
                     </p>
                 </article>
 
-                <article class="landing-feature-card landing-feature-card-green">
-                    <span class="landing-feature-icon" aria-hidden="true">
-                        <svg class="ui-icon"><use href="#icon-bell"></use></svg>
-                    </span>
+                <!-- Feature 3 -->
+                <article class="landing-feature-card">
+                    <div class="feature-card-top">
+                        <span class="landing-feature-icon" aria-hidden="true">
+                            <svg class="ui-icon"><use href="#icon-droplet"></use></svg>
+                        </span>
+                        <span class="feature-tag">Equilibrium Models</span>
+                    </div>
 
-                    <h3>Helpful alerts</h3>
+                    <h3>Van Wyk NH&sup3; &amp; Tucker CO&sup2; Matrices</h3>
 
                     <p>
-                        Find important water quality notifications and
-                        identify conditions that may need attention.
+                        Scientific dissociation equations calculate toxic unionized ammonia from raw TAN, temperature, and pH. Interactive cross-reference matrices pinpoint lethal gas saturation instantly.
+                    </p>
+                </article>
+
+                <!-- Feature 4 -->
+                <article class="landing-feature-card">
+                    <div class="feature-card-top">
+                        <span class="landing-feature-icon" aria-hidden="true">
+                            <svg class="ui-icon"><use href="#icon-cpu"></use></svg>
+                        </span>
+                        <span class="feature-tag">Remediation</span>
+                    </div>
+
+                    <h3>Liming, Biofloc &amp; Aerator Sizing</h3>
+
+                    <p>
+                        Calculate agricultural limestone ($\text{CaCO}_3$) or quicklime ($\text{CaO}$) dosages for alkalinity crashes, biofloc carbohydrate carbon (molasses) supplementation, and paddlewheel HP needs.
+                    </p>
+                </article>
+
+                <!-- Feature 5 -->
+                <article class="landing-feature-card">
+                    <div class="feature-card-top">
+                        <span class="landing-feature-icon" aria-hidden="true">
+                            <svg class="ui-icon"><use href="#icon-sparkles"></use></svg>
+                        </span>
+                        <span class="feature-tag">AI Intelligence</span>
+                    </div>
+
+                    <h3>Google Gemini AI Decision Support</h3>
+
+                    <p>
+                        A dedicated aquaculture AI assistant that evaluates multi-variable interactions simultaneously. Get immediate root-cause diagnoses, feeding cuts, and chemical remediation plans.
+                    </p>
+                </article>
+
+                <!-- Feature 6 -->
+                <article class="landing-feature-card">
+                    <div class="feature-card-top">
+                        <span class="landing-feature-icon" aria-hidden="true">
+                            <svg class="ui-icon"><use href="#icon-chart"></use></svg>
+                        </span>
+                        <span class="feature-tag">Auditing &amp; Yield</span>
+                    </div>
+
+                    <h3>Historical Trends &amp; Excel Export</h3>
+
+                    <p>
+                        Explore high-resolution historical telemetry graphs with date and parameter filters. Export complete datasets with one click to certified CSV and Excel (.xlsx) formats for farm audits.
                     </p>
                 </article>
             </div>
+        </section>
 
-            <div class="landing-bottom-cta">
-                <div>
-                    <h3>Make pond monitoring clearer.</h3>
-                    <p>Bring your water readings and insights into one place.</p>
+        <!-- 3-Step Aquaculture Workflow Architecture -->
+        <section class="landing-workflow-section" id="workflow" aria-labelledby="workflow-title">
+            <div class="landing-section-heading">
+                <div class="landing-eyebrow">
+                    <span class="landing-eyebrow-icon" aria-hidden="true">
+                        <svg class="ui-icon"><use href="#icon-clock"></use></svg>
+                    </span>
+                    <span>System Architecture</span>
                 </div>
 
-                <a class="landing-button" href="{{ url_for('signup') }}">
-                    Get started
-                    <svg class="ui-icon" aria-hidden="true">
-                        <use href="#icon-arrow"></use>
-                    </svg>
-                </a>
+                <h2 id="workflow-title">From Submerged Probes to Harvest Day.</h2>
+
+                <p>
+                    How ShrimpGuard synchronizes physical pond conditions with intelligent cloud computation to protect your investment.
+                </p>
+            </div>
+
+            <div class="workflow-grid">
+                <div class="workflow-card">
+                    <div class="workflow-step-num">01</div>
+                    <div class="workflow-card-icon">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-monitor"></use></svg>
+                    </div>
+                    <h3>Ingest &amp; Stream</h3>
+                    <p>
+                        Submersible multi-parameter sensor arrays continuously read water temperature, pH, and salinity, streaming real-time measurements into the secure ShrimpGuard cloud pipeline.
+                    </p>
+                    <ul class="workflow-list">
+                        <li>Zero manual recording lag</li>
+                        <li>Automated outlier smoothing</li>
+                        <li>Multi-pond stream architecture</li>
+                    </ul>
+                </div>
+
+                <div class="workflow-card">
+                    <div class="workflow-step-num">02</div>
+                    <div class="workflow-card-icon">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-cpu"></use></svg>
+                    </div>
+                    <h3>Model &amp; Classify</h3>
+                    <p>
+                        The engine executes zootechnical equations to model current biomass and survival, computes ionic ammonia dissociation, and derives the composite Water Quality Index (WQI).
+                    </p>
+                    <ul class="workflow-list">
+                        <li>Van Wyk &amp; Scarpa ammonia ionization</li>
+                        <li>Tucker free carbon dioxide equilibrium</li>
+                        <li>Machine learning status classification</li>
+                    </ul>
+                </div>
+
+                <div class="workflow-card">
+                    <div class="workflow-step-num">03</div>
+                    <div class="workflow-card-icon">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg>
+                    </div>
+                    <h3>AI Directives &amp; Action</h3>
+                    <p>
+                        Google Gemini AI diagnoses compound risks, generating clear, actionable instructions: liming kilograms, molasses carbon dosing, aerator run-times, and instant ntfy.sh mobile push alerts.
+                    </p>
+                    <ul class="workflow-list">
+                        <li>Instant farm-ready field directives</li>
+                        <li>Proactive feeding rate adjustments</li>
+                        <li>Immediate push alerts for acute deviations</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Zootechnical Calculators Suite Deep Dive -->
+        <section class="landing-calc-section" id="calculators" aria-labelledby="calculators-title">
+            <div class="landing-calc-inner">
+                <div class="calc-section-header">
+                    <div class="landing-eyebrow">
+                        <span class="landing-eyebrow-icon" aria-hidden="true">
+                            <svg class="ui-icon"><use href="#icon-calculator"></use></svg>
+                        </span>
+                        <span>Zootechnical Engineering Suite</span>
+                    </div>
+
+                    <h2 id="calculators-title">Specialized Aquaculture Calculators.</h2>
+
+                    <p>
+                        Designed to eliminate manual math in the farm office. Every formula follows proven commercial standards for Pacific White Shrimp culture.
+                    </p>
+                </div>
+
+                <div class="calc-modules-grid">
+                    <div class="calc-module-card">
+                        <div class="calc-module-icon">
+                            <svg class="ui-icon"><use href="#icon-droplet"></use></svg>
+                        </div>
+                        <h4>Feeding Management</h4>
+                        <p>Calculate daily feeding kilograms based on stocked population, Day of Culture (DOC), and average body weight (ABW). Incorporates real-time feeding tray evaluations.</p>
+                        <span class="calc-module-badge">DOC 1&ndash;90+ Tracking</span>
+                    </div>
+
+                    <div class="calc-module-card">
+                        <div class="calc-module-icon">
+                            <svg class="ui-icon"><use href="#icon-activity"></use></svg>
+                        </div>
+                        <h4>Growth Performance</h4>
+                        <p>Model total pond biomass, expected survival rate %, Average Daily Gain (ADG in g/day), and cumulative Food Conversion Ratio (FCR) against standard growth curves.</p>
+                        <span class="calc-module-badge">Biomass &amp; FCR Analytics</span>
+                    </div>
+
+                    <div class="calc-module-card">
+                        <div class="calc-module-icon">
+                            <svg class="ui-icon"><use href="#icon-cpu"></use></svg>
+                        </div>
+                        <h4>Water Remediation</h4>
+                        <p>Prescribe accurate agricultural lime ($\text{CaCO}_3$) or quicklime ($\text{CaO}$) for alkalinity corrections, biofloc molasses carbon supplementation (C:N), and paddlewheel aerator sizing.</p>
+                        <span class="calc-module-badge">Liming &bull; Biofloc C:N &bull; HP Sizing</span>
+                    </div>
+
+                    <div class="calc-module-card">
+                        <div class="calc-module-icon">
+                            <svg class="ui-icon"><use href="#icon-alert"></use></svg>
+                        </div>
+                        <h4>Unionized Ammonia Matrix</h4>
+                        <p>Evaluate exact toxic fraction ($\text{NH}_3$) of Total Ammonia Nitrogen as a function of temperature, pH, and salinity using the Van Wyk &amp; Scarpa reference matrix.</p>
+                        <span class="calc-module-badge">Van Wyk &amp; Scarpa Equation</span>
+                    </div>
+
+                    <div class="calc-module-card">
+                        <div class="calc-module-icon">
+                            <svg class="ui-icon"><use href="#icon-droplet"></use></svg>
+                        </div>
+                        <h4>Carbon Dioxide Matrix</h4>
+                        <p>Tucker (1984) hydrochemical matrix calculating un-ionized free $\text{CO}_2$ concentration with dynamic visual cross-table intersection indicators to avert night acidosis.</p>
+                        <span class="calc-module-badge">Tucker 1984 Matrix</span>
+                    </div>
+
+                    <div class="calc-module-card highlight-card">
+                        <div class="calc-module-icon ai-star">
+                            <svg class="ui-icon"><use href="#icon-sparkles"></use></svg>
+                        </div>
+                        <h4>✦ Analyze with AI Dialog</h4>
+                        <p>Switch between individual modules or inspect all at once. Click <strong>Analyze with AI</strong> for an instant master biological synthesis directly powered by Google Gemini.</p>
+                        <span class="calc-module-badge ai">Google Gemini Powered</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Decision Support Deep-Dive Spotlight -->
+        <section class="landing-ai-section" id="ai-support" aria-labelledby="ai-title">
+            <div class="landing-ai-inner">
+                <div class="ai-copy-wrap">
+                    <div class="landing-eyebrow">
+                        <span class="landing-eyebrow-icon" aria-hidden="true">
+                            <svg class="ui-icon"><use href="#icon-sparkles"></use></svg>
+                        </span>
+                        <span>Google Gemini Biological Intelligence</span>
+                    </div>
+
+                    <h2 id="ai-title">A 24/7 Aquaculture Biologist in Your Corner.</h2>
+
+                    <p>
+                        Pond ecosystems are complex. A temperature increase of 2&deg;C combined with a pH rise from 7.8 to 8.4 increases unionized ammonia toxicity by more than 300%. Standard rule-based alerts cannot explain why conditions changed or how to intervene safely.
+                    </p>
+
+                    <p>
+                        ShrimpGuard integrates Google Gemini AI through an intelligent, domain-trained prompt engine. It evaluates your water chemistry, DOC, estimated biomass, and aerator capacity together—returning structured, farm-ready directives in seconds.
+                    </p>
+
+                    <div class="ai-benefits-list">
+                        <div class="ai-benefit-item">
+                            <span class="benefit-check"><svg class="ui-icon"><use href="#icon-check"></use></svg></span>
+                            <div>
+                                <strong>Multi-Factor Root Cause Analysis:</strong> Understand whether a dissolved oxygen drop is caused by overfeeding, phytoplankton collapse, or organic muck buildup.
+                            </div>
+                        </div>
+
+                        <div class="ai-benefit-item">
+                            <span class="benefit-check"><svg class="ui-icon"><use href="#icon-check"></use></svg></span>
+                            <div>
+                                <strong>Prescribed Chemical Remediation:</strong> Receive clear kilogram dosages of lime, molasses carbohydrate volumes, and water replenishment percentages.
+                            </div>
+                        </div>
+
+                        <div class="ai-benefit-item">
+                            <span class="benefit-check"><svg class="ui-icon"><use href="#icon-check"></use></svg></span>
+                            <div>
+                                <strong>Zero-Lag Feeding Adjustments:</strong> Prevent feed waste and water fouling by cutting rations proactively during molting or stressful weather fronts.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ai-preview-card">
+                    <div class="ai-card-chrome">
+                        <div class="chrome-dots">
+                            <span class="dot red"></span>
+                            <span class="dot yellow"></span>
+                            <span class="dot green"></span>
+                        </div>
+                        <span class="chrome-title">AI Decision Support Dialog &bull; Master Pond Synthesis</span>
+                        <span class="chrome-chip">Gemini 2.5 Active</span>
+                    </div>
+
+                    <div class="ai-card-content">
+                        <div class="ai-chat-header">
+                            <span class="ai-avatar">
+                                <svg class="ui-icon"><use href="#icon-sparkles"></use></svg>
+                            </span>
+                            <div>
+                                <strong>ShrimpGuard AI Diagnostic Engine</strong>
+                                <span class="ai-doc-tag">Pond 01 &bull; DOC 42 &bull; Biomass: 4,200 kg</span>
+                            </div>
+                        </div>
+
+                        <div class="ai-response-box">
+                            <div class="ai-badge-row">
+                                <span class="ai-status-pill safe">Status: Optimal &bull; Healthy Nitrification</span>
+                                <span class="ai-conf-pill">Confidence: High (Multi-Sensor Validated)</span>
+                            </div>
+
+                            <h5>Biological Synthesis &amp; Risk Assessment:</h5>
+                            <p>
+                                Dissolved parameters indicate stable autotrophic nitrification. Temperature (28.5&deg;C) and pH (7.84) are well within the physiological comfort zone for <em>Penaeus vannamei</em>. Unionized toxic fraction of ammonia is safely contained at 0.012 mg/L.
+                            </p>
+
+                            <h5>Operational Directives:</h5>
+                            <ol class="ai-directives-list">
+                                <li><strong>Feed Ration:</strong> Maintain 100% standard ration (168 kg/day distributed across 4 feedings). No tray overconsumption observed.</li>
+                                <li><strong>Aeration:</strong> Keep all 8 HP paddlewheels active during 22:00&ndash;06:00 to avert night biological oxygen depletion.</li>
+                                <li><strong>Liming Prophylaxis:</strong> Alkalinity is stable. No chemical remediation required today.</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Final Bottom Call-to-Action -->
+        <section class="landing-cta-section" aria-labelledby="cta-heading">
+            <div class="landing-cta-inner">
+                <div class="cta-content">
+                    <div class="landing-eyebrow cta-eyebrow">
+                        <span class="landing-eyebrow-icon" aria-hidden="true">
+                            <svg class="ui-icon"><use href="#icon-shrimp"></use></svg>
+                        </span>
+                        <span>Start Protecting Your Harvest Today</span>
+                    </div>
+
+                    <h2 id="cta-heading">Make pond monitoring clearer, faster, and scientifically precise.</h2>
+
+                    <p>
+                        Join forward-thinking aquaculture professionals who rely on ShrimpGuard to track water telemetry, execute zootechnical formulas, and receive intelligent AI guidance.
+                    </p>
+
+                    <div class="cta-actions">
+                        <a class="landing-button landing-button-light" href="{{ url_for('signup') }}">
+                            Create Your Free Account
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-arrow"></use>
+                            </svg>
+                        </a>
+
+                        <a class="cta-secondary-link" href="{{ url_for('login') }}">
+                            Already registered? Sign in &rarr;
+                        </a>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
 
+    <!-- Professional Modern Footer -->
     <footer class="landing-footer">
-        <a class="landing-brand" href="{{ url_for('landing') }}" aria-label="ShrimpGuard home">
-            <span class="landing-brand-mark" aria-hidden="true">
-                <svg class="ui-icon brand-icon">
-                    <use href="#icon-shrimp"></use>
-                </svg>
-            </span>
-            <span class="landing-brand-name">Shrimp<span>Guard</span></span>
-        </a>
+        <div class="landing-footer-inner">
+            <div class="footer-top-row">
+                <div class="footer-brand-col">
+                    <a class="landing-brand" href="{{ url_for('landing') }}" aria-label="ShrimpGuard home">
+                        <span class="landing-brand-mark" aria-hidden="true">
+                            <svg class="ui-icon brand-icon">
+                                <use href="#icon-shrimp"></use>
+                            </svg>
+                        </span>
+                        <span class="landing-brand-name">Shrimp<span>Guard</span></span>
+                    </a>
 
-        <p>Thoughtful monitoring for better pond care.</p>
+                    <p class="footer-tagline">
+                        Intelligent multi-sensor IoT telemetry and Google Gemini AI biological decision support for modern <em>Penaeus vannamei</em> shrimp aquaculture.
+                    </p>
 
-        <span class="landing-footer-copy">
-            &copy; {{ current_year if current_year is defined else 2026 }} ShrimpGuard
-        </span>
+                    <div class="footer-system-status">
+                        <span class="status-pulse-dot" aria-hidden="true"></span>
+                        <span>All Systems Operational &bull; Telemetry Ingestion Active</span>
+                    </div>
+                </div>
+
+                <div class="footer-nav-col">
+                    <h5 class="footer-heading">Platform</h5>
+                    <ul class="footer-nav-list">
+                        <li><a href="#features">Sensor Telemetry</a></li>
+                        <li><a href="#calculators">Zootechnical Tools</a></li>
+                        <li><a href="#ai-support">Gemini AI Engine</a></li>
+                        <li><a href="#workflow">System Architecture</a></li>
+                        <li><a href="#species">Species Standards</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-nav-col">
+                    <h5 class="footer-heading">Calculators</h5>
+                    <ul class="footer-nav-list">
+                        <li><a href="#calculators">Feeding Management</a></li>
+                        <li><a href="#calculators">Growth &amp; Biomass</a></li>
+                        <li><a href="#calculators">Water Remediation</a></li>
+                        <li><a href="#calculators">Van Wyk NH&sup3; Matrix</a></li>
+                        <li><a href="#calculators">Tucker CO&sup2; Matrix</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-nav-col">
+                    <h5 class="footer-heading">Account</h5>
+                    <ul class="footer-nav-list">
+                        <li><a href="{{ url_for('login') }}">Sign In</a></li>
+                        <li><a href="{{ url_for('signup') }}">Create Account</a></li>
+                        <li><a href="{{ url_for('login') }}">Farm Dashboard</a></li>
+                        <li><a href="{{ url_for('login') }}">Historical Archives</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom-row">
+                <p class="footer-copyright">
+                    &copy; {{ current_year if current_year is defined else 2026 }} ShrimpGuard. Built for <em>Penaeus vannamei</em> commercial aquaculture operations.
+                </p>
+
+                <p class="footer-disclaimer">
+                    Scientific models calibrated to FAO and commercial shrimp culture guidelines.
+                </p>
+            </div>
+        </div>
     </footer>
 
+    <!-- Interactive Navigation Scripts -->
     <script>
         (() => {
             const menuToggle = document.querySelector('.landing-menu-toggle');
@@ -287,6 +796,22 @@
                     menuToggle.setAttribute('aria-expanded', 'false');
                     menuToggle.setAttribute('aria-label', 'Open navigation menu');
                     navigation.classList.remove('landing-nav-open');
+                });
+            });
+
+            // Smooth scrolling for hash links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    const targetElem = document.querySelector(targetId);
+                    if (targetElem) {
+                        e.preventDefault();
+                        targetElem.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
                 });
             });
         })();
