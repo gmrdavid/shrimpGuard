@@ -13,17 +13,15 @@ print("--- Verifying HTML Elements ---")
 assert 'id="btn-choose-computation"' in html, "btn-choose-computation missing"
 assert 'id="active-computation-label"' in html, "active-computation-label missing"
 assert 'id="tools-module-dropdown-menu"' in html, "tools-module-dropdown-menu missing"
-assert 'id="tools-module-pills"' in html, "tools-module-pills missing"
+assert 'id="tools-module-pills"' not in html, "Exposed pills container should be removed"
+assert 'class="module-pill"' not in html, "Exposed module pill buttons should be removed"
 
 expected_modules = ["feeding", "growth", "remediation", "ammonia", "co2", "all"]
 for m in expected_modules:
     dropdown_match = re.search(rf'class="module-dropdown-item[^"]*"\s+data-module="{m}"', html)
     assert dropdown_match, f"Dropdown option for module '{m}' not found"
-    
-    pill_match = re.search(rf'class="module-pill[^"]*"\s+data-module="{m}"', html)
-    assert pill_match, f"Pill tab for module '{m}' not found"
 
-print("[OK] All 6 dropdown items and pill buttons confirmed in HTML.")
+print("[OK] All 6 dropdown items confirmed in HTML and exposed pill buttons confirmed removed.")
 
 expected_sections = [
     ("tools-feeding-section", "feeding"),
@@ -49,14 +47,16 @@ css_rules = [
     ".active-computation-name",
     ".tools-module-dropdown-menu",
     ".module-dropdown-item",
-    ".module-nav-pills",
-    ".module-pill",
     ".calc-module-active",
 ]
 for rule in css_rules:
     assert rule in css, f"CSS rule '{rule}' missing in style.css"
 
-print("[OK] All CSS classes and styles verified in style.css.")
+# Verify button color is green in style.css
+assert "#16a34a" in css, "Green color #16a34a missing in style.css"
+assert "#15803d" in css, "Green shade #15803d missing in style.css"
+
+print("[OK] All CSS classes, green styles, and button aesthetics verified in style.css.")
 
 print("\n--- Verifying JavaScript Module Switching Logic ---")
 js_tokens = [
@@ -80,4 +80,4 @@ for token in js_tokens:
     assert token in js, f"JavaScript token '{token}' missing in calculators.js"
 
 print("[OK] Module switcher JavaScript logic verified in calculators.js.")
-print("\n>>> ALL TESTS PASSED! Computation module chooser is completely integrated. <<<")
+print("\n>>> ALL TESTS PASSED! Dropdown-only button with green aesthetic is active. <<<")
