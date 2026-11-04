@@ -23121,3 +23121,580 @@ nav a {
     fill: #ffffff;
     color: #ffffff;
 }
+
+
+/* ==========================================================================
+   GLOBAL ADAPTIVE WEB SYSTEM (MOBILE, TABLET, DESKTOP & WIDESCREEN)
+   ========================================================================== */
+
+/* 1. Global Box Model & Root Viewport Guards */
+html, body {
+    max-width: 100vw !important;
+    overflow-x: clip !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+/* Ensure images, svgs and canvases never overflow parent containers */
+img, svg, canvas {
+    max-width: 100%;
+}
+
+/* Fix global unconstrained tables */
+table {
+    max-width: 100%;
+}
+
+.table-wrap,
+.table-container,
+.historical-table-container,
+.admin-table-container,
+.tools-tray-table-container,
+.matrix-table-wrap,
+.ammonia-matrix-wrap,
+.co2-matrix-wrap {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior-x: contain;
+}
+
+/* 2. Fluid Layout Containers & Shell Sizing */
+.dashboard-layout,
+.monitoring-layout,
+.historical-layout-page,
+.analytics-layout-page,
+.alerts-layout-page,
+.settings-layout-page {
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* Desktop & Widescreen Scaling (>= 1025px) */
+@media (min-width: 1025px) {
+    .dashboard-page .dashboard-sidebar,
+    .monitoring-page .monitoring-sidebar,
+    .historical-page .historical-sidebar,
+    .analytics-page .analytics-sidebar,
+    .alerts-page .alerts-sidebar,
+    .settings-page .settings-sidebar,
+    .admin-page .sidebar {
+        width: 252px !important;
+        position: fixed !important;
+        inset: 0 auto 0 0 !important;
+        z-index: 100 !important;
+        overflow-y: auto !important;
+    }
+
+    .dashboard-page .dashboard-main,
+    .monitoring-page .monitoring-main,
+    .historical-page .historical-main,
+    .analytics-page .analytics-main,
+    .alerts-page .alerts-main,
+    .settings-page .settings-main,
+    .admin-page .main-content {
+        margin-left: 252px !important;
+        width: calc(100% - 252px) !important;
+        max-width: 1560px !important;
+        padding: 32px 36px 48px !important;
+    }
+}
+
+/* Tablet & Laptop Scaling (769px to 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .dashboard-page .dashboard-sidebar,
+    .monitoring-page .monitoring-sidebar,
+    .historical-page .historical-sidebar,
+    .analytics-page .analytics-sidebar,
+    .alerts-page .alerts-sidebar,
+    .settings-page .settings-sidebar,
+    .admin-page .sidebar {
+        width: 215px !important;
+        position: fixed !important;
+        inset: 0 auto 0 0 !important;
+        z-index: 100 !important;
+        padding: 20px 12px !important;
+    }
+
+    .dashboard-page .dashboard-main,
+    .monitoring-page .monitoring-main,
+    .historical-page .historical-main,
+    .analytics-page .analytics-main,
+    .alerts-page .alerts-main,
+    .settings-page .settings-main,
+    .admin-page .main-content {
+        margin-left: 215px !important;
+        width: calc(100% - 215px) !important;
+        padding: 24px 20px 36px !important;
+    }
+
+    /* 2-column adaptive grids on tablets */
+    .dashboard-page .dashboard-grid,
+    .monitoring-page .monitoring-grid,
+    .historical-page .historical-grid,
+    .analytics-page .analytics-charts-grid,
+    .settings-page .settings-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+        gap: 18px !important;
+    }
+
+    .tools-treatment-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 16px !important;
+    }
+
+    .tools-treatment-grid .treatment-card:last-child {
+        grid-column: 1 / -1 !important;
+    }
+
+    .alerts-layout-page .alerts-main-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+}
+
+/* Mobile & Phablets (<= 768px) */
+@media (max-width: 768px) {
+    /* Adaptive Mobile Top Navigation Shell */
+    .dashboard-page .dashboard-sidebar,
+    .monitoring-page .monitoring-sidebar,
+    .historical-page .historical-sidebar,
+    .analytics-page .analytics-sidebar,
+    .alerts-page .alerts-sidebar,
+    .settings-page .settings-sidebar,
+    .admin-page .sidebar {
+        position: relative !important;
+        inset: auto !important;
+        width: 100% !important;
+        height: auto !important;
+        max-height: none !important;
+        margin: 0 !important;
+        padding: 14px 16px 10px !important;
+        border-right: none !important;
+        border-bottom: 1px solid #dce8e2 !important;
+        background: #ffffff !important;
+        box-shadow: 0 2px 10px rgba(18, 55, 45, 0.05) !important;
+        z-index: 100 !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    /* Top Brand & Logout Row */
+    .sidebar .logo,
+    .dashboard-sidebar .dashboard-logo,
+    .monitoring-sidebar .monitoring-logo,
+    .historical-sidebar .historical-logo {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        font-size: 19px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .sidebar .subtitle,
+    .dashboard-sidebar .subtitle,
+    .monitoring-sidebar .subtitle,
+    .historical-sidebar .subtitle {
+        display: none !important;
+    }
+
+    .sidebar-section-label,
+    .monitoring-nav-label,
+    .historical-nav-label {
+        display: none !important;
+    }
+
+    /* Mobile Quick-Switch Horizontal Scrollable Navigation Pill Bar */
+    .dashboard-page .dashboard-nav,
+    .monitoring-page .monitoring-nav,
+    .historical-page .historical-nav,
+    .analytics-page .analytics-nav,
+    .alerts-page .alerts-nav,
+    .settings-page .settings-nav,
+    .admin-page .sidebar nav {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: none !important;
+        gap: 8px !important;
+        padding: 10px 2px 4px !important;
+        margin: 8px 0 0 !important;
+        width: 100% !important;
+    }
+
+    .dashboard-page .dashboard-nav::-webkit-scrollbar,
+    .monitoring-page .monitoring-nav::-webkit-scrollbar,
+    .historical-page .historical-nav::-webkit-scrollbar,
+    .analytics-page .analytics-nav::-webkit-scrollbar,
+    .alerts-page .alerts-nav::-webkit-scrollbar,
+    .settings-page .settings-nav::-webkit-scrollbar {
+        display: none !important;
+    }
+
+    .dashboard-page .dashboard-nav a,
+    .monitoring-page .monitoring-nav a,
+    .historical-page .historical-nav a,
+    .analytics-page .analytics-nav a,
+    .alerts-page .alerts-nav a,
+    .settings-page .settings-nav a,
+    .admin-page .sidebar nav a {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        padding: 7px 13px !important;
+        border-radius: 999px !important;
+        font-size: 11.5px !important;
+        font-weight: 650 !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+        min-height: 38px !important;
+        background: #f1f5f3 !important;
+        color: #274036 !important;
+        border: 1px solid #dce8e2 !important;
+        text-decoration: none !important;
+        transition: all 0.15s ease !important;
+    }
+
+    .dashboard-page .dashboard-nav a.active,
+    .monitoring-page .monitoring-nav a.active,
+    .historical-page .historical-nav a.active,
+    .analytics-page .analytics-nav a.active,
+    .alerts-page .alerts-nav a.active,
+    .settings-page .settings-nav a.active,
+    .admin-page .sidebar nav a.active {
+        background: #15803d !important;
+        color: #ffffff !important;
+        border-color: #15803d !important;
+        box-shadow: 0 2px 6px rgba(21, 128, 61, 0.28) !important;
+    }
+
+    .dashboard-page .dashboard-nav a.active .ui-icon,
+    .monitoring-page .monitoring-nav a.active .ui-icon,
+    .historical-page .historical-nav a.active .ui-icon,
+    .analytics-page .analytics-nav a.active .ui-icon,
+    .alerts-page .alerts-nav a.active .ui-icon,
+    .settings-page .settings-nav a.active .ui-icon,
+    .admin-page .sidebar nav a.active .ui-icon {
+        color: #ffffff !important;
+        stroke: #ffffff !important;
+    }
+
+    /* Mobile App-Bar Header Logout Button */
+    .sidebar .sidebar-bottom,
+    .dashboard-sidebar .sidebar-bottom,
+    .monitoring-sidebar-bottom,
+    .historical-sidebar-bottom {
+        position: absolute !important;
+        top: 14px !important;
+        right: 16px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    .sidebar-help {
+        display: none !important;
+    }
+
+    .sidebar-logout-button {
+        padding: 6px 11px !important;
+        min-height: 34px !important;
+        font-size: 11px !important;
+        border-radius: 8px !important;
+        background: #fdf2f2 !important;
+        color: #b91c1c !important;
+        border: 1px solid #fecaca !important;
+    }
+
+    /* Main Content Full Width on Mobile */
+    .dashboard-page .dashboard-main,
+    .monitoring-page .monitoring-main,
+    .historical-page .historical-main,
+    .analytics-page .analytics-main,
+    .alerts-page .alerts-main,
+    .settings-page .settings-main,
+    .admin-page .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding: 18px 14px 32px !important;
+    }
+
+    /* Header adaptations */
+    .dashboard-header,
+    .monitoring-header,
+    .historical-header,
+    .analytics-header,
+    .alerts-header,
+    .settings-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+        margin-bottom: 20px !important;
+    }
+
+    .dashboard-header-info,
+    .monitoring-header-info,
+    .historical-header-info,
+    .alerts-header-info {
+        width: 100% !important;
+        justify-content: space-between !important;
+    }
+
+    /* Forms on Mobile */
+    .dashboard-quality-form,
+    .monitoring-quick-form,
+    .history-filter,
+    .filter-panel,
+    .tools-form-grid,
+    .growth-form-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    /* Form Inputs Touch Comfort (Prevent iOS auto-zoom with 16px) */
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    input[type="time"],
+    input[type="password"],
+    input[type="email"],
+    select,
+    textarea {
+        font-size: 16px !important;
+        min-height: 44px !important;
+    }
+
+    /* Metric & Telemetry Grids */
+    .dashboard-grid,
+    .monitoring-grid,
+    .analytics-charts-grid,
+    .settings-grid,
+    .tools-treatment-grid {
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+    }
+
+    .telemetry-grid,
+    .dashboard-metrics-row,
+    .monitoring-metric-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+    }
+
+    /* Calculators & Tools Mobile Refinements */
+    .tools-sync-banner {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 16px !important;
+        padding: 18px 14px !important;
+    }
+
+    .sync-telemetry-badges {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+
+    .tools-sync-actions {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+
+    .tools-sync-actions button,
+    .tools-sync-actions .tools-btn-secondary {
+        flex: 1 1 calc(50% - 4px) !important;
+        justify-content: center !important;
+        min-height: 42px !important;
+    }
+
+    .tools-module-switcher-bar {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+    }
+
+    .tools-module-switcher-wrapper {
+        width: 100% !important;
+    }
+
+    .tools-module-switcher-btn {
+        width: 100% !important;
+        justify-content: space-between !important;
+        min-height: 46px !important;
+    }
+
+    .tools-module-dropdown-menu {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .btn-tools-ai-analyze {
+        width: 100% !important;
+        justify-content: center !important;
+        min-height: 46px !important;
+    }
+
+    /* Growth Form & Metrics */
+    .calculators-page .growth-form-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    .calculators-page .growth-metrics-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+    }
+
+    .growth-header-action {
+        width: 100% !important;
+        margin-top: 10px !important;
+    }
+
+    .btn-open-growth-chart {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+
+    /* Modal Dialogs on Mobile */
+    .modal-dialog-backdrop,
+    .ai-decision-modal {
+        padding: 10px !important;
+    }
+
+    .modal-dialog-container,
+    .ai-decision-dialog {
+        width: 96vw !important;
+        max-width: 96vw !important;
+        max-height: 90vh !important;
+        margin: auto !important;
+        border-radius: 14px !important;
+    }
+
+    .modal-dialog-header {
+        padding: 14px 16px !important;
+    }
+
+    .modal-dialog-body {
+        padding: 14px 16px !important;
+    }
+
+    .ai-modal-tabs {
+        overflow-x: auto !important;
+        flex-wrap: nowrap !important;
+        scrollbar-width: none !important;
+        -webkit-overflow-scrolling: touch !important;
+        width: 100% !important;
+        padding: 3px !important;
+    }
+
+    .ai-modal-tabs::-webkit-scrollbar {
+        display: none !important;
+    }
+
+    .ai-modal-tab {
+        flex-shrink: 0 !important;
+    }
+
+    .ai-modal-footer {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        padding: 12px 16px !important;
+    }
+
+    .ai-modal-footer-btns {
+        width: 100% !important;
+        flex-direction: column !important;
+    }
+
+    .ai-modal-footer-btns button {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+
+    /* Historical Page Mobile */
+    .historical-chart-wrap {
+        height: 270px !important;
+    }
+
+    .history-filter-card {
+        padding: 16px 14px !important;
+    }
+
+    .history-filter-actions {
+        flex-direction: column !important;
+        width: 100% !important;
+    }
+
+    .history-filter-actions button {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+
+    /* Alerts Mobile */
+    .alerts-side-column {
+        width: 100% !important;
+        margin-top: 18px !important;
+    }
+
+    .alert-card {
+        padding: 14px 14px !important;
+    }
+
+    /* Settings Mobile */
+    .settings-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .settings-panel {
+        padding: 20px 16px !important;
+    }
+
+    .settings-actions {
+        flex-direction: column !important;
+    }
+
+    .settings-actions button {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+}
+
+/* Extra Small Phones (<= 420px) */
+@media (max-width: 420px) {
+    .telemetry-grid,
+    .dashboard-metrics-row,
+    .monitoring-metric-grid,
+    .calculators-page .growth-metrics-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .dashboard-heading h1,
+    .monitoring-page-heading h1,
+    .historical-heading h1,
+    .analytics-heading h1,
+    .alerts-heading h1,
+    .settings-heading h1 {
+        font-size: 22px !important;
+    }
+
+    .tools-sync-actions button,
+    .tools-sync-actions .tools-btn-secondary {
+        flex: 1 1 100% !important;
+    }
+
+    .sync-telemetry-badges {
+        grid-template-columns: 1fr !important;
+    }
+}

@@ -501,6 +501,25 @@ with app.app_context():
     try:
         db.engine.connect()
         db.create_all()
+        # Automatically synchronize missing columns on aquaculture_calculations table
+        with db.engine.connect() as conn:
+            try:
+                res = conn.execute(text("DESCRIBE aquaculture_calculations;"))
+                existing_cols = {row[0].lower() for row in res.fetchall()}
+                col_defs = {
+                    "co2_alkalinity_mg_l": "FLOAT NULL",
+                    "co2_temp_c": "FLOAT NULL",
+                    "co2_ph": "FLOAT NULL",
+                    "co2_factor": "FLOAT NULL",
+                    "co2_concentration_mg_l": "FLOAT NULL",
+                    "co2_status": "VARCHAR(50) NULL",
+                }
+                for col_name, col_sql in col_defs.items():
+                    if col_name.lower() not in existing_cols:
+                        conn.execute(text(f"ALTER TABLE aquaculture_calculations ADD COLUMN {col_name} {col_sql};"))
+                conn.commit()
+            except Exception:
+                pass
     except Exception:
         pass
 

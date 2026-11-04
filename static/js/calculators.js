@@ -1463,14 +1463,14 @@ document.addEventListener("DOMContentLoaded", function () {
     // -------------------------------------------------------------
     function collectCurrentCalculations(customNotes) {
         // 1. Biomass & Feed
-        const area = Number(document.getElementById("feed-pond-area")?.value || 1000);
-        const depth = Number(document.getElementById("feed-pond-depth")?.value || 1.2);
-        const density = Number(document.getElementById("feed-stocking-density")?.value || 60);
-        const survival = Number(document.getElementById("feed-survival-rate")?.value || 85);
-        const abw = Number(document.getElementById("feed-abw")?.value || 15.0);
-        const feedRatePct = Number(document.getElementById("feed-rate-percent")?.value || 3.2);
-        const meals = Number(document.getElementById("feed-meals-day")?.value || 4);
-        const currentTemp = Number(document.getElementById("feed-current-temp")?.value || liveSensor.temperature);
+        const area = Math.max(1, Number(document.getElementById("feed-pond-area")?.value || 1000));
+        const depth = Math.max(0.1, Number(document.getElementById("feed-pond-depth")?.value || 1.2));
+        const density = Math.max(1, Number(document.getElementById("feed-stocking-density")?.value || 60));
+        const survival = Math.max(0, Math.min(100, Number(document.getElementById("feed-survival-rate")?.value || 85)));
+        const abw = Math.max(0.01, Number(document.getElementById("feed-abw")?.value || 15.0));
+        const feedRatePct = Math.max(0, Number(document.getElementById("feed-rate-percent")?.value || 3.2));
+        const meals = Math.max(1, Number(document.getElementById("feed-meals-day")?.value || 4));
+        const currentTemp = Number(document.getElementById("feed-current-temp")?.value || (liveSensor ? liveSensor.temperature : 29.5));
 
         const totalStocked = area * density;
         const survivingPopulation = Math.round(totalStocked * (survival / 100.0));
@@ -1486,11 +1486,11 @@ document.addEventListener("DOMContentLoaded", function () {
         else tempFactor = 0.40;
 
         const adjustedDailyFeed = baseDailyFeed * tempFactor;
-        const feedPerMeal = adjustedDailyFeed / meals;
+        const feedPerMeal = meals > 0 ? adjustedDailyFeed / meals : 0;
 
         // 2. Liming
-        const limeVol = Number(document.getElementById("lime-pond-vol")?.value || 1200);
-        const limeCurrentPh = Number(document.getElementById("lime-current-ph")?.value || 7.10);
+        const limeVol = Math.max(0, Number(document.getElementById("lime-pond-vol")?.value || (area * depth)));
+        const limeCurrentPh = Number(document.getElementById("lime-current-ph")?.value || (liveSensor ? liveSensor.ph : 7.10));
         const limeTargetPh = Number(document.getElementById("lime-target-ph")?.value || 8.00);
         const limeChem = document.getElementById("lime-chemical-type")?.value || "caco3";
         let limeFactor = 0.050;
@@ -1502,9 +1502,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const limePpm = limeVol > 0 ? (limeKg * 1000.0) / limeVol : 0;
 
         // 3. Carbon Dosing (Biofloc)
-        const molFeed = Number(document.getElementById("molasses-daily-feed")?.value || 25.0);
-        const molProtein = Number(document.getElementById("molasses-protein-pct")?.value || 35);
-        const molTargetCn = Number(document.getElementById("molasses-target-cn")?.value || 15);
+        const molFeed = Math.max(0, Number(document.getElementById("molasses-daily-feed")?.value || (adjustedDailyFeed > 0 ? adjustedDailyFeed : 25.0)));
+        const molProtein = Math.max(0, Number(document.getElementById("molasses-protein-pct")?.value || 35));
+        const molTargetCn = Math.max(0, Number(document.getElementById("molasses-target-cn")?.value || 15));
         const molSource = document.getElementById("molasses-carbon-source")?.value || "cane_molasses";
         const nInFeed = molFeed * (molProtein / 100.0) * 0.16;
         const cInFeed = molFeed * 0.50;
@@ -1513,61 +1513,63 @@ document.addEventListener("DOMContentLoaded", function () {
         let cSourceName = "Cane Molasses";
         if (molSource === "white_sugar") { cPct = 0.42; cSourceName = "Refined White Sugar"; }
         else if (molSource === "cassava_flour") { cPct = 0.45; cSourceName = "Cassava / Rice Flour"; }
-        const molKg = cDeficit / cPct;
+        const molKg = cPct > 0 ? cDeficit / cPct : 0;
 
         // 4. Aerator Power
-        const aeroBiomass = Number(document.getElementById("aero-biomass-input")?.value || biomassKg);
-        const aeroTemp = Number(document.getElementById("aero-temp-input")?.value || liveSensor.temperature);
+        const aeroBiomass = Math.max(0, Number(document.getElementById("aero-biomass-input")?.value || biomassKg));
+        const aeroTemp = Number(document.getElementById("aero-temp-input")?.value || (liveSensor ? liveSensor.temperature : 29.5));
         const kgPerHp = aeroTemp > 30.0 ? 320.0 : 400.0;
         const aeroHp = Math.max(1.0, Math.ceil((aeroBiomass / kgPerHp) * 2) / 2);
         let aeroUnits = aeroHp <= 1.0 ? "1 × 1-HP unit" : (aeroHp <= 2.0 ? "1 × 2-HP or 2 × 1-HP units" : `${Math.floor(aeroHp / 2.0)} × 2-HP units`);
 
         // 5. Ammonia
-        const tanVal = Number(document.getElementById("tools-ammonia-tan")?.value || 0.8);
+        const tanVal = Math.max(0, Number(document.getElementById("tools-ammonia-tan")?.value || 0.8));
         const isOverride = document.getElementById("tools-ammonia-override-cb")?.checked;
-        const ammTemp = isOverride ? Number(document.getElementById("tools-custom-temp")?.value || 28.0) : liveSensor.temperature;
-        const ammPh = isOverride ? Number(document.getElementById("tools-custom-ph")?.value || 7.60) : liveSensor.ph;
+        const ammTemp = isOverride ? Number(document.getElementById("tools-custom-temp")?.value || 28.0) : (liveSensor ? liveSensor.temperature : 28.0);
+        const ammPh = isOverride ? Number(document.getElementById("tools-custom-ph")?.value || 7.60) : (liveSensor ? liveSensor.ph : 7.60);
         const ammSal = 18.0;
-        const ammFactor = getVanWykFactor(ammTemp, ammPh);
+        const ammFactor = typeof getVanWykFactor === "function" ? getVanWykFactor(ammTemp, ammPh) : 0.027;
         const nh3Val = ammFactor * tanVal;
         const nh3Status = nh3Val < 0.05 ? "Optimal" : (nh3Val <= 0.10 ? "Warning" : "Critical");
 
         // 6. Carbon Dioxide
-        const co2AlkVal = Number(document.getElementById("tools-co2-alkalinity")?.value || 140);
+        const co2AlkVal = Math.max(0, Number(document.getElementById("tools-co2-alkalinity")?.value || 140));
         const isCo2Override = document.getElementById("tools-co2-override-cb")?.checked;
-        const co2Temp = isCo2Override ? Number(document.getElementById("tools-co2-custom-temp")?.value || 28.0) : liveSensor.temperature;
-        const co2Ph = isCo2Override ? Number(document.getElementById("tools-co2-custom-ph")?.value || 7.60) : liveSensor.ph;
-        const co2Factor = getTuckerFactor(co2Temp, co2Ph);
+        const co2Temp = isCo2Override ? Number(document.getElementById("tools-co2-custom-temp")?.value || 28.0) : (liveSensor ? liveSensor.temperature : 28.0);
+        const co2Ph = isCo2Override ? Number(document.getElementById("tools-co2-custom-ph")?.value || 7.60) : (liveSensor ? liveSensor.ph : 7.60);
+        const co2Factor = typeof getTuckerFactor === "function" ? getTuckerFactor(co2Temp, co2Ph) : 0.057;
         const co2Val = co2Factor * co2AlkVal;
         const co2Status = co2Ph > 8.4 ? "Negligible" : (co2Val < 10.0 ? "Safe" : (co2Val <= 20.0 ? "Elevated" : "Critical"));
 
-        // 6. Growth Master Equations
-        const isVal = Number(document.getElementById("gm-initial-stocking")?.value || 100000);
-        const lhcVal = Number(document.getElementById("gm-live-harvest-count")?.value || 85000);
-        const docVal = Number(document.getElementById("gm-days-of-culture")?.value || 90);
-        const ibw = Number(document.getElementById("gm-initial-weight")?.value || 0.010);
-        const bwVal = Number(document.getElementById("gm-bulk-weight")?.value || 1700);
+        // 7. Growth Master Equations
+        const isVal = Math.max(1, Number(document.getElementById("gm-initial-stocking")?.value || 100000));
+        const lhcVal = Math.max(0, Number(document.getElementById("gm-live-harvest-count")?.value || 85000));
+        const docVal = Math.max(1, Number(document.getElementById("gm-days-of-culture")?.value || 90));
+        const ibw = Math.max(0.0001, Number(document.getElementById("gm-initial-weight")?.value || 0.010));
+        const bwVal = Math.max(0.01, Number(document.getElementById("gm-bulk-weight")?.value || 1700));
         const bwUnit = document.getElementById("gm-bw-unit")?.value || "kg";
-        const tfgVal = Number(document.getElementById("gm-total-feed")?.value || 2125);
+        const tfgVal = Math.max(0, Number(document.getElementById("gm-total-feed")?.value || 2125));
         const feedUnit = document.getElementById("gm-feed-unit")?.value || "kg";
-        const tlVal = Number(document.getElementById("gm-total-length")?.value || 12.9);
+        const tlVal = Math.max(0.1, Number(document.getElementById("gm-total-length")?.value || 12.9));
 
         const bwGrams = bwUnit === "kg" ? bwVal * 1000.0 : bwVal;
         const bwKg = bwGrams / 1000.0;
         const tfgKg = feedUnit === "kg" ? tfgVal : tfgVal / 1000.0;
-        const srVal = (lhcVal / isVal) * 100.0;
+        const srVal = isVal > 0 ? (lhcVal / isVal) * 100.0 : 0.0;
         const mortCount = Math.max(0, isVal - lhcVal);
-        const fabwVal = bwGrams / lhcVal;
-        const countPerKg = fabwVal > 0 ? (1000.0 / fabwVal) : 0;
-        const adwgVal = (fabwVal - ibw) / docVal;
+        const fabwVal = lhcVal > 0 ? bwGrams / lhcVal : 0.0;
+        const countPerKg = fabwVal > 0 ? (1000.0 / fabwVal) : 0.0;
+        const adwgVal = docVal > 0 ? (fabwVal - ibw) / docVal : 0.0;
         const weeklyGain = adwgVal * 7.0;
-        const sgrVal = ((Math.log(fabwVal) - Math.log(ibw)) / docVal) * 100.0;
+        const sgrVal = (fabwVal > 0 && ibw > 0 && docVal > 0)
+            ? ((Math.log(fabwVal) - Math.log(ibw)) / docVal) * 100.0
+            : 0.0;
         const ibKg = (isVal * ibw) / 1000.0;
         const fbKg = (lhcVal * fabwVal) / 1000.0;
         const netGainKg = Math.max(0.0001, fbKg - ibKg);
-        const fcrVal = tfgKg / netGainKg;
-        const feedEff = fcrVal > 0 ? (100.0 / fcrVal) : 0;
-        const kFactor = (fabwVal / Math.pow(tlVal, 3)) * 100.0;
+        const fcrVal = netGainKg > 0 ? tfgKg / netGainKg : 0.0;
+        const feedEff = fcrVal > 0 ? (100.0 / fcrVal) : 0.0;
+        const kFactor = (fabwVal > 0 && tlVal > 0) ? (fabwVal / Math.pow(tlVal, 3)) * 100.0 : 0.0;
         const kProfile = kFactor >= 0.80 && kFactor <= 1.15 ? "Optimal Condition (0.80–1.15)" : (kFactor < 0.80 ? "Slender / Lean (<0.80)" : "Heavy / Plump (>1.15)");
 
         return {
@@ -1576,7 +1578,7 @@ document.addEventListener("DOMContentLoaded", function () {
             pond_area_m2: area,
             pond_depth_m: depth,
             stocking_density_pl_m2: density,
-            survival_rate_pct: survival,
+            survival_rate_pct: srVal || survival,
             abw_g: abw,
             standing_biomass_kg: biomassKg,
             standing_biomass_tons: biomassTons,
@@ -1659,49 +1661,62 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function openSaveModal() {
         if (!saveModalBackdrop) return;
-        const cur = collectCurrentCalculations();
-        const setVal = (id, text) => {
-            const el = document.getElementById(id);
-            if (el) el.textContent = text;
-        };
-        setVal("save-preview-biomass", `${cur.standing_biomass_kg.toLocaleString(undefined, {maximumFractionDigits: 1})} kg`);
-        setVal("save-preview-feed", `${cur.adjusted_daily_feed_kg.toFixed(1)} kg/day`);
-        setVal("save-preview-sr", `${cur.eq1_sr_pct.toFixed(2)} %`);
-        setVal("save-preview-fabw", `${cur.eq2_fabw_g.toFixed(2)} g`);
-        setVal("save-preview-adwg", `${cur.eq3_adwg_g_day.toFixed(3)} g/day`);
-        setVal("save-preview-sgr", `${cur.eq4_sgr_pct_day.toFixed(2)} %/day`);
-        setVal("save-preview-fcr", cur.eq7_fcr.toFixed(2));
-        setVal("save-preview-k", cur.eq8_fulton_k.toFixed(4));
-        setVal("save-preview-lime", `${cur.lime_dosage_kg.toFixed(1)} kg`);
-        setVal("save-preview-carbon", `${cur.molasses_dosage_kg.toFixed(1)} kg`);
-        setVal("save-preview-aeration", `${cur.aero_power_hp.toFixed(1)} HP`);
-        setVal("save-preview-nh3", `${cur.ammonia_nh3_ppm.toFixed(3)} ppm`);
-        setVal("save-preview-co2", `${cur.co2_concentration_mg_l.toFixed(2)} mg/L`);
+        try {
+            const cur = collectCurrentCalculations();
+            const safeNum = (v, fallback = 0) => {
+                const n = Number(v);
+                return Number.isFinite(n) ? n : fallback;
+            };
+            const setVal = (id, text) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = text;
+            };
+            setVal("save-preview-biomass", `${safeNum(cur.standing_biomass_kg).toLocaleString(undefined, {maximumFractionDigits: 1})} kg`);
+            setVal("save-preview-feed", `${safeNum(cur.adjusted_daily_feed_kg).toFixed(1)} kg/day`);
+            setVal("save-preview-sr", `${safeNum(cur.eq1_sr_pct).toFixed(2)} %`);
+            setVal("save-preview-fabw", `${safeNum(cur.eq2_fabw_g).toFixed(2)} g`);
+            setVal("save-preview-adwg", `${safeNum(cur.eq3_adwg_g_day).toFixed(3)} g/day`);
+            setVal("save-preview-sgr", `${safeNum(cur.eq4_sgr_pct_day).toFixed(2)} %/day`);
+            setVal("save-preview-fcr", safeNum(cur.eq7_fcr).toFixed(2));
+            setVal("save-preview-k", safeNum(cur.eq8_fulton_k).toFixed(4));
+            setVal("save-preview-lime", `${safeNum(cur.lime_dosage_kg).toFixed(1)} kg`);
+            setVal("save-preview-carbon", `${safeNum(cur.molasses_dosage_kg).toFixed(1)} kg`);
+            setVal("save-preview-aeration", `${safeNum(cur.aero_power_hp).toFixed(1)} HP`);
+            setVal("save-preview-nh3", `${safeNum(cur.ammonia_nh3_ppm).toFixed(3)} ppm`);
+            setVal("save-preview-co2", `${safeNum(cur.co2_concentration_mg_l).toFixed(2)} mg/L`);
 
-        if (saveCalcNotes) {
-            saveCalcNotes.value = `Pond 1 - DOC ${cur.doc_days} Run`;
+            if (saveCalcNotes) {
+                saveCalcNotes.value = `Pond 1 - DOC ${cur.doc_days || 90} Run`;
+            }
+            if (saveStatusMsg) {
+                saveStatusMsg.hidden = true;
+                saveStatusMsg.textContent = "";
+                saveStatusMsg.className = "save-status-msg";
+            }
+            if (confirmSaveModalBtn) {
+                confirmSaveModalBtn.disabled = false;
+                confirmSaveModalBtn.innerHTML = `
+                    <svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>Confirm &amp; Save to Database</span>
+                `;
+            }
+        } catch (err) {
+            console.error("Error populating save snapshot preview:", err);
         }
-        if (saveStatusMsg) {
-            saveStatusMsg.hidden = true;
-            saveStatusMsg.textContent = "";
-            saveStatusMsg.className = "save-status-msg";
-        }
-        if (confirmSaveModalBtn) {
-            confirmSaveModalBtn.disabled = false;
-            confirmSaveModalBtn.innerHTML = `
-                <svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-                <span>Confirm &amp; Save to Database</span>
-            `;
-        }
+
         saveModalBackdrop.hidden = false;
+        saveModalBackdrop.removeAttribute("hidden");
+        saveModalBackdrop.style.display = "flex";
         document.body.style.overflow = "hidden";
     }
 
     function closeSaveModal() {
         if (!saveModalBackdrop) return;
         saveModalBackdrop.hidden = true;
+        saveModalBackdrop.setAttribute("hidden", "");
+        saveModalBackdrop.style.display = "none";
         document.body.style.overflow = "";
     }
 
@@ -1765,20 +1780,24 @@ document.addEventListener("DOMContentLoaded", function () {
     const customDateInput = document.getElementById("tools-export-custom-date");
     const scopeRadios = document.querySelectorAll('input[name="tools-export-scope"]');
     const formatRadios = document.querySelectorAll('input[name="tools-export-format"]');
-    const catCheckboxes = document.querySelectorAll('input[name="export-category"]');
     const previewBadge = document.getElementById("tools-export-preview-badge");
     const previewText = document.getElementById("tools-export-preview-text");
-    const confirmExportText = document.getElementById("confirm-tools-export-text");
     const dateBoxWrap = document.getElementById("tools-export-date-box");
 
     let savedRecordsCount = null;
 
+    function getCatCheckboxes() {
+        return document.querySelectorAll('input[name="export-category"]');
+    }
+
     async function updateExportPreview() {
-        const selectedCats = Array.from(catCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+        const catBoxes = getCatCheckboxes();
+        const selectedCats = Array.from(catBoxes).filter(cb => cb.checked).map(cb => cb.value);
         const scope = document.querySelector('input[name="tools-export-scope"]:checked')?.value || "saved";
         const format = document.querySelector('input[name="tools-export-format"]:checked')?.value || "xlsx";
         const dateRange = dateRangeSelect?.value || "all";
 
+        const confirmExportText = document.getElementById("confirm-tools-export-text") || confirmExportModalBtn?.querySelector("span:last-child");
         if (confirmExportText) {
             confirmExportText.textContent = format === "xlsx" ? "Download Excel (.xlsx)" : "Download CSV (.csv)";
         }
@@ -1815,29 +1834,44 @@ document.addEventListener("DOMContentLoaded", function () {
             previewBadge.className = "preview-badge preview-badge-ready";
         }
         if (previewText) {
-            previewText.textContent = `Exporting ${selectedCats.length} of ${catCheckboxes.length} modules • ${scopeText} • Format: ${format.toUpperCase()}`;
+            previewText.textContent = `Exporting ${selectedCats.length} of ${catBoxes.length} modules • ${scopeText} • Format: ${format.toUpperCase()}`;
         }
     }
 
     async function openExportModal() {
         if (!exportModalBackdrop) return;
+        // Instantly display modal backdrop
+        exportModalBackdrop.hidden = false;
+        exportModalBackdrop.removeAttribute("hidden");
+        exportModalBackdrop.style.display = "flex";
+        document.body.style.overflow = "hidden";
+
+        const exportStatusMsg = document.getElementById("tools-export-status-message");
+        if (exportStatusMsg) {
+            exportStatusMsg.hidden = true;
+            exportStatusMsg.textContent = "";
+            exportStatusMsg.className = "save-status-msg";
+        }
+
+        updateExportPreview();
+
         try {
             const res = await fetch("/api/calculators/history");
             if (res.ok) {
                 const data = await res.json();
                 savedRecordsCount = data.total_count ?? 0;
+                updateExportPreview();
             }
         } catch (err) {
             console.error("Failed to fetch history count:", err);
         }
-        updateExportPreview();
-        exportModalBackdrop.hidden = false;
-        document.body.style.overflow = "hidden";
     }
 
     function closeExportModal() {
         if (!exportModalBackdrop) return;
         exportModalBackdrop.hidden = true;
+        exportModalBackdrop.setAttribute("hidden", "");
+        exportModalBackdrop.style.display = "none";
         document.body.style.overflow = "";
     }
 
@@ -1852,18 +1886,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (btnSelectAllCats) {
         btnSelectAllCats.addEventListener("click", () => {
-            catCheckboxes.forEach(cb => cb.checked = true);
+            getCatCheckboxes().forEach(cb => cb.checked = true);
             updateExportPreview();
         });
     }
     if (btnClearAllCats) {
         btnClearAllCats.addEventListener("click", () => {
-            catCheckboxes.forEach(cb => cb.checked = false);
+            getCatCheckboxes().forEach(cb => cb.checked = false);
             updateExportPreview();
         });
     }
 
-    catCheckboxes.forEach(cb => cb.addEventListener("change", updateExportPreview));
+    getCatCheckboxes().forEach(cb => cb.addEventListener("change", updateExportPreview));
     scopeRadios.forEach(r => r.addEventListener("change", updateExportPreview));
     formatRadios.forEach(r => r.addEventListener("change", updateExportPreview));
 
@@ -1881,7 +1915,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (confirmExportModalBtn) {
         confirmExportModalBtn.addEventListener("click", async () => {
-            const selectedCats = Array.from(catCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+            const catBoxes = getCatCheckboxes();
+            const selectedCats = Array.from(catBoxes).filter(cb => cb.checked).map(cb => cb.value);
             if (selectedCats.length === 0) {
                 alert("Please select at least one calculation category to export.");
                 return;
@@ -1898,9 +1933,10 @@ document.addEventListener("DOMContentLoaded", function () {
             confirmExportModalBtn.innerHTML = `<span>Preparing Download...</span>`;
 
             try {
+                let res;
                 if (scope === "current") {
                     const currentData = collectCurrentCalculations();
-                    const res = await fetch("/api/calculators/export", {
+                    res = await fetch("/api/calculators/export", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
@@ -1910,26 +1946,6 @@ document.addEventListener("DOMContentLoaded", function () {
                             current_data: currentData
                         })
                     });
-
-                    if (!res.ok) throw new Error("Export generation failed.");
-
-                    const blob = await res.blob();
-                    const downloadUrl = window.URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-                    a.href = downloadUrl;
-                    const disposition = res.headers.get("Content-Disposition");
-                    let filename = `shrimpguard-aquaculture-calculations-snapshot.${format}`;
-                    if (disposition && disposition.indexOf("filename=") !== -1) {
-                        const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(disposition);
-                        if (matches != null && matches[1]) {
-                            filename = matches[1].replace(/['"]/g, "");
-                        }
-                    }
-                    a.download = filename;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(downloadUrl);
                 } else {
                     const params = new URLSearchParams({
                         scope: "saved",
@@ -1937,8 +1953,31 @@ document.addEventListener("DOMContentLoaded", function () {
                         date: dateVal,
                         format: format
                     });
-                    window.location.href = `/api/calculators/export?${params.toString()}`;
+                    res = await fetch(`/api/calculators/export?${params.toString()}`);
                 }
+
+                if (!res.ok) {
+                    const errJson = await res.json().catch(() => ({}));
+                    throw new Error(errJson.error || "Export generation failed.");
+                }
+
+                const blob = await res.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = downloadUrl;
+                const disposition = res.headers.get("Content-Disposition");
+                let filename = `shrimpguard-aquaculture-calculations_${scope}_${format}.${format}`;
+                if (disposition && disposition.indexOf("filename=") !== -1) {
+                    const matches = /filename[^;=\\n]*=((['"]).*?\\2|[^;\\n]*)/.exec(disposition);
+                    if (matches != null && matches[1]) {
+                        filename = matches[1].replace(/['"]/g, "");
+                    }
+                }
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(downloadUrl);
 
                 setTimeout(() => {
                     closeExportModal();
@@ -1949,13 +1988,27 @@ document.addEventListener("DOMContentLoaded", function () {
                             <polyline points="7 10 12 15 17 10"></polyline>
                             <path d="M5 17v4h14v-4"></path>
                         </svg>
-                        <span>${format === "xlsx" ? "Download Excel (.xlsx)" : "Download CSV (.csv)"}</span>
+                        <span id="confirm-tools-export-text">${format === "xlsx" ? "Download Excel (.xlsx)" : "Download CSV (.csv)"}</span>
                     `;
-                }, 1000);
+                }, 700);
             } catch (err) {
-                alert(`Export failed: ${err.message}`);
+                const exportStatusMsg = document.getElementById("tools-export-status-message");
+                if (exportStatusMsg) {
+                    exportStatusMsg.hidden = false;
+                    exportStatusMsg.className = "save-status-msg status-error";
+                    exportStatusMsg.textContent = `✗ Export Error: ${err.message}`;
+                } else if (typeof alert === "function") {
+                    alert(`Export failed: ${err.message}`);
+                }
                 confirmExportModalBtn.disabled = false;
-                confirmExportModalBtn.innerHTML = `<span>Retry Export</span>`;
+                confirmExportModalBtn.innerHTML = `
+                    <svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 3v12"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <path d="M5 17v4h14v-4"></path>
+                    </svg>
+                    <span id="confirm-tools-export-text">Retry Export</span>
+                `;
             }
         });
     }
