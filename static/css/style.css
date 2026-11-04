@@ -14728,7 +14728,7 @@ nav a {
     width: min(1160px, calc(100% - 48px));
     margin: 0 auto;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 32px;
 }
 
@@ -15502,7 +15502,7 @@ nav a {
 
 .landing-page .footer-top-row {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr;
     gap: 40px;
     padding-bottom: 40px;
     border-bottom: 1px solid var(--landing-border);
@@ -15641,11 +15641,11 @@ nav a {
     }
 
     .landing-page .landing-stats-inner {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 24px;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
     }
 
-    .landing-page .landing-stat-item:nth-child(2) {
+    .landing-page .landing-stat-item:nth-child(3) {
         border-right: none;
     }
 

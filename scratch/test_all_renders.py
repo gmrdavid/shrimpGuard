@@ -55,9 +55,9 @@ assert "ShrimpGuard" in rendered_landing
 assert "Penaeus vannamei" in rendered_landing
 assert "Google Gemini" in rendered_landing
 assert "landing-stats-strip" in rendered_landing
+assert "landing-features" in rendered_landing
 assert "landing-workflow-section" in rendered_landing
-assert "landing-calc-section" in rendered_landing
-assert "landing-ai-section" in rendered_landing
+assert "landing-cta-section" in rendered_landing
 print("landing.html rendered cleanly!")
 
 print("All Jinja2 rendering tests passed with flying colors!")
