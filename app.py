@@ -755,7 +755,7 @@ def generate_alerts_from_readings(readings):
 
         # Active if it is the latest reading and is abnormal
         is_active = (idx == 0 and is_abnormal)
-        status_label = "Active" if is_active else "Resolved"
+        status_label = "Active" if is_active else "Normalized"
 
         if is_abnormal:
             severity = ml_status
@@ -833,7 +833,8 @@ def get_alerts():
     critical_count = sum(1 for a in all_alerts if a["severity"] == "Critical")
     warning_count = sum(1 for a in all_alerts if a["severity"] == "Warning")
     active_alerts = [a for a in all_alerts if a["status"] == "Active"]
-    resolved_count = len(readings) - len(active_alerts)
+    normalized_count = len(readings) - len(active_alerts)
+    resolved_count = normalized_count
     if resolved_count < 0:
         resolved_count = 0
 
@@ -856,7 +857,7 @@ def get_alerts():
         is_abnormal = ml_status in ("Critical", "Warning")
         temp_abnormal = temp < 28.0 or temp > 32.0
         ph_abnormal = ph < 7.50 or ph > 8.50
-        status_label = "Active" if (idx == 0 and is_abnormal) else "Resolved"
+        status_label = "Active" if (idx == 0 and is_abnormal) else "Normalized"
 
         r_dt = parse_reading_datetime({"date": date_str})
         is_read = bool(last_read and r_dt <= last_read)
@@ -937,7 +938,7 @@ def get_alerts():
 
         reading_alerts = [a for a in all_alerts if a["recorded_at"] == date_str]
         is_active = (idx == 0 and ml_status in ("Critical", "Warning"))
-        status_label = "Active" if is_active else "Resolved"
+        status_label = "Active" if is_active else "Normalized"
 
         history_items.append({
             "recorded_at": date_str,
@@ -959,6 +960,7 @@ def get_alerts():
         "summary": {
             "critical_count": critical_count,
             "warning_count": warning_count,
+            "normalized_count": normalized_count,
             "resolved_count": resolved_count,
             "unread_notifications": unread_notifications,
             "dispatch_stats": {
