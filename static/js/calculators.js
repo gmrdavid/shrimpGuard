@@ -2228,10 +2228,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const chartW = width - padding.left - padding.right;
         const chartH = height - padding.top - padding.bottom;
 
-        // Grid lines matching Water Quality Trend
-        const isDark = document.documentElement.getAttribute("data-theme") === "dark";
-        context.strokeStyle = isDark ? "rgba(255, 255, 255, 0.09)" : "#e8edea";
-        context.fillStyle = isDark ? "#8fa59b" : "#8a978f";
+        // Grid lines matching Water Quality Trend (#e8edea)
+        context.strokeStyle = "#e8edea";
+        context.fillStyle = "#8a978f";
         context.font = "600 11px Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
         context.lineWidth = 1;
 
@@ -2704,11 +2703,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Window resize redraws chart
     window.addEventListener("resize", () => {
-        if (growthGraphModal && !growthGraphModal.hidden) {
-            renderGrowthChart();
-        }
-    });
-    window.addEventListener("shrimp-theme-change", () => {
         if (growthGraphModal && !growthGraphModal.hidden) {
             renderGrowthChart();
         }

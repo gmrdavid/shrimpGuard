@@ -8,42 +8,8 @@
 
     <title>Alerts and Notifications | ShrimpGuard</title>
 
-        <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css?v=20261107_dark2') }}?v=20261107_dark1">
-        <script>
-        (function() {
-            var t = localStorage.getItem('shrimp_theme');
-            var isD = t === 'dark' || (!t && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-            var mode = isD ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-theme', mode);
-            document.documentElement.classList.add('theme-' + mode);
-        })();
-        var _lastShrimpToggle = 0;
-        function toggleShrimpTheme() {
-            var now = Date.now();
-            if (now - _lastShrimpToggle < 350) return;
-            _lastShrimpToggle = now;
-            if (window.ShrimpTheme && window.ShrimpTheme.toggleTheme) {
-                return window.ShrimpTheme.toggleTheme();
-            }
-            var cur = document.documentElement.getAttribute('data-theme') || (document.documentElement.classList.contains('theme-dark') ? 'dark' : 'light');
-            var next = cur === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', next);
-            document.documentElement.classList.remove('theme-dark', 'theme-light');
-            document.documentElement.classList.add('theme-' + next);
-            if (document.body) {
-                document.body.setAttribute('data-theme', next);
-                document.body.classList.remove('theme-dark', 'theme-light');
-                document.body.classList.add('theme-' + next);
-            }
-            try { localStorage.setItem('shrimp_theme', next); } catch(e) {}
-            var m = document.querySelector('meta[name="theme-color"]');
-            if (m) m.setAttribute('content', next === 'dark' ? '#0b1319' : '#126b4f');
-            var s = document.getElementById('theme-preference-select');
-            if (s) s.value = next;
-            window.dispatchEvent(new CustomEvent('shrimp-theme-change', { detail: { theme: next } }));
-        }
-    </script>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
 <body class="alerts-page">
@@ -167,17 +133,6 @@
             </div>
 
             <div class="header-info alerts-header-info">
-
-                                <button
-                    id="theme-toggle-btn"
-                    class="theme-toggle-btn"
-                    type="button"
-                    onclick="toggleShrimpTheme()"
-                    aria-label="Toggle dark mode"
-                    title="Toggle dark mode">
-                    <svg class="ui-icon theme-icon-moon" aria-hidden="true"><use href="#icon-moon"></use></svg>
-                    <svg class="ui-icon theme-icon-sun" aria-hidden="true"><use href="#icon-sun"></use></svg>
-                </button>
 
                 <button
                     id="notification-button"
@@ -572,10 +527,10 @@
                     <div id="recent-notifications-pagination" class="recent-notifications-pagination" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-top: 1px solid #e8edea; background: #fafcfb; font-size: 11px; color: #6a7c72;">
                         <span id="recent-page-info">Page 1 of 1</span>
                         <div style="display: flex; gap: 6px;">
-                            <button type="button" id="recent-prev-btn" class="recent-nav-btn" disabled class="recent-nav-btn">
+                            <button type="button" id="recent-prev-btn" class="recent-nav-btn" disabled style="padding: 4px 10px; border-radius: 6px; border: 1px solid #d2ded7; background: #fff; font-size: 11px; font-weight: 600; cursor: pointer; color: #1e3a2b;">
                                 ← Prev
                             </button>
-                            <button type="button" id="recent-next-btn" class="recent-nav-btn" disabled class="recent-nav-btn">
+                            <button type="button" id="recent-next-btn" class="recent-nav-btn" disabled style="padding: 4px 10px; border-radius: 6px; border: 1px solid #d2ded7; background: #fff; font-size: 11px; font-weight: 600; cursor: pointer; color: #1e3a2b;">
                                 Next →
                             </button>
                         </div>
@@ -615,7 +570,6 @@
 
 </div>
 
-<script src="{{ url_for('static', filename='js/theme.js?v=20261107_dark2') }}?v=20261107_dark1"></script>
 <script src="{{ url_for('static', filename='js/alerts.js') }}"></script>
 <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
 

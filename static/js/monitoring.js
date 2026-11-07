@@ -319,9 +319,8 @@ function drawTrendChart(history) {
     context.clearRect(0, 0, width, height);
 
     // Horizontal grid lines and Y-axis scale
-    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
-    context.strokeStyle = isDark ? "rgba(255, 255, 255, 0.09)" : "#e8edea";
-    context.fillStyle = isDark ? "#8fa59b" : "#8a978f";
+    context.strokeStyle = "#e8edea";
+    context.fillStyle = "#8a978f";
     context.font = "600 11px Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
     context.lineWidth = 1;
 
@@ -760,11 +759,6 @@ setInterval(updateDeviceTime, 1000);
 loadMonitoringData();
 window.addEventListener("storage", loadMonitoringData);
 window.addEventListener("resize", () => {
-    if (currentHistory && currentHistory.length) {
-        drawTrendChart(currentHistory);
-    }
-});
-window.addEventListener("shrimp-theme-change", () => {
     if (currentHistory && currentHistory.length) {
         drawTrendChart(currentHistory);
     }

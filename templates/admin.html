@@ -8,42 +8,8 @@
     <meta name="theme-color" content="#126b4f">
     <title>User Management | ShrimpGuard</title>
 
-        <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css?v=20261107_dark2') }}?v=20261107_dark1">
-        <script>
-        (function() {
-            var t = localStorage.getItem('shrimp_theme');
-            var isD = t === 'dark' || (!t && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-            var mode = isD ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-theme', mode);
-            document.documentElement.classList.add('theme-' + mode);
-        })();
-        var _lastShrimpToggle = 0;
-        function toggleShrimpTheme() {
-            var now = Date.now();
-            if (now - _lastShrimpToggle < 350) return;
-            _lastShrimpToggle = now;
-            if (window.ShrimpTheme && window.ShrimpTheme.toggleTheme) {
-                return window.ShrimpTheme.toggleTheme();
-            }
-            var cur = document.documentElement.getAttribute('data-theme') || (document.documentElement.classList.contains('theme-dark') ? 'dark' : 'light');
-            var next = cur === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', next);
-            document.documentElement.classList.remove('theme-dark', 'theme-light');
-            document.documentElement.classList.add('theme-' + next);
-            if (document.body) {
-                document.body.setAttribute('data-theme', next);
-                document.body.classList.remove('theme-dark', 'theme-light');
-                document.body.classList.add('theme-' + next);
-            }
-            try { localStorage.setItem('shrimp_theme', next); } catch(e) {}
-            var m = document.querySelector('meta[name="theme-color"]');
-            if (m) m.setAttribute('content', next === 'dark' ? '#0b1319' : '#126b4f');
-            var s = document.getElementById('theme-preference-select');
-            if (s) s.value = next;
-            window.dispatchEvent(new CustomEvent('shrimp-theme-change', { detail: { theme: next } }));
-        }
-    </script>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
 <body class="dashboard-page admin-page">
@@ -136,17 +102,6 @@
                     <use href="#icon-plus"></use>
                 </svg>
                 <span>Add User</span>
-            </button>
-
-                        <button
-                id="theme-toggle-btn"
-                class="theme-toggle-btn"
-                type="button"
-                onclick="toggleShrimpTheme()"
-                aria-label="Toggle dark mode"
-                title="Toggle dark mode">
-                <svg class="ui-icon theme-icon-moon" aria-hidden="true"><use href="#icon-moon"></use></svg>
-                <svg class="ui-icon theme-icon-sun" aria-hidden="true"><use href="#icon-sun"></use></svg>
             </button>
 
             <button
@@ -1354,7 +1309,7 @@
             </div>
 
             <!-- PAGINATION (FIXED 10 PER PAGE) -->
-            <div id="user-pagination" class="admin-table-pagination">
+            <div id="user-pagination" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; border-top: 1px solid #edf1ee; background: #fbfdfc; flex-wrap: wrap; gap: 10px;">
                 <span id="user-page-info" style="font-size: 12px; font-weight: 600; color: #64796b;">Showing accounts...</span>
                 <div style="display: flex; gap: 8px; align-items: center;">
                     <button type="button" id="user-prev-btn" class="activity-page-btn prev-btn" style="padding: 4px 10px; font-size: 11px;">Prev</button>
@@ -1386,7 +1341,6 @@
 
 </div>
 
-<script src="{{ url_for('static', filename='js/theme.js?v=20261107_dark2') }}?v=20261107_dark1"></script>
 <script src="{{ url_for('static', filename='js/admindashboard.js') }}"></script>
 <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
 <script src="{{ url_for('static', filename='js/adminlogout.js') }}"></script>
