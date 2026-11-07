@@ -821,15 +821,6 @@ def get_system_devices_inventory():
             "last_seen": last_seen_str,
             "details": "Continuous Pond Unit Power Rail",
         },
-        {
-            "id": "SYS-01",
-            "name": "Decision Tree Water Quality Classifier",
-            "type": "Embedded Machine Learning Engine",
-            "category": "Processing",
-            "status": "Online",
-            "last_seen": last_seen_str,
-            "details": "Real-time Multi-parameter Prediction",
-        },
     ]
 
     total_devices = len(devices_list)

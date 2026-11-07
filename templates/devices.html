@@ -201,7 +201,7 @@
                     <div class="metric-card-content">
                         <h3>Total Devices</h3>
                         <div class="metric-reading">
-                            <h2 id="top-total-devices">{{ total_devices or 9 }}</h2>
+                            <h2 id="top-total-devices">{{ total_devices or 8 }}</h2>
                             <span class="metric-unit">Units</span>
                         </div>
                         <p class="metric-status">All Monitored Hardware Units</p>
@@ -223,7 +223,7 @@
                     <div class="metric-card-content">
                         <h3>Online Devices</h3>
                         <div class="metric-reading">
-                            <h2 id="top-online-devices" style="color: #059669;">{{ online_devices or 8 }}</h2>
+                            <h2 id="top-online-devices" style="color: #059669;">{{ online_devices or 7 }}</h2>
                             <span class="metric-unit">Online</span>
                         </div>
                         <p class="metric-status">Operational &amp; Broadcasting</p>
@@ -349,7 +349,7 @@
                             </div>
                         </div>
                         <span id="table-device-count-badge" class="badge badge-optimal" style="font-weight: 700; font-size: 12px; padding: 5px 12px;">
-                            {{ total_devices or 9 }} Monitored Units
+                            {{ total_devices or 8 }} Monitored Units
                         </span>
                     </div>
 
@@ -357,19 +357,15 @@
                         <table class="devices-table">
                             <thead>
                                 <tr>
-                                    <th scope="col" style="width: 110px;">ID</th>
                                     <th scope="col">Device Name</th>
-                                    <th scope="col" style="width: 220px;">Type</th>
-                                    <th scope="col" style="width: 130px;">Status</th>
-                                    <th scope="col" style="width: 140px;">Last Seen</th>
+                                    <th scope="col" style="width: 240px;">Type</th>
+                                    <th scope="col" style="width: 140px;">Status</th>
+                                    <th scope="col" style="width: 160px;">Last Seen</th>
                                 </tr>
                             </thead>
                             <tbody id="devices-table-body">
                                 {% for dev in devices_list %}
                                 <tr>
-                                    <td>
-                                        <span class="device-id-code">{{ dev.id }}</span>
-                                    </td>
                                     <td>
                                         <div class="device-cell-meta">
                                             <span class="device-cell-name">{{ dev.name }}</span>
@@ -398,7 +394,7 @@
                                 </tr>
                                 {% else %}
                                 <tr>
-                                    <td colspan="5" style="text-align: center; padding: 24px; color: #64748b;">
+                                    <td colspan="4" style="text-align: center; padding: 24px; color: #64748b;">
                                         Loading device inventory...
                                     </td>
                                 </tr>
@@ -425,20 +421,20 @@
 
                         <div class="status-ratio-box">
                             <div class="status-ratio-number">
-                                <span id="side-ratio-online">{{ online_devices or 8 }}</span>/<span id="side-ratio-total">{{ total_devices or 9 }}</span>
+                                <span id="side-ratio-online">{{ online_devices or 7 }}</span>/<span id="side-ratio-total">{{ total_devices or 8 }}</span>
                             </div>
                             <p id="side-ratio-text" class="status-ratio-subtitle">
-                                {{ online_devices or 8 }} online and {{ offline_devices or 1 }} offline
+                                {{ online_devices or 7 }} online and {{ offline_devices or 1 }} offline
                             </p>
 
                             <div class="device-progress-track" style="height: 7px; background: #e5ece7; border-radius: 999px; overflow: hidden; margin-bottom: 14px;">
-                                <div id="side-progress-fill" style="height: 100%; background: #126b4f; border-radius: 999px; transition: width 0.3s ease; width: {% if total_devices %}{{ (online_devices / total_devices * 100)|round(1) }}{% else %}88.9{% endif %}%;"></div>
+                                <div id="side-progress-fill" style="height: 100%; background: #126b4f; border-radius: 999px; transition: width 0.3s ease; width: {% if total_devices %}{{ (online_devices / total_devices * 100)|round(1) }}{% else %}87.5{% endif %}%;"></div>
                             </div>
 
                             <div class="status-ratio-pills">
                                 <span class="table-status status-optimal" style="font-size: 11.5px; padding: 4px 10px;">
                                     <span class="status-indicator-dot dot-optimal"></span>
-                                    Online: <strong id="side-pill-online">{{ online_devices or 8 }}</strong>
+                                    Online: <strong id="side-pill-online">{{ online_devices or 7 }}</strong>
                                 </span>
                                 <span class="table-status status-warning" style="font-size: 11.5px; padding: 4px 10px;">
                                     <span class="status-indicator-dot dot-warning"></span>

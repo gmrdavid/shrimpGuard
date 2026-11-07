@@ -65,8 +65,8 @@ function renderDevices(data) {
     const isConnected = Boolean(data.is_connected);
     const port = data.connected_port || "COM8";
     const latest = data.latest_telemetry || {};
-    const total = data.total_devices || (Array.isArray(data.devices) ? data.devices.length : 9);
-    const online = data.online_devices !== undefined ? data.online_devices : 8;
+    const total = data.total_devices || (Array.isArray(data.devices) ? data.devices.length : 8);
+    const online = data.online_devices !== undefined ? data.online_devices : 7;
     const offline = data.offline_devices !== undefined ? data.offline_devices : 1;
     const sensors = data.connected_sensors !== undefined ? data.connected_sensors : 2;
 
@@ -182,9 +182,6 @@ function renderDevices(data) {
             const dotClass = isDevOnline ? "dot-optimal" : "dot-warning";
 
             tr.innerHTML = `
-                <td>
-                    <span class="device-id-code">${dev.id}</span>
-                </td>
                 <td>
                     <div class="device-cell-meta">
                         <span class="device-cell-name">${dev.name}</span>
