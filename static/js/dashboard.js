@@ -51,9 +51,10 @@ function displayResults(data) {
     const streamBadge = document.getElementById("telemetry-stream-badge");
     const streamBadgeText = document.getElementById("telemetry-badge-text");
     if (streamBadge && streamBadgeText) {
-        if (secondsAgo <= 20) {
+        if (data.is_connected || secondsAgo <= 25) {
             streamBadge.className = "telemetry-live-badge badge-active";
-            streamBadgeText.textContent = "RECEIVING SENSOR DATA";
+            const portName = data.connected_port ? ` (${data.connected_port})` : "";
+            streamBadgeText.textContent = `RECEIVING SENSOR DATA${portName}`;
             const dot = streamBadge.querySelector(".status-indicator-dot");
             if (dot) dot.className = "status-indicator-dot dot-optimal";
         } else {

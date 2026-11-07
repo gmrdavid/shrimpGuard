@@ -649,11 +649,36 @@ def latest_reading():
     except SQLAlchemyError:
         db.session.rollback()
         app.logger.exception("Unable to load the latest sensor reading.")
-        return jsonify({"error": "Unable to load sensor readings."}), 503
+        readings = []
+
+    from hardware_serial import LATEST_HARDWARE_STREAM
+
     if not readings:
+        if LATEST_HARDWARE_STREAM.get("temperature") is not None:
+            reading_dict = {
+                "temperature": LATEST_HARDWARE_STREAM["temperature"],
+                "ph_level": LATEST_HARDWARE_STREAM["ph"],
+                "date": LATEST_HARDWARE_STREAM["recorded_at"],
+                "status": LATEST_HARDWARE_STREAM["status"] or "Optimal",
+            }
+            res = serialize_sensor_reading(reading_dict)
+            res["is_connected"] = LATEST_HARDWARE_STREAM.get("is_connected", False)
+            res["connected_port"] = LATEST_HARDWARE_STREAM.get("connected_port")
+            return jsonify(res)
         return jsonify(None)
+
     latest = max(readings, key=parse_reading_datetime)
-    return jsonify(serialize_sensor_reading(latest))
+    res = serialize_sensor_reading(latest)
+    res["is_connected"] = LATEST_HARDWARE_STREAM.get("is_connected", False)
+    res["connected_port"] = LATEST_HARDWARE_STREAM.get("connected_port")
+    return jsonify(res)
+
+
+@app.route("/api/hardware/status")
+@role_required("Client")
+def hardware_status():
+    from hardware_serial import LATEST_HARDWARE_STREAM
+    return jsonify(LATEST_HARDWARE_STREAM)
 
 
 @app.route("/api/wqi/calculate", methods=["GET", "POST"])
@@ -2818,5 +2843,29 @@ def calculator_ai_insight():
         return jsonify({"error": "Failed to generate AI evaluation.", "details": str(exc)}), 500
 
 
+def start_lora_hardware_service():
+    """Automatically connects to Node 2 LoRa receiver and syncs live readings into database."""
+    try:
+        from hardware_serial import start_hardware_listener
+        start_hardware_listener(
+            app=app,
+            db=db,
+            sensor_readings_table=sensor_readings,
+            calculate_ml_fn=calculate_ml_water_quality_analysis,
+            ntfy_dispatch_fn=_async_dispatch_ntfy,
+            user_model=User,
+        )
+        app.logger.info("Automatic LoRa hardware listener daemon spawned successfully.")
+    except Exception as exc:
+        app.logger.warning("Could not start LoRa hardware listener: %s", exc)
+
+
+# Start hardware listener when running under reloader worker or non-debug
+if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or os.environ.get("FLASK_RUN_FROM_CLI") == "true" or not app.debug:
+    start_lora_hardware_service()
+
+
 if __name__ == "__main__":
+    if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        start_lora_hardware_service()
     app.run(debug=True)
