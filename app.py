@@ -13,7 +13,7 @@ from xml.sax.saxutils import escape
 
 from flask import Flask, flash, has_request_context, jsonify, redirect, render_template, request, send_file, session, url_for
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import func, insert, select, text
+from sqlalchemy import func, insert, select, text, update
 from sqlalchemy.engine import URL
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -78,13 +78,18 @@ def get_database_uri():
 
 app.config["SQLALCHEMY_DATABASE_URI"] = get_database_uri()
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_pre_ping": True,
-    "pool_size": 25,
-    "max_overflow": 50,
-    "pool_recycle": 1800,
-    "pool_timeout": 30,
-}
+if "sqlite" not in app.config["SQLALCHEMY_DATABASE_URI"]:
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_pre_ping": True,
+        "pool_size": 25,
+        "max_overflow": 50,
+        "pool_recycle": 1800,
+        "pool_timeout": 30,
+    }
+else:
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_pre_ping": True,
+    }
 
 db = SQLAlchemy(app)
 
@@ -445,7 +450,14 @@ def serialize_sensor_reading(reading):
     }
 
 
-def role_required(required_role):
+def role_required(*allowed_roles):
+    valid_roles = set()
+    for r in allowed_roles:
+        if isinstance(r, (list, tuple, set)):
+            valid_roles.update(item.strip().casefold() for item in r)
+        elif r:
+            valid_roles.add(str(r).strip().casefold())
+
     def decorate(view):
         @wraps(view)
         def wrapped(*args, **kwargs):
@@ -479,7 +491,7 @@ def role_required(required_role):
                 return redirect(url_for("login"))
 
             actual_role = user.role.strip().casefold()
-            if actual_role != required_role.casefold():
+            if actual_role not in valid_roles:
                 if request.is_json or request.path.startswith("/api/"):
                     return jsonify({"error": "Insufficient permissions for this endpoint."}), 403
                 if actual_role == "admin":
@@ -547,7 +559,7 @@ def _async_dispatch_ntfy(status, temperature, ph, topics):
 
 
 @app.route("/api/readings", methods=["POST"])
-@role_required("Client")
+@role_required("Client", "Admin")
 def create_reading():
     payload = request.get_json(silent=True) or {}
     required_fields = ["temperature", "ph"]
@@ -646,7 +658,7 @@ def create_reading():
 
 
 @app.route("/api/readings/latest")
-@role_required("Client")
+@role_required("Client", "Admin")
 def latest_reading():
     latest_reading_dict = None
     try:
@@ -680,14 +692,14 @@ def latest_reading():
 
 
 @app.route("/api/hardware/status")
-@role_required("Client")
+@role_required("Client", "Admin")
 def hardware_status():
     from hardware_serial import LATEST_HARDWARE_STREAM
     return jsonify(LATEST_HARDWARE_STREAM)
 
 
 @app.route("/api/wqi/calculate", methods=["GET", "POST"])
-@role_required("Client")
+@role_required("Client", "Admin")
 def calculate_wqi_endpoint():
     """
     Calculates Water Quality Index (WQI), individual parameter statuses,
@@ -723,7 +735,7 @@ def calculate_wqi_endpoint():
 
 
 @app.route("/api/recommendations", methods=["POST"])
-@role_required("Client")
+@role_required("Client", "Admin")
 def create_recommendation():
     payload = request.get_json(silent=True) or {}
     if "temperature" not in payload or "ph" not in payload:
@@ -745,7 +757,7 @@ def create_recommendation():
 
 
 @app.route("/api/readings/history")
-@role_required("Client")
+@role_required("Client", "Admin")
 def reading_history():
     try:
         readings = db.session.execute(
@@ -1004,7 +1016,7 @@ def get_alerts():
 
 
 @app.route("/historical/export")
-@role_required("Client")
+@role_required("Client", "Admin")
 def export_historical_data():
     target_date = request.args.get("date", "all").strip()
     target_status = request.args.get("status", "all").strip().lower()
@@ -1375,13 +1387,37 @@ def edit_user():
     elif session.get("user_id") == current_email and (role != "Admin" or status != "Active"):
         flash("You cannot remove Admin access from your current account.", "error")
     else:
-        user.user_name = user_name
-        user.email = email
-        user.role = role
-        user.status = status
-        if new_password:
-            user.set_password(new_password)
         try:
+            if email != current_email:
+                new_pwd_hash = generate_password_hash(new_password) if new_password else user.password_hash
+                db.session.expunge(user)
+                db.session.execute(
+                    update(User)
+                    .where(User.email == current_email)
+                    .values(
+                        user_name=user_name,
+                        email=email,
+                        role=role,
+                        status=status,
+                        password_hash=new_pwd_hash,
+                    )
+                )
+                db.session.execute(
+                    update(ActivityLog)
+                    .where(ActivityLog.user_email == current_email)
+                    .values(user_email=email)
+                )
+                db.session.execute(
+                    update(AquacultureCalculation)
+                    .where(AquacultureCalculation.user_email == current_email)
+                    .values(user_email=email)
+                )
+            else:
+                user.user_name = user_name
+                user.role = role
+                user.status = status
+                if new_password:
+                    user.set_password(new_password)
             db.session.commit()
         except SQLAlchemyError:
             db.session.rollback()

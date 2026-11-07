@@ -1308,6 +1308,16 @@
                 </table>
             </div>
 
+            <!-- PAGINATION (FIXED 10 PER PAGE) -->
+            <div id="user-pagination" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; border-top: 1px solid #edf1ee; background: #fbfdfc; flex-wrap: wrap; gap: 10px;">
+                <span id="user-page-info" style="font-size: 12px; font-weight: 600; color: #64796b;">Showing accounts...</span>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button type="button" id="user-prev-btn" class="activity-page-btn prev-btn" style="padding: 4px 10px; font-size: 11px;">Prev</button>
+                    <span id="user-current-page" style="font-size: 12px; font-weight: 700; color: #1e3a2b;">Page 1 of 1</span>
+                    <button type="button" id="user-next-btn" class="activity-page-btn next-btn" style="padding: 4px 10px; font-size: 11px;">Next</button>
+                </div>
+            </div>
+
             <div class="panel-card-footer">
                 <span class="metric-footer-dot"></span>
                 <span>Use the action buttons to view, edit, or delete registered user accounts</span>

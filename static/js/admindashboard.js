@@ -159,7 +159,7 @@
         });
     });
 
-    // SEARCH, FILTER, SORT & RESET
+    // SEARCH, FILTER, SORT & 10-ITEM PAGINATION
     const search = get("user-search");
     const roleFilter = get("user-role-filter");
     const statusFilter = get("user-status-filter");
@@ -172,11 +172,103 @@
     const userCount = get("user-count");
     const noUsersRow = get("no-users-row");
 
+    const pageInfo = get("user-page-info");
+    const currentPageLabel = get("user-current-page");
+    const prevBtn = get("user-prev-btn");
+    const nextBtn = get("user-next-btn");
+
+    let currentPage = 1;
+    const itemsPerPage = 10;
+    let filteredUsers = rows.slice();
+
+    function renderUserPagination() {
+        const total = filteredUsers.length;
+        const totalPages = Math.ceil(total / itemsPerPage) || 1;
+
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+
+        const startIdx = (currentPage - 1) * itemsPerPage;
+        const endIdx = startIdx + itemsPerPage;
+
+        // Hide all rows first
+        rows.forEach((r) => {
+            r.hidden = true;
+        });
+
+        // Show only rows belonging to current page
+        filteredUsers.forEach((r, idx) => {
+            if (idx >= startIdx && idx < endIdx) {
+                r.hidden = false;
+            } else {
+                r.hidden = true;
+            }
+        });
+
+        if (pageInfo) {
+            if (total === 0) {
+                pageInfo.textContent = "Showing 0 accounts";
+            } else {
+                const actualEnd = Math.min(endIdx, total);
+                pageInfo.textContent = `Showing ${startIdx + 1}–${actualEnd} of ${total} account${total === 1 ? "" : "s"}`;
+            }
+        }
+
+        if (currentPageLabel) {
+            currentPageLabel.textContent = `Page ${currentPage} of ${totalPages}`;
+        }
+
+        if (prevBtn) {
+            prevBtn.disabled = currentPage <= 1;
+        }
+        if (nextBtn) {
+            nextBtn.disabled = currentPage >= totalPages;
+        }
+
+        if (emptyRow) {
+            emptyRow.hidden = rows.length === 0 || total > 0;
+        }
+
+        if (noUsersRow) {
+            noUsersRow.hidden = rows.length > 0;
+        }
+
+        if (userCount) {
+            userCount.innerHTML = `<strong>${total}</strong> account${total === 1 ? "" : "s"}`;
+        }
+    }
+
+    function sortUsers() {
+        if (!tbody || !sortSelect) return;
+        const mode = sortSelect.value;
+
+        filteredUsers.sort((a, b) => {
+            const nameA = (a.dataset.name || "").toLowerCase();
+            const nameB = (b.dataset.name || "").toLowerCase();
+            const emailA = (a.dataset.email || "").toLowerCase();
+            const emailB = (b.dataset.email || "").toLowerCase();
+            const roleA = (a.dataset.role || "").toLowerCase();
+            const roleB = (b.dataset.role || "").toLowerCase();
+            const statusA = (a.dataset.status || "").toLowerCase();
+            const statusB = (b.dataset.status || "").toLowerCase();
+
+            if (mode === "name-asc") return nameA.localeCompare(nameB);
+            if (mode === "name-desc") return nameB.localeCompare(nameA);
+            if (mode === "email-asc") return emailA.localeCompare(emailB);
+            if (mode === "role-admin") return roleB.localeCompare(roleA); // 'admin' before 'client'
+            if (mode === "status-active") return statusA.localeCompare(statusB); // 'active' before 'inactive'
+            return 0;
+        });
+
+        filteredUsers.forEach((r) => tbody.appendChild(r));
+        if (emptyRow) tbody.appendChild(emptyRow);
+        if (noUsersRow) tbody.appendChild(noUsersRow);
+    }
+
     function filterUsers() {
         const query = search ? search.value.trim().toLowerCase() : "";
-        let visibleCount = 0;
 
-        rows.forEach((row) => {
+        filteredUsers = rows.filter((row) => {
             const name = (row.dataset.name || "").toLowerCase();
             const email = (row.dataset.email || "").toLowerCase();
             const role = (row.dataset.role || "").toLowerCase();
@@ -198,54 +290,12 @@
                 statusFilter.value === "all" ||
                 status === statusFilter.value.toLowerCase();
 
-            const visible = matchesText && matchesRole && matchesStatus;
-            row.hidden = !visible;
-
-            if (visible) {
-                visibleCount++;
-            }
+            return matchesText && matchesRole && matchesStatus;
         });
-
-        if (emptyRow) {
-            emptyRow.hidden = rows.length === 0 || visibleCount > 0;
-        }
-
-        if (noUsersRow) {
-            noUsersRow.hidden = rows.length > 0;
-        }
-
-        if (userCount) {
-            userCount.innerHTML = `<strong>${visibleCount}</strong> account${visibleCount === 1 ? "" : "s"}`;
-        }
 
         sortUsers();
-    }
-
-    function sortUsers() {
-        if (!tbody || !sortSelect) return;
-        const mode = sortSelect.value;
-
-        const sorted = rows.slice().sort((a, b) => {
-            const nameA = (a.dataset.name || "").toLowerCase();
-            const nameB = (b.dataset.name || "").toLowerCase();
-            const emailA = (a.dataset.email || "").toLowerCase();
-            const emailB = (b.dataset.email || "").toLowerCase();
-            const roleA = (a.dataset.role || "").toLowerCase();
-            const roleB = (b.dataset.role || "").toLowerCase();
-            const statusA = (a.dataset.status || "").toLowerCase();
-            const statusB = (b.dataset.status || "").toLowerCase();
-
-            if (mode === "name-asc") return nameA.localeCompare(nameB);
-            if (mode === "name-desc") return nameB.localeCompare(nameA);
-            if (mode === "email-asc") return emailA.localeCompare(emailB);
-            if (mode === "role-admin") return roleB.localeCompare(roleA); // 'admin' before 'client'
-            if (mode === "status-active") return statusA.localeCompare(statusB); // 'active' before 'inactive'
-            return 0;
-        });
-
-        sorted.forEach((r) => tbody.appendChild(r));
-        if (emptyRow) tbody.appendChild(emptyRow);
-        if (noUsersRow) tbody.appendChild(noUsersRow);
+        currentPage = 1;
+        renderUserPagination();
     }
 
     if (search) {
@@ -258,7 +308,27 @@
         statusFilter.addEventListener("change", filterUsers);
     }
     if (sortSelect) {
-        sortSelect.addEventListener("change", sortUsers);
+        sortSelect.addEventListener("change", () => {
+            sortUsers();
+            renderUserPagination();
+        });
+    }
+    if (prevBtn) {
+        prevBtn.addEventListener("click", () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderUserPagination();
+            }
+        });
+    }
+    if (nextBtn) {
+        nextBtn.addEventListener("click", () => {
+            const totalPages = Math.ceil(filteredUsers.length / itemsPerPage) || 1;
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderUserPagination();
+            }
+        });
     }
     if (resetBtn) {
         resetBtn.addEventListener("click", () => {

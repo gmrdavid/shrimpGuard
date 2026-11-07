@@ -151,7 +151,7 @@
             <!-- GATEWAY STATUS -->
             <article class="card dashboard-metric-card system-card">
                 <div class="metric-card-top">
-                    <div class="metric-icon {% if gateway_online %}system-icon-online{% else %}system-icon-offline{% endif %}">
+                    <div id="admin-gateway-icon" class="metric-icon {% if gateway_online %}system-icon-online{% else %}system-icon-offline{% endif %}">
                         <svg class="ui-icon" aria-hidden="true">
                             <use href="#icon-monitor"></use>
                         </svg>
@@ -161,9 +161,9 @@
                 <div class="metric-card-content">
                     <h3>LoRa Serial Gateway</h3>
                     <div class="metric-reading">
-                        <h2>{{ "Online" if gateway_online else "Standby" }}</h2>
+                        <h2 id="admin-gateway-status-text">{{ "Online" if gateway_online else "Standby" }}</h2>
                     </div>
-                    <p class="metric-status {% if gateway_online %}status-optimal{% else %}status-warning{% endif %}">
+                    <p id="admin-gateway-desc" class="metric-status {% if gateway_online %}status-optimal{% else %}status-warning{% endif %}">
                         {% if hw_connected %}
                             {{ hardware_stream.connected_port or "COM8" }} Serial Bridge Active
                         {% elif gateway_online %}
@@ -242,7 +242,7 @@
                 <div class="metric-card-content">
                     <h3>Recent Reading</h3>
                     <div class="metric-reading">
-                        <h2 style="font-size: 20px;">
+                        <h2 id="admin-latest-reading-text" style="font-size: 20px;">
                             {% if latest_reading and latest_reading.temperature is defined and latest_reading.temperature is not none %}
                                 {{ "%.2f"|format(latest_reading.temperature|float) }}°C · pH {{ "%.2f"|format(latest_reading.ph|float) }}
                             {% else %}
@@ -250,13 +250,13 @@
                             {% endif %}
                         </h2>
                     </div>
-                    <p class="metric-status {% if latest_reading and latest_reading.status == 'Optimal' %}status-optimal{% elif latest_reading and latest_reading.status == 'Warning' %}status-warning{% else %}status-critical{% endif %}">
+                    <p id="admin-latest-reading-status" class="metric-status {% if latest_reading and latest_reading.status == 'Optimal' %}status-optimal{% elif latest_reading and latest_reading.status == 'Warning' %}status-warning{% else %}status-critical{% endif %}">
                         {{ latest_reading.status if latest_reading else "No telemetry yet" }}
                     </p>
                 </div>
                 <div class="metric-card-footer">
                     <span class="metric-footer-dot"></span>
-                    <span>WQI Score: {{ latest_reading.wqi_score if latest_reading else "--" }}%</span>
+                    <span id="admin-latest-reading-wqi">WQI Score: {{ latest_reading.wqi_score if latest_reading else "--" }}%</span>
                 </div>
             </article>
 
@@ -907,6 +907,61 @@
 
         applyTelemetryFilters();
     })();
+
+    // Live Gateway & Telemetry Polling (Every 4 seconds)
+    function pollAdminTelemetry() {
+        Promise.all([
+            fetch("/api/readings/latest").then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch("/api/hardware/status").then(r => r.ok ? r.json() : null).catch(() => null)
+        ]).then(([reading, hw]) => {
+            const gwText = document.getElementById("admin-gateway-status-text");
+            const gwDesc = document.getElementById("admin-gateway-desc");
+            const gwIcon = document.getElementById("admin-gateway-icon");
+            const readText = document.getElementById("admin-latest-reading-text");
+            const readStatus = document.getElementById("admin-latest-reading-status");
+            const readWqi = document.getElementById("admin-latest-reading-wqi");
+
+            const isHwConnected = hw && hw.is_connected;
+            const isGwOnline = isHwConnected || (reading && reading.is_connected);
+
+            if (gwText) {
+                gwText.textContent = isGwOnline ? "Online" : "Standby";
+            }
+            if (gwIcon) {
+                gwIcon.className = `metric-icon ${isGwOnline ? "system-icon-online" : "system-icon-offline"}`;
+            }
+            if (gwDesc) {
+                if (isHwConnected) {
+                    gwDesc.textContent = `${hw.connected_port || "COM8"} Serial Bridge Active`;
+                    gwDesc.className = "metric-status status-optimal";
+                } else if (isGwOnline) {
+                    gwDesc.textContent = "Receiving sensor telemetry";
+                    gwDesc.className = "metric-status status-optimal";
+                } else {
+                    gwDesc.textContent = "Waiting for Node 2 serial bridge";
+                    gwDesc.className = "metric-status status-warning";
+                }
+            }
+
+            if (reading && reading.temperature !== null && reading.temperature !== undefined) {
+                const temp = parseFloat(reading.temperature).toFixed(2);
+                const ph = parseFloat(reading.ph || reading.ph_level).toFixed(2);
+                if (readText) {
+                    readText.textContent = `${temp}°C · pH ${ph}`;
+                }
+                if (readStatus) {
+                    const st = reading.status || "Optimal";
+                    readStatus.textContent = st;
+                    readStatus.className = `metric-status ${st === "Optimal" ? "status-optimal" : (st === "Warning" ? "status-warning" : "status-critical")}`;
+                }
+                if (readWqi) {
+                    readWqi.textContent = `WQI Score: ${reading.wqi_score ?? "--"}%`;
+                }
+            }
+        }).catch(() => {});
+    }
+
+    setInterval(pollAdminTelemetry, 4000);
 </script>
 
 </body>
