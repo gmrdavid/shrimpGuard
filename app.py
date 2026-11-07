@@ -78,7 +78,13 @@ def get_database_uri():
 
 app.config["SQLALCHEMY_DATABASE_URI"] = get_database_uri()
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_pre_ping": True,
+    "pool_size": 25,
+    "max_overflow": 50,
+    "pool_recycle": 1800,
+    "pool_timeout": 30,
+}
 
 db = SQLAlchemy(app)
 
@@ -642,33 +648,32 @@ def create_reading():
 @app.route("/api/readings/latest")
 @role_required("Client")
 def latest_reading():
+    latest_reading_dict = None
     try:
-        readings = db.session.execute(
-            select(sensor_readings)
-        ).mappings().all()
+        latest_row = db.session.execute(
+            select(sensor_readings).order_by(sensor_readings.c.date.desc()).limit(1)
+        ).mappings().first()
+        if latest_row:
+            latest_reading_dict = dict(latest_row)
     except SQLAlchemyError:
         db.session.rollback()
         app.logger.exception("Unable to load the latest sensor reading.")
-        readings = []
 
     from hardware_serial import LATEST_HARDWARE_STREAM
 
-    if not readings:
-        if LATEST_HARDWARE_STREAM.get("temperature") is not None:
-            reading_dict = {
-                "temperature": LATEST_HARDWARE_STREAM["temperature"],
-                "ph_level": LATEST_HARDWARE_STREAM["ph"],
-                "date": LATEST_HARDWARE_STREAM["recorded_at"],
-                "status": LATEST_HARDWARE_STREAM["status"] or "Optimal",
-            }
-            res = serialize_sensor_reading(reading_dict)
-            res["is_connected"] = LATEST_HARDWARE_STREAM.get("is_connected", False)
-            res["connected_port"] = LATEST_HARDWARE_STREAM.get("connected_port")
-            return jsonify(res)
+    if latest_reading_dict:
+        res = serialize_sensor_reading(latest_reading_dict)
+    elif LATEST_HARDWARE_STREAM.get("temperature") is not None:
+        reading_dict = {
+            "temperature": LATEST_HARDWARE_STREAM["temperature"],
+            "ph_level": LATEST_HARDWARE_STREAM["ph"],
+            "date": LATEST_HARDWARE_STREAM.get("recorded_at") or datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "status": LATEST_HARDWARE_STREAM.get("status") or "Optimal",
+        }
+        res = serialize_sensor_reading(reading_dict)
+    else:
         return jsonify(None)
 
-    latest = max(readings, key=parse_reading_datetime)
-    res = serialize_sensor_reading(latest)
     res["is_connected"] = LATEST_HARDWARE_STREAM.get("is_connected", False)
     res["connected_port"] = LATEST_HARDWARE_STREAM.get("connected_port")
     return jsonify(res)
@@ -832,6 +837,7 @@ def get_alerts():
         readings = db.session.execute(
             select(sensor_readings)
             .order_by(sensor_readings.c.date.desc())
+            .limit(100)
         ).mappings().all()
     except SQLAlchemyError:
         db.session.rollback()
@@ -1525,13 +1531,16 @@ def admin_telemetry():
     hw_connected = bool(hardware_stream.get("is_connected") or hardware_stream.get("connected"))
 
     try:
+        total_readings = db.session.execute(
+            select(func.count()).select_from(sensor_readings)
+        ).scalar() or 0
+
         readings_query = db.session.execute(
-            select(sensor_readings).order_by(sensor_readings.c.date.desc())
+            select(sensor_readings).order_by(sensor_readings.c.date.desc()).limit(100)
         ).mappings().all()
 
-        total_readings = len(readings_query)
         recent_serialized = [
-            serialize_sensor_reading(r) for r in readings_query[:100]
+            serialize_sensor_reading(r) for r in readings_query
         ]
         latest_reading = recent_serialized[0] if recent_serialized else None
 
@@ -2731,10 +2740,11 @@ def mark_alerts_read():
 
 def get_latest_sensor_dict():
     try:
-        readings = db.session.execute(select(sensor_readings)).mappings().all()
-        if not readings:
+        latest = db.session.execute(
+            select(sensor_readings).order_by(sensor_readings.c.date.desc()).limit(1)
+        ).mappings().first()
+        if not latest:
             return None
-        latest = max(readings, key=parse_reading_datetime)
         return {
             "temperature": float(latest["temperature"]),
             "ph": float(latest["ph_level"]),
