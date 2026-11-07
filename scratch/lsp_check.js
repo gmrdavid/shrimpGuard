@@ -2,7 +2,7 @@ const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const serverScript = 'C:\\Users\\gliam\\AppData\\Local\\Programs\\Microsoft VS Code\\6bab64e2d1\\resources\\app\\extensions\\html-language-features\\server\\dist\\node\\htmlServerMain.js';
+const serverScript = 'C:\\Users\\gliam\\AppData\\Local\\Programs\\Microsoft VS Code\\c4453f8ea4\\resources\\app\\extensions\\html-language-features\\server\\dist\\node\\htmlServerMain.js';
 
 const proc = spawn('node', [serverScript, '--stdio'], {
     stdio: ['pipe', 'pipe', 'inherit']

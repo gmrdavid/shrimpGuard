@@ -428,7 +428,7 @@
                             </p>
 
                             <div class="device-progress-track" style="height: 7px; background: #e5ece7; border-radius: 999px; overflow: hidden; margin-bottom: 14px;">
-                                <div id="side-progress-fill" style="height: 100%; background: #126b4f; border-radius: 999px; transition: width 0.3s ease; width: {% if total_devices and total_devices > 0 %}{{ (online_devices / total_devices * 100)|round(1) }}{% else %}0.0{% endif %}%;"></div>
+                                <div id="side-progress-fill" style="height: 100%; background: #126b4f; border-radius: 999px; transition: width 0.3s ease; width: 0%;" data-initial-width="{{ (online_devices / total_devices * 100)|round(1) if total_devices and total_devices > 0 else 0 }}%"></div>
                             </div>
 
                             <div class="status-ratio-pills">
