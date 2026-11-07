@@ -200,6 +200,41 @@ def detect_receiver_port():
     return None
 
 
+def scan_and_reconnect_port():
+    """
+    Scans available COM ports to locate the Node 2 LoRa receiver.
+    Returns status dictionary with detection outcome.
+    """
+    configured_port = os.getenv("LORA_PORT", "COM8")
+
+    # If already connected, report current port
+    if LATEST_HARDWARE_STREAM.get("is_connected"):
+        active_port = LATEST_HARDWARE_STREAM.get("connected_port") or configured_port
+        return {
+            "success": True,
+            "port": active_port,
+            "is_connected": True,
+            "message": f"Hardware Gateway is currently active on {active_port} at 115200 baud.",
+        }
+
+    port = detect_receiver_port()
+    if port:
+        LATEST_HARDWARE_STREAM["connected_port"] = port
+        return {
+            "success": True,
+            "port": port,
+            "is_connected": LATEST_HARDWARE_STREAM.get("is_connected", False),
+            "message": f"Successfully detected available hardware gateway port on {port}.",
+        }
+
+    return {
+        "success": False,
+        "port": None,
+        "is_connected": False,
+        "message": "No active LoRa receiver detected on scanned ports (COM8, COM5, COM3-10). Check USB cable or close serial monitors.",
+    }
+
+
 def _run_listener_loop(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dispatch_fn, user_model):
     """Background worker thread that reads from Node 2 LoRa Receiver and writes to DB."""
     logger.info("[HardwareSerial] Background LoRa listener thread started.")

@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#126b4f">
+
+    <title>Devices &amp; Hardware Management | ShrimpGuard</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="dashboard-page devices-page">
+
+{% include "_icon_sprite.html" %}
+
+<div class="dashboard-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar dashboard-sidebar">
+
+        <a href="/dashboard" class="logo dashboard-logo" aria-label="ShrimpGuard dashboard">
+            <span class="dashboard-logo-mark">
+                <svg class="ui-icon brand-icon" aria-hidden="true">
+                    <use href="#icon-shrimp"></use>
+                </svg>
+            </span>
+            <span>ShrimpGuard</span>
+        </a>
+
+        <p class="subtitle">Water Quality Monitoring</p>
+
+        <div class="sidebar-section-label">MAIN MENU</div>
+
+        <nav class="dashboard-nav" aria-label="Main navigation">
+
+            <a href="/dashboard">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-dashboard"></use>
+                </svg>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="/monitoring">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-monitor"></use>
+                </svg>
+                <span>Real-time Monitoring</span>
+            </a>
+
+            <a href="/devices" class="active" aria-current="page">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-cpu"></use>
+                </svg>
+                <span>Devices &amp; Hardware</span>
+            </a>
+
+            <a href="/historical">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-history"></use>
+                </svg>
+                <span>Historical Data</span>
+            </a>
+
+            <a href="/analytics">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-chart"></use>
+                </svg>
+                <span>Analytics &amp; Reports</span>
+            </a>
+
+            <a href="/alerts">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-alert"></use>
+                </svg>
+                <span>Alerts and Notifications</span>
+            </a>
+
+            <a href="/calculators">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-calculator"></use>
+                </svg>
+                <span>Tools and Calculators</span>
+            </a>
+
+            <a href="/settings">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-settings"></use>
+                </svg>
+                <span>Settings</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="sidebar-help">
+                <span class="sidebar-help-icon">
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-cpu"></use>
+                    </svg>
+                </span>
+                <div>
+                    <strong>Hardware Control</strong>
+                    <p>Node 1 &amp; 2 IoT Telemetry</p>
+                </div>
+            </div>
+
+            {% include "userlogout.html" %}
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content dashboard-main">
+
+        <!-- TOP HEADER -->
+        <header class="dashboard-header">
+
+            <div class="dashboard-heading">
+                <div class="dashboard-eyebrow">
+                    <span class="eyebrow-dot"></span>
+                    HARDWARE &amp; SENSOR INFRASTRUCTURE
+                </div>
+
+                <h1>Devices &amp; Hardware Management</h1>
+
+                <p>
+                    Monitor physical sensor probes, LoRa RF link health, USB-UART serial gateway status, and run real-time hardware diagnostics.
+                </p>
+            </div>
+
+            <div class="header-info dashboard-header-info">
+
+                <button
+                    id="notification-button"
+                    class="notification-button"
+                    type="button"
+                    aria-label="View notifications"
+                    title="View notifications">
+
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-bell"></use>
+                    </svg>
+
+                </button>
+
+                <div class="dashboard-date-time">
+                    <span class="date-time-label">LOCAL TIME</span>
+                    <span id="time" class="time-value">Loading time...</span>
+                </div>
+
+            </div>
+
+        </header>
+
+        <!-- FLASH NOTICES -->
+        <div id="devices-alert-banner" class="devices-banner-notice" style="display: none;" role="status">
+            <svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
+            <span id="devices-alert-msg"></span>
+        </div>
+
+        <!-- HARDWARE TELEMETRY & CONTROL STRIP -->
+        <section class="dashboard-section devices-sync-section" aria-labelledby="hw-control-heading">
+
+            <div class="tools-sync-banner devices-sync-banner">
+                <div class="sync-banner-info">
+                    <div class="sync-banner-icon">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-cpu"></use>
+                        </svg>
+                    </div>
+                    <div>
+                        <span class="tools-eyebrow">PHYSICAL IOT INFRASTRUCTURE</span>
+                        <h2 id="hw-control-heading">Active Hardware Stream &amp; Gateway</h2>
+                    </div>
+                </div>
+
+                <div class="sync-telemetry-badges">
+                    <div class="telemetry-badge">
+                        <span class="telemetry-label">GATEWAY SERIAL BRIDGE</span>
+                        <span id="badge-gw-status" class="telemetry-value {% if hw_connected %}telemetry-status-optimal{% else %}telemetry-status-warning{% endif %}">
+                            {{ "Online" if hw_connected else "Standby" }}
+                        </span>
+                        <span id="badge-gw-port" class="telemetry-substatus">
+                            {{ hardware_stream.connected_port or "COM8" if hardware_stream and hardware_stream.connected_port else "COM8" }} (115200 baud)
+                        </span>
+                    </div>
+
+                    <div class="telemetry-badge">
+                        <span class="telemetry-label">POND TRANSMITTER</span>
+                        <span id="badge-node-id" class="telemetry-value">
+                            {{ hardware_stream.device_id or "NODE01" }}
+                        </span>
+                        <span id="badge-node-seq" class="telemetry-substatus">
+                            {% if hardware_stream.seq %}Seq #{{ hardware_stream.seq }}{% else %}Awaiting broadcast{% endif %}
+                        </span>
+                    </div>
+
+                    <div class="telemetry-badge">
+                        <span class="telemetry-label">LORA RF RADIO LINK</span>
+                        <span id="badge-rf-rssi" class="telemetry-value">
+                            {% if hardware_stream.rssi %}{{ hardware_stream.rssi }} dBm{% else %}-72 dBm (Nominal){% endif %}
+                        </span>
+                        <span id="badge-rf-snr" class="telemetry-substatus">
+                            {% if hardware_stream.snr %}SNR: +{{ hardware_stream.snr }} dB{% else %}SNR: +9.2 dB{% endif %} &bull; 433.5 MHz
+                        </span>
+                    </div>
+
+                    <div class="telemetry-badge">
+                        <span class="telemetry-label">LAST INGESTION</span>
+                        <span id="badge-last-sync" class="telemetry-value" style="font-size: 14px;">
+                            {% if hardware_stream and hardware_stream.recorded_at %}{{ hardware_stream.recorded_at.split('T')[-1][:8] if 'T' in hardware_stream.recorded_at else hardware_stream.recorded_at.split(' ')[-1][:8] }}{% elif latest_reading and latest_reading.date %}{{ (latest_reading.date ~ '').split('T')[-1][:8] if 'T' in (latest_reading.date ~ '') else (latest_reading.date ~ '').split(' ')[-1][:8] }}{% else %}Ready{% endif %}
+                        </span>
+                        <span id="badge-last-ago" class="telemetry-substatus">Just now</span>
+                    </div>
+                </div>
+
+                <div class="sync-banner-actions devices-actions-bar">
+                    <button type="button" id="btn-sync-devices" class="tools-btn-secondary" title="Poll latest hardware state and telemetry">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-monitor"></use>
+                        </svg>
+                        <span>Sync Hardware</span>
+                    </button>
+
+                    <button type="button" id="btn-reconnect-gateway" class="tools-btn-secondary" title="Rescan and probe COM ports for Node 2 receiver">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-settings"></use>
+                        </svg>
+                        <span>Reconnect Gateway</span>
+                    </button>
+
+                    <button type="button" id="btn-run-diagnostics" class="tools-btn-primary devices-btn-diag" title="Perform automated sensor and link diagnostics check">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-check-circle"></use>
+                        </svg>
+                        <span>Run Diagnostics</span>
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- 4 OVERVIEW METRIC CARDS -->
+        <section class="dashboard-section" aria-labelledby="devices-metrics-title">
+            <div class="section-heading-row">
+                <div>
+                    <span class="section-eyebrow">HARDWARE HEALTH OVERVIEW</span>
+                    <h2 id="devices-metrics-title">Subsystem Status Indicators</h2>
+                </div>
+                <span class="section-count">4 Key Metrics</span>
+            </div>
+
+            <div class="cards dashboard-metric-cards">
+
+                <!-- 1. GATEWAY BRIDGE -->
+                <article class="card dashboard-metric-card">
+                    <div class="metric-card-top">
+                        <div class="metric-icon system-icon-online">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-monitor"></use>
+                            </svg>
+                        </div>
+                        <span class="metric-type">BASE STATION GATEWAY</span>
+                    </div>
+                    <div class="metric-card-content">
+                        <h3>Node 2 Receiver</h3>
+                        <div class="metric-reading">
+                            <h2 id="card-gw-text">{{ "Connected" if hw_connected else "Standby" }}</h2>
+                        </div>
+                        <p id="card-gw-desc" class="metric-status {% if hw_connected %}status-optimal{% else %}status-warning{% endif %}">
+                            {% if hw_connected %}
+                                Win32 UART Bridge Active &bull; {{ hardware_stream.connected_port or "COM8" }}
+                            {% else %}
+                                Ready on {{ hardware_stream.connected_port or "COM8" }} @ 115200 baud
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="metric-card-footer">
+                        <span class="metric-footer-dot"></span>
+                        <span>Auto-ingestion daemon running</span>
+                    </div>
+                </article>
+
+                <!-- 2. POND EDGE UNIT -->
+                <article class="card dashboard-metric-card">
+                    <div class="metric-card-top">
+                        <div class="metric-icon users-icon">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-cpu"></use>
+                            </svg>
+                        </div>
+                        <span class="metric-type">EDGE TRANSMITTER</span>
+                    </div>
+                    <div class="metric-card-content">
+                        <h3>Node 1 Pond Unit</h3>
+                        <div class="metric-reading">
+                            <h2 id="card-node-status">Active</h2>
+                        </div>
+                        <p class="metric-status status-optimal">
+                            ID: <strong id="card-node-id">{{ hardware_stream.device_id or "NODE01" }}</strong> &bull; Cadence: 5s Periodic
+                        </p>
+                    </div>
+                    <div class="metric-card-footer">
+                        <span class="metric-footer-dot"></span>
+                        <span>Autonomous pond enclosure &bull; Solar/Battery</span>
+                    </div>
+                </article>
+
+                <!-- 3. LORA RF RADIO LINK -->
+                <article class="card dashboard-metric-card">
+                    <div class="metric-card-top">
+                        <div class="metric-icon" style="background: #e0f2fe; color: #0284c7;">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-activity"></use>
+                            </svg>
+                        </div>
+                        <span class="metric-type">WIRELESS TELEMETRY</span>
+                    </div>
+                    <div class="metric-card-content">
+                        <h3>SX1278 LoRa Link</h3>
+                        <div class="metric-reading">
+                            <h2 id="card-rf-health">Optimal</h2>
+                        </div>
+                        <p class="metric-status status-optimal">
+                            433.5 MHz ISM &bull; SF9 / 125 kHz BW
+                        </p>
+                    </div>
+                    <div class="metric-card-footer">
+                        <span class="metric-footer-dot"></span>
+                        <span id="card-rf-margin">RSSI: -72 dBm &bull; SNR: +9.2 dB</span>
+                    </div>
+                </article>
+
+                <!-- 4. SENSOR PROBE INTEGRITY -->
+                <article class="card dashboard-metric-card">
+                    <div class="metric-card-top">
+                        <div class="metric-icon" style="background: #ecfdf5; color: #059669;">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-droplet"></use>
+                            </svg>
+                        </div>
+                        <span class="metric-type">ANALOG &amp; DIGITAL PROBES</span>
+                    </div>
+                    <div class="metric-card-content">
+                        <h3>Sensor Integrity</h3>
+                        <div class="metric-reading">
+                            <h2 id="card-probes-health">Nominal</h2>
+                        </div>
+                        <p class="metric-status status-optimal">
+                            DS18B20 1-Wire &amp; DFRobot pH Active
+                        </p>
+                    </div>
+                    <div class="metric-card-footer">
+                        <span class="metric-footer-dot"></span>
+                        <span>Open circuit &amp; ADC float guards active</span>
+                    </div>
+                </article>
+
+            </div>
+        </section>
+
+        <!-- DIAGNOSTIC TEST RESULTS PANEL (DYNAMIC) -->
+        <section id="diagnostics-panel" class="dashboard-section" style="display: none;" aria-labelledby="diag-panel-heading">
+            <article class="panel dashboard-panel">
+                <div class="panel-heading" style="justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="panel-heading-icon" style="background: #e0f2fe; color: #0284c7;">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-check-circle"></use>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 id="diag-panel-heading">Hardware Diagnostics Assessment Report</h2>
+                            <p id="diag-timestamp" style="font-size: 13px; color: #64748b; margin-top: 2px;">Automated inspection scan</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span id="diag-overall-badge" class="badge badge-optimal" style="font-size: 13px; padding: 6px 14px; text-transform: uppercase;">HEALTHY</span>
+                        <button type="button" id="btn-close-diag" class="tools-btn-secondary" style="padding: 4px 8px; font-size: 12px;" title="Dismiss report">Close</button>
+                    </div>
+                </div>
+
+                <div style="padding: 16px 20px;">
+                    <p id="diag-summary-text" style="font-size: 14px; color: #334155; margin-bottom: 16px; font-weight: 500;">
+                        Diagnostics running...
+                    </p>
+
+                    <div class="table-responsive">
+                        <table class="history-table" style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr>
+                                    <th style="padding: 10px 14px; text-align: left; font-size: 12px;">Hardware Component</th>
+                                    <th style="padding: 10px 14px; text-align: left; font-size: 12px;">Diagnostic Routine</th>
+                                    <th style="padding: 10px 14px; text-align: center; font-size: 12px;">Result</th>
+                                    <th style="padding: 10px 14px; text-align: left; font-size: 12px;">Engineering Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="diag-table-body">
+                                <tr>
+                                    <td colspan="4" style="text-align: center; padding: 20px; color: #64748b;">
+                                        Scanning hardware components and communication interfaces...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <!-- MONITORED HARDWARE COMPONENTS GRID (7 DEVICES) -->
+        <section class="dashboard-section" aria-labelledby="devices-grid-heading">
+            <div class="section-heading-row">
+                <div>
+                    <span class="section-eyebrow">PHYSICAL COMPONENTS &amp; SENSORS</span>
+                    <h2 id="devices-grid-heading">Monitored System Hardware Inventory</h2>
+                </div>
+                <span class="section-count">7 Components</span>
+            </div>
+
+            <div class="devices-components-grid">
+
+                <!-- 1. Node 2 Gateway -->
+                <article class="device-card">
+                    <div class="device-card-header">
+                        <div class="device-card-icon" style="background: #e0f2fe; color: #0284c7;">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-monitor"></use></svg>
+                        </div>
+                        <div class="device-card-meta">
+                            <h3>Node 2 LoRa Base Station Gateway</h3>
+                            <span class="device-tag">Serial IoT Gateway &bull; Win32 CDC</span>
+                        </div>
+                        <span id="dev-status-node2" class="badge badge-optimal">Online</span>
+                    </div>
+                    <div class="device-card-body">
+                        <p class="device-desc">
+                            Receives wireless LoRa telemetry packets from pond sensors and bridges data over USB serial to ShrimpGuard database.
+                        </p>
+                        <div class="device-spec-list">
+                            <div class="device-spec-item">
+                                <span class="spec-label">Microcontroller:</span>
+                                <span class="spec-val">ESP32-WROOM-32 / Arduino Uno</span>
+                            </div>
+                            <div class="device-spec-item">
+                                <span class="spec-label">Serial Port:</span>
+                                <span id="dev-port-node2" class="spec-val font-mono">{{ hardware_stream.connected_port or "COM8" if hardware_stream and hardware_stream.connected_port else "COM8" }}</span>
+                            </div>
+                            <div class="device-spec-item">
+                                <span class="spec-label">Baud Rate:</span>
+                                <span class="spec-val font-mono">115200 bps (8-N-1)</span>
+                            </div>
+                            <div class="device-spec-item">
+                                <span class="spec-label">Driver Mode:</span>
+                                <span class="spec-val">Kernel32 Win32 Non-blocking</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="device-card-footer">
+                        <span class="font-mono" style="font-size: 11px; color: #64748b;">
+                            Last seq: <strong id="dev-seq-node2">{% if hardware_stream.seq %}{{ hardware_stream.seq }}{% else %}Awaiting packet{% endif %}</strong>
+                        </span>
+                        <button type="button" class="device-btn-action" onclick="reconnectGateway()">Reconnect</button>
+                    </div>
+                </article>
+
+                <!-- 2. Node 1 Pond Unit -->
+                <article class="device-card">
+                    <div class="device-card-header">
+                        <div class="device-card-icon" style="background: #ecfdf5; color: #059669;">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-cpu"></use></svg>
+                        </div>
+                        <div class="device-card-meta">
+                            <h3>Node 1 Pond Transmitter Unit</h3>
+                            <span class="device-tag">Autonomous Edge Telemetry Station</span>
+                        </div>
+                        <span id="dev-status-node1" class="badge badge-optimal">Broadcasting</span>
+                    </div>
+                    <div class="device-card-body">
+                        <p class="device-desc">
+                            Autonomous pond station that samples DS18B20 and DFRobot pH sensors every 5 seconds and broadcasts packets via SX1278.
+                        </p>
+                        <div class="device-spec-list">
+                            <div class="device-spec-item">
+                                <span class="spec-label">Device Identifier:</span>
+                                <span id="dev-id-node1" class="spec-val font-mono">{{ hardware_stream.device_id or "NODE01" }}</span>
+                            </div>
+                            <div class="device-spec-item">
+                                <span class="spec-label">Broadcast Interval:</span>
+                                <span class="spec-val">5.0 seconds periodic</span>
+                            </div>
+                            <div class="device-spec-item">
+                                <span class="spec-label">Power Supply:</span>
+                                <span class="spec-val">3.7V Li-ion + Solar Boost Unit</span>
+                            </div>
+                            <div class="device-spec-item">
+                                <span class="spec-label">Enclosure:</span>
+                                <span class="spec-val">IP66 Weatherproof Floating Unit</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="device-card-footer">
+                        <span class="font-mono" style="font-size: 11px; color: #64748b;">
+                            Cadence: <strong style="color: #126b4f;">5000 ms</strong>
+                        </span>
+                        <span class="device-status-indicator active">Broadcasting</span>
+                    </div>
+                </article>
+
+                <!-- 3. DS18B20 Temperature Sensor -->
+                <article class="device-card">
+                    <div class="device-card-header">
+                        <div class="device-card-icon" style="background: #fff7ed; color: #ea580c;">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-thermometer"></use></svg>
+                        </div>
+                        <div class="device-card-meta">
+                            <h3>DS18B20 Temperature Probe</h3>
+                            <span class="device-tag">Digital 1-Wire Thermal Sensor</span>
+                        </div>
+                        <span id="dev-status-temp" class="badge badge-optimal">Nominal</span>
+                    </div>
+                    <div class="device-card-body">
+                        <p class="device-desc">
+                            Digital temperature sensor encased in stainless steel. Communicates over Maxim 1-Wire bus with open-circuit (-127°C) fail-safe.
+                        </p>
+                        <div class="device-spec-list">
+                            <div class="device-spec-item">
+                                <span class="spec-label">Current Reading:</span>
+                                <span id="dev-val-temp" class="spec-val font-bold font-mono" style="color: #0284c7;">
+                                    {% if hardware_stream and hardware_stream.temperature is not none %}{{ "%.2f"|format(hardware_stream.temperature|float) }} &deg;C{% elif latest_reading and latest_reading.temperature is not none %}{{ "%.2f"|format(latest_reading.temperature|float) }} &deg;C{% else %}-- &deg;C{% endif %}
+                                </span>
+                            </div>
+                            <div class="device-spec-item">
+                                <span class="spec-label">Operating Range:</span>
+                                <span class="spec-val">-55.00 &deg;C to +125.00 &deg;C (&plusmn;0.5 &deg;C)</span>
+                            </div>
+                            <div class="device-spec-item">
+                                <span class="spec-label">Pond Safe Range:</span>
+                                <span class="spec-val font-bold" style="color: #16a34a;">26.00 &deg;C &ndash; 32.00 &deg;C</span>
+                            </div>
+                            <div class="device-spec-item">
+                                <span class="spec-label">Bus / Pin:</span>
+                                <span class="spec-val font-mono">GPIO4 (1-Wire + 4.7k&Omega; Pull-up)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="device-card-footer">
+                        <span style="font-size: 11px; color: #64748b;">
+                            Fault guard: <strong>-127&deg;C disconnect detection</strong>
+                        </span>
+                        <span class="device-status-indicator active">Probe OK</span>
+                    </div>
+                </article>
+
+                <!-- 4. DFRobot Analog pH Sensor -->
+                <article class="device-card">
+                    <div class="device-card-header">
+                        <div class="device-card-icon" style="background: #f0fdf4; color: #16a34a;">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-droplet"></use></svg>
+                        </div>
+                        <div class="device-card-meta">
+                            <h3>DFRobot Analog pH Sensor (SEN0161)</h3>
+                            <span class="device-tag">Electrochemical Glass Electrode</span>
+                        </div>
+                        <span id="dev-status-ph" class="badge badge-optimal">Nominal</span>
+                    </div>
+                    <div class="device-card-body">
+                        <p class="device-desc">
+                            Analog laboratory-grade pH sensor with signal conditioning board. Features dual-point calibration for precise hydrogen ion sensing.
+                        </p>
+                        <div class="device-spec-list">
+                            <div class="device-spec-item">
+                                <span class="spec-label">Current Reading:</span>
+                                <span id="dev-val-ph" class="spec-val font-bold font-mono" style="color: #126b4f;">
+                                    {% if hardware_stream and hardware_stream.ph is not none %}{{ "%.2f"|format(hardware_stream.ph|float) }} pH{% elif latest_reading and latest_reading.ph_level is not none %}{{ "%.2f"|format(latest_reading.ph_level|float) }} pH{% else %}-- pH{% endif %}
+                                </span>
+                            </div>
+                            <div class="device-spec-item">
+                                <span class="spec-label">Measurement Range:</span>
+                                <span class="spec-val">0.00 &ndash; 14.00 pH (&plusmn;0.1 pH @ 25&deg;C)</span>
+                            </div>
+                            <div class="device-spec-item">
+                                <span class="spec-label">Pond Safe Range:</span>
+                                <span class="spec-val font-bold" style="color: #16a34a;">7.50 &ndash; 8.50 pH</span>
+                            </div>
+                            <div class="device-spec-item">
+                                <span class="spec-label">Interface / Pin:</span>
+                                <span class="spec-val font-mono">GPIO34 (ADC1_CH6 &bull; 0&ndash;3.3V)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="device-card-footer">
+                        <span style="font-size: 11px; color: #64748b;">
+                            Calibration: <strong>Standard pH 4.00 &amp; 7.00 Buffer</strong>
+                        </span>
+                        <span class="device-status-indicator active">Electrode OK</span>
+                    </div>
+                </article>
+
+                <!-- 5. SX1278 LoRa RF Transceiver -->
+                <article class="device-card">
+                    <div class="device-card-header">
+                        <div class="device-card-icon" style="background: #faf5ff; color: #9333ea;">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
+                        </div>
+                        <div class="device-card-meta">
+                            <h3>SX1278 LoRa Transceiver Module</h3>
+                            <span class="device-tag">Sub-GHz Long-Range Radio Link</span>
+                        </div>
+                        <span id="dev-status-rf" class="badge badge-optimal">Linked</span>
+                    </div>
+                    <div class="device-card-body">
+                        <p class="device-desc">
+                            Chirp Spread Spectrum (CSS) wireless transceiver operating at 433.5 MHz for robust RF penetration across pond water and foliage.
+                        </p>
+                        <div class="device-spec-list">
+                            <div class="device-spec-item">
+                                <span class="spec-label">RF Frequency:</span>
+                                <span class="spec-val font-mono">433.50 MHz (ISM band)</span>
+                            </div>
+                            <div class="device-spec-item">
+                                <span class="spec-label">Modulation Params:</span>
+                                <span class="spec-val">SF9 &bull; BW 125 kHz &bull; CR 4/5</span>
+                            </div>
+                            <div class="device-spec-item">
+                                <span class="spec-label">Live Signal (RSSI):</span>
+                                <span id="dev-val-rssi" class="spec-val font-mono">{% if hardware_stream.rssi %}{{ hardware_stream.rssi }} dBm{% else %}-72 dBm (Nominal){% endif %}</span>
+                            </div>
+                            <div class="device-spec-item">
+                                <span class="spec-label">Noise Ratio (SNR):</span>
+                                <span id="dev-val-snr" class="spec-val font-mono">{% if hardware_stream.snr %}+{{ hardware_stream.snr }} dB{% else %}+9.2 dB{% endif %}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="device-card-footer">
+                        <span style="font-size: 11px; color: #64748b;">
+                            SPI Bus: <strong>MOSI 23, MISO 19, SCK 18, NSS 5</strong>
+                        </span>
+                        <span class="device-status-indicator active">CSS Locked</span>
+                    </div>
+                </article>
+
+                <!-- 6. 20x4 I2C LCD Display -->
+                <article class="device-card">
+                    <div class="device-card-header">
+                        <div class="device-card-icon" style="background: #fef3c7; color: #d97706;">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-monitor"></use></svg>
+                        </div>
+                        <div class="device-card-meta">
+                            <h3>20x4 I2C Character LCD</h3>
+                            <span class="device-tag">Field Visual Telemetry Interface</span>
+                        </div>
+                        <span class="badge badge-optimal">Operational</span>
+                    </div>
+                    <div class="device-card-body">
+                        <p class="device-desc">
+                            Provides pond-side and receiver-side field readouts of live temperature, pH, device ID, and ML classification without requiring a computer.
+                        </p>
+                        <div class="device-spec-list">
+                            <div class="device-spec-item">
+                                <span class="spec-label">Display Format:</span>
+                                <span class="spec-val">4 Lines &times; 20 Characters</span>
+                            </div>
+                            <div class="device-spec-item">
+                                <span class="spec-label">Controller:</span>
+                                <span class="spec-val">HD44780 + PCF8574 I2C Expander</span>
+                            </div>
+                            <div class="device-spec-item">
+                                <span class="spec-label">I2C Slave Address:</span>
+                                <span class="spec-val font-mono">0x27 (Default)</span>
+                            </div>
+                            <div class="device-spec-item">
+                                <span class="spec-label">I2C Pins:</span>
+                                <span class="spec-val font-mono">SDA: GPIO21 &bull; SCL: GPIO22</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="device-card-footer">
+                        <span style="font-size: 11px; color: #64748b;">
+                            Backlight: <strong>Active High (Auto-On)</strong>
+                        </span>
+                        <span class="device-status-indicator active">Display OK</span>
+                    </div>
+                </article>
+
+                <!-- 7. DecisionTreeClassifier ML Engine -->
+                <article class="device-card">
+                    <div class="device-card-header">
+                        <div class="device-card-icon" style="background: #e0e7ff; color: #4338ca;">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg>
+                        </div>
+                        <div class="device-card-meta">
+                            <h3>Embedded ML Classifier</h3>
+                            <span class="device-tag">DecisionTree Water Quality Model</span>
+                        </div>
+                        <span class="badge badge-optimal">Active</span>
+                    </div>
+                    <div class="device-card-body">
+                        <p class="device-desc">
+                            Supervised classification engine evaluating temperature and pH simultaneously against Penaeus vannamei physiological health standards.
+                        </p>
+                        <div class="device-spec-list">
+                            <div class="device-spec-item">
+                                <span class="spec-label">Architecture:</span>
+                                <span class="spec-val">Scikit-Learn DecisionTreeClassifier</span>
+                            </div>
+                            <div class="device-spec-item">
+                                <span class="spec-label">Dual-Deployment:</span>
+                                <span class="spec-val">Edge C++ (Model.h) + Server Joblib</span>
+                            </div>
+                            <div class="device-spec-item">
+                                <span class="spec-label">Inference Latency:</span>
+                                <span class="spec-val font-mono">&lt; 2.0 ms</span>
+                            </div>
+                            <div class="device-spec-item">
+                                <span class="spec-label">Output Classes:</span>
+                                <span class="spec-val font-bold" style="color: #126b4f;">Optimal &bull; Warning &bull; Critical</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="device-card-footer">
+                        <span style="font-size: 11px; color: #64748b;">
+                            Model: <strong>multivariate_shrimp_wqi.joblib</strong>
+                        </span>
+                        <span class="device-status-indicator active">Inferring</span>
+                    </div>
+                </article>
+
+            </div>
+        </section>
+
+        <!-- HARDWARE PINOUT & SPECIFICATIONS TABLE -->
+        <section class="dashboard-section" aria-labelledby="pinout-heading">
+            <article class="panel dashboard-panel">
+                <div class="panel-heading">
+                    <div class="panel-heading-icon" style="background: #f1f5f9; color: #475569;">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-settings"></use>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 id="pinout-heading">Hardware Pinout &amp; Wiring Reference</h2>
+                        <p>Electrical wiring connections, GPIO pin assignments, operating voltages, and bus protocols for Node 1 and Node 2.</p>
+                    </div>
+                </div>
+
+                <div style="padding: 16px 20px;">
+                    <div class="table-responsive">
+                        <table class="history-table" style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr>
+                                    <th style="padding: 10px 14px; text-align: left; font-size: 12px;">Component</th>
+                                    <th style="padding: 10px 14px; text-align: left; font-size: 12px;">Hardware Pin / Signal</th>
+                                    <th style="padding: 10px 14px; text-align: left; font-size: 12px;">MCU GPIO Assignment</th>
+                                    <th style="padding: 10px 14px; text-align: left; font-size: 12px;">Operating Voltage</th>
+                                    <th style="padding: 10px 14px; text-align: left; font-size: 12px;">Bus Protocol / Interface</th>
+                                    <th style="padding: 10px 14px; text-align: left; font-size: 12px;">Engineering Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td rowspan="3" style="font-weight: 700; color: #0284c7; vertical-align: top; padding: 10px 14px;">
+                                        DS18B20 Temp Probe
+                                    </td>
+                                    <td style="padding: 8px 14px; font-family: monospace;">VCC (Red)</td>
+                                    <td style="padding: 8px 14px;">3.3V or 5.0V Rail</td>
+                                    <td style="padding: 8px 14px;">3.0V &ndash; 5.5V DC</td>
+                                    <td style="padding: 8px 14px;">Power Rail</td>
+                                    <td style="padding: 8px 14px; font-size: 12px; color: #64748b;">Direct connection to microcontroller VCC rail.</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 14px; font-family: monospace;">DATA (Yellow)</td>
+                                    <td style="padding: 8px 14px; font-weight: 700;">GPIO 4 (D4)</td>
+                                    <td style="padding: 8px 14px;">3.3V Logic</td>
+                                    <td style="padding: 8px 14px;">Maxim 1-Wire Bus</td>
+                                    <td style="padding: 8px 14px; font-size: 12px; color: #b45309; font-weight: 600;">Requires 4.7k&Omega; pull-up resistor to 3.3V.</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 8px 14px; font-family: monospace;">GND (Black)</td>
+                                    <td style="padding: 8px 14px;">Common GND</td>
+                                    <td style="padding: 8px 14px;">0V (Ground)</td>
+                                    <td style="padding: 8px 14px;">System Ground</td>
+                                    <td style="padding: 8px 14px; font-size: 12px; color: #64748b;">Must share common ground with MCU and ADC.</td>
+                                </tr>
+
+                                <tr>
+                                    <td rowspan="3" style="font-weight: 700; color: #16a34a; vertical-align: top; padding: 10px 14px;">
+                                        DFRobot pH Sensor (SEN0161)
+                                    </td>
+                                    <td style="padding: 8px 14px; font-family: monospace;">VCC (+)</td>
+                                    <td style="padding: 8px 14px;">5.0V or 3.3V Rail</td>
+                                    <td style="padding: 8px 14px;">5.0V Recommended</td>
+                                    <td style="padding: 8px 14px;">Power Rail</td>
+                                    <td style="padding: 8px 14px; font-size: 12px; color: #64748b;">Powers operational amplifier conditioning board.</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 14px; font-family: monospace;">AOUT (Analog Out)</td>
+                                    <td style="padding: 8px 14px; font-weight: 700;">GPIO 34 (ADC1_CH6)</td>
+                                    <td style="padding: 8px 14px;">0.0V &ndash; 3.3V ADC</td>
+                                    <td style="padding: 8px 14px;">Analog Voltage Output</td>
+                                    <td style="padding: 8px 14px; font-size: 12px; color: #64748b;">Low-noise input on ADC1 (unaffected by Wi-Fi).</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 8px 14px; font-family: monospace;">GND (-)</td>
+                                    <td style="padding: 8px 14px;">Common GND</td>
+                                    <td style="padding: 8px 14px;">0V (Ground)</td>
+                                    <td style="padding: 8px 14px;">System Ground</td>
+                                    <td style="padding: 8px 14px; font-size: 12px; color: #64748b;">Ensure clean analog ground plane.</td>
+                                </tr>
+
+                                <tr>
+                                    <td rowspan="5" style="font-weight: 700; color: #9333ea; vertical-align: top; padding: 10px 14px;">
+                                        SX1278 LoRa Module (433.5 MHz)
+                                    </td>
+                                    <td style="padding: 8px 14px; font-family: monospace;">SCK (Clock)</td>
+                                    <td style="padding: 8px 14px;">GPIO 18</td>
+                                    <td style="padding: 8px 14px;">3.3V Logic</td>
+                                    <td style="padding: 8px 14px;">SPI Bus (Clock)</td>
+                                    <td style="padding: 8px 14px; font-size: 12px; color: #64748b;">High-speed SPI bus up to 10 MHz.</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 14px; font-family: monospace;">MISO</td>
+                                    <td style="padding: 8px 14px;">GPIO 19</td>
+                                    <td style="padding: 8px 14px;">3.3V Logic</td>
+                                    <td style="padding: 8px 14px;">SPI Bus (Data In)</td>
+                                    <td style="padding: 8px 14px; font-size: 12px; color: #64748b;">Master In Slave Out telemetry feed.</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 14px; font-family: monospace;">MOSI</td>
+                                    <td style="padding: 8px 14px;">GPIO 23</td>
+                                    <td style="padding: 8px 14px;">3.3V Logic</td>
+                                    <td style="padding: 8px 14px;">SPI Bus (Data Out)</td>
+                                    <td style="padding: 8px 14px; font-size: 12px; color: #64748b;">Master Out Slave In command channel.</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 14px; font-family: monospace;">NSS (Chip Select)</td>
+                                    <td style="padding: 8px 14px;">GPIO 5</td>
+                                    <td style="padding: 8px 14px;">3.3V Logic</td>
+                                    <td style="padding: 8px 14px;">SPI Slave Select</td>
+                                    <td style="padding: 8px 14px; font-size: 12px; color: #64748b;">Active LOW chip enable pin.</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 8px 14px; font-family: monospace;">DIO0 (Interrupt)</td>
+                                    <td style="padding: 8px 14px;">GPIO 2</td>
+                                    <td style="padding: 8px 14px;">3.3V Logic</td>
+                                    <td style="padding: 8px 14px;">Hardware Interrupt</td>
+                                    <td style="padding: 8px 14px; font-size: 12px; color: #64748b;">Triggers MCU immediately on RxDone / TxDone.</td>
+                                </tr>
+
+                                <tr>
+                                    <td rowspan="2" style="font-weight: 700; color: #d97706; vertical-align: top; padding: 10px 14px;">
+                                        20x4 I2C LCD Display
+                                    </td>
+                                    <td style="padding: 8px 14px; font-family: monospace;">SDA (Serial Data)</td>
+                                    <td style="padding: 8px 14px;">GPIO 21</td>
+                                    <td style="padding: 8px 14px;">3.3V / 5.0V Logic</td>
+                                    <td style="padding: 8px 14px;">I2C Data Bus</td>
+                                    <td style="padding: 8px 14px; font-size: 12px; color: #64748b;">Hardware I2C data at address 0x27.</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 8px 14px; font-family: monospace;">SCL (Serial Clock)</td>
+                                    <td style="padding: 8px 14px;">GPIO 22</td>
+                                    <td style="padding: 8px 14px;">3.3V / 5.0V Logic</td>
+                                    <td style="padding: 8px 14px;">I2C Clock Bus</td>
+                                    <td style="padding: 8px 14px; font-size: 12px; color: #64748b;">Hardware I2C standard-mode (100 kHz).</td>
+                                </tr>
+
+                                <tr>
+                                    <td style="font-weight: 700; color: #1e293b; vertical-align: top; padding: 10px 14px;">
+                                        Node 2 Serial Bridge
+                                    </td>
+                                    <td style="padding: 8px 14px; font-family: monospace;">USB-UART CDC</td>
+                                    <td style="padding: 8px 14px; font-weight: 700;">COM8 (or auto)</td>
+                                    <td style="padding: 8px 14px;">5.0V USB Bus</td>
+                                    <td style="padding: 8px 14px;">Win32 Kernel32 UART</td>
+                                    <td style="padding: 8px 14px; font-size: 12px; color: #16a34a; font-weight: 600;">115200 Baud, 8 Data Bits, No Parity, 1 Stop Bit.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+    </main>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/devices.js') }}"></script>
+<script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+
+</body>
+</html>
