@@ -67,7 +67,7 @@ function getPhStatus(phLevel, reading) {
 function updateSummary(reading) {
     const tempNum = Number(reading.temperature);
     const phNum = Number(reading.ph);
-    document.getElementById("monitor-temperature").textContent = !isNaN(tempNum) ? tempNum.toFixed(1) : reading.temperature;
+    document.getElementById("monitor-temperature").textContent = !isNaN(tempNum) ? tempNum.toFixed(2) : reading.temperature;
     document.getElementById("monitor-ph").textContent = !isNaN(phNum) ? phNum.toFixed(2) : reading.ph;
 
     // ML Parameter Statuses
@@ -168,20 +168,20 @@ function calculateWQI(data) {
     let tempDiffPercent = 0.0;
     let tempBadgeText = "Normal";
     let tempBadgeClass = "badge-normal";
-    let tempDetailText = `Current: ${temp.toFixed(1)} °C · Within ML optimal range (28.0–32.0 °C)`;
+    let tempDetailText = `Current: ${temp.toFixed(2)} °C · Within ML optimal range (28.00–32.00 °C)`;
 
     if (temp < tempMin) {
         const diff = tempMin - temp;
         tempDiffPercent = (diff / temp) * 100;
         tempBadgeText = `+${tempDiffPercent.toFixed(1)}% Needed`;
         tempBadgeClass = tempStatus === "Critical" ? "badge-critical" : "badge-warning";
-        tempDetailText = `Increase by +${diff.toFixed(1)} °C to reach ML optimal range (28.0–32.0 °C)`;
+        tempDetailText = `Increase by +${diff.toFixed(2)} °C to reach ML optimal range (28.00–32.00 °C)`;
     } else if (temp > tempMax) {
         const diff = temp - tempMax;
         tempDiffPercent = (diff / temp) * 100;
         tempBadgeText = `-${tempDiffPercent.toFixed(1)}% Needed`;
         tempBadgeClass = tempStatus === "Critical" ? "badge-critical" : "badge-warning";
-        tempDetailText = `Decrease by -${diff.toFixed(1)} °C to reach ML optimal range (28.0–32.0 °C)`;
+        tempDetailText = `Decrease by -${diff.toFixed(2)} °C to reach ML optimal range (28.00–32.00 °C)`;
     }
 
     const tempPercentEl = document.getElementById("temp-norm-percent");
@@ -444,7 +444,7 @@ function renderTooltip(reading, index, pointX, mouseY, focusedParam, containerWi
                     <span class="tooltip-param-label">Temperature:</span>
                 </div>
                 <div class="tooltip-item-right">
-                    <span class="tooltip-param-value">${tempVal.toFixed(1)} °C</span>
+                    <span class="tooltip-param-value">${tempVal.toFixed(2)} °C</span>
                     <span class="tooltip-param-status ${tempStatus.badgeClass}">${tempStatus.label}</span>
                 </div>
             </div>

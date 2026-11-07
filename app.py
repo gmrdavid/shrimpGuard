@@ -787,13 +787,13 @@ def generate_alerts_from_readings(readings):
             if temp_abnormal and ph_abnormal:
                 alert_type = "combined"
                 title = f"{severity} Combined Water Quality Alert"
-                message = f"ML model detected {severity} condition: Water temperature is {temp:.1f} °C (optimal: 28.0–32.0 °C) and pH is {ph:.2f} (optimal: 7.50–8.50)."
-                notification = f"Push: [{severity.upper()}] Temp {temp:.1f}°C, pH {ph:.2f}. Immediate pond management required."
+                message = f"ML model detected {severity} condition: Water temperature is {temp:.2f} °C (optimal: 28.00–32.00 °C) and pH is {ph:.2f} (optimal: 7.50–8.50)."
+                notification = f"Push: [{severity.upper()}] Temp {temp:.2f}°C, pH {ph:.2f}. Immediate pond management required."
             elif temp_abnormal:
                 alert_type = "temperature"
                 title = f"{severity} Temperature Alert"
-                message = f"ML model detected {severity} temperature: Currently {temp:.1f} °C, outside optimal range of 28.0–32.0 °C."
-                notification = f"Push: [{severity.upper()}] Pond water temperature is {temp:.1f}°C. Check aeration/temperature controls."
+                message = f"ML model detected {severity} temperature: Currently {temp:.2f} °C, outside optimal range of 28.00–32.00 °C."
+                notification = f"Push: [{severity.upper()}] Pond water temperature is {temp:.2f}°C. Check aeration/temperature controls."
             elif ph_abnormal:
                 alert_type = "ph"
                 title = f"{severity} pH Level Alert"
@@ -802,7 +802,7 @@ def generate_alerts_from_readings(readings):
             else:
                 alert_type = "general"
                 title = f"{severity} Water Quality Alert"
-                message = f"ML model classified pond condition as {severity} (Temp: {temp:.1f} °C, pH: {ph:.2f})."
+                message = f"ML model classified pond condition as {severity} (Temp: {temp:.2f} °C, pH: {ph:.2f})."
                 notification = f"Push: [{severity.upper()}] Water quality warning detected by ML model."
 
             alerts.append({
@@ -892,13 +892,13 @@ def get_alerts():
             if temp_abnormal and ph_abnormal:
                 alert_type = "combined"
                 title = f"{severity} Combined Water Quality Alert"
-                message = f"ML model detected {severity} condition: Water temperature is {temp:.1f} °C (optimal: 28.0–32.0 °C) and pH is {ph:.2f} (optimal: 7.50–8.50)."
-                notification = f"Push: [{severity.upper()}] Temp {temp:.1f}°C, pH {ph:.2f}. Immediate pond management required."
+                message = f"ML model detected {severity} condition: Water temperature is {temp:.2f} °C (optimal: 28.00–32.00 °C) and pH is {ph:.2f} (optimal: 7.50–8.50)."
+                notification = f"Push: [{severity.upper()}] Temp {temp:.2f}°C, pH {ph:.2f}. Immediate pond management required."
             elif temp_abnormal:
                 alert_type = "temperature"
                 title = f"{severity} Temperature Alert"
-                message = f"ML model detected {severity} temperature: Currently {temp:.1f} °C, outside optimal range of 28.0–32.0 °C."
-                notification = f"Push: [{severity.upper()}] Pond water temperature is {temp:.1f}°C. Check aeration/temperature controls."
+                message = f"ML model detected {severity} temperature: Currently {temp:.2f} °C, outside optimal range of 28.00–32.00 °C."
+                notification = f"Push: [{severity.upper()}] Pond water temperature is {temp:.2f}°C. Check aeration/temperature controls."
             elif ph_abnormal:
                 alert_type = "ph"
                 title = f"{severity} pH Level Alert"
@@ -907,7 +907,7 @@ def get_alerts():
             else:
                 alert_type = "general"
                 title = f"{severity} Water Quality Alert"
-                message = f"ML model classified pond condition as {severity} (Temp: {temp:.1f} °C, pH: {ph:.2f})."
+                message = f"ML model classified pond condition as {severity} (Temp: {temp:.2f} °C, pH: {ph:.2f})."
                 notification = f"Push: [{severity.upper()}] Water quality warning detected by ML model."
 
             recent_notifications.append({
@@ -933,8 +933,8 @@ def get_alerts():
                 "severity": "Optimal",
                 "type": "optimal",
                 "title": "Optimal Pond Status Verified",
-                "message": f"Normal telemetry logged: Water temperature is {temp:.1f} °C and pH is {ph:.2f}, meeting optimal Penaeus vannamei standards.",
-                "notification": f"Telemetry: [OPTIMAL] Temp {temp:.1f}°C, pH {ph:.2f}. All parameters within normal bounds.",
+                "message": f"Normal telemetry logged: Water temperature is {temp:.2f} °C and pH is {ph:.2f}, meeting optimal Penaeus vannamei standards.",
+                "notification": f"Telemetry: [OPTIMAL] Temp {temp:.2f}°C, pH {ph:.2f}. All parameters within normal bounds.",
                 "status": "Normal",
                 "delivery_status": "Logged",
                 "is_read": is_read

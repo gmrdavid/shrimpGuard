@@ -151,7 +151,7 @@
 
 
         <!-- LIVE POND SENSOR TELEMETRY -->
-        <section class="dashboard-section" aria-labelledby="telemetry-stream-title">
+        <section class="dashboard-section telemetry-section" aria-labelledby="telemetry-stream-title">
 
             <div class="section-heading-row">
                 <div>
@@ -159,61 +159,76 @@
                     <h2 id="telemetry-stream-title">Live Pond Telemetry Stream</h2>
                     <p>Continuous real-time measurements streamed from Node 1 sensors deployed in the pond via 433 MHz LoRa.</p>
                 </div>
-                <div class="telemetry-live-badge" id="telemetry-stream-badge">
+                <div class="telemetry-live-badge badge-active" id="telemetry-stream-badge">
                     <span class="status-indicator-dot dot-optimal"></span>
                     <span id="telemetry-badge-text">RECEIVING SENSOR DATA</span>
                 </div>
             </div>
 
-            <div class="input-panel dashboard-input-panel telemetry-stream-panel">
+            <div class="telemetry-stream-panel">
 
-                <div class="input-panel-heading">
-
-                    <div class="input-panel-icon telemetry-panel-icon">
-                        <svg class="ui-icon" aria-hidden="true">
-                            <use href="#icon-monitor"></use>
-                        </svg>
-                    </div>
-
-                    <div class="telemetry-heading-info">
-                        <div class="telemetry-node-tag">
-                            <span class="telemetry-chip">POND NODE 1</span>
-                            <span class="telemetry-chip chip-freq">433.5 MHz LoRa (SX1278)</span>
-                            <span class="telemetry-chip chip-interval">5s Transmit Cadence</span>
+                <div class="telemetry-panel-header">
+                    <div class="telemetry-header-left">
+                        <div class="telemetry-panel-icon">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-monitor"></use>
+                            </svg>
                         </div>
-                        <h2>Autonomous Pond Sensor Ingestion</h2>
-                        <p>
-                            Temperature and pH readings are collected directly by the pond transmitter's 
-                            DS18B20 digital temperature probe and DFRobot pH sensor, then forwarded by 
-                            the Node 2 LoRa receiver into the ShrimpGuard system.
-                        </p>
+                        <div class="telemetry-heading-info">
+                            <div class="telemetry-node-tag">
+                                <span class="telemetry-chip chip-node">
+                                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-droplet"></use></svg>
+                                    Pond Node 1
+                                </span>
+                                <span class="telemetry-chip chip-freq">
+                                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
+                                    433.5 MHz LoRa (SX1278)
+                                </span>
+                                <span class="telemetry-chip chip-interval">
+                                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg>
+                                    5s Cadence
+                                </span>
+                            </div>
+                            <h2>Autonomous Pond Sensor Ingestion</h2>
+                        </div>
                     </div>
-
                 </div>
 
                 <!-- HARDWARE TELEMETRY STATUS PILLS -->
                 <div class="telemetry-status-grid">
 
                     <div class="telemetry-status-card">
-                        <span class="telemetry-card-label">POND SENSOR NODE</span>
+                        <div class="telemetry-card-top">
+                            <span class="telemetry-card-label">Pond Sensor Node</span>
+                            <span class="telemetry-card-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-droplet"></use></svg></span>
+                        </div>
                         <strong id="telemetry-node-id" class="telemetry-card-val">NODE01</strong>
                         <span class="telemetry-card-sub">DS18B20 &amp; DFRobot pH</span>
                     </div>
 
                     <div class="telemetry-status-card">
-                        <span class="telemetry-card-label">BASE RECEIVER</span>
+                        <div class="telemetry-card-top">
+                            <span class="telemetry-card-label">Base Receiver</span>
+                            <span class="telemetry-card-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-monitor"></use></svg></span>
+                        </div>
                         <strong class="telemetry-card-val">NODE02 GATEWAY</strong>
                         <span class="telemetry-card-sub">20x4 LCD + Serial Bridge</span>
                     </div>
 
                     <div class="telemetry-status-card">
-                        <span class="telemetry-card-label">LAST INGESTION</span>
+                        <div class="telemetry-card-top">
+                            <span class="telemetry-card-label">Last Ingestion</span>
+                            <span class="telemetry-card-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg></span>
+                        </div>
                         <strong id="telemetry-last-sync" class="telemetry-card-val">Listening...</strong>
                         <span id="telemetry-seconds-ago" class="telemetry-card-sub">Auto-syncing every 4s</span>
                     </div>
 
                     <div class="telemetry-status-card">
-                        <span class="telemetry-card-label">EMBEDDED ML CLASSIFIER</span>
+                        <div class="telemetry-card-top">
+                            <span class="telemetry-card-label">Embedded ML Classifier</span>
+                            <span class="telemetry-card-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-cpu"></use></svg></span>
+                        </div>
                         <strong id="telemetry-ml-badge" class="telemetry-card-val" style="color: #126b4f;">ACTIVE</strong>
                         <span class="telemetry-card-sub">DecisionTree on-chip</span>
                     </div>
@@ -222,7 +237,7 @@
 
                 <!-- CONTROLS & TEST SIMULATOR TRIGGER -->
                 <div class="telemetry-action-bar">
-                    <button type="button" id="sync-now-btn" class="dashboard-submit-button telemetry-sync-btn">
+                    <button type="button" id="sync-now-btn" class="telemetry-sync-btn">
                         <svg class="ui-icon" aria-hidden="true">
                             <use href="#icon-activity"></use>
                         </svg>
@@ -235,9 +250,14 @@
                         </svg>
                         <span>Offline Test Ingestion</span>
                     </button>
+
+                    <div class="telemetry-cadence-indicator">
+                        <span class="cadence-dot"></span>
+                        <span>Auto-sync active &bull; Live telemetry every 4s</span>
+                    </div>
                 </div>
 
-                <div class="input-panel-footnote">
+                <div class="telemetry-footnote">
                     <svg class="ui-icon" aria-hidden="true">
                         <use href="#icon-check-circle"></use>
                     </svg>
@@ -494,28 +514,38 @@
         <div class="sim-modal-dialog">
             <div class="sim-modal-header">
                 <div>
-                    <span class="section-eyebrow">HARDWARE TESTING ONLY</span>
+                    <span class="sim-modal-badge">HARDWARE TESTING ONLY</span>
                     <h3>Pond Sensor Telemetry Simulator</h3>
+                    <p class="sim-modal-desc">
+                        Simulate incoming telemetry packets from Node 1 when the physical LoRa transmitter is powered off or in the lab.
+                    </p>
                 </div>
-                <button type="button" id="close-test-modal-btn" class="sim-modal-close" aria-label="Close modal">&times;</button>
+                <button type="button" id="close-test-modal-btn" class="sim-modal-close" aria-label="Close modal">
+                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-x"></use></svg>
+                </button>
             </div>
-            <p class="sim-modal-desc">
-                Use this test tool to simulate incoming telemetry packets from Node 1 when the physical LoRa transmitter is powered off or in the lab.
-            </p>
             <form id="quality-form" class="sim-modal-form">
                 <div class="sim-form-fields">
-                    <label class="dashboard-input-label" for="temperature-input">
-                        <span class="input-label-title">Simulated Water Temp (&deg;C)</span>
-                        <input id="temperature-input" name="temperature" type="number" min="0" max="50" step="0.1" value="29.5" required>
+                    <label class="sim-input-label" for="temperature-input">
+                        <span class="sim-label-title">Simulated Water Temp (&deg;C)</span>
+                        <span class="sim-label-hint">Precision: 2 decimal places (e.g., 28.50)</span>
+                        <div class="sim-input-wrap">
+                            <input id="temperature-input" name="temperature" type="number" min="0" max="50" step="0.01" value="28.50" required>
+                            <span class="sim-input-unit">&deg;C</span>
+                        </div>
                     </label>
-                    <label class="dashboard-input-label" for="ph-input">
-                        <span class="input-label-title">Simulated pH Level</span>
-                        <input id="ph-input" name="ph" type="number" min="0" max="14" step="0.01" value="8.00" required>
+                    <label class="sim-input-label" for="ph-input">
+                        <span class="sim-label-title">Simulated pH Level</span>
+                        <span class="sim-label-hint">Precision: 2 decimal places (e.g., 8.00)</span>
+                        <div class="sim-input-wrap">
+                            <input id="ph-input" name="ph" type="number" min="0" max="14" step="0.01" value="8.00" required>
+                            <span class="sim-input-unit">pH</span>
+                        </div>
                     </label>
                 </div>
                 <div class="sim-modal-actions">
                     <button type="button" id="cancel-test-btn" class="sim-btn-cancel">Cancel</button>
-                    <button type="submit" class="dashboard-submit-button">
+                    <button type="submit" class="sim-btn-submit">
                         <svg class="ui-icon" aria-hidden="true"><use href="#icon-plus"></use></svg>
                         <span>Dispatch Test Telemetry</span>
                     </button>

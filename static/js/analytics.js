@@ -31,7 +31,7 @@ function getAdjustmentStatus(key, value, min, max) {
             amount: diff,
             unit: unit,
             sign: "+",
-            action: `Increase by +${diff.toFixed(isTemp ? 1 : 2)}${unit} to reach ML optimal ${min.toFixed(isTemp ? 1 : 2)}${unit}`
+            action: `Increase by +${diff.toFixed(2)}${unit} to reach ML optimal ${min.toFixed(2)}${unit}`
         };
     }
 
@@ -43,7 +43,7 @@ function getAdjustmentStatus(key, value, min, max) {
             amount: diff,
             unit: unit,
             sign: "-",
-            action: `Decrease by -${diff.toFixed(isTemp ? 1 : 2)}${unit} to reach ML optimal ${max.toFixed(isTemp ? 1 : 2)}${unit}`
+            action: `Decrease by -${diff.toFixed(2)}${unit} to reach ML optimal ${max.toFixed(2)}${unit}`
         };
     }
 
@@ -109,24 +109,24 @@ function setAdjustment(key, value, min, max) {
     const adjustment = getAdjustmentStatus(key, val, min, max);
 
     if (adjustment.amount === 0) {
-        valueElement.textContent = isTemp ? "0.0°C" : "0.00";
+        valueElement.textContent = isTemp ? "0.00°C" : "0.00";
     } else {
-        const formattedAmount = adjustment.amount.toFixed(isTemp ? 1 : 2);
+        const formattedAmount = adjustment.amount.toFixed(2);
         valueElement.textContent = `${adjustment.sign}${formattedAmount}${adjustment.unit}`;
     }
 
-    const currentStr = `${val.toFixed(isTemp ? 1 : 2)}${adjustment.unit}`;
+    const currentStr = `${val.toFixed(2)}${adjustment.unit}`;
     if (adjustment.amount === 0) {
         statusElement.textContent = `Current: ${currentStr} (ML Optimal)`;
     } else {
-        statusElement.textContent = `Current: ${currentStr} (${adjustment.text} · ${adjustment.sign}${adjustment.amount.toFixed(isTemp ? 1 : 2)}${adjustment.unit} needed)`;
+        statusElement.textContent = `Current: ${currentStr} (${adjustment.text} · ${adjustment.sign}${adjustment.amount.toFixed(2)}${adjustment.unit} needed)`;
     }
 }
 
 function updateOptimalRangeLabels() {
     const tempRangeEl = document.getElementById("temp-optimal-range");
     if (tempRangeEl) {
-        tempRangeEl.textContent = `ML Optimal Range: ${ML_RANGES.temperature.optimalMin.toFixed(1)}°C – ${ML_RANGES.temperature.optimalMax.toFixed(1)}°C`;
+        tempRangeEl.textContent = `ML Optimal Range: ${ML_RANGES.temperature.optimalMin.toFixed(2)}°C – ${ML_RANGES.temperature.optimalMax.toFixed(2)}°C`;
     }
     const phRangeEl = document.getElementById("ph-optimal-range");
     if (phRangeEl) {
@@ -224,13 +224,18 @@ function renderAnalytics(reading, history, recommendation) {
     document.getElementById("analytics-health-heading").textContent = outsideRange
         ? "Latest pond readings need attention (outside ML optimal range)."
         : "Latest pond readings are within ML optimal range.";
+    const tNum = Number(reading.temperature);
+    const pNum = Number(reading.ph);
+    const formattedTemp = !isNaN(tNum) ? tNum.toFixed(2) : reading.temperature;
+    const formattedPh = !isNaN(pNum) ? pNum.toFixed(2) : reading.ph;
+
     document.getElementById("analytics-health-detail").textContent =
-        `Latest temperature: ${reading.temperature} °C; latest pH: ${reading.ph}. ${history.length} readings loaded from the sensors table.`;
+        `Latest temperature: ${formattedTemp} °C; latest pH: ${formattedPh}. ${history.length} readings loaded from the sensors table.`;
     
     // Key Findings: structured bullet points
     const findingsList = [
-        `<li>Latest temperature is <strong>${reading.temperature} °C</strong> (${getAdjustmentStatus("temperature", reading.temperature, ML_RANGES.temperature.optimalMin, ML_RANGES.temperature.optimalMax).text.toLowerCase()}).</li>`,
-        `<li>Latest pH is <strong>${reading.ph}</strong> (${getAdjustmentStatus("ph", reading.ph, ML_RANGES.ph.optimalMin, ML_RANGES.ph.optimalMax).text.toLowerCase()}).</li>`,
+        `<li>Latest temperature is <strong>${formattedTemp} °C</strong> (${getAdjustmentStatus("temperature", reading.temperature, ML_RANGES.temperature.optimalMin, ML_RANGES.temperature.optimalMax).text.toLowerCase()}).</li>`,
+        `<li>Latest pH is <strong>${formattedPh}</strong> (${getAdjustmentStatus("ph", reading.ph, ML_RANGES.ph.optimalMin, ML_RANGES.ph.optimalMax).text.toLowerCase()}).</li>`,
         `<li>${counts.critical} critical and ${counts.warnings} warning conditions across ${history.length} saved readings.</li>`
     ];
     if (recommendation && recommendation.recommendation) {

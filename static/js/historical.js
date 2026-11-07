@@ -249,7 +249,7 @@ function renderHistoricalTooltip(reading, index, pointX, mouseY, focusedParam, c
                     <span class="tooltip-param-label">Temperature:</span>
                 </div>
                 <div class="tooltip-item-right">
-                    <span class="tooltip-param-value">${tempVal.toFixed(1)} °C</span>
+                    <span class="tooltip-param-value">${tempVal.toFixed(2)} °C</span>
                     <span class="tooltip-param-status ${tempStatus.badgeClass}">${tempStatus.label}</span>
                 </div>
             </div>
@@ -705,7 +705,9 @@ function updateTable() {
         const isDemo = reading.status && reading.status.toLowerCase().includes("demo");
         const statusLabel = isDemo ? `Demo · ${qualityStatus}` : qualityStatus;
         const statusClass = isDemo ? "demo" : qualityStatus.toLowerCase();
-        return `<tr><td>${date.toLocaleDateString()}</td><td>${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</td><td>${reading.temperature} °C</td><td>${reading.ph}</td><td><span class="table-status ${statusClass}">${statusLabel}</span></td></tr>`;
+        const formattedTemp = !isNaN(Number(reading.temperature)) ? Number(reading.temperature).toFixed(2) : reading.temperature;
+        const formattedPh = !isNaN(Number(reading.ph)) ? Number(reading.ph).toFixed(2) : reading.ph;
+        return `<tr><td>${date.toLocaleDateString()}</td><td>${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</td><td>${formattedTemp} °C</td><td>${formattedPh}</td><td><span class="table-status ${statusClass}">${statusLabel}</span></td></tr>`;
     }).join("");
     document.getElementById("table-empty").hidden = total > 0;
 

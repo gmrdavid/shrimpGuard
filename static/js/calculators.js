@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const tempStatusEl = document.getElementById("telemetry-temp-status");
         const phStatusEl = document.getElementById("telemetry-ph-status");
 
-        if (tempEl) tempEl.textContent = liveSensor.temperature.toFixed(1);
+        if (tempEl) tempEl.textContent = liveSensor.temperature.toFixed(2);
         if (phEl) phEl.textContent = liveSensor.ph.toFixed(2);
 
         // ML Status classifications based strictly on model boundaries
@@ -97,13 +97,13 @@ document.addEventListener("DOMContentLoaded", function () {
         // Live Ammonia indicators
         const ammLiveTemp = document.getElementById("tools-ammonia-live-temp");
         const ammLivePh = document.getElementById("tools-ammonia-live-ph");
-        if (ammLiveTemp) ammLiveTemp.textContent = liveSensor.temperature.toFixed(1);
+        if (ammLiveTemp) ammLiveTemp.textContent = liveSensor.temperature.toFixed(2);
         if (ammLivePh) ammLivePh.textContent = liveSensor.ph.toFixed(2);
 
         // Live CO2 indicators
         const co2LiveTemp = document.getElementById("tools-co2-live-temp");
         const co2LivePh = document.getElementById("tools-co2-live-ph");
-        if (co2LiveTemp) co2LiveTemp.textContent = liveSensor.temperature.toFixed(1);
+        if (co2LiveTemp) co2LiveTemp.textContent = liveSensor.temperature.toFixed(2);
         if (co2LivePh) co2LivePh.textContent = liveSensor.ph.toFixed(2);
 
         const co2OverrideCbCheck = document.getElementById("tools-co2-override-cb");
@@ -150,28 +150,28 @@ document.addEventListener("DOMContentLoaded", function () {
             tempFactor = 1.00;
             tempBadgeText = "100% (Optimal)";
             tempBadgeClass = "badge-optimal";
-            guidelineText = `At ${currentTemp.toFixed(1)} °C, water temperature is in the ML optimal range (28.0–32.0 °C). Full normal feed ration recommended.`;
+            guidelineText = `At ${currentTemp.toFixed(2)} °C, water temperature is in the ML optimal range (28.00–32.00 °C). Full normal feed ration recommended.`;
         } else if (currentTemp > 32.0 && currentTemp <= 33.5) {
             tempFactor = 0.85;
             tempBadgeText = "85% (-15% Warm Stress)";
             tempBadgeClass = "badge-warning";
-            guidelineText = `At ${currentTemp.toFixed(1)} °C (elevated temperature), shrimp metabolism is accelerated and dissolved oxygen drops. Reduce feed by 15% to prevent uneaten decay.`;
+            guidelineText = `At ${currentTemp.toFixed(2)} °C (elevated temperature), shrimp metabolism is accelerated and dissolved oxygen drops. Reduce feed by 15% to prevent uneaten decay.`;
         } else if (currentTemp > 33.5) {
             tempFactor = 0.50;
             tempBadgeText = "50% (-50% Critical Heat)";
             tempBadgeClass = "badge-critical";
-            guidelineText = `At ${currentTemp.toFixed(1)} °C (critical thermal threshold), shrimp reduce feeding and oxygen demand is extreme. Cut feed in half; monitor check trays closely.`;
+            guidelineText = `At ${currentTemp.toFixed(2)} °C (critical thermal threshold), shrimp reduce feeding and oxygen demand is extreme. Cut feed in half; monitor check trays closely.`;
         } else if (currentTemp >= 26.0 && currentTemp < 28.0) {
             tempFactor = 0.75;
             tempBadgeText = "75% (-25% Cool Water)";
             tempBadgeClass = "badge-warning";
-            guidelineText = `At ${currentTemp.toFixed(1)} °C, shrimp gastric emptying time slows significantly. Reduce daily feed ration by 25% to avoid feed rotting on pond bottom.`;
+            guidelineText = `At ${currentTemp.toFixed(2)} °C, shrimp gastric emptying time slows significantly. Reduce daily feed ration by 25% to avoid feed rotting on pond bottom.`;
         } else {
             // < 26.0 °C
             tempFactor = 0.40;
             tempBadgeText = "40% (-60% Cold Stress)";
             tempBadgeClass = "badge-critical";
-            guidelineText = `At ${currentTemp.toFixed(1)} °C (cold temperature), digestive protease enzyme activity drops below 40%. Feed minimally (40% ration) or halt until temperature recovers.`;
+            guidelineText = `At ${currentTemp.toFixed(2)} °C (cold temperature), digestive protease enzyme activity drops below 40%. Feed minimally (40% ration) or halt until temperature recovers.`;
         }
 
         const adjustedDailyFeed = baseDailyFeed * tempFactor;
@@ -373,7 +373,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const assessmentText = document.getElementById("tools-ammonia-assessment-text");
         const sensitivityNote = document.getElementById("tools-ammonia-sensitivity");
 
-        if (stepTempEl) stepTempEl.textContent = `${temp.toFixed(1)} °C`;
+        if (stepTempEl) stepTempEl.textContent = `${temp.toFixed(2)} °C`;
         if (stepPhEl) stepPhEl.textContent = ph.toFixed(2);
         if (stepFactorEl) stepFactorEl.textContent = factor.toFixed(4);
         if (stepMathEl) stepMathEl.textContent = `${factor.toFixed(4)} × ${tan.toFixed(2)} ppm`;
@@ -587,7 +587,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const assessmentText = document.getElementById("tools-co2-assessment-text");
         const sensitivityNote = document.getElementById("tools-co2-sensitivity");
 
-        if (stepTempEl) stepTempEl.textContent = `${temp.toFixed(1)} °C`;
+        if (stepTempEl) stepTempEl.textContent = `${temp.toFixed(2)} °C`;
         if (stepPhEl) stepPhEl.textContent = ph.toFixed(2);
         if (stepFactorEl) stepFactorEl.textContent = factor.toFixed(4);
         if (stepMathEl) stepMathEl.textContent = `${factor.toFixed(4)} × ${alk.toFixed(0)} mg/L`;
