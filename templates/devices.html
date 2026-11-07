@@ -201,7 +201,7 @@
                     <div class="metric-card-content">
                         <h3>Total Devices</h3>
                         <div class="metric-reading">
-                            <h2 id="top-total-devices">{{ total_devices or 8 }}</h2>
+                            <h2 id="top-total-devices">{{ total_devices or 10 }}</h2>
                             <span class="metric-unit">Units</span>
                         </div>
                         <p class="metric-status">All Monitored Hardware Units</p>
@@ -223,7 +223,7 @@
                     <div class="metric-card-content">
                         <h3>Online Devices</h3>
                         <div class="metric-reading">
-                            <h2 id="top-online-devices" style="color: #059669;">{{ online_devices or 7 }}</h2>
+                            <h2 id="top-online-devices" style="color: #059669;">{{ online_devices or 9 }}</h2>
                             <span class="metric-unit">Online</span>
                         </div>
                         <p class="metric-status">Operational &amp; Broadcasting</p>
@@ -349,7 +349,7 @@
                             </div>
                         </div>
                         <span id="table-device-count-badge" class="badge badge-optimal" style="font-weight: 700; font-size: 12px; padding: 5px 12px;">
-                            {{ total_devices or 8 }} Monitored Units
+                            {{ total_devices or 10 }} Monitored Units
                         </span>
                     </div>
 
@@ -421,20 +421,20 @@
 
                         <div class="status-ratio-box">
                             <div class="status-ratio-number">
-                                <span id="side-ratio-online">{{ online_devices or 7 }}</span>/<span id="side-ratio-total">{{ total_devices or 8 }}</span>
+                                <span id="side-ratio-online">{{ online_devices or 9 }}</span>/<span id="side-ratio-total">{{ total_devices or 10 }}</span>
                             </div>
                             <p id="side-ratio-text" class="status-ratio-subtitle">
-                                {{ online_devices or 7 }} online and {{ offline_devices or 1 }} offline
+                                {{ online_devices or 9 }} online and {{ offline_devices or 1 }} offline
                             </p>
 
                             <div class="device-progress-track" style="height: 7px; background: #e5ece7; border-radius: 999px; overflow: hidden; margin-bottom: 14px;">
-                                <div id="side-progress-fill" style="height: 100%; background: #126b4f; border-radius: 999px; transition: width 0.3s ease; width: {% if total_devices %}{{ (online_devices / total_devices * 100)|round(1) }}{% else %}87.5{% endif %}%;"></div>
+                                <div id="side-progress-fill" style="height: 100%; background: #126b4f; border-radius: 999px; transition: width 0.3s ease; width: {% if total_devices %}{{ (online_devices / total_devices * 100)|round(1) }}{% else %}90.0{% endif %}%;"></div>
                             </div>
 
                             <div class="status-ratio-pills">
                                 <span class="table-status status-optimal" style="font-size: 11.5px; padding: 4px 10px;">
                                     <span class="status-indicator-dot dot-optimal"></span>
-                                    Online: <strong id="side-pill-online">{{ online_devices or 7 }}</strong>
+                                    Online: <strong id="side-pill-online">{{ online_devices or 9 }}</strong>
                                 </span>
                                 <span class="table-status status-warning" style="font-size: 11.5px; padding: 4px 10px;">
                                     <span class="status-indicator-dot dot-warning"></span>
@@ -452,7 +452,7 @@
                             </div>
                             <div>
                                 <h3 style="margin: 0; font-size: 13px; font-weight: 800; color: #294535;">Device Category</h3>
-                                <p style="margin: 2px 0 0; font-size: 10px; color: #8b9990;">Sensors, communication &amp; power</p>
+                                <p style="margin: 2px 0 0; font-size: 10px; color: #8b9990;">Sensors, communication, alerts &amp; power</p>
                             </div>
                         </div>
 
@@ -470,7 +470,7 @@
                                     </div>
                                 </div>
                                 <span id="cat-sensors-badge" class="badge badge-optimal" style="font-size: 11px; font-weight: 700;">
-                                    {{ category_stats.sensors.online if category_stats else 2 }}/{{ category_stats.sensors.total if category_stats else 2 }} Online
+                                    {{ category_stats.sensors.online if category_stats and category_stats.sensors else 2 }}/{{ category_stats.sensors.total if category_stats and category_stats.sensors else 2 }} Online
                                 </span>
                             </div>
 
@@ -486,7 +486,23 @@
                                     </div>
                                 </div>
                                 <span id="cat-comm-badge" class="badge badge-optimal" style="font-size: 11px; font-weight: 700;">
-                                    {{ category_stats.communication.online if category_stats else 3 }}/{{ category_stats.communication.total if category_stats else 4 }} Online
+                                    {{ category_stats.communication.online if category_stats and category_stats.communication else 3 }}/{{ category_stats.communication.total if category_stats and category_stats.communication else 4 }} Online
+                                </span>
+                            </div>
+
+                            <!-- ALERTS & SIGNALING -->
+                            <div class="device-category-item">
+                                <div class="category-left">
+                                    <div class="category-icon-box" style="background: #fff7ed; color: #ea580c;">
+                                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-alert"></use></svg>
+                                    </div>
+                                    <div class="category-meta">
+                                        <h4>Alerts &amp; Signaling</h4>
+                                        <p title="Active 5V Piezo Buzzer & Tricolor Status LEDs">Piezo Buzzer &amp; Status LEDs</p>
+                                    </div>
+                                </div>
+                                <span id="cat-alerts-badge" class="badge badge-optimal" style="font-size: 11px; font-weight: 700;">
+                                    {{ category_stats.alerts.online if category_stats and category_stats.alerts else 2 }}/{{ category_stats.alerts.total if category_stats and category_stats.alerts else 2 }} Online
                                 </span>
                             </div>
 
@@ -502,7 +518,7 @@
                                     </div>
                                 </div>
                                 <span id="cat-power-badge" class="badge badge-optimal" style="font-size: 11px; font-weight: 700;">
-                                    {{ category_stats.power.online if category_stats else 2 }}/{{ category_stats.power.total if category_stats else 2 }} Online
+                                    {{ category_stats.power.online if category_stats and category_stats.power else 2 }}/{{ category_stats.power.total if category_stats and category_stats.power else 2 }} Online
                                 </span>
                             </div>
 

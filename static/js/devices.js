@@ -65,8 +65,8 @@ function renderDevices(data) {
     const isConnected = Boolean(data.is_connected);
     const port = data.connected_port || "COM8";
     const latest = data.latest_telemetry || {};
-    const total = data.total_devices || (Array.isArray(data.devices) ? data.devices.length : 8);
-    const online = data.online_devices !== undefined ? data.online_devices : 7;
+    const total = data.total_devices || (Array.isArray(data.devices) ? data.devices.length : 10);
+    const online = data.online_devices !== undefined ? data.online_devices : 9;
     const offline = data.offline_devices !== undefined ? data.offline_devices : 1;
     const sensors = data.connected_sensors !== undefined ? data.connected_sensors : 2;
 
@@ -160,6 +160,13 @@ function renderDevices(data) {
         const elCatComm = document.getElementById("cat-comm-badge");
         if (elCatComm) {
             elCatComm.textContent = `${cat.communication.online}/${cat.communication.total} Online`;
+        }
+    }
+
+    if (cat.alerts) {
+        const elCatAlerts = document.getElementById("cat-alerts-badge");
+        if (elCatAlerts) {
+            elCatAlerts.textContent = `${cat.alerts.online}/${cat.alerts.total} Online`;
         }
     }
 

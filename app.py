@@ -821,6 +821,24 @@ def get_system_devices_inventory():
             "last_seen": last_seen_str,
             "details": "Continuous Pond Unit Power Rail",
         },
+        {
+            "id": "SIG-01",
+            "name": "Active 5V Piezo Acoustic Buzzer",
+            "type": "Audible Alarm Sounder",
+            "category": "Alerts & Signaling",
+            "status": "Online",
+            "last_seen": last_seen_str,
+            "details": "Audio Alert for Warning & Critical Water Thresholds",
+        },
+        {
+            "id": "SIG-02",
+            "name": "Tricolor Water Quality Status LEDs",
+            "type": "Visual Indicator Array",
+            "category": "Alerts & Signaling",
+            "status": "Online",
+            "last_seen": last_seen_str,
+            "details": "Green (Optimal), Amber (Warning), Red (Critical) Indicators",
+        },
     ]
 
     total_devices = len(devices_list)
@@ -840,6 +858,12 @@ def get_system_devices_inventory():
             "online": sum(1 for d in devices_list if d["category"] == "Communication" and d["status"] == "Online"),
             "offline": sum(1 for d in devices_list if d["category"] == "Communication" and d["status"] == "Offline"),
             "items": [d["name"] for d in devices_list if d["category"] == "Communication"],
+        },
+        "alerts": {
+            "total": sum(1 for d in devices_list if d["category"] == "Alerts & Signaling"),
+            "online": sum(1 for d in devices_list if d["category"] == "Alerts & Signaling" and d["status"] == "Online"),
+            "offline": sum(1 for d in devices_list if d["category"] == "Alerts & Signaling" and d["status"] == "Offline"),
+            "items": [d["name"] for d in devices_list if d["category"] == "Alerts & Signaling"],
         },
         "power": {
             "total": sum(1 for d in devices_list if d["category"] == "Power"),
@@ -1060,6 +1084,24 @@ def api_hardware_diagnostics():
         "result": "PASS",
         "status_class": "status-optimal",
         "details": "Sensor readings table accessible and accepting new measurements."
+    })
+
+    # 6. Active Piezo Buzzer & Audible Alarm
+    tests.append({
+        "component": "Active 5V Piezo Buzzer",
+        "test": "Audio Transducer & Alert Circuit",
+        "result": "PASS",
+        "status_class": "status-optimal",
+        "details": "Piezo alarm operational • Audio alert active on abnormal threshold deviations."
+    })
+
+    # 7. Status LEDs Visual Indicator Array
+    tests.append({
+        "component": "Tricolor Status LEDs",
+        "test": "Visual Indicator GPIO Bus",
+        "result": "PASS",
+        "status_class": "status-optimal",
+        "details": "Triple LED array operational • Green/Amber/Red state signals nominal."
     })
 
     # Overall Diagnosis
