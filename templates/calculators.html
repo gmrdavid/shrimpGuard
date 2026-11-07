@@ -8,9 +8,38 @@
 
     <title>Aquaculture Tools &amp; Calculators | ShrimpGuard</title>
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}">
-    <script>(function(){var t=localStorage.getItem('shrimp_theme');if(t==='dark'||(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.setAttribute('data-theme','dark');}else{document.documentElement.setAttribute('data-theme','light');}})();</script>
+        <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}?v=20261107_dark1">
+    <script>
+        (function() {
+            var t = localStorage.getItem('shrimp_theme');
+            var isD = t === 'dark' || (!t && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            var mode = isD ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', mode);
+            document.documentElement.classList.add('theme-' + mode);
+        })();
+        function toggleShrimpTheme() {
+            if (window.ShrimpTheme && window.ShrimpTheme.toggleTheme) {
+                return window.ShrimpTheme.toggleTheme();
+            }
+            var cur = document.documentElement.getAttribute('data-theme') || (document.documentElement.classList.contains('theme-dark') ? 'dark' : 'light');
+            var next = cur === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            document.documentElement.classList.remove('theme-dark', 'theme-light');
+            document.documentElement.classList.add('theme-' + next);
+            if (document.body) {
+                document.body.setAttribute('data-theme', next);
+                document.body.classList.remove('theme-dark', 'theme-light');
+                document.body.classList.add('theme-' + next);
+            }
+            try { localStorage.setItem('shrimp_theme', next); } catch(e) {}
+            var m = document.querySelector('meta[name="theme-color"]');
+            if (m) m.setAttribute('content', next === 'dark' ? '#0c151b' : '#126b4f');
+            var s = document.getElementById('theme-preference-select');
+            if (s) s.value = next;
+            window.dispatchEvent(new CustomEvent('shrimp-theme-change', { detail: { theme: next } }));
+        }
+    </script>
 </head>
 
 <body class="dashboard-page calculators-page">
@@ -135,10 +164,11 @@
 
             <div class="header-info dashboard-header-info">
 
-                <button
+                                <button
                     id="theme-toggle-btn"
                     class="theme-toggle-btn"
                     type="button"
+                    onclick="toggleShrimpTheme()"
                     aria-label="Toggle dark mode"
                     title="Toggle dark mode">
                     <svg class="ui-icon theme-icon-moon" aria-hidden="true"><use href="#icon-moon"></use></svg>
@@ -2258,7 +2288,7 @@
     </div>
 </div>
 
-<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+<script src="{{ url_for('static', filename='js/theme.js') }}?v=20261107_dark1"></script>
 <script src="{{ url_for('static', filename='js/calculators.js') }}"></script>
 <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
 
