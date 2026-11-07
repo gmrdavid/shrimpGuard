@@ -65,10 +65,10 @@ function renderDevices(data) {
     const isConnected = Boolean(data.is_connected);
     const port = data.connected_port || "COM8";
     const latest = data.latest_telemetry || {};
-    const total = data.total_devices || (Array.isArray(data.devices) ? data.devices.length : 10);
-    const online = data.online_devices !== undefined ? data.online_devices : 9;
-    const offline = data.offline_devices !== undefined ? data.offline_devices : 1;
-    const sensors = data.connected_sensors !== undefined ? data.connected_sensors : 2;
+    const total = data.total_devices !== undefined ? data.total_devices : (Array.isArray(data.devices) ? data.devices.length : 10);
+    const online = data.online_devices !== undefined ? data.online_devices : 0;
+    const offline = data.offline_devices !== undefined ? data.offline_devices : total;
+    const sensors = data.connected_sensors !== undefined ? data.connected_sensors : 0;
 
     // 1. Gateway Status & RF Badges
     const badgeGwStatus = document.getElementById("badge-gw-status");

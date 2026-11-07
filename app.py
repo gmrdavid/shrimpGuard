@@ -6,6 +6,7 @@ import os
 import re
 import secrets
 import threading
+import time
 import zipfile
 from datetime import datetime, timedelta
 from functools import wraps
@@ -709,15 +710,55 @@ def get_system_devices_inventory():
     stream = LATEST_HARDWARE_STREAM or {}
     hw_connected = bool(stream.get("is_connected") or stream.get("connected"))
     port = stream.get("connected_port") or os.getenv("LORA_PORT", "COM8")
-    temp = stream.get("temperature")
-    ph = stream.get("ph")
     seq = stream.get("seq")
     rssi = stream.get("rssi")
     snr = stream.get("snr")
     device_id = stream.get("device_id") or "NODE01"
     recorded_at = stream.get("recorded_at")
 
-    # If stream is empty, retrieve latest DB reading for fallback
+    # Evaluate live telemetry and packet freshness (Node 1 broadcasts every 5 seconds).
+    # Hardware is only considered actively broadcasting if a packet arrived within the last 20 seconds.
+    last_packet_time = stream.get("last_packet_time", 0)
+    now_epoch = time.time()
+    is_live_packet = False
+
+    if last_packet_time and (now_epoch - last_packet_time <= 20):
+        is_live_packet = True
+    elif recorded_at:
+        try:
+            clean_ts = recorded_at.replace("Z", "").split(".")[0]
+            fmt = "%Y-%m-%dT%H:%M:%S" if "T" in clean_ts else "%Y-%m-%d %H:%M:%S"
+            rec_dt = datetime.strptime(clean_ts, fmt)
+            diff_sec = (datetime.now() - rec_dt).total_seconds()
+            if 0 <= diff_sec <= 20:
+                is_live_packet = True
+        except Exception:
+            pass
+
+    # Live sensor values (only valid if live packet arrived within timeout window)
+    live_temp = stream.get("temperature") if is_live_packet else None
+    live_ph = stream.get("ph") if is_live_packet else None
+
+    # Determine probe health checks on live data
+    temp_fault = None
+    if live_temp is not None:
+        if abs(live_temp - (-127.0)) < 0.5:
+            temp_fault = "1-Wire Open Circuit (-127°C)"
+        elif abs(live_temp - 85.0) < 0.5:
+            temp_fault = "Power-on Reset (85°C)"
+
+    ph_fault = None
+    if live_ph is not None:
+        if live_ph <= 0.2 or live_ph >= 13.8:
+            ph_fault = "Floating ADC / Disconnect"
+
+    # Gateway (Node 2 base station) status: online if USB serial port is open
+    node2_online = hw_connected
+
+    # Pond Node 1 transmitter and connected modules: online only if Gateway is connected AND live packet received recently
+    node1_online = hw_connected and is_live_packet
+
+    # Query last DB reading for historical reference display (NOT for spoofing online state)
     latest_db_reading = None
     try:
         latest_row = db.session.execute(
@@ -728,25 +769,9 @@ def get_system_devices_inventory():
     except SQLAlchemyError:
         db.session.rollback()
 
-    if temp is None and latest_db_reading:
-        temp = float(latest_db_reading["temperature"])
-        ph = float(latest_db_reading["ph_level"])
-        recorded_at = str(latest_db_reading["date"])
-
-    # Determine probe health checks
-    temp_fault = None
-    if temp is not None:
-        if abs(temp - (-127.0)) < 0.5:
-            temp_fault = "1-Wire Open Circuit (-127°C)"
-        elif abs(temp - 85.0) < 0.5:
-            temp_fault = "Power-on Reset (85°C)"
-
-    ph_fault = None
-    if ph is not None:
-        if ph <= 0.2 or ph >= 13.8:
-            ph_fault = "Floating ADC / Disconnect"
-
-    last_seen_str = recorded_at if recorded_at else "Just now"
+    display_temp = live_temp if live_temp is not None else (float(latest_db_reading["temperature"]) if latest_db_reading else None)
+    display_ph = live_ph if live_ph is not None else (float(latest_db_reading["ph_level"]) if latest_db_reading else None)
+    display_recorded_at = recorded_at if recorded_at else (str(latest_db_reading["date"]) if latest_db_reading else None)
 
     devices_list = [
         {
@@ -754,8 +779,8 @@ def get_system_devices_inventory():
             "name": "Node 2 LoRa Base Station Gateway",
             "type": "IoT Serial Bridge / Receiver",
             "category": "Communication",
-            "status": "Online" if hw_connected else "Offline",
-            "last_seen": last_seen_str if hw_connected else "Standby (USB Ready)",
+            "status": "Online" if node2_online else "Offline",
+            "last_seen": f"Active ({port} @ 115200 baud)" if node2_online else "Standby (USB Disconnected)",
             "details": f"{port} @ 115200 baud • Win32 CDC Driver",
         },
         {
@@ -763,8 +788,8 @@ def get_system_devices_inventory():
             "name": "Node 1 Autonomous Pond Transmitter Unit",
             "type": "Edge Telemetry Station",
             "category": "Communication",
-            "status": "Online" if (hw_connected or latest_db_reading) else "Offline",
-            "last_seen": last_seen_str,
+            "status": "Online" if node1_online else "Offline",
+            "last_seen": "Broadcasting (5s Cadence)" if node1_online else ("Offline (No Telemetry Link)" if node2_online else "Offline (Gateway Standby)"),
             "details": f"Node ID: {device_id} • 5s Periodic Broadcast",
         },
         {
@@ -772,35 +797,35 @@ def get_system_devices_inventory():
             "name": "DS18B20 Waterproof Temperature Sensor",
             "type": "Digital 1-Wire Thermal Probe",
             "category": "Sensors",
-            "status": "Online" if (temp is not None and not temp_fault) else "Offline",
-            "last_seen": last_seen_str,
-            "details": f"Current: {temp:.2f} °C" if temp is not None else "1-Wire GPIO4 (4.7kΩ pull-up)",
+            "status": "Online" if (node1_online and live_temp is not None and not temp_fault) else "Offline",
+            "last_seen": "Telemetry Active" if (node1_online and live_temp is not None and not temp_fault) else "Offline (Probe Inactive)",
+            "details": f"Current: {live_temp:.2f} °C" if (node1_online and live_temp is not None) else (temp_fault or "1-Wire GPIO4 (4.7kΩ pull-up)"),
         },
         {
             "id": "SEN-02",
             "name": "DFRobot Industrial Analog pH Sensor (SEN0161)",
             "type": "Electrochemical Glass Electrode",
             "category": "Sensors",
-            "status": "Online" if (ph is not None and not ph_fault) else "Offline",
-            "last_seen": last_seen_str,
-            "details": f"Current: {ph:.2f} pH" if ph is not None else "ADC1_CH6 GPIO34 (0-3.3V)",
+            "status": "Online" if (node1_online and live_ph is not None and not ph_fault) else "Offline",
+            "last_seen": "Telemetry Active" if (node1_online and live_ph is not None and not ph_fault) else "Offline (Probe Inactive)",
+            "details": f"Current: {live_ph:.2f} pH" if (node1_online and live_ph is not None) else (ph_fault or "ADC1_CH6 GPIO34 (0-3.3V)"),
         },
         {
             "id": "COMM-03",
             "name": "SX1278 433.5 MHz LoRa RF Transceiver",
             "type": "Sub-GHz Long-Range Radio",
             "category": "Communication",
-            "status": "Online",
-            "last_seen": last_seen_str,
-            "details": f"433.50 MHz ISM • RSSI: {rssi or -72} dBm • SNR: +{snr or 9.2} dB",
+            "status": "Online" if node1_online else "Offline",
+            "last_seen": "Link Active" if node1_online else "Offline (No RF Carrier)",
+            "details": f"433.50 MHz ISM • RSSI: {rssi or -72} dBm • SNR: +{snr or 9.2} dB" if node1_online else "433.50 MHz ISM (Standby)",
         },
         {
             "id": "COMM-04",
             "name": "20x4 I2C Character LCD Display (HD44780)",
             "type": "Field Telemetry Display",
             "category": "Communication",
-            "status": "Online",
-            "last_seen": last_seen_str,
+            "status": "Online" if node2_online else "Offline",
+            "last_seen": "Display Active" if node2_online else "Offline (Base Station Off)",
             "details": "I2C Addr 0x27 • PCF8574 Backpack",
         },
         {
@@ -808,8 +833,8 @@ def get_system_devices_inventory():
             "name": "Pond Solar Boost Unit & Charge Controller",
             "type": "Solar PV Energy Harvester",
             "category": "Power",
-            "status": "Online",
-            "last_seen": last_seen_str,
+            "status": "Online" if node1_online else "Offline",
+            "last_seen": "Solar Ingestion Active" if node1_online else "Offline (Node 1 Off)",
             "details": "Autonomous Solar Energy Ingestion",
         },
         {
@@ -817,8 +842,8 @@ def get_system_devices_inventory():
             "name": "3.7V Li-ion Battery Power Management System",
             "type": "Rechargeable Battery Cell & BMS",
             "category": "Power",
-            "status": "Online",
-            "last_seen": last_seen_str,
+            "status": "Online" if node1_online else "Offline",
+            "last_seen": "Battery Rail Active" if node1_online else "Offline (Node 1 Off)",
             "details": "Continuous Pond Unit Power Rail",
         },
         {
@@ -826,8 +851,8 @@ def get_system_devices_inventory():
             "name": "Active 5V Piezo Acoustic Buzzer",
             "type": "Audible Alarm Sounder",
             "category": "Alerts & Signaling",
-            "status": "Online",
-            "last_seen": last_seen_str,
+            "status": "Online" if node2_online else "Offline",
+            "last_seen": "Alarm Armed" if node2_online else "Offline (Base Station Off)",
             "details": "Audio Alert for Warning & Critical Water Thresholds",
         },
         {
@@ -835,8 +860,8 @@ def get_system_devices_inventory():
             "name": "Tricolor Water Quality Status LEDs",
             "type": "Visual Indicator Array",
             "category": "Alerts & Signaling",
-            "status": "Online",
-            "last_seen": last_seen_str,
+            "status": "Online" if node2_online else "Offline",
+            "last_seen": "Indicators Armed" if node2_online else "Offline (Base Station Off)",
             "details": "Green (Optimal), Amber (Warning), Red (Critical) Indicators",
         },
     ]
@@ -883,14 +908,15 @@ def get_system_devices_inventory():
         "is_connected": hw_connected,
         "connected_port": port,
         "latest_telemetry": {
-            "temperature": temp,
-            "ph": ph,
+            "temperature": display_temp,
+            "ph": display_ph,
             "status": stream.get("status") or (latest_db_reading["status"] if latest_db_reading else "Optimal"),
-            "recorded_at": recorded_at,
+            "recorded_at": display_recorded_at,
             "device_id": device_id,
             "seq": seq,
             "rssi": rssi,
             "snr": snr,
+            "is_live": is_live_packet,
         },
         "count": total_devices,
     }

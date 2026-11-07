@@ -74,6 +74,7 @@ LATEST_HARDWARE_STREAM = {
     "recorded_at": None,
     "connected_port": None,
     "is_connected": False,
+    "last_packet_time": 0,
 }
 
 
@@ -272,6 +273,12 @@ def _run_listener_loop(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dis
                 bytes_read = wintypes.DWORD()
                 success = kernel32.ReadFile(handle, buf, 255, ctypes.byref(bytes_read), None)
 
+                if not success:
+                    err = kernel32.GetLastError()
+                    if err in (2, 5, 6, 22, 31, 995, 1167):
+                        logger.warning(f"[HardwareSerial] Win32 ReadFile error {err} on {port} - hardware disconnected.")
+                        break
+
                 if success and bytes_read.value > 0:
                     chunk = buf.raw[:bytes_read.value]
                     line_buffer += chunk
@@ -356,6 +363,7 @@ def _run_listener_loop(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dis
                                 "snr": parsed.get("snr"),
                                 "status": status,
                                 "recorded_at": now_str,
+                                "last_packet_time": time.time(),
                                 "is_connected": True,
                                 "connected_port": port,
                             })

@@ -201,7 +201,7 @@
                     <div class="metric-card-content">
                         <h3>Total Devices</h3>
                         <div class="metric-reading">
-                            <h2 id="top-total-devices">{{ total_devices or 10 }}</h2>
+                            <h2 id="top-total-devices">{{ total_devices if total_devices is not none else 10 }}</h2>
                             <span class="metric-unit">Units</span>
                         </div>
                         <p class="metric-status">All Monitored Hardware Units</p>
@@ -223,7 +223,7 @@
                     <div class="metric-card-content">
                         <h3>Online Devices</h3>
                         <div class="metric-reading">
-                            <h2 id="top-online-devices" style="color: #059669;">{{ online_devices or 9 }}</h2>
+                            <h2 id="top-online-devices" style="color: #059669;">{{ online_devices if online_devices is not none else 0 }}</h2>
                             <span class="metric-unit">Online</span>
                         </div>
                         <p class="metric-status">Operational &amp; Broadcasting</p>
@@ -245,7 +245,7 @@
                     <div class="metric-card-content">
                         <h3>Offline Devices</h3>
                         <div class="metric-reading">
-                            <h2 id="top-offline-devices" style="color: #475569;">{{ offline_devices or 1 }}</h2>
+                            <h2 id="top-offline-devices" style="color: #475569;">{{ offline_devices if offline_devices is not none else (total_devices if total_devices is not none else 10) }}</h2>
                             <span class="metric-unit">Offline</span>
                         </div>
                         <p class="metric-status">Standby / Awaiting LoRa Link</p>
@@ -267,7 +267,7 @@
                     <div class="metric-card-content">
                         <h3>Connected Sensors</h3>
                         <div class="metric-reading">
-                            <h2 id="top-connected-sensors" style="color: #2563eb;">{{ connected_sensors or 2 }}</h2>
+                            <h2 id="top-connected-sensors" style="color: #2563eb;">{{ connected_sensors if connected_sensors is not none else 0 }}</h2>
                             <span class="metric-unit">Probes</span>
                         </div>
                         <p class="metric-status">Water Quality Telemetry Active</p>
@@ -421,24 +421,24 @@
 
                         <div class="status-ratio-box">
                             <div class="status-ratio-number">
-                                <span id="side-ratio-online">{{ online_devices or 9 }}</span>/<span id="side-ratio-total">{{ total_devices or 10 }}</span>
+                                <span id="side-ratio-online">{{ online_devices if online_devices is not none else 0 }}</span>/<span id="side-ratio-total">{{ total_devices if total_devices is not none else 10 }}</span>
                             </div>
                             <p id="side-ratio-text" class="status-ratio-subtitle">
-                                {{ online_devices or 9 }} online and {{ offline_devices or 1 }} offline
+                                {{ online_devices if online_devices is not none else 0 }} online and {{ offline_devices if offline_devices is not none else 10 }} offline
                             </p>
 
                             <div class="device-progress-track" style="height: 7px; background: #e5ece7; border-radius: 999px; overflow: hidden; margin-bottom: 14px;">
-                                <div id="side-progress-fill" style="height: 100%; background: #126b4f; border-radius: 999px; transition: width 0.3s ease; width: {% if total_devices %}{{ (online_devices / total_devices * 100)|round(1) }}{% else %}90.0{% endif %}%;"></div>
+                                <div id="side-progress-fill" style="height: 100%; background: #126b4f; border-radius: 999px; transition: width 0.3s ease; width: {% if total_devices and total_devices > 0 %}{{ (online_devices / total_devices * 100)|round(1) }}{% else %}0.0{% endif %}%;"></div>
                             </div>
 
                             <div class="status-ratio-pills">
                                 <span class="table-status status-optimal" style="font-size: 11.5px; padding: 4px 10px;">
                                     <span class="status-indicator-dot dot-optimal"></span>
-                                    Online: <strong id="side-pill-online">{{ online_devices or 9 }}</strong>
+                                    Online: <strong id="side-pill-online">{{ online_devices if online_devices is not none else 0 }}</strong>
                                 </span>
                                 <span class="table-status status-warning" style="font-size: 11.5px; padding: 4px 10px;">
                                     <span class="status-indicator-dot dot-warning"></span>
-                                    Offline: <strong id="side-pill-offline">{{ offline_devices or 1 }}</strong>
+                                    Offline: <strong id="side-pill-offline">{{ offline_devices if offline_devices is not none else 10 }}</strong>
                                 </span>
                             </div>
                         </div>
