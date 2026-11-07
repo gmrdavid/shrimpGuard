@@ -376,17 +376,6 @@
                         </div>
                     </div>
 
-                    <!-- Limit -->
-                    <div class="admin-filter-item">
-                        <span class="admin-filter-item-label">Page:</span>
-                        <select id="log-limit-select" class="admin-filter-select no-icon" aria-label="Items per page">
-                            <option value="15" selected>15 / page</option>
-                            <option value="30">30 / page</option>
-                            <option value="50">50 / page</option>
-                            <option value="all">Show All</option>
-                        </select>
-                    </div>
-
                     <!-- Reset Button -->
                     <button id="log-reset-btn" class="admin-filter-reset-btn" type="button" title="Reset all filters">
                         <svg class="ui-icon" aria-hidden="true"><use href="#icon-x"></use></svg>
@@ -667,7 +656,7 @@
         const nextBtn = document.getElementById("log-next-btn");
 
         let currentPage = 1;
-        let itemsPerPage = 15;
+        const itemsPerPage = 10;
         let filteredRows = allRows;
 
         function getRowDate(row) {
@@ -769,14 +758,14 @@
 
         function renderPagination() {
             const total = filteredRows.length;
-            const perPage = itemsPerPage === "all" ? total : itemsPerPage;
+            const perPage = itemsPerPage;
             const totalPages = Math.ceil(total / perPage) || 1;
 
             if (currentPage > totalPages) currentPage = totalPages;
             if (currentPage < 1) currentPage = 1;
 
             const startIdx = (currentPage - 1) * perPage;
-            const endIdx = itemsPerPage === "all" ? total : Math.min(startIdx + perPage, total);
+            const endIdx = Math.min(startIdx + perPage, total);
 
             allRows.forEach(r => { r.hidden = true; });
             for (let i = startIdx; i < endIdx; i++) {
@@ -828,15 +817,6 @@
             datePicker.addEventListener("change", applyFilter);
         }
 
-        if (limitSelect) {
-            limitSelect.addEventListener("change", () => {
-                const v = limitSelect.value;
-                itemsPerPage = v === "all" ? "all" : parseInt(v, 10);
-                currentPage = 1;
-                renderPagination();
-            });
-        }
-
         if (resetBtn) {
             resetBtn.addEventListener("click", () => {
                 if (searchInput) searchInput.value = "";
@@ -848,8 +828,7 @@
                 if (actionSelect) actionSelect.value = "all";
                 if (roleSelect) roleSelect.value = "all";
                 if (sortSelect) sortSelect.value = "date-desc";
-                if (limitSelect) limitSelect.value = "15";
-                itemsPerPage = 15;
+                currentPage = 1;
                 applyFilter();
             });
         }
@@ -865,8 +844,7 @@
 
         if (nextBtn) {
             nextBtn.addEventListener("click", () => {
-                const perPage = itemsPerPage === "all" ? filteredRows.length : itemsPerPage;
-                const totalPages = Math.ceil(filteredRows.length / perPage) || 1;
+                const totalPages = Math.ceil(filteredRows.length / itemsPerPage) || 1;
                 if (currentPage < totalPages) {
                     currentPage++;
                     renderPagination();

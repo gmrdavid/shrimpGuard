@@ -568,6 +568,16 @@
                 </table>
             </div>
 
+            <!-- PAGINATION (FIXED 10 PER PAGE) -->
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; border-top: 1px solid #edf1ee; background: #fbfdfc; flex-wrap: wrap; gap: 10px;">
+                <span id="telemetry-page-info" style="font-size: 12px; font-weight: 600; color: #64796b;">Showing records...</span>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button type="button" id="telemetry-prev-btn" class="activity-page-btn prev-btn" style="padding: 4px 10px; font-size: 11px;">Prev</button>
+                    <span id="telemetry-current-page" style="font-size: 12px; font-weight: 700; color: #1e3a2b;">Page 1 of 1</span>
+                    <button type="button" id="telemetry-next-btn" class="activity-page-btn next-btn" style="padding: 4px 10px; font-size: 11px;">Next</button>
+                </div>
+            </div>
+
             <div class="panel-card-footer">
                 <span class="metric-footer-dot"></span>
                 <span>Telemetry data synchronized directly with Machine Learning models</span>
@@ -672,7 +682,7 @@
         });
     });
 
-    // Unified Telemetry Filtering, Date Range & Sorting
+    // Unified Telemetry Filtering, Date Range & Sorting (Fixed 10-Item Pagination)
     (() => {
         const searchInput = document.getElementById("telemetry-search");
         const datePresetSelect = document.getElementById("telemetry-date-preset");
@@ -684,6 +694,14 @@
         const rows = Array.from(document.querySelectorAll("[data-telemetry-row]"));
         const emptyRow = document.getElementById("telemetry-filter-empty");
         const countEl = document.getElementById("telemetry-count");
+        const pageInfo = document.getElementById("telemetry-page-info");
+        const currentPageEl = document.getElementById("telemetry-current-page");
+        const prevBtn = document.getElementById("telemetry-prev-btn");
+        const nextBtn = document.getElementById("telemetry-next-btn");
+
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let filteredRows = rows.slice();
 
         function getRowDate(row) {
             const raw = (row.dataset.date || "").trim();
@@ -715,9 +733,7 @@
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-            let visibleCount = 0;
-
-            rows.forEach(r => {
+            filteredRows = rows.filter(r => {
                 const dateText = (r.dataset.date || "").trim();
                 const statusText = (r.dataset.status || "").toLowerCase();
                 const tempText = (r.dataset.temp || "").toLowerCase();
@@ -746,26 +762,19 @@
                     matchesDate = rowDateStr === customDateVal;
                 }
 
-                const visible = matchesQuery && matchesStatus && matchesDate;
-                r.hidden = !visible;
-                if (visible) visibleCount++;
+                return matchesQuery && matchesStatus && matchesDate;
             });
 
-            if (emptyRow) {
-                emptyRow.hidden = rows.length === 0 || visibleCount > 0;
-            }
-            if (countEl) {
-                countEl.innerHTML = `<strong>${visibleCount}</strong> record${visibleCount === 1 ? "" : "s"}`;
-            }
-
             sortTelemetryRows();
+            currentPage = 1;
+            renderTelemetryPagination();
         }
 
         function sortTelemetryRows() {
-            if (!tbody || !sortSelect) return;
+            if (!sortSelect) return;
             const sortMode = sortSelect.value;
 
-            const sorted = rows.slice().sort((a, b) => {
+            filteredRows.sort((a, b) => {
                 if (sortMode === "date-desc") {
                     return getRowDate(b) - getRowDate(a);
                 }
@@ -793,16 +802,53 @@
                 return 0;
             });
 
-            sorted.forEach(row => {
-                tbody.appendChild(row);
-            });
-            if (emptyRow) tbody.appendChild(emptyRow);
+            if (tbody) {
+                filteredRows.forEach(row => {
+                    tbody.appendChild(row);
+                });
+                if (emptyRow) tbody.appendChild(emptyRow);
+            }
+        }
+
+        function renderTelemetryPagination() {
+            const total = filteredRows.length;
+            const perPage = itemsPerPage;
+            const totalPages = Math.ceil(total / perPage) || 1;
+
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            const startIdx = (currentPage - 1) * perPage;
+            const endIdx = Math.min(startIdx + perPage, total);
+
+            rows.forEach(r => { r.hidden = true; });
+            for (let i = startIdx; i < endIdx; i++) {
+                if (filteredRows[i]) filteredRows[i].hidden = false;
+            }
+
+            if (emptyRow) {
+                emptyRow.hidden = rows.length === 0 || total > 0;
+            }
+            if (countEl) {
+                countEl.innerHTML = `<strong>${total}</strong> record${total === 1 ? "" : "s"}`;
+            }
+            if (pageInfo) {
+                pageInfo.textContent = total > 0 ? `Showing ${startIdx + 1}–${endIdx} of ${total} records` : "No records to display";
+            }
+            if (currentPageEl) {
+                currentPageEl.textContent = `Page ${currentPage} of ${totalPages}`;
+            }
+            if (prevBtn) prevBtn.disabled = currentPage <= 1;
+            if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
         }
 
         // Event listeners
         if (searchInput) searchInput.addEventListener("input", applyTelemetryFilters);
         if (statusSelect) statusSelect.addEventListener("change", applyTelemetryFilters);
-        if (sortSelect) sortSelect.addEventListener("change", sortTelemetryRows);
+        if (sortSelect) sortSelect.addEventListener("change", () => {
+            sortTelemetryRows();
+            renderTelemetryPagination();
+        });
 
         if (datePresetSelect) {
             datePresetSelect.addEventListener("change", () => {
@@ -835,7 +881,27 @@
                 }
                 if (statusSelect) statusSelect.value = "all";
                 if (sortSelect) sortSelect.value = "date-desc";
+                currentPage = 1;
                 applyTelemetryFilters();
+            });
+        }
+
+        if (prevBtn) {
+            prevBtn.addEventListener("click", () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTelemetryPagination();
+                }
+            });
+        }
+
+        if (nextBtn) {
+            nextBtn.addEventListener("click", () => {
+                const totalPages = Math.ceil(filteredRows.length / itemsPerPage) || 1;
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTelemetryPagination();
+                }
             });
         }
 
