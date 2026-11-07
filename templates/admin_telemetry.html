@@ -244,7 +244,7 @@
                     <h3>Recent Reading</h3>
                     <div class="metric-reading">
                         <h2 style="font-size: 20px;">
-                            {% if latest_reading %}
+                            {% if latest_reading and latest_reading.temperature is defined and latest_reading.temperature is not none %}
                                 {{ "%.2f"|format(latest_reading.temperature|float) }}°C · pH {{ "%.2f"|format(latest_reading.ph|float) }}
                             {% else %}
                                 --
@@ -292,8 +292,8 @@
                             </span>
                             <span>{{ optimal_count }} ({{ optimal_pct }}%)</span>
                         </div>
-                        <div style="height: 10px; width: 100%; background: #eef3f0; border-radius: 5px; overflow: hidden;">
-                            <div style="width: {{ optimal_pct }}%; height: 100%; background: #16a34a; border-radius: 5px; transition: width 0.5s ease;"></div>
+                        <div class="dist-bar-track">
+                            <div class="dist-bar-fill dist-optimal" data-pct="{{ optimal_pct }}"></div>
                         </div>
                     </div>
 
@@ -306,8 +306,8 @@
                             </span>
                             <span>{{ warning_count }} ({{ warning_pct }}%)</span>
                         </div>
-                        <div style="height: 10px; width: 100%; background: #eef3f0; border-radius: 5px; overflow: hidden;">
-                            <div style="width: {{ warning_pct }}%; height: 100%; background: #d97706; border-radius: 5px; transition: width 0.5s ease;"></div>
+                        <div class="dist-bar-track">
+                            <div class="dist-bar-fill dist-warning" data-pct="{{ warning_pct }}"></div>
                         </div>
                     </div>
 
@@ -320,14 +320,14 @@
                             </span>
                             <span>{{ critical_count }} ({{ critical_pct }}%)</span>
                         </div>
-                        <div style="height: 10px; width: 100%; background: #eef3f0; border-radius: 5px; overflow: hidden;">
-                            <div style="width: {{ critical_pct }}%; height: 100%; background: #dc2626; border-radius: 5px; transition: width 0.5s ease;"></div>
+                        <div class="dist-bar-track">
+                            <div class="dist-bar-fill dist-critical" data-pct="{{ critical_pct }}"></div>
                         </div>
                     </div>
                 </div>
 
                 <div style="margin-top: 20px; padding: 12px; background: #f8faf9; border-radius: 8px; border: 1px solid #e2ece6; font-size: 12px; color: #475a4e;">
-                    <strong>Model Parameters:</strong> Features: <code>['Water Temperature (°C)', 'pH']</code> &bull; Optimal Range: <code>28.0–32.0 °C</code>, <code>7.50–8.50 pH</code>.
+                    <strong>Model Parameters:</strong> Features: <code>['Water Temperature (°C)', 'pH']</code> &bull; Optimal Range: <code>28.00–32.00 °C</code>, <code>7.50–8.50 pH</code>.
                 </div>
             </div>
 
@@ -358,7 +358,7 @@
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #eef2f0;">
                     <span style="font-weight: 600; font-size: 13px; color: #374151;">Payload Schema (JSON)</span>
-                    <code style="background: #eef2f0; padding: 3px 8px; border-radius: 5px; font-size: 12px;">{"temperature": 29.5, "ph": 8.0}</code>
+                    <code style="background: #eef2f0; padding: 3px 8px; border-radius: 5px; font-size: 12px;">{"temperature": 29.50, "ph": 8.00}</code>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #eef2f0;">
                     <span style="font-weight: 600; font-size: 13px; color: #374151;">Hardware Auth</span>
@@ -503,6 +503,7 @@
                         </tr>
                     </thead>
                     <tbody>
+                        {% if recent_readings %}
                         {% for r in recent_readings %}
                         <tr data-telemetry-row data-status="{{ r.status|lower }}" data-date="{{ r.recorded_at }}" data-temp="{{ r.temperature }}" data-ph="{{ r.ph }}" data-wqi="{{ r.wqi_score }}">
                             <td>
@@ -534,13 +535,14 @@
                                 <small style="display: block; color: #6b7280; font-size: 10px;">{{ r.wqi_status }}</small>
                             </td>
                         </tr>
+                        {% endfor %}
                         {% else %}
                         <tr>
                             <td class="admin-empty" colspan="6">
                                 No sensor readings recorded yet. Connect a sensor or use "Ingest Test Reading".
                             </td>
                         </tr>
-                        {% endfor %}
+                        {% endif %}
                         <tr id="telemetry-filter-empty" hidden>
                             <td class="admin-empty" colspan="6">
                                 No telemetry matches your filter criteria.
@@ -631,6 +633,12 @@
     }
     updateDeviceTime();
     setInterval(updateDeviceTime, 1000);
+
+    // Initialize distribution progress bars
+    document.querySelectorAll(".dist-bar-fill").forEach(bar => {
+        const pct = bar.dataset.pct || 0;
+        bar.style.width = pct + "%";
+    });
 
     // Modal control
     const simModal = document.getElementById("simulate-dialog");

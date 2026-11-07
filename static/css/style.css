@@ -7879,6 +7879,26 @@ nav a {
     }
 }
 
+/* Distribution Progress Bars (Admin Telemetry & Analytics) */
+.dist-bar-track {
+    height: 10px;
+    width: 100%;
+    background: #eef3f0;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.dist-bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    width: 0%;
+    transition: width 0.5s ease;
+}
+
+.dist-bar-fill.dist-optimal { background: #16a34a; }
+.dist-bar-fill.dist-warning { background: #d97706; }
+.dist-bar-fill.dist-critical { background: #dc2626; }
+
 /* Main Telemetry Panel Container */
 .dashboard-page .telemetry-stream-panel {
     position: relative;
