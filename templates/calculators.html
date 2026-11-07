@@ -9,8 +9,8 @@
     <title>Aquaculture Tools &amp; Calculators | ShrimpGuard</title>
 
         <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}?v=20261107_dark1">
-    <script>
+          href="{{ url_for('static', filename='css/style.css?v=20261107_dark2') }}?v=20261107_dark1">
+        <script>
         (function() {
             var t = localStorage.getItem('shrimp_theme');
             var isD = t === 'dark' || (!t && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -18,7 +18,11 @@
             document.documentElement.setAttribute('data-theme', mode);
             document.documentElement.classList.add('theme-' + mode);
         })();
+        var _lastShrimpToggle = 0;
         function toggleShrimpTheme() {
+            var now = Date.now();
+            if (now - _lastShrimpToggle < 350) return;
+            _lastShrimpToggle = now;
             if (window.ShrimpTheme && window.ShrimpTheme.toggleTheme) {
                 return window.ShrimpTheme.toggleTheme();
             }
@@ -34,7 +38,7 @@
             }
             try { localStorage.setItem('shrimp_theme', next); } catch(e) {}
             var m = document.querySelector('meta[name="theme-color"]');
-            if (m) m.setAttribute('content', next === 'dark' ? '#0c151b' : '#126b4f');
+            if (m) m.setAttribute('content', next === 'dark' ? '#0b1319' : '#126b4f');
             var s = document.getElementById('theme-preference-select');
             if (s) s.value = next;
             window.dispatchEvent(new CustomEvent('shrimp-theme-change', { detail: { theme: next } }));
@@ -2288,7 +2292,7 @@
     </div>
 </div>
 
-<script src="{{ url_for('static', filename='js/theme.js') }}?v=20261107_dark1"></script>
+<script src="{{ url_for('static', filename='js/theme.js?v=20261107_dark2') }}?v=20261107_dark1"></script>
 <script src="{{ url_for('static', filename='js/calculators.js') }}"></script>
 <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
 

@@ -1,11 +1,13 @@
 /**
  * ShrimpGuard Theme Manager (Dark / Light Mode)
- * Bulletproof persistent theme engine with immediate execution and cross-component syncing.
+ * Bulletproof persistent theme engine with immediate execution, debouncing,
+ * and seamless cross-tab / cross-component synchronization.
  */
 (function() {
     'use strict';
 
     const STORAGE_KEY = 'shrimp_theme';
+    let lastToggleTimestamp = 0;
 
     function getSavedTheme() {
         try {
@@ -48,7 +50,7 @@
         // Update mobile address bar meta theme color
         const metaThemeColor = document.querySelector('meta[name="theme-color"]');
         if (metaThemeColor) {
-            metaThemeColor.setAttribute('content', isDark ? '#0c151b' : '#126b4f');
+            metaThemeColor.setAttribute('content', isDark ? '#0b1319' : '#126b4f');
         }
 
         // Update all toggle buttons accessible attributes
@@ -66,13 +68,18 @@
             settingsSelect.value = theme;
         }
 
-        console.log('[ShrimpGuard Theme] Active theme:', theme);
-
         // Notify active charts and custom components to re-render
         window.dispatchEvent(new CustomEvent('shrimp-theme-change', { detail: { theme: theme, isDark: isDark } }));
     }
 
     function toggleTheme() {
+        const now = Date.now();
+        // 350ms debounce guard prevents duplicate rapid clicks / inline onclick + addEventListener dual dispatch
+        if (now - lastToggleTimestamp < 350) {
+            return document.documentElement.getAttribute('data-theme') || 'light';
+        }
+        lastToggleTimestamp = now;
+
         const cur = document.documentElement.getAttribute('data-theme') || 
                     (document.documentElement.classList.contains('theme-dark') ? 'dark' : 'light');
         const next = cur === 'dark' ? 'light' : 'dark';
@@ -84,30 +91,26 @@
     const initial = getSavedTheme();
     applyTheme(initial, false);
 
-    function bindToggleButtons() {
-        // Direct click bindings on all buttons
+    function initThemeListeners() {
+        // Direct click bindings on all toggle buttons
         const buttons = document.querySelectorAll('#theme-toggle-btn, .theme-toggle-btn');
         buttons.forEach(function(btn) {
             if (!btn.__themeBound) {
                 btn.__themeBound = true;
                 btn.addEventListener('click', function(e) {
                     e.preventDefault();
-                    e.stopPropagation();
                     toggleTheme();
                 });
             }
         });
-    }
 
-    function initThemeListeners() {
-        bindToggleButtons();
-
-        // Delegated click fallback
+        // Delegated fallback for dynamically inserted buttons
         document.addEventListener('click', function(event) {
             const target = event.target;
             if (!target) return;
             const btn = target.closest ? target.closest('#theme-toggle-btn, .theme-toggle-btn') : null;
             if (btn && !btn.__themeBound) {
+                btn.__themeBound = true;
                 event.preventDefault();
                 toggleTheme();
             }
