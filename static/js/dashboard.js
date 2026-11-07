@@ -1,23 +1,93 @@
 function displayResults(data) {
     const tempNum = Number(data.temperature);
     const phNum = Number(data.ph);
-    document.getElementById("temperature").textContent = !isNaN(tempNum) ? `${tempNum.toFixed(1)} °C` : `${data.temperature} °C`;
-    document.getElementById("ph").textContent = !isNaN(phNum) ? phNum.toFixed(2) : data.ph;
+    const isSensorFault = tempNum <= -120 || Boolean(data.is_sensor_fault);
+
+    // Temperature display with sensor disconnect safeguard
+    const tempEl = document.getElementById("temperature");
+    if (tempEl) {
+        if (isSensorFault) {
+            tempEl.textContent = "ERR (-127)";
+            tempEl.title = "DS18B20 1-Wire sensor disconnected in pond";
+        } else {
+            tempEl.textContent = !isNaN(tempNum) ? `${tempNum.toFixed(1)} °C` : `${data.temperature} °C`;
+            tempEl.title = "Live temperature from pond DS18B20 sensor";
+        }
+    }
+
+    // pH display
+    const phEl = document.getElementById("ph");
+    if (phEl) {
+        phEl.textContent = !isNaN(phNum) ? phNum.toFixed(2) : data.ph;
+        phEl.title = "Live pH from pond DFRobot sensor";
+    }
 
     // Per-parameter status strictly derived from the DecisionTreeClassifier ML model
-    const tempStatus = data.temperature_status || (data.status === "Critical" ? "Critical" : (data.status === "Warning" ? "Warning" : "Optimal"));
+    let tempStatus = data.temperature_status || (data.status === "Critical" ? "Critical" : (data.status === "Warning" ? "Warning" : "Optimal"));
+    if (isSensorFault) {
+        tempStatus = "Sensor Disconnected";
+    }
     const phStatus = data.ph_status || (data.status === "Critical" ? "Critical" : (data.status === "Warning" ? "Warning" : "Optimal"));
 
     const tempStatusEl = document.getElementById("temperature-status");
     if (tempStatusEl) {
         tempStatusEl.textContent = tempStatus;
-        tempStatusEl.className = `metric-status status-${tempStatus.toLowerCase()}`;
+        tempStatusEl.className = isSensorFault
+            ? "metric-status status-critical"
+            : `metric-status status-${tempStatus.toLowerCase().replace(/[^a-z]/g, "")}`;
     }
 
     const phStatusEl = document.getElementById("ph-status");
     if (phStatusEl) {
         phStatusEl.textContent = phStatus;
-        phStatusEl.className = `metric-status status-${phStatus.toLowerCase()}`;
+        phStatusEl.className = `metric-status status-${phStatus.toLowerCase().replace(/[^a-z]/g, "")}`;
+    }
+
+    // Update telemetry header indicators
+    const recDate = data.recorded_at ? new Date(data.recorded_at) : null;
+    const now = new Date();
+    const secondsAgo = recDate ? Math.max(0, Math.floor((now - recDate) / 1000)) : 999;
+
+    const streamBadge = document.getElementById("telemetry-stream-badge");
+    const streamBadgeText = document.getElementById("telemetry-badge-text");
+    if (streamBadge && streamBadgeText) {
+        if (secondsAgo <= 20) {
+            streamBadge.className = "telemetry-live-badge badge-active";
+            streamBadgeText.textContent = "RECEIVING SENSOR DATA";
+            const dot = streamBadge.querySelector(".status-indicator-dot");
+            if (dot) dot.className = "status-indicator-dot dot-optimal";
+        } else {
+            streamBadge.className = "telemetry-live-badge badge-waiting";
+            streamBadgeText.textContent = "WAITING FOR TRANSMISSION";
+            const dot = streamBadge.querySelector(".status-indicator-dot");
+            if (dot) dot.className = "status-indicator-dot dot-warning";
+        }
+    }
+
+    const lastSyncEl = document.getElementById("telemetry-last-sync");
+    if (lastSyncEl) {
+        lastSyncEl.textContent = recDate && !isNaN(recDate)
+            ? recDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+            : "Listening...";
+    }
+
+    const secAgoEl = document.getElementById("telemetry-seconds-ago");
+    if (secAgoEl) {
+        secAgoEl.textContent = secondsAgo < 5
+            ? "Just now (streaming live)"
+            : (secondsAgo < 60 ? `${secondsAgo}s ago` : `${Math.floor(secondsAgo / 60)}m ago`);
+    }
+
+    const nodeEl = document.getElementById("telemetry-node-id");
+    if (nodeEl) {
+        nodeEl.textContent = data.device_id || "NODE01";
+    }
+
+    const mlBadgeEl = document.getElementById("telemetry-ml-badge");
+    if (mlBadgeEl) {
+        const overall = data.status || "Optimal";
+        mlBadgeEl.textContent = overall.toUpperCase();
+        mlBadgeEl.style.color = overall === "Optimal" ? "#126b4f" : (overall === "Warning" ? "#d97706" : "#dc2626");
     }
 
     document.getElementById("last-updated").textContent = data.recorded_at
@@ -340,29 +410,7 @@ updateDeviceTime();
 setInterval(updateDeviceTime, 1000);
 
 
-document.getElementById("quality-form").addEventListener("submit", async function (event) {
-    event.preventDefault();
-
-    const formData = new FormData(event.currentTarget);
-    const data = {
-        temperature: Number(formData.get("temperature")),
-        ph: Number(formData.get("ph"))
-    };
-
-    const submitButton = event.currentTarget.querySelector("button[type=submit]");
-    submitButton.disabled = true;
-    try {
-        const savedReading = await saveReading(data);
-        displayResults(savedReading);
-        window.dispatchEvent(new Event('shrimpguard:notification-update'));
-    } catch (error) {
-        console.error("Unable to save water quality reading:", error);
-        window.alert(`Unable to save reading: ${error.message}`);
-    } finally {
-        submitButton.disabled = false;
-    }
-});
-
+// --- Automated Live Telemetry Polling & Controls ---
 async function loadLatestReading() {
     try {
         const response = await fetch("/api/readings/latest");
@@ -373,20 +421,116 @@ async function loadLatestReading() {
         if (reading) {
             displayResults(reading);
         } else {
-            document.getElementById("overall-status").textContent = "No sensor readings are saved yet.";
+            document.getElementById("overall-status").textContent = "Awaiting first sensor transmission from pond...";
+            const lastSyncEl = document.getElementById("telemetry-last-sync");
+            if (lastSyncEl) lastSyncEl.textContent = "Awaiting Node 1";
         }
     } catch (error) {
         console.error("Unable to load the latest sensor reading:", error);
-        document.getElementById("overall-status").textContent = "Unable to load sensor data. Please refresh or retry.";
+        const lastSyncEl = document.getElementById("telemetry-last-sync");
+        if (lastSyncEl) lastSyncEl.textContent = "Offline";
     }
 }
 
+// Sync Now Button
+const syncNowBtn = document.getElementById("sync-now-btn");
+if (syncNowBtn) {
+    syncNowBtn.addEventListener("click", async () => {
+        syncNowBtn.disabled = true;
+        const origText = syncNowBtn.innerHTML;
+        syncNowBtn.innerHTML = `
+            <svg class="ui-icon ui-spin" aria-hidden="true"><use href="#icon-activity"></use></svg>
+            <span>Syncing...</span>
+        `;
+        try {
+            await loadLatestReading();
+        } finally {
+            setTimeout(() => {
+                syncNowBtn.innerHTML = origText;
+                syncNowBtn.disabled = false;
+            }, 600);
+        }
+    });
+}
 
+// Test Reading Modal Handlers (For Offline / Lab Simulation)
+const testModal = document.getElementById("test-sensor-modal");
+const openTestBtn = document.getElementById("open-test-modal-btn");
+const closeTestBtn = document.getElementById("close-test-modal-btn");
+const cancelTestBtn = document.getElementById("cancel-test-btn");
+
+if (openTestBtn && testModal) {
+    openTestBtn.addEventListener("click", () => {
+        testModal.hidden = false;
+    });
+}
+
+function closeTestModal() {
+    if (testModal) testModal.hidden = true;
+}
+
+if (closeTestBtn) closeTestBtn.addEventListener("click", closeTestModal);
+if (cancelTestBtn) cancelTestBtn.addEventListener("click", closeTestModal);
+
+// Quality Form Handler inside Test Modal
+const qualityForm = document.getElementById("quality-form");
+if (qualityForm) {
+    qualityForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        const formData = new FormData(event.currentTarget);
+        const data = {
+            temperature: Number(formData.get("temperature")),
+            ph: Number(formData.get("ph")),
+            device_id: "SIM-NODE01"
+        };
+
+        const submitButton = event.currentTarget.querySelector("button[type=submit]");
+        if (submitButton) submitButton.disabled = true;
+        try {
+            const savedReading = await saveReading(data);
+            displayResults(savedReading);
+            closeTestModal();
+            window.dispatchEvent(new Event('shrimpguard:notification-update'));
+        } catch (error) {
+            console.error("Unable to save simulated water quality reading:", error);
+            window.alert(`Unable to ingest test reading: ${error.message}`);
+        } finally {
+            if (submitButton) submitButton.disabled = false;
+        }
+    });
+}
+
+// Also intercept sensor fault in createAlerts
+const origCreateAlerts = createAlerts;
+createAlerts = function(data) {
+    origCreateAlerts(data);
+    const alertsEl = document.getElementById("alerts");
+    if (!alertsEl || !data) return;
+
+    const tempNum = Number(data.temperature);
+    if (tempNum <= -120 || Boolean(data.is_sensor_fault)) {
+        const faultHtml = `
+            <div class="alert alert-sensor-fault" style="border-left: 4px solid #dc2626; background: #fef2f2; padding: 12px 14px; margin-bottom: 12px; border-radius: 8px;">
+                <strong style="color: #991b1b; display: flex; align-items: center; gap: 6px;">
+                    <svg class="ui-icon" style="width: 18px; height: 18px; stroke: #dc2626;"><use href="#icon-alert"></use></svg>
+                    CRITICAL: DS18B20 Temperature Sensor Disconnected (-127 °C)
+                </strong>
+                <p style="margin: 6px 0 0; color: #7f1d1d; font-size: 13px;">
+                    Node 1 in the pond reported a sensor disconnection code. Verify the waterproof probe cable and 4.7kΩ pull-up resistor on GPIO 4.
+                </p>
+            </div>
+        `;
+        alertsEl.innerHTML = faultHtml + alertsEl.innerHTML;
+    }
+};
 
 // Entrypoint initialization
 updateDeviceTime();
 setInterval(updateDeviceTime, 1000);
 updateGreeting();
 setInterval(updateGreeting, 60000);
+
+// Poll live sensor telemetry every 4 seconds (Node 1 transmits every 5 seconds)
 loadLatestReading();
-setInterval(loadLatestReading, 10000);
+setInterval(loadLatestReading, 4000);
