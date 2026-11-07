@@ -410,12 +410,12 @@
                     <!-- 1. DEVICE STATUS WIDGET -->
                     <article class="panel dashboard-panel device-status-widget">
                         <div class="panel-heading">
-                            <div class="panel-heading-icon alerts-heading-icon" style="background: #eaf6ef; color: #126b4f;">
+                            <div class="panel-heading-icon" style="background: #eaf6ef; color: #126b4f;">
                                 <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
                             </div>
                             <div>
-                                <h3 style="margin: 0; font-size: 13px; font-weight: 800; color: #294535;">Device Status</h3>
-                                <p style="margin: 2px 0 0; font-size: 10px; color: #8b9990;">Active network ratio</p>
+                                <h3>Device Status</h3>
+                                <p>Active network ratio</p>
                             </div>
                         </div>
 
@@ -427,16 +427,16 @@
                                 {{ online_devices if online_devices is not none else 0 }} online and {{ offline_devices if offline_devices is not none else 10 }} offline
                             </p>
 
-                            <div class="device-progress-track" style="height: 7px; background: #e5ece7; border-radius: 999px; overflow: hidden; margin-bottom: 14px;">
-                                <div id="side-progress-fill" style="height: 100%; background: #126b4f; border-radius: 999px; transition: width 0.3s ease; width: 0%;" data-initial-width="{{ (online_devices / total_devices * 100)|round(1) if total_devices and total_devices > 0 else 0 }}%"></div>
+                            <div class="device-progress-track">
+                                <div id="side-progress-fill" class="device-progress-fill" style="width: 0%;" data-initial-width="{{ (online_devices / total_devices * 100)|round(1) if total_devices and total_devices > 0 else 0 }}%"></div>
                             </div>
 
                             <div class="status-ratio-pills">
-                                <span class="table-status status-optimal" style="font-size: 11.5px; padding: 4px 10px;">
+                                <span class="table-status status-optimal">
                                     <span class="status-indicator-dot dot-optimal"></span>
                                     Online: <strong id="side-pill-online">{{ online_devices if online_devices is not none else 0 }}</strong>
                                 </span>
-                                <span class="table-status status-warning" style="font-size: 11.5px; padding: 4px 10px;">
+                                <span class="table-status status-warning">
                                     <span class="status-indicator-dot dot-warning"></span>
                                     Offline: <strong id="side-pill-offline">{{ offline_devices if offline_devices is not none else 10 }}</strong>
                                 </span>
@@ -447,12 +447,12 @@
                     <!-- 2. DEVICE CATEGORY WIDGET -->
                     <article class="panel dashboard-panel device-category-widget">
                         <div class="panel-heading">
-                            <div class="panel-heading-icon wqi-heading-icon">
+                            <div class="panel-heading-icon" style="background: #f0fdf4; color: #16a34a;">
                                 <svg class="ui-icon" aria-hidden="true"><use href="#icon-settings"></use></svg>
                             </div>
                             <div>
-                                <h3 style="margin: 0; font-size: 13px; font-weight: 800; color: #294535;">Device Category</h3>
-                                <p style="margin: 2px 0 0; font-size: 10px; color: #8b9990;">Sensors, communication, alerts &amp; power</p>
+                                <h3>Device Category</h3>
+                                <p>Sensors, communication, alerts &amp; power</p>
                             </div>
                         </div>
 
@@ -529,6 +529,20 @@
 
             </div>
         </section>
+
+        <!-- FOOTER -->
+        <footer class="dashboard-footer devices-footer">
+            <span class="dashboard-footer-brand devices-footer-brand">
+                <svg class="ui-icon brand-icon" aria-hidden="true">
+                    <use href="#icon-shrimp"></use>
+                </svg>
+                ShrimpGuard
+            </span>
+
+            <span>
+                Water Quality Monitoring &amp; Decision Support
+            </span>
+        </footer>
 
     </main>
 
