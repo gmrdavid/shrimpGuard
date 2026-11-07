@@ -862,7 +862,7 @@ def get_system_devices_inventory():
             "category": "Alerts & Signaling",
             "status": "Online" if node2_online else "Offline",
             "last_seen": "Indicators Armed" if node2_online else "Offline (Base Station Off)",
-            "details": "Green (Optimal), Amber (Warning), Red (Critical) Indicators",
+            "details": "Green (Optimal), Yellow (Warning), Red (Critical) Indicators",
         },
     ]
 
@@ -1127,7 +1127,7 @@ def api_hardware_diagnostics():
         "test": "Visual Indicator GPIO Bus",
         "result": "PASS",
         "status_class": "status-optimal",
-        "details": "Triple LED array operational • Green/Amber/Red state signals nominal."
+        "details": "Triple LED array operational • Green/Yellow/Red state signals nominal."
     })
 
     # Overall Diagnosis
