@@ -7899,6 +7899,20 @@ nav a {
 .dist-bar-fill.dist-warning { background: #d97706; }
 .dist-bar-fill.dist-critical { background: #dc2626; }
 
+.telemetry-node-subtag {
+    display: inline-block;
+    padding: 2px 7px;
+    font-size: 10px;
+    font-weight: 750;
+    color: #0b6146;
+    background: #e6f6ee;
+    border: 1px solid #b6e4cc;
+    border-radius: 4px;
+    margin-left: 6px;
+    letter-spacing: 0.3px;
+    vertical-align: middle;
+}
+
 /* Main Telemetry Panel Container */
 .dashboard-page .telemetry-stream-panel {
     position: relative;
@@ -16684,6 +16698,10 @@ nav a {
     color: #a16e43;
 }
 
+.admin-quick-stat .quick-stat-badge.warning {
+    color: #d97706;
+}
+
 .admin-quick-stat .status-pulse-dot {
     display: inline-block;
     width: 8px;
@@ -16697,6 +16715,11 @@ nav a {
 .admin-quick-stat .quick-stat-badge.offline .status-pulse-dot {
     background: #dc2626;
     box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.25);
+}
+
+.admin-quick-stat .quick-stat-badge.warning .status-pulse-dot {
+    background: #d97706;
+    box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.25);
 }
 
 /* Metric Cards Icons */

@@ -158,6 +158,13 @@
                         </span>
                     </div>
                     <div class="admin-quick-stat">
+                        <span class="quick-stat-label">IoT Gateway</span>
+                        <span class="quick-stat-badge {% if hw_connected or gateway_online %}online{% else %}warning{% endif %}">
+                            <span class="status-pulse-dot"></span>
+                            {{ "LoRa RX Active (" ~ (hardware_stream.connected_port or "COM8") ~ ")" if hw_connected else ("Gateway Ready" if gateway_online else "Standby") }}
+                        </span>
+                    </div>
+                    <div class="admin-quick-stat">
                         <span class="quick-stat-label">System Mode</span>
                         <span class="quick-stat-badge info">
                             Live Aquaculture Telemetry
@@ -327,6 +334,153 @@
                             <span>Database connection</span>
                         </div>
 
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <!-- LIVE POND HARDWARE TELEMETRY & IOT GATEWAY -->
+            <section class="dashboard-section"
+                     aria-labelledby="iot-telemetry-title">
+
+                <div class="section-heading-row">
+                    <div>
+                        <span class="section-eyebrow">IOT HARDWARE &amp; LORA TELEMETRY</span>
+                        <h2 id="iot-telemetry-title">Live Pond Telemetry &amp; Gateway Health</h2>
+                    </div>
+
+                    <a href="/admin/telemetry" class="dashboard-submit-button" style="text-decoration: none; padding: 6px 14px; font-size: 12px; height: 34px; display: inline-flex; align-items: center; gap: 6px;">
+                        <svg class="ui-icon" aria-hidden="true" style="width: 14px; height: 14px;">
+                            <use href="#icon-monitor"></use>
+                        </svg>
+                        <span>IoT Telemetry Control &rarr;</span>
+                    </a>
+                </div>
+
+                <div class="cards dashboard-metric-cards">
+
+                    <!-- BASE STATION GATEWAY (NODE 2) -->
+                    <article class="card dashboard-metric-card system-card">
+                        <div class="metric-card-top">
+                            <div class="metric-icon {% if hw_connected or gateway_online %}system-icon-online{% else %}system-icon-offline{% endif %}">
+                                <svg class="ui-icon" aria-hidden="true">
+                                    <use href="#icon-monitor"></use>
+                                </svg>
+                            </div>
+                            <span class="metric-type">LORA RECEIVER GATEWAY</span>
+                        </div>
+
+                        <div class="metric-card-content">
+                            <h3>Node 2 Base Station</h3>
+                            <div class="metric-reading">
+                                <h2 style="font-size: 20px;">
+                                    {% if hw_connected %}
+                                        {{ hardware_stream.connected_port or "COM8" }} Active
+                                    {% elif gateway_online %}
+                                        Gateway Ready
+                                    {% else %}
+                                        Standby
+                                    {% endif %}
+                                </h2>
+                            </div>
+                            <p class="metric-status {% if hw_connected or gateway_online %}good{% else %}warning{% endif %}">
+                                {{ "Win32 serial bridge (115200 baud)" if hw_connected else "Listening for Node 2 receiver" }}
+                            </p>
+                        </div>
+
+                        <div class="metric-card-footer">
+                            <span class="metric-footer-dot"></span>
+                            <span>433.5 MHz LoRa &bull; USB-Serial Bridge</span>
+                        </div>
+                    </article>
+
+                    <!-- POND TRANSMITTER NODE (NODE 1) -->
+                    <article class="card dashboard-metric-card users-card">
+                        <div class="metric-card-top">
+                            <div class="metric-icon users-icon">
+                                <svg class="ui-icon" aria-hidden="true">
+                                    <use href="#icon-activity"></use>
+                                </svg>
+                            </div>
+                            <span class="metric-type">POND TRANSMITTER</span>
+                        </div>
+
+                        <div class="metric-card-content">
+                            <h3>Node 1 Pond Unit</h3>
+                            <div class="metric-reading">
+                                <h2>{{ hardware_stream.device_id if hardware_stream and hardware_stream.device_id else "NODE01" }}</h2>
+                            </div>
+                            <p class="metric-status good">
+                                Autonomous 5s Cadence
+                            </p>
+                        </div>
+
+                        <div class="metric-card-footer">
+                            <span class="metric-footer-dot"></span>
+                            <span>DS18B20 1-Wire &bull; DFRobot pH Probe</span>
+                        </div>
+                    </article>
+
+                    <!-- LATEST POND READINGS (TWO DECIMAL PRECISION) -->
+                    <article class="card dashboard-metric-card active-card">
+                        <div class="metric-card-top">
+                            <div class="metric-icon active-icon">
+                                <svg class="ui-icon" aria-hidden="true">
+                                    <use href="#icon-thermometer"></use>
+                                </svg>
+                            </div>
+                            <span class="metric-type">LATEST POND READINGS</span>
+                        </div>
+
+                        <div class="metric-card-content">
+                            <h3>Pond Parameters</h3>
+                            <div class="metric-reading">
+                                <h2 style="font-size: 19px;">
+                                    {% if latest_reading and latest_reading.temperature is defined and latest_reading.temperature is not none %}
+                                        {{ "%.2f"|format(latest_reading.temperature|float) }} °C &bull; pH {{ "%.2f"|format(latest_reading.ph|float) }}
+                                    {% else %}
+                                        --
+                                    {% endif %}
+                                </h2>
+                            </div>
+                            <p class="metric-status {% if latest_reading and latest_reading.status == 'Optimal' %}good{% elif latest_reading and latest_reading.status == 'Warning' %}warning{% else %}danger{% endif %}">
+                                {{ latest_reading.status if latest_reading else "Waiting for stream" }}{% if latest_reading and latest_reading.wqi_score %} ({{ latest_reading.wqi_score }}% WQI){% endif %}
+                            </p>
+                        </div>
+
+                        <div class="metric-card-footer">
+                            <span class="metric-footer-dot"></span>
+                            <span>Recorded: {{ latest_reading.recorded_at if latest_reading else "No telemetry yet" }}</span>
+                        </div>
+                    </article>
+
+                    <!-- ML DECISION TREE INFERENCE -->
+                    <article class="card dashboard-metric-card inactive-card">
+                        <div class="metric-card-top">
+                            <div class="metric-icon inactive-icon">
+                                <svg class="ui-icon" aria-hidden="true">
+                                    <use href="#icon-cpu"></use>
+                                </svg>
+                            </div>
+                            <span class="metric-type">DECISION TREE ML</span>
+                        </div>
+
+                        <div class="metric-card-content">
+                            <h3>Dual-Tier ML Engine</h3>
+                            <div class="metric-reading">
+                                <h2>Active</h2>
+                            </div>
+                            <p class="metric-status good">
+                                Edge (C++) + Server (Python)
+                            </p>
+                        </div>
+
+                        <div class="metric-card-footer">
+                            <span class="metric-footer-dot"></span>
+                            <span>Penaeus vannamei Model</span>
+                        </div>
                     </article>
 
                 </div>

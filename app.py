@@ -1402,6 +1402,11 @@ def edit_user():
 @app.route("/admin/dashboard")
 @role_required("Admin")
 def admin_home():
+    latest_reading = None
+    hardware_stream = {}
+    hw_connected = False
+    gateway_online = False
+
     try:
         users = User.query.all()
 
@@ -1458,6 +1463,27 @@ def admin_home():
 
         system_online = True
 
+        # Fetch latest sensor reading for pond telemetry status
+        try:
+            latest_row = db.session.execute(
+                select(sensor_readings).order_by(sensor_readings.c.date.desc()).limit(1)
+            ).mappings().first()
+            if latest_row:
+                latest_reading = serialize_sensor_reading(latest_row)
+        except SQLAlchemyError:
+            db.session.rollback()
+
+        # Check live hardware stream from LoRa receiver gateway
+        try:
+            from hardware_serial import LATEST_HARDWARE_STREAM
+            hardware_stream = LATEST_HARDWARE_STREAM
+            hw_connected = bool(hardware_stream.get("is_connected") or hardware_stream.get("connected"))
+        except Exception:
+            hardware_stream = {}
+            hw_connected = False
+
+        gateway_online = hw_connected or (latest_reading is not None)
+
     except SQLAlchemyError:
         db.session.rollback()
 
@@ -1467,6 +1493,10 @@ def admin_home():
         role_summary = []
         recent_activities = []
         system_online = False
+        latest_reading = None
+        hardware_stream = {}
+        hw_connected = False
+        gateway_online = False
 
     return render_template(
         "admin_dashboard.html",
@@ -1476,12 +1506,24 @@ def admin_home():
         role_summary=role_summary,
         recent_activities=recent_activities,
         system_online=system_online,
+        latest_reading=latest_reading,
+        hardware_stream=hardware_stream,
+        hw_connected=hw_connected,
+        gateway_online=gateway_online,
     )
 
 
 @app.route("/admin/telemetry")
 @role_required("Admin")
 def admin_telemetry():
+    try:
+        from hardware_serial import LATEST_HARDWARE_STREAM
+        hardware_stream = LATEST_HARDWARE_STREAM
+    except Exception:
+        hardware_stream = {}
+
+    hw_connected = bool(hardware_stream.get("is_connected") or hardware_stream.get("connected"))
+
     try:
         readings_query = db.session.execute(
             select(sensor_readings).order_by(sensor_readings.c.date.desc())
@@ -1493,16 +1535,16 @@ def admin_telemetry():
         ]
         latest_reading = recent_serialized[0] if recent_serialized else None
 
-        # Check if gateway is online (reading within last 2 hours or readings exist)
-        gateway_online = False
-        if readings_query:
+        # Check if gateway is online (active Win32 COM serial connection or recent reading within last 2 hours)
+        gateway_online = hw_connected
+        if not gateway_online and readings_query:
             try:
                 latest_dt = parse_reading_datetime(readings_query[0])
                 if datetime.now() - latest_dt < timedelta(hours=2):
                     gateway_online = True
             except Exception:
                 gateway_online = total_readings > 0
-        elif total_readings > 0:
+        elif not gateway_online and total_readings > 0:
             gateway_online = True
 
         # ML Classification Distribution across evaluated readings
@@ -1520,13 +1562,15 @@ def admin_telemetry():
         total_readings = 0
         recent_serialized = []
         latest_reading = None
-        gateway_online = False
+        gateway_online = hw_connected
         optimal_count = warning_count = critical_count = 0
         optimal_pct = warning_pct = critical_pct = 0.0
 
     return render_template(
         "admin_telemetry.html",
         gateway_online=gateway_online,
+        hw_connected=hw_connected,
+        hardware_stream=hardware_stream,
         total_readings=total_readings,
         latest_reading=latest_reading,
         optimal_count=optimal_count,
@@ -1563,10 +1607,21 @@ def admin_telemetry_export():
 
         for r in readings:
             s = serialize_sensor_reading(r)
+            temp_val = s.get("temperature")
+            ph_val = s.get("ph")
+            try:
+                temp_str = f"{float(temp_val):.2f}" if temp_val is not None else ""
+            except (ValueError, TypeError):
+                temp_str = str(temp_val) if temp_val is not None else ""
+            try:
+                ph_str = f"{float(ph_val):.2f}" if ph_val is not None else ""
+            except (ValueError, TypeError):
+                ph_str = str(ph_val) if ph_val is not None else ""
+
             writer.writerow([
                 s.get("recorded_at", ""),
-                s.get("temperature", ""),
-                s.get("ph", ""),
+                temp_str,
+                ph_str,
                 s.get("status", ""),
                 s.get("temperature_status", ""),
                 s.get("ph_status", ""),
@@ -1601,8 +1656,8 @@ def simulate_admin_telemetry():
     ph_raw = request.form.get("ph", "").strip()
 
     try:
-        temp = float(temp_raw)
-        ph = float(ph_raw)
+        temp = round(float(temp_raw), 2)
+        ph = round(float(ph_raw), 2)
     except ValueError:
         flash("Please enter valid numeric values for temperature and pH.", "error")
         return redirect(url_for("admin_telemetry"))
@@ -1631,11 +1686,11 @@ def simulate_admin_telemetry():
 
         log_activity(
             action="TELEMETRY_INGEST",
-            details=f"Admin ingested test telemetry: Temp={temp}°C, pH={ph}, ML Status={overall_status}.",
+            details=f"Admin ingested manual test telemetry: Temp={temp:.2f}°C, pH={ph:.2f}, ML Status={overall_status}.",
             user_email=session.get("user_id"),
             role="Admin",
         )
-        flash(f"Test telemetry ingested: {temp}°C, pH {ph} classified as {overall_status}.", "success")
+        flash(f"Manual test telemetry recorded: {temp:.2f}°C, pH {ph:.2f} classified as {overall_status}.", "success")
     except SQLAlchemyError:
         db.session.rollback()
         flash("Failed to record simulated telemetry.", "error")

@@ -99,7 +99,7 @@
                 <svg class="ui-icon" aria-hidden="true">
                     <use href="#icon-plus"></use>
                 </svg>
-                <span>Ingest Test Reading</span>
+                <span>Simulate Lab Reading</span>
             </button>
 
             <a href="/admin/telemetry/export" class="dashboard-submit-button" style="text-decoration: none;">
@@ -166,17 +166,23 @@
                     <span class="metric-type">HARDWARE GATEWAY</span>
                 </div>
                 <div class="metric-card-content">
-                    <h3>IoT Ingestion Port</h3>
+                    <h3>LoRa Serial Gateway</h3>
                     <div class="metric-reading">
                         <h2>{{ "Online" if gateway_online else "Standby" }}</h2>
                     </div>
                     <p class="metric-status {% if gateway_online %}status-optimal{% else %}status-warning{% endif %}">
-                        {{ "Receiving sensor telemetry" if gateway_online else "Waiting for new sensor packets" }}
+                        {% if hw_connected %}
+                            {{ hardware_stream.connected_port or "COM8" }} Serial Bridge Active
+                        {% elif gateway_online %}
+                            Receiving sensor telemetry
+                        {% else %}
+                            Waiting for Node 2 serial bridge
+                        {% endif %}
                     </p>
                 </div>
                 <div class="metric-card-footer">
                     <span class="metric-footer-dot"></span>
-                    <span>Endpoint: POST /api/readings</span>
+                    <span>{{ hardware_stream.connected_port or "COM8" if hardware_stream and hardware_stream.connected_port else "COM8" }} &bull; 115200 Baud Bridge</span>
                 </div>
             </article>
 
@@ -201,7 +207,7 @@
                 </div>
                 <div class="metric-card-footer">
                     <span class="metric-footer-dot"></span>
-                    <span>Database table: sensors</span>
+                    <span>Database table: sensors &bull; 2-Decimal Precision</span>
                 </div>
             </article>
 
@@ -218,15 +224,15 @@
                 <div class="metric-card-content">
                     <h3>DecisionTree ML</h3>
                     <div class="metric-reading">
-                        <h2>Operational</h2>
+                        <h2>Dual-Tier</h2>
                     </div>
                     <p class="metric-status status-optimal">
-                        best_water_quality_model.joblib
+                        Edge (C++) + Server (Python)
                     </p>
                 </div>
                 <div class="metric-card-footer">
                     <span class="metric-footer-dot"></span>
-                    <span>Species: Penaeus vannamei</span>
+                    <span>Species: Penaeus vannamei &bull; 0.01 Res</span>
                 </div>
             </article>
 
@@ -347,36 +353,52 @@
                 </div>
                 <div>
                     <h2>Hardware Gateway Specifications</h2>
-                    <p>Microcontroller communication protocols and API authentication specs.</p>
+                    <p>Microcontroller communication protocols, wireless LoRa radio, and API ingestion specs.</p>
                 </div>
             </div>
 
-            <div style="padding: 16px 20px; display: flex; flex-direction: column; gap: 14px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #eef2f0;">
-                    <span style="font-weight: 600; font-size: 13px; color: #374151;">Ingestion Endpoint</span>
+            <div style="padding: 16px 20px; display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 9px; border-bottom: 1px solid #eef2f0;">
+                    <span style="font-weight: 600; font-size: 13px; color: #374151;">Hardware Serial Gateway</span>
+                    <span class="detail-badge active">{{ hardware_stream.connected_port or "COM8" if hardware_stream and hardware_stream.connected_port else "COM8" }} @ 115200 Baud</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 9px; border-bottom: 1px solid #eef2f0;">
+                    <span style="font-weight: 600; font-size: 13px; color: #374151;">LoRa Wireless Radio</span>
+                    <code style="background: #eef2f0; padding: 3px 8px; border-radius: 5px; font-size: 12px;">433.5 MHz &bull; SX1278 (BW 125kHz, SF7)</code>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 9px; border-bottom: 1px solid #eef2f0;">
+                    <span style="font-weight: 600; font-size: 13px; color: #374151;">Pond Transmitter (Node 1)</span>
+                    <span style="font-size: 12px; color: #475a4e; font-weight: 600;">DS18B20 1-Wire + DFRobot pH (5s Cadence)</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 9px; border-bottom: 1px solid #eef2f0;">
+                    <span style="font-weight: 600; font-size: 13px; color: #374151;">Base Station (Node 2)</span>
+                    <span style="font-size: 12px; color: #475a4e; font-weight: 600;">ESP32 + 20x4 LCD + Buzzer + USB Serial Bridge</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 9px; border-bottom: 1px solid #eef2f0;">
+                    <span style="font-weight: 600; font-size: 13px; color: #374151;">Telemetry Packet Schema</span>
+                    <code style="background: #eef2f0; padding: 3px 8px; border-radius: 5px; font-size: 12px;">SG1,NODE01,&lt;seq&gt;,&lt;temp&gt;,&lt;ph&gt;,&lt;status&gt;</code>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 9px; border-bottom: 1px solid #eef2f0;">
+                    <span style="font-weight: 600; font-size: 13px; color: #374151;">Sensor Precision Standard</span>
+                    <span class="detail-badge optimal">Two Decimals (0.01 Resolution)</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 9px; border-bottom: 1px solid #eef2f0;">
+                    <span style="font-weight: 600; font-size: 13px; color: #374151;">Dual ML Engine</span>
+                    <span style="font-size: 12px; color: #126b4f; font-weight: 700;">Edge C++ (Model.h) + Server Joblib</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 9px; border-bottom: 1px solid #eef2f0;">
+                    <span style="font-weight: 600; font-size: 13px; color: #374151;">Fallback Ingestion API</span>
                     <code style="background: #eef2f0; padding: 3px 8px; border-radius: 5px; font-size: 12px;">POST /api/readings</code>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #eef2f0;">
-                    <span style="font-weight: 600; font-size: 13px; color: #374151;">Payload Schema (JSON)</span>
-                    <code style="background: #eef2f0; padding: 3px 8px; border-radius: 5px; font-size: 12px;">{"temperature": 29.50, "ph": 8.00}</code>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #eef2f0;">
-                    <span style="font-weight: 600; font-size: 13px; color: #374151;">Hardware Auth</span>
-                    <span class="detail-badge active">API Key / Bearer Secret</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #eef2f0;">
-                    <span style="font-weight: 600; font-size: 13px; color: #374151;">Automated Alert Dispatch</span>
-                    <span class="detail-badge active">ntfy.sh Daemon Worker</span>
-                </div>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-weight: 600; font-size: 13px; color: #374151;">Push Dispatch Threshold</span>
-                    <span style="font-weight: 700; font-size: 12px; color: #b45309;">Warning &amp; Critical Breaches</span>
+                    <span style="font-weight: 600; font-size: 13px; color: #374151;">Emergency Push Alerts</span>
+                    <span style="font-weight: 700; font-size: 12px; color: #b45309;">ntfy.sh Daemon (Warning &amp; Critical)</span>
                 </div>
             </div>
 
             <div class="panel-card-footer">
                 <span class="metric-footer-dot"></span>
-                <span>ESP32 / Arduino / IoT Microcontroller Integration</span>
+                <span>Node 1 Pond Transmitter &bull; Node 2 ESP32 Gateway &bull; ShrimpGuard System</span>
             </div>
         </article>
 
@@ -508,6 +530,7 @@
                         <tr data-telemetry-row data-status="{{ r.status|lower }}" data-date="{{ r.recorded_at }}" data-temp="{{ r.temperature }}" data-ph="{{ r.ph }}" data-wqi="{{ r.wqi_score }}">
                             <td>
                                 <strong>{{ r.recorded_at }}</strong>
+                                <span class="telemetry-node-subtag">{{ r.device_id or 'NODE01' }}</span>
                             </td>
                             <td>
                                 <span style="font-weight: 700; color: #2f6fbd;">{{ "%.2f"|format(r.temperature|float) }} °C</span>
@@ -539,7 +562,7 @@
                         {% else %}
                         <tr>
                             <td class="admin-empty" colspan="6">
-                                No sensor readings recorded yet. Connect a sensor or use "Ingest Test Reading".
+                                No sensor readings recorded yet. Connect Node 2 LoRa receiver or use "Simulate Lab Reading".
                             </td>
                         </tr>
                         {% endif %}
@@ -584,9 +607,9 @@
                 </svg>
             </span>
             <div class="admin-modal-heading-text">
-                <h2 id="simulate-title">Ingest Test Telemetry</h2>
+                <h2 id="simulate-title">Simulate Lab / Offline Telemetry</h2>
                 <p class="admin-modal-subtitle">
-                    Send test sensor readings to verify ML classification and automated alert triggers.
+                    Inject a manual test reading for offline sensor calibration and ML verification. Autonomous pond readings stream via LoRa.
                 </p>
             </div>
         </div>
@@ -617,7 +640,7 @@
 
         <div class="admin-user-form-actions">
             <button class="admin-user-cancel" type="button" data-close-dialog="simulate-dialog">Cancel</button>
-            <button class="admin-user-submit" type="submit">Ingest &amp; Classify Telemetry</button>
+            <button class="admin-user-submit" type="submit">Record &amp; Classify Test Reading</button>
         </div>
     </form>
 </dialog>
