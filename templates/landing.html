@@ -9,6 +9,7 @@
     <title>ShrimpGuard | Intelligent Telemetry &amp; AI Decision Support</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script>(function(){var t=localStorage.getItem('shrimp_theme');if(t==='dark'||(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.setAttribute('data-theme','dark');}else{document.documentElement.setAttribute('data-theme','light');}})();</script>
 </head>
 
 <body class="landing-page">
@@ -471,5 +472,6 @@
             });
         })();
     </script>
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 </body>
 </html>

@@ -10,6 +10,7 @@
 
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/style.css') }}">
+    <script>(function(){var t=localStorage.getItem('shrimp_theme');if(t==='dark'||(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.setAttribute('data-theme','dark');}else{document.documentElement.setAttribute('data-theme','light');}})();</script>
 </head>
 
 <body class="historical-page">
@@ -139,6 +140,16 @@
             </div>
 
             <div class="historical-header-info">
+
+                <button
+                    id="theme-toggle-btn"
+                    class="theme-toggle-btn"
+                    type="button"
+                    aria-label="Toggle dark mode"
+                    title="Toggle dark mode">
+                    <svg class="ui-icon theme-icon-moon" aria-hidden="true"><use href="#icon-moon"></use></svg>
+                    <svg class="ui-icon theme-icon-sun" aria-hidden="true"><use href="#icon-sun"></use></svg>
+                </button>
 
                 <button
                     id="notification-button"
@@ -699,6 +710,7 @@
             </div>
         </div>
 
+<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 <script src="{{ url_for('static', filename='js/historical.js') }}?v=20261031_v3"></script>
 <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
 

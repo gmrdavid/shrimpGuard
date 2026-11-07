@@ -124,8 +124,9 @@ function drawChart(history, parameters) {
     context.clearRect(0, 0, width, height);
 
     // Horizontal grid lines and Y-axis scale
-    context.strokeStyle = "#e8edea";
-    context.fillStyle = "#8a978f";
+    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    context.strokeStyle = isDark ? "rgba(255, 255, 255, 0.09)" : "#e8edea";
+    context.fillStyle = isDark ? "#8fa59b" : "#8a978f";
     context.font = "600 11px Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
     context.lineWidth = 1;
 
@@ -1225,6 +1226,11 @@ setInterval(updateDeviceTime, 1000);
 loadHistory();
 setInterval(loadHistory, 10000);
 window.addEventListener("resize", () => {
+    if (currentFilteredHistory && currentFilteredHistory.length) {
+        drawChart(currentFilteredHistory, currentFilteredParameters);
+    }
+});
+window.addEventListener("shrimp-theme-change", () => {
     if (currentFilteredHistory && currentFilteredHistory.length) {
         drawChart(currentFilteredHistory, currentFilteredParameters);
     }
