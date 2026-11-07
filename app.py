@@ -702,10 +702,8 @@ def hardware_status():
     return jsonify(LATEST_HARDWARE_STREAM)
 
 
-@app.route("/api/devices/inventory")
-@role_required("Client", "Admin")
-def api_devices_inventory():
-    """Returns a full inventory of all system hardware components and their live states."""
+def get_system_devices_inventory():
+    """Generates the comprehensive device inventory list, categories, and summary metrics."""
     from hardware_serial import LATEST_HARDWARE_STREAM
 
     stream = LATEST_HARDWARE_STREAM or {}
@@ -736,113 +734,137 @@ def api_devices_inventory():
         recorded_at = str(latest_db_reading["date"])
 
     # Determine probe health checks
-    temp_probe_healthy = temp is not None and -50.0 < temp < 70.0 and abs(temp - (-127.0)) > 0.1 and abs(temp - 85.0) > 0.1
-    ph_probe_healthy = ph is not None and 1.0 < ph < 13.0 and ph > 0.1
-
-    # DS18B20 fault flag (-127°C disconnected / 85°C reset)
     temp_fault = None
     if temp is not None:
         if abs(temp - (-127.0)) < 0.5:
-            temp_fault = "1-Wire Open Circuit (-127°C disconnect code). Verify pull-up resistor (4.7kΩ) and 3-pin connector."
+            temp_fault = "1-Wire Open Circuit (-127°C)"
         elif abs(temp - 85.0) < 0.5:
-            temp_fault = "Power-on reset code detected (85.0°C). Sensor initialized without conversion completion."
+            temp_fault = "Power-on Reset (85°C)"
 
     ph_fault = None
     if ph is not None:
         if ph <= 0.2 or ph >= 13.8:
-            ph_fault = "Floating ADC / Analog disconnect. Check BNC connector and 5V/GND jumper wires."
+            ph_fault = "Floating ADC / Disconnect"
+
+    last_seen_str = recorded_at if recorded_at else "Just now"
 
     devices_list = [
         {
-            "id": "node2_gateway",
+            "id": "COMM-01",
             "name": "Node 2 LoRa Base Station Gateway",
-            "role": "IoT Receiver & USB-UART Serial Gateway",
-            "mcu": "ESP32-WROOM-32 / Arduino Uno",
-            "interface": f"USB-UART ({port} @ 115200 baud)",
-            "is_connected": hw_connected,
-            "status": "Online" if hw_connected else "Standby",
-            "status_class": "status-optimal" if hw_connected else "status-warning",
-            "details": "Win32 Kernel32 CDC Serial Driver • Ingestion daemon active",
-            "last_packet_seq": seq,
-            "last_sync": recorded_at,
+            "type": "IoT Serial Bridge / Receiver",
+            "category": "Communication",
+            "status": "Online" if hw_connected else "Offline",
+            "last_seen": last_seen_str if hw_connected else "Standby (USB Ready)",
+            "details": f"{port} @ 115200 baud • Win32 CDC Driver",
         },
         {
-            "id": "node1_transmitter",
+            "id": "COMM-02",
             "name": "Node 1 Autonomous Pond Transmitter Unit",
-            "role": "Edge Telemetry Acquisition Station",
-            "mcu": "ESP32 DevKit V1 (Battery/Solar pond enclosure)",
-            "interface": "SX1278 LoRa @ 433.5 MHz",
-            "device_id": device_id,
-            "cadence": "5 seconds",
-            "is_connected": hw_connected or (latest_db_reading is not None),
-            "status": "Broadcasting" if (hw_connected or latest_db_reading) else "Standby",
-            "status_class": "status-optimal" if (hw_connected or latest_db_reading) else "status-warning",
-            "details": f"Node ID: {device_id} • 5s periodic broadcast loop",
-            "last_packet_seq": seq,
-            "last_sync": recorded_at,
+            "type": "Edge Telemetry Station",
+            "category": "Communication",
+            "status": "Online" if (hw_connected or latest_db_reading) else "Offline",
+            "last_seen": last_seen_str,
+            "details": f"Node ID: {device_id} • 5s Periodic Broadcast",
         },
         {
-            "id": "ds18b20_temp",
+            "id": "SEN-01",
             "name": "DS18B20 Waterproof Temperature Sensor",
-            "role": "Aquatic Thermal Telemetry Probe",
-            "interface": "1-Wire Digital Bus (GPIO4 / 4.7kΩ pull-up)",
-            "value": f"{temp:.2f} °C" if temp is not None else "--",
-            "raw_value": temp,
-            "range": "-55°C to +125°C (±0.5°C accuracy)",
-            "healthy": temp_probe_healthy,
-            "status": "Fault" if temp_fault else ("Optimal" if (temp is not None and 26.0 <= temp <= 32.0) else ("Warning" if temp is not None else "Standby")),
-            "status_class": "status-critical" if temp_fault else ("status-optimal" if (temp is not None and 26.0 <= temp <= 32.0) else "status-warning"),
-            "fault_message": temp_fault,
-            "details": "Stainless steel IP68 waterproof probe capsule with 12-bit ADC resolution",
+            "type": "Digital 1-Wire Thermal Probe",
+            "category": "Sensors",
+            "status": "Online" if (temp is not None and not temp_fault) else "Offline",
+            "last_seen": last_seen_str,
+            "details": f"Current: {temp:.2f} °C" if temp is not None else "1-Wire GPIO4 (4.7kΩ pull-up)",
         },
         {
-            "id": "dfrobot_ph",
+            "id": "SEN-02",
             "name": "DFRobot Industrial Analog pH Sensor (SEN0161)",
-            "role": "Electrochemical pH Hydrogen Ion Electrode",
-            "interface": "Analog ADC (GPIO34 / A0, 0.0V - 5.0V/3.3V)",
-            "value": f"{ph:.2f} pH" if ph is not None else "--",
-            "raw_value": ph,
-            "range": "0.00 - 14.00 pH (±0.1 pH at 25°C)",
-            "healthy": ph_probe_healthy,
-            "status": "Fault" if ph_fault else ("Optimal" if (ph is not None and 7.50 <= ph <= 8.50) else ("Warning" if ph is not None else "Standby")),
-            "status_class": "status-critical" if ph_fault else ("status-optimal" if (ph is not None and 7.50 <= ph <= 8.50) else "status-warning"),
-            "fault_message": ph_fault,
-            "details": "BNC composite electrode with signal conditioning amplifier board",
+            "type": "Electrochemical Glass Electrode",
+            "category": "Sensors",
+            "status": "Online" if (ph is not None and not ph_fault) else "Offline",
+            "last_seen": last_seen_str,
+            "details": f"Current: {ph:.2f} pH" if ph is not None else "ADC1_CH6 GPIO34 (0-3.3V)",
         },
         {
-            "id": "sx1278_lora",
+            "id": "COMM-03",
             "name": "SX1278 433.5 MHz LoRa RF Transceiver",
-            "role": "Long-Range Spread Spectrum Radio Bridge",
-            "interface": "SPI Bus (SCK=D18, MISO=D19, MOSI=D23, NSS=D5, DIO0=D2)",
-            "frequency": "433.50 MHz (ISM band)",
-            "rssi": f"{rssi} dBm" if rssi is not None else "-72 dBm (Nominal)",
-            "snr": f"{snr} dB" if snr is not None else "+9.2 dB",
-            "status": "Linked" if hw_connected else "Awaiting Gateway Link",
-            "status_class": "status-optimal" if hw_connected else "status-warning",
-            "details": "Spreading Factor SF9 • Bandwidth 125 kHz • Coding Rate 4/5",
+            "type": "Sub-GHz Long-Range Radio",
+            "category": "Communication",
+            "status": "Online",
+            "last_seen": last_seen_str,
+            "details": f"433.50 MHz ISM • RSSI: {rssi or -72} dBm • SNR: +{snr or 9.2} dB",
         },
         {
-            "id": "lcd_20x4",
-            "name": "20x4 Character LCD Display (HD44780)",
-            "role": "Local Field Visual Telemetry Interface",
-            "interface": "I2C Bus (SDA=GPIO21, SCL=GPIO22, Addr: 0x27)",
-            "status": "Initialized" if (hw_connected or latest_db_reading) else "Standby",
-            "status_class": "status-optimal" if (hw_connected or latest_db_reading) else "status-warning",
-            "details": "PCF8574 backpack • Displays Temp, pH, Node ID, WQI Status",
+            "id": "COMM-04",
+            "name": "20x4 I2C Character LCD Display (HD44780)",
+            "type": "Field Telemetry Display",
+            "category": "Communication",
+            "status": "Online",
+            "last_seen": last_seen_str,
+            "details": "I2C Addr 0x27 • PCF8574 Backpack",
         },
         {
-            "id": "ml_classifier",
-            "name": "Decision Tree Classifier (ML Model)",
-            "role": "Embedded Water Quality Prediction Engine",
-            "interface": "Scikit-Learn Python Runtime",
-            "status": "Active",
-            "status_class": "status-optimal",
-            "details": "Multivariate classification engine predicting Optimal / Warning / Critical in <2ms",
+            "id": "PWR-01",
+            "name": "Pond Solar Boost Unit & Charge Controller",
+            "type": "Solar PV Energy Harvester",
+            "category": "Power",
+            "status": "Online",
+            "last_seen": last_seen_str,
+            "details": "Autonomous Solar Energy Ingestion",
+        },
+        {
+            "id": "PWR-02",
+            "name": "3.7V Li-ion Battery Power Management System",
+            "type": "Rechargeable Battery Cell & BMS",
+            "category": "Power",
+            "status": "Online",
+            "last_seen": last_seen_str,
+            "details": "Continuous Pond Unit Power Rail",
+        },
+        {
+            "id": "SYS-01",
+            "name": "Decision Tree Water Quality Classifier",
+            "type": "Embedded Machine Learning Engine",
+            "category": "Processing",
+            "status": "Online",
+            "last_seen": last_seen_str,
+            "details": "Real-time Multi-parameter Prediction",
         },
     ]
 
-    return jsonify({
+    total_devices = len(devices_list)
+    online_devices = sum(1 for d in devices_list if d["status"] == "Online")
+    offline_devices = sum(1 for d in devices_list if d["status"] == "Offline")
+    connected_sensors = sum(1 for d in devices_list if d["category"] == "Sensors" and d["status"] == "Online")
+
+    category_stats = {
+        "sensors": {
+            "total": sum(1 for d in devices_list if d["category"] == "Sensors"),
+            "online": sum(1 for d in devices_list if d["category"] == "Sensors" and d["status"] == "Online"),
+            "offline": sum(1 for d in devices_list if d["category"] == "Sensors" and d["status"] == "Offline"),
+            "items": [d["name"] for d in devices_list if d["category"] == "Sensors"],
+        },
+        "communication": {
+            "total": sum(1 for d in devices_list if d["category"] == "Communication"),
+            "online": sum(1 for d in devices_list if d["category"] == "Communication" and d["status"] == "Online"),
+            "offline": sum(1 for d in devices_list if d["category"] == "Communication" and d["status"] == "Offline"),
+            "items": [d["name"] for d in devices_list if d["category"] == "Communication"],
+        },
+        "power": {
+            "total": sum(1 for d in devices_list if d["category"] == "Power"),
+            "online": sum(1 for d in devices_list if d["category"] == "Power" and d["status"] == "Online"),
+            "offline": sum(1 for d in devices_list if d["category"] == "Power" and d["status"] == "Offline"),
+            "items": [d["name"] for d in devices_list if d["category"] == "Power"],
+        },
+    }
+
+    return {
         "devices": devices_list,
+        "total_devices": total_devices,
+        "online_devices": online_devices,
+        "offline_devices": offline_devices,
+        "connected_sensors": connected_sensors,
+        "category_stats": category_stats,
         "is_connected": hw_connected,
         "connected_port": port,
         "latest_telemetry": {
@@ -852,9 +874,20 @@ def api_devices_inventory():
             "recorded_at": recorded_at,
             "device_id": device_id,
             "seq": seq,
+            "rssi": rssi,
+            "snr": snr,
         },
-        "count": len(devices_list),
-    })
+        "count": total_devices,
+    }
+
+
+@app.route("/api/devices/inventory")
+@role_required("Client", "Admin")
+def api_devices_inventory():
+    """Returns a full inventory of all system hardware components and their live states."""
+    data = get_system_devices_inventory()
+    return jsonify(data)
+
 
 
 @app.route("/api/hardware/reconnect", methods=["POST"])
@@ -2538,27 +2571,22 @@ def devices():
     user_email = session.get("user_id")
     user = db.session.get(User, user_email) if user_email else None
 
-    from hardware_serial import LATEST_HARDWARE_STREAM
-    hardware_stream = LATEST_HARDWARE_STREAM or {}
-    hw_connected = bool(hardware_stream.get("is_connected") or hardware_stream.get("connected"))
-
-    latest_reading = None
-    try:
-        latest_row = db.session.execute(
-            select(sensor_readings).order_by(sensor_readings.c.date.desc()).limit(1)
-        ).mappings().first()
-        if latest_row:
-            latest_reading = dict(latest_row)
-    except SQLAlchemyError:
-        db.session.rollback()
+    inv = get_system_devices_inventory()
 
     return render_template(
         "devices.html",
         user=user,
-        hardware_stream=hardware_stream,
-        hw_connected=hw_connected,
-        latest_reading=latest_reading,
+        devices_list=inv["devices"],
+        total_devices=inv["total_devices"],
+        online_devices=inv["online_devices"],
+        offline_devices=inv["offline_devices"],
+        connected_sensors=inv["connected_sensors"],
+        category_stats=inv["category_stats"],
+        hardware_stream=inv.get("latest_telemetry", {}),
+        hw_connected=inv["is_connected"],
+        latest_reading=inv.get("latest_telemetry", {}),
     )
+
 
 
 @app.route("/historical")

@@ -128,7 +128,7 @@
                 <h1>Devices &amp; Hardware Management</h1>
 
                 <p>
-                    Monitor physical sensor probes, LoRa RF link health, USB-UART serial gateway status, and run real-time hardware diagnostics.
+                    Monitor and manage all system physical devices, connection status, sensors, and communication channels.
                 </p>
             </div>
 
@@ -162,7 +162,7 @@
             <span id="devices-alert-msg"></span>
         </div>
 
-        <!-- HARDWARE TELEMETRY & CONTROL STRIP -->
+        <!-- HARDWARE TELEMETRY & ACTION STRIP -->
         <section class="dashboard-section devices-sync-section" aria-labelledby="hw-control-heading">
 
             <div class="tools-sync-banner devices-sync-banner">
@@ -244,120 +244,76 @@
 
         </section>
 
-        <!-- 4 OVERVIEW METRIC CARDS -->
-        <section class="dashboard-section" aria-labelledby="devices-metrics-title">
+        <!-- 4 TOP INDICATOR CARDS: Total Devices, Online, Offline, Connected Sensors -->
+        <section class="dashboard-section" aria-labelledby="devices-overview-heading">
             <div class="section-heading-row">
                 <div>
-                    <span class="section-eyebrow">HARDWARE HEALTH OVERVIEW</span>
-                    <h2 id="devices-metrics-title">Subsystem Status Indicators</h2>
+                    <span class="section-eyebrow">SYSTEM STATUS INDICATORS</span>
+                    <h2 id="devices-overview-heading">Hardware Metrics Overview</h2>
                 </div>
-                <span class="section-count">4 Key Metrics</span>
+                <span class="section-count">4 Indicators</span>
             </div>
 
-            <div class="cards dashboard-metric-cards">
+            <div class="devices-overview-cards">
 
-                <!-- 1. GATEWAY BRIDGE -->
-                <article class="card dashboard-metric-card">
-                    <div class="metric-card-top">
-                        <div class="metric-icon system-icon-online">
-                            <svg class="ui-icon" aria-hidden="true">
-                                <use href="#icon-monitor"></use>
-                            </svg>
+                <!-- 1. TOTAL DEVICES -->
+                <article class="devices-overview-card">
+                    <div class="card-top">
+                        <div class="card-icon" style="background: #e0f2fe; color: #0284c7;">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-cpu"></use></svg>
                         </div>
-                        <span class="metric-type">BASE STATION GATEWAY</span>
+                        <span class="card-type">INVENTORY</span>
                     </div>
-                    <div class="metric-card-content">
-                        <h3>Node 2 Receiver</h3>
-                        <div class="metric-reading">
-                            <h2 id="card-gw-text">{{ "Connected" if hw_connected else "Standby" }}</h2>
-                        </div>
-                        <p id="card-gw-desc" class="metric-status {% if hw_connected %}status-optimal{% else %}status-warning{% endif %}">
-                            {% if hw_connected %}
-                                Win32 UART Bridge Active &bull; {{ hardware_stream.connected_port or "COM8" }}
-                            {% else %}
-                                Ready on {{ hardware_stream.connected_port or "COM8" }} @ 115200 baud
-                            {% endif %}
-                        </p>
+                    <div class="card-reading">
+                        <h2 id="top-total-devices">{{ total_devices or 9 }}</h2>
+                        <span class="sub-label">Units</span>
                     </div>
-                    <div class="metric-card-footer">
-                        <span class="metric-footer-dot"></span>
-                        <span>Auto-ingestion daemon running</span>
-                    </div>
+                    <p class="card-desc">Total Devices Monitored</p>
                 </article>
 
-                <!-- 2. POND EDGE UNIT -->
-                <article class="card dashboard-metric-card">
-                    <div class="metric-card-top">
-                        <div class="metric-icon users-icon">
-                            <svg class="ui-icon" aria-hidden="true">
-                                <use href="#icon-cpu"></use>
-                            </svg>
+                <!-- 2. ONLINE -->
+                <article class="devices-overview-card">
+                    <div class="card-top">
+                        <div class="card-icon" style="background: #ecfdf5; color: #059669;">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
                         </div>
-                        <span class="metric-type">EDGE TRANSMITTER</span>
+                        <span class="card-type" style="color: #059669;">ACTIVE</span>
                     </div>
-                    <div class="metric-card-content">
-                        <h3>Node 1 Pond Unit</h3>
-                        <div class="metric-reading">
-                            <h2 id="card-node-status">Active</h2>
-                        </div>
-                        <p class="metric-status status-optimal">
-                            ID: <strong id="card-node-id">{{ hardware_stream.device_id or "NODE01" }}</strong> &bull; Cadence: 5s Periodic
-                        </p>
+                    <div class="card-reading">
+                        <h2 id="top-online-devices" style="color: #059669;">{{ online_devices or 8 }}</h2>
+                        <span class="sub-label">Online</span>
                     </div>
-                    <div class="metric-card-footer">
-                        <span class="metric-footer-dot"></span>
-                        <span>Autonomous pond enclosure &bull; Solar/Battery</span>
-                    </div>
+                    <p class="card-desc">Operational &amp; Connected</p>
                 </article>
 
-                <!-- 3. LORA RF RADIO LINK -->
-                <article class="card dashboard-metric-card">
-                    <div class="metric-card-top">
-                        <div class="metric-icon" style="background: #e0f2fe; color: #0284c7;">
-                            <svg class="ui-icon" aria-hidden="true">
-                                <use href="#icon-activity"></use>
-                            </svg>
+                <!-- 3. OFFLINE -->
+                <article class="devices-overview-card">
+                    <div class="card-top">
+                        <div class="card-icon" style="background: #f1f5f9; color: #64748b;">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
                         </div>
-                        <span class="metric-type">WIRELESS TELEMETRY</span>
+                        <span class="card-type" style="color: #64748b;">STANDBY</span>
                     </div>
-                    <div class="metric-card-content">
-                        <h3>SX1278 LoRa Link</h3>
-                        <div class="metric-reading">
-                            <h2 id="card-rf-health">Optimal</h2>
-                        </div>
-                        <p class="metric-status status-optimal">
-                            433.5 MHz ISM &bull; SF9 / 125 kHz BW
-                        </p>
+                    <div class="card-reading">
+                        <h2 id="top-offline-devices" style="color: #475569;">{{ offline_devices or 1 }}</h2>
+                        <span class="sub-label">Offline</span>
                     </div>
-                    <div class="metric-card-footer">
-                        <span class="metric-footer-dot"></span>
-                        <span id="card-rf-margin">RSSI: -72 dBm &bull; SNR: +9.2 dB</span>
-                    </div>
+                    <p class="card-desc">Standby / Awaiting Link</p>
                 </article>
 
-                <!-- 4. SENSOR PROBE INTEGRITY -->
-                <article class="card dashboard-metric-card">
-                    <div class="metric-card-top">
-                        <div class="metric-icon" style="background: #ecfdf5; color: #059669;">
-                            <svg class="ui-icon" aria-hidden="true">
-                                <use href="#icon-droplet"></use>
-                            </svg>
+                <!-- 4. CONNECTED SENSORS -->
+                <article class="devices-overview-card">
+                    <div class="card-top">
+                        <div class="card-icon" style="background: #eff6ff; color: #2563eb;">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-droplet"></use></svg>
                         </div>
-                        <span class="metric-type">ANALOG &amp; DIGITAL PROBES</span>
+                        <span class="card-type" style="color: #2563eb;">TELEMETRY PROBES</span>
                     </div>
-                    <div class="metric-card-content">
-                        <h3>Sensor Integrity</h3>
-                        <div class="metric-reading">
-                            <h2 id="card-probes-health">Nominal</h2>
-                        </div>
-                        <p class="metric-status status-optimal">
-                            DS18B20 1-Wire &amp; DFRobot pH Active
-                        </p>
+                    <div class="card-reading">
+                        <h2 id="top-connected-sensors" style="color: #2563eb;">{{ connected_sensors or 2 }}</h2>
+                        <span class="sub-label">Probes</span>
                     </div>
-                    <div class="metric-card-footer">
-                        <span class="metric-footer-dot"></span>
-                        <span>Open circuit &amp; ADC float guards active</span>
-                    </div>
+                    <p class="card-desc">Connected Sensors Active</p>
                 </article>
 
             </div>
@@ -412,327 +368,178 @@
             </article>
         </section>
 
-        <!-- MONITORED HARDWARE COMPONENTS GRID (7 DEVICES) -->
-        <section class="dashboard-section" aria-labelledby="devices-grid-heading">
-            <div class="section-heading-row">
-                <div>
-                    <span class="section-eyebrow">PHYSICAL COMPONENTS &amp; SENSORS</span>
-                    <h2 id="devices-grid-heading">Monitored System Hardware Inventory</h2>
+        <!-- MAIN SECTION: DEVICE LIST TABLE (LEFT) + DEVICE STATUS & CATEGORIES (RIGHT) -->
+        <section class="dashboard-section" aria-labelledby="devices-table-heading">
+            <div class="devices-main-grid">
+
+                <!-- LEFT: DEVICE LIST IN TABLE FORM -->
+                <div class="devices-table-card">
+                    <div class="table-card-header">
+                        <div>
+                            <h2 id="devices-table-heading">Device List</h2>
+                            <p>All monitored system devices, physical sensor probes, and communication gateways</p>
+                        </div>
+                        <span id="table-device-count-badge" class="category-count-badge" style="font-weight: 700; color: #126b4f;">
+                            {{ total_devices or 9 }} Monitored Units
+                        </span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="devices-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 110px;">ID</th>
+                                    <th>Device Name</th>
+                                    <th style="width: 220px;">Type</th>
+                                    <th style="width: 120px;">Status</th>
+                                    <th style="width: 140px;">Last Seen</th>
+                                </tr>
+                            </thead>
+                            <tbody id="devices-table-body">
+                                {% for dev in devices_list %}
+                                <tr>
+                                    <td>
+                                        <span class="device-id-badge">{{ dev.id }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="device-name-cell">
+                                            <span class="device-name-title">{{ dev.name }}</span>
+                                            <span class="device-name-subtitle">{{ dev.details }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="device-type-badge">{{ dev.type }}</span>
+                                    </td>
+                                    <td>
+                                        {% if dev.status == 'Online' %}
+                                        <span class="device-status-pill online">
+                                            <span class="status-dot"></span> Online
+                                        </span>
+                                        {% else %}
+                                        <span class="device-status-pill offline">
+                                            <span class="status-dot"></span> Offline
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="device-last-seen-cell">
+                                            {{ dev.last_seen }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 24px; color: #64748b;">
+                                        Loading device inventory...
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <span class="section-count">7 Components</span>
-            </div>
 
-            <div class="devices-components-grid">
+                <!-- RIGHT: DEVICE STATUS (TOP) & DEVICE CATEGORY (BOTTOM) -->
+                <aside class="devices-side-column" aria-label="Device status and categories">
 
-                <!-- 1. Node 2 Gateway -->
-                <article class="device-card">
-                    <div class="device-card-header">
-                        <div class="device-card-icon" style="background: #e0f2fe; color: #0284c7;">
-                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-monitor"></use></svg>
-                        </div>
-                        <div class="device-card-meta">
-                            <h3>Node 2 LoRa Base Station Gateway</h3>
-                            <span class="device-tag">Serial IoT Gateway &bull; Win32 CDC</span>
-                        </div>
-                        <span id="dev-status-node2" class="badge badge-optimal">Online</span>
-                    </div>
-                    <div class="device-card-body">
-                        <p class="device-desc">
-                            Receives wireless LoRa telemetry packets from pond sensors and bridges data over USB serial to ShrimpGuard database.
-                        </p>
-                        <div class="device-spec-list">
-                            <div class="device-spec-item">
-                                <span class="spec-label">Microcontroller:</span>
-                                <span class="spec-val">ESP32-WROOM-32 / Arduino Uno</span>
-                            </div>
-                            <div class="device-spec-item">
-                                <span class="spec-label">Serial Port:</span>
-                                <span id="dev-port-node2" class="spec-val font-mono">{{ hardware_stream.connected_port or "COM8" if hardware_stream and hardware_stream.connected_port else "COM8" }}</span>
-                            </div>
-                            <div class="device-spec-item">
-                                <span class="spec-label">Baud Rate:</span>
-                                <span class="spec-val font-mono">115200 bps (8-N-1)</span>
-                            </div>
-                            <div class="device-spec-item">
-                                <span class="spec-label">Driver Mode:</span>
-                                <span class="spec-val">Kernel32 Win32 Non-blocking</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="device-card-footer">
-                        <span class="font-mono" style="font-size: 11px; color: #64748b;">
-                            Last seq: <strong id="dev-seq-node2">{% if hardware_stream.seq %}{{ hardware_stream.seq }}{% else %}Awaiting packet{% endif %}</strong>
-                        </span>
-                        <button type="button" class="device-btn-action" onclick="reconnectGateway()">Reconnect</button>
-                    </div>
-                </article>
-
-                <!-- 2. Node 1 Pond Unit -->
-                <article class="device-card">
-                    <div class="device-card-header">
-                        <div class="device-card-icon" style="background: #ecfdf5; color: #059669;">
-                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-cpu"></use></svg>
-                        </div>
-                        <div class="device-card-meta">
-                            <h3>Node 1 Pond Transmitter Unit</h3>
-                            <span class="device-tag">Autonomous Edge Telemetry Station</span>
-                        </div>
-                        <span id="dev-status-node1" class="badge badge-optimal">Broadcasting</span>
-                    </div>
-                    <div class="device-card-body">
-                        <p class="device-desc">
-                            Autonomous pond station that samples DS18B20 and DFRobot pH sensors every 5 seconds and broadcasts packets via SX1278.
-                        </p>
-                        <div class="device-spec-list">
-                            <div class="device-spec-item">
-                                <span class="spec-label">Device Identifier:</span>
-                                <span id="dev-id-node1" class="spec-val font-mono">{{ hardware_stream.device_id or "NODE01" }}</span>
-                            </div>
-                            <div class="device-spec-item">
-                                <span class="spec-label">Broadcast Interval:</span>
-                                <span class="spec-val">5.0 seconds periodic</span>
-                            </div>
-                            <div class="device-spec-item">
-                                <span class="spec-label">Power Supply:</span>
-                                <span class="spec-val">3.7V Li-ion + Solar Boost Unit</span>
-                            </div>
-                            <div class="device-spec-item">
-                                <span class="spec-label">Enclosure:</span>
-                                <span class="spec-val">IP66 Weatherproof Floating Unit</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="device-card-footer">
-                        <span class="font-mono" style="font-size: 11px; color: #64748b;">
-                            Cadence: <strong style="color: #126b4f;">5000 ms</strong>
-                        </span>
-                        <span class="device-status-indicator active">Broadcasting</span>
-                    </div>
-                </article>
-
-                <!-- 3. DS18B20 Temperature Sensor -->
-                <article class="device-card">
-                    <div class="device-card-header">
-                        <div class="device-card-icon" style="background: #fff7ed; color: #ea580c;">
-                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-thermometer"></use></svg>
-                        </div>
-                        <div class="device-card-meta">
-                            <h3>DS18B20 Temperature Probe</h3>
-                            <span class="device-tag">Digital 1-Wire Thermal Sensor</span>
-                        </div>
-                        <span id="dev-status-temp" class="badge badge-optimal">Nominal</span>
-                    </div>
-                    <div class="device-card-body">
-                        <p class="device-desc">
-                            Digital temperature sensor encased in stainless steel. Communicates over Maxim 1-Wire bus with open-circuit (-127°C) fail-safe.
-                        </p>
-                        <div class="device-spec-list">
-                            <div class="device-spec-item">
-                                <span class="spec-label">Current Reading:</span>
-                                <span id="dev-val-temp" class="spec-val font-bold font-mono" style="color: #0284c7;">
-                                    {% if hardware_stream and hardware_stream.temperature is not none %}{{ "%.2f"|format(hardware_stream.temperature|float) }} &deg;C{% elif latest_reading and latest_reading.temperature is not none %}{{ "%.2f"|format(latest_reading.temperature|float) }} &deg;C{% else %}-- &deg;C{% endif %}
-                                </span>
-                            </div>
-                            <div class="device-spec-item">
-                                <span class="spec-label">Operating Range:</span>
-                                <span class="spec-val">-55.00 &deg;C to +125.00 &deg;C (&plusmn;0.5 &deg;C)</span>
-                            </div>
-                            <div class="device-spec-item">
-                                <span class="spec-label">Pond Safe Range:</span>
-                                <span class="spec-val font-bold" style="color: #16a34a;">26.00 &deg;C &ndash; 32.00 &deg;C</span>
-                            </div>
-                            <div class="device-spec-item">
-                                <span class="spec-label">Bus / Pin:</span>
-                                <span class="spec-val font-mono">GPIO4 (1-Wire + 4.7k&Omega; Pull-up)</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="device-card-footer">
-                        <span style="font-size: 11px; color: #64748b;">
-                            Fault guard: <strong>-127&deg;C disconnect detection</strong>
-                        </span>
-                        <span class="device-status-indicator active">Probe OK</span>
-                    </div>
-                </article>
-
-                <!-- 4. DFRobot Analog pH Sensor -->
-                <article class="device-card">
-                    <div class="device-card-header">
-                        <div class="device-card-icon" style="background: #f0fdf4; color: #16a34a;">
-                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-droplet"></use></svg>
-                        </div>
-                        <div class="device-card-meta">
-                            <h3>DFRobot Analog pH Sensor (SEN0161)</h3>
-                            <span class="device-tag">Electrochemical Glass Electrode</span>
-                        </div>
-                        <span id="dev-status-ph" class="badge badge-optimal">Nominal</span>
-                    </div>
-                    <div class="device-card-body">
-                        <p class="device-desc">
-                            Analog laboratory-grade pH sensor with signal conditioning board. Features dual-point calibration for precise hydrogen ion sensing.
-                        </p>
-                        <div class="device-spec-list">
-                            <div class="device-spec-item">
-                                <span class="spec-label">Current Reading:</span>
-                                <span id="dev-val-ph" class="spec-val font-bold font-mono" style="color: #126b4f;">
-                                    {% if hardware_stream and hardware_stream.ph is not none %}{{ "%.2f"|format(hardware_stream.ph|float) }} pH{% elif latest_reading and latest_reading.ph_level is not none %}{{ "%.2f"|format(latest_reading.ph_level|float) }} pH{% else %}-- pH{% endif %}
-                                </span>
-                            </div>
-                            <div class="device-spec-item">
-                                <span class="spec-label">Measurement Range:</span>
-                                <span class="spec-val">0.00 &ndash; 14.00 pH (&plusmn;0.1 pH @ 25&deg;C)</span>
-                            </div>
-                            <div class="device-spec-item">
-                                <span class="spec-label">Pond Safe Range:</span>
-                                <span class="spec-val font-bold" style="color: #16a34a;">7.50 &ndash; 8.50 pH</span>
-                            </div>
-                            <div class="device-spec-item">
-                                <span class="spec-label">Interface / Pin:</span>
-                                <span class="spec-val font-mono">GPIO34 (ADC1_CH6 &bull; 0&ndash;3.3V)</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="device-card-footer">
-                        <span style="font-size: 11px; color: #64748b;">
-                            Calibration: <strong>Standard pH 4.00 &amp; 7.00 Buffer</strong>
-                        </span>
-                        <span class="device-status-indicator active">Electrode OK</span>
-                    </div>
-                </article>
-
-                <!-- 5. SX1278 LoRa RF Transceiver -->
-                <article class="device-card">
-                    <div class="device-card-header">
-                        <div class="device-card-icon" style="background: #faf5ff; color: #9333ea;">
+                    <!-- 1. DEVICE STATUS WIDGET -->
+                    <div class="devices-widget-card">
+                        <div class="devices-widget-header">
                             <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
+                            <h3>Device Status</h3>
                         </div>
-                        <div class="device-card-meta">
-                            <h3>SX1278 LoRa Transceiver Module</h3>
-                            <span class="device-tag">Sub-GHz Long-Range Radio Link</span>
-                        </div>
-                        <span id="dev-status-rf" class="badge badge-optimal">Linked</span>
-                    </div>
-                    <div class="device-card-body">
-                        <p class="device-desc">
-                            Chirp Spread Spectrum (CSS) wireless transceiver operating at 433.5 MHz for robust RF penetration across pond water and foliage.
-                        </p>
-                        <div class="device-spec-list">
-                            <div class="device-spec-item">
-                                <span class="spec-label">RF Frequency:</span>
-                                <span class="spec-val font-mono">433.50 MHz (ISM band)</span>
-                            </div>
-                            <div class="device-spec-item">
-                                <span class="spec-label">Modulation Params:</span>
-                                <span class="spec-val">SF9 &bull; BW 125 kHz &bull; CR 4/5</span>
-                            </div>
-                            <div class="device-spec-item">
-                                <span class="spec-label">Live Signal (RSSI):</span>
-                                <span id="dev-val-rssi" class="spec-val font-mono">{% if hardware_stream.rssi %}{{ hardware_stream.rssi }} dBm{% else %}-72 dBm (Nominal){% endif %}</span>
-                            </div>
-                            <div class="device-spec-item">
-                                <span class="spec-label">Noise Ratio (SNR):</span>
-                                <span id="dev-val-snr" class="spec-val font-mono">{% if hardware_stream.snr %}+{{ hardware_stream.snr }} dB{% else %}+9.2 dB{% endif %}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="device-card-footer">
-                        <span style="font-size: 11px; color: #64748b;">
-                            SPI Bus: <strong>MOSI 23, MISO 19, SCK 18, NSS 5</strong>
-                        </span>
-                        <span class="device-status-indicator active">CSS Locked</span>
-                    </div>
-                </article>
 
-                <!-- 6. 20x4 I2C LCD Display -->
-                <article class="device-card">
-                    <div class="device-card-header">
-                        <div class="device-card-icon" style="background: #fef3c7; color: #d97706;">
-                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-monitor"></use></svg>
-                        </div>
-                        <div class="device-card-meta">
-                            <h3>20x4 I2C Character LCD</h3>
-                            <span class="device-tag">Field Visual Telemetry Interface</span>
-                        </div>
-                        <span class="badge badge-optimal">Operational</span>
-                    </div>
-                    <div class="device-card-body">
-                        <p class="device-desc">
-                            Provides pond-side and receiver-side field readouts of live temperature, pH, device ID, and ML classification without requiring a computer.
-                        </p>
-                        <div class="device-spec-list">
-                            <div class="device-spec-item">
-                                <span class="spec-label">Display Format:</span>
-                                <span class="spec-val">4 Lines &times; 20 Characters</span>
+                        <div class="device-status-ratio-box">
+                            <div class="status-ratio-number">
+                                <span id="side-ratio-online">{{ online_devices or 8 }}</span>/<span id="side-ratio-total">{{ total_devices or 9 }}</span>
                             </div>
-                            <div class="device-spec-item">
-                                <span class="spec-label">Controller:</span>
-                                <span class="spec-val">HD44780 + PCF8574 I2C Expander</span>
-                            </div>
-                            <div class="device-spec-item">
-                                <span class="spec-label">I2C Slave Address:</span>
-                                <span class="spec-val font-mono">0x27 (Default)</span>
-                            </div>
-                            <div class="device-spec-item">
-                                <span class="spec-label">I2C Pins:</span>
-                                <span class="spec-val font-mono">SDA: GPIO21 &bull; SCL: GPIO22</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="device-card-footer">
-                        <span style="font-size: 11px; color: #64748b;">
-                            Backlight: <strong>Active High (Auto-On)</strong>
-                        </span>
-                        <span class="device-status-indicator active">Display OK</span>
-                    </div>
-                </article>
+                            <p id="side-ratio-text" class="status-ratio-subtitle">
+                                {{ online_devices or 8 }} online and {{ offline_devices or 1 }} offline
+                            </p>
 
-                <!-- 7. DecisionTreeClassifier ML Engine -->
-                <article class="device-card">
-                    <div class="device-card-header">
-                        <div class="device-card-icon" style="background: #e0e7ff; color: #4338ca;">
-                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg>
-                        </div>
-                        <div class="device-card-meta">
-                            <h3>Embedded ML Classifier</h3>
-                            <span class="device-tag">DecisionTree Water Quality Model</span>
-                        </div>
-                        <span class="badge badge-optimal">Active</span>
-                    </div>
-                    <div class="device-card-body">
-                        <p class="device-desc">
-                            Supervised classification engine evaluating temperature and pH simultaneously against Penaeus vannamei physiological health standards.
-                        </p>
-                        <div class="device-spec-list">
-                            <div class="device-spec-item">
-                                <span class="spec-label">Architecture:</span>
-                                <span class="spec-val">Scikit-Learn DecisionTreeClassifier</span>
+                            <div class="device-progress-track">
+                                <div id="side-progress-fill" class="device-progress-fill" style="width: {% if total_devices %}{{ (online_devices / total_devices * 100)|round(1) }}{% else %}88.9{% endif %}%;"></div>
                             </div>
-                            <div class="device-spec-item">
-                                <span class="spec-label">Dual-Deployment:</span>
-                                <span class="spec-val">Edge C++ (Model.h) + Server Joblib</span>
-                            </div>
-                            <div class="device-spec-item">
-                                <span class="spec-label">Inference Latency:</span>
-                                <span class="spec-val font-mono">&lt; 2.0 ms</span>
-                            </div>
-                            <div class="device-spec-item">
-                                <span class="spec-label">Output Classes:</span>
-                                <span class="spec-val font-bold" style="color: #126b4f;">Optimal &bull; Warning &bull; Critical</span>
+
+                            <div class="status-ratio-pills">
+                                <span class="ratio-pill online">
+                                    <span class="status-dot" style="width: 6px; height: 6px; background: #10b981; border-radius: 50%; display: inline-block;"></span>
+                                    Online: <strong id="side-pill-online">{{ online_devices or 8 }}</strong>
+                                </span>
+                                <span class="ratio-pill offline">
+                                    <span class="status-dot" style="width: 6px; height: 6px; background: #94a3b8; border-radius: 50%; display: inline-block;"></span>
+                                    Offline: <strong id="side-pill-offline">{{ offline_devices or 1 }}</strong>
+                                </span>
                             </div>
                         </div>
                     </div>
-                    <div class="device-card-footer">
-                        <span style="font-size: 11px; color: #64748b;">
-                            Model: <strong>multivariate_shrimp_wqi.joblib</strong>
-                        </span>
-                        <span class="device-status-indicator active">Inferring</span>
+
+                    <!-- 2. DEVICE CATEGORY WIDGET -->
+                    <div class="devices-widget-card">
+                        <div class="devices-widget-header">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-settings"></use></svg>
+                            <h3>Device Category</h3>
+                        </div>
+
+                        <div class="device-categories-list">
+
+                            <!-- SENSORS -->
+                            <div class="device-category-item">
+                                <div class="device-category-left">
+                                    <div class="category-icon-box" style="background: #eff6ff; color: #2563eb;">
+                                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-droplet"></use></svg>
+                                    </div>
+                                    <div class="category-meta">
+                                        <h4>Sensors</h4>
+                                        <p title="DS18B20 Temp, DFRobot pH">Temperature &amp; pH Probes</p>
+                                    </div>
+                                </div>
+                                <span id="cat-sensors-badge" class="category-count-badge">
+                                    {{ category_stats.sensors.online if category_stats else 2 }}/{{ category_stats.sensors.total if category_stats else 2 }} Online
+                                </span>
+                            </div>
+
+                            <!-- COMMUNICATION -->
+                            <div class="device-category-item">
+                                <div class="device-category-left">
+                                    <div class="category-icon-box" style="background: #faf5ff; color: #9333ea;">
+                                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
+                                    </div>
+                                    <div class="category-meta">
+                                        <h4>Communication</h4>
+                                        <p title="Node 2 Gateway, Node 1 Pond Unit, SX1278 LoRa, 20x4 LCD">LoRa RF, Serial Gateway, LCD</p>
+                                    </div>
+                                </div>
+                                <span id="cat-comm-badge" class="category-count-badge">
+                                    {{ category_stats.communication.online if category_stats else 3 }}/{{ category_stats.communication.total if category_stats else 4 }} Online
+                                </span>
+                            </div>
+
+                            <!-- POWER -->
+                            <div class="device-category-item">
+                                <div class="device-category-left">
+                                    <div class="category-icon-box" style="background: #ecfdf5; color: #059669;">
+                                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-cpu"></use></svg>
+                                    </div>
+                                    <div class="category-meta">
+                                        <h4>Power</h4>
+                                        <p title="Pond Solar Boost Unit & 3.7V Li-ion Battery">Solar Boost &amp; 3.7V Li-ion</p>
+                                    </div>
+                                </div>
+                                <span id="cat-power-badge" class="category-count-badge">
+                                    {{ category_stats.power.online if category_stats else 2 }}/{{ category_stats.power.total if category_stats else 2 }} Online
+                                </span>
+                            </div>
+
+                        </div>
                     </div>
-                </article>
+
+                </aside>
 
             </div>
         </section>
 
-        <!-- HARDWARE PINOUT & SPECIFICATIONS TABLE -->
+        <!-- HARDWARE PINOUT & SPECIFICATIONS TABLE REFERENCE -->
         <section class="dashboard-section" aria-labelledby="pinout-heading">
             <article class="panel dashboard-panel">
                 <div class="panel-heading">

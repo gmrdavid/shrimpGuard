@@ -65,8 +65,12 @@ function renderDevices(data) {
     const isConnected = Boolean(data.is_connected);
     const port = data.connected_port || "COM8";
     const latest = data.latest_telemetry || {};
+    const total = data.total_devices || (Array.isArray(data.devices) ? data.devices.length : 9);
+    const online = data.online_devices !== undefined ? data.online_devices : 8;
+    const offline = data.offline_devices !== undefined ? data.offline_devices : 1;
+    const sensors = data.connected_sensors !== undefined ? data.connected_sensors : 2;
 
-    // 1. Top Gateway Bridge Badges
+    // 1. Gateway Status & RF Badges
     const badgeGwStatus = document.getElementById("badge-gw-status");
     if (badgeGwStatus) {
         badgeGwStatus.textContent = isConnected ? "Online" : "Standby";
@@ -106,93 +110,107 @@ function renderDevices(data) {
         badgeLastAgo.textContent = timeAgo(lastSyncTimestamp);
     }
 
-    // 2. Overview Metric Cards
-    const cardGwText = document.getElementById("card-gw-text");
-    if (cardGwText) {
-        cardGwText.textContent = isConnected ? "Connected" : "Standby";
+    // 2. Top 4 Overview Metric Cards
+    const elTopTotal = document.getElementById("top-total-devices");
+    if (elTopTotal) elTopTotal.textContent = total;
+
+    const elTopOnline = document.getElementById("top-online-devices");
+    if (elTopOnline) elTopOnline.textContent = online;
+
+    const elTopOffline = document.getElementById("top-offline-devices");
+    if (elTopOffline) elTopOffline.textContent = offline;
+
+    const elTopSensors = document.getElementById("top-connected-sensors");
+    if (elTopSensors) elTopSensors.textContent = sensors;
+
+    // 3. Right Side: Device Status Ratio & Progress
+    const elSideRatioOnline = document.getElementById("side-ratio-online");
+    if (elSideRatioOnline) elSideRatioOnline.textContent = online;
+
+    const elSideRatioTotal = document.getElementById("side-ratio-total");
+    if (elSideRatioTotal) elSideRatioTotal.textContent = total;
+
+    const elSideRatioText = document.getElementById("side-ratio-text");
+    if (elSideRatioText) {
+        elSideRatioText.textContent = `${online} online and ${offline} offline`;
     }
 
-    const cardGwDesc = document.getElementById("card-gw-desc");
-    if (cardGwDesc) {
-        cardGwDesc.textContent = isConnected
-            ? `Win32 UART Bridge Active • ${port}`
-            : `Ready on ${port} @ 115200 baud`;
-        cardGwDesc.className = isConnected ? "metric-status status-optimal" : "metric-status status-warning";
+    const elSideProgressFill = document.getElementById("side-progress-fill");
+    if (elSideProgressFill) {
+        const pct = total > 0 ? ((online / total) * 100).toFixed(1) : 100;
+        elSideProgressFill.style.width = `${pct}%`;
     }
 
-    const cardNodeId = document.getElementById("card-node-id");
-    if (cardNodeId) {
-        cardNodeId.textContent = latest.device_id || "NODE01";
+    const elSidePillOnline = document.getElementById("side-pill-online");
+    if (elSidePillOnline) elSidePillOnline.textContent = online;
+
+    const elSidePillOffline = document.getElementById("side-pill-offline");
+    if (elSidePillOffline) elSidePillOffline.textContent = offline;
+
+    // 4. Right Side: Device Category Breakdown Badges
+    const cat = data.category_stats || {};
+    if (cat.sensors) {
+        const elCatSensors = document.getElementById("cat-sensors-badge");
+        if (elCatSensors) {
+            elCatSensors.textContent = `${cat.sensors.online}/${cat.sensors.total} Online`;
+        }
     }
 
-    // 3. Update Hardware Component Cards
-    if (Array.isArray(data.devices)) {
+    if (cat.communication) {
+        const elCatComm = document.getElementById("cat-comm-badge");
+        if (elCatComm) {
+            elCatComm.textContent = `${cat.communication.online}/${cat.communication.total} Online`;
+        }
+    }
+
+    if (cat.power) {
+        const elCatPower = document.getElementById("cat-power-badge");
+        if (elCatPower) {
+            elCatPower.textContent = `${cat.power.online}/${cat.power.total} Online`;
+        }
+    }
+
+    // 5. Device List Table Body
+    const tbody = document.getElementById("devices-table-body");
+    if (tbody && Array.isArray(data.devices)) {
+        tbody.innerHTML = "";
         data.devices.forEach((dev) => {
-            if (dev.id === "node2_gateway") {
-                const elStatus = document.getElementById("dev-status-node2");
-                if (elStatus) {
-                    elStatus.textContent = dev.status;
-                    elStatus.className = `badge ${dev.is_connected ? "badge-optimal" : "badge-warning"}`;
-                }
-                const elPort = document.getElementById("dev-port-node2");
-                if (elPort) elPort.textContent = port;
-                const elSeq = document.getElementById("dev-seq-node2");
-                if (elSeq && dev.last_packet_seq) elSeq.textContent = dev.last_packet_seq;
-            }
+            const tr = document.createElement("tr");
 
-            if (dev.id === "node1_transmitter") {
-                const elStatus = document.getElementById("dev-status-node1");
-                if (elStatus) {
-                    elStatus.textContent = dev.status;
-                    elStatus.className = `badge ${dev.is_connected ? "badge-optimal" : "badge-warning"}`;
-                }
-                const elId = document.getElementById("dev-id-node1");
-                if (elId) elId.textContent = dev.device_id;
-            }
+            const isDevOnline = dev.status === "Online";
+            const statusClass = isDevOnline ? "online" : "offline";
 
-            if (dev.id === "ds18b20_temp") {
-                const elVal = document.getElementById("dev-val-temp");
-                if (elVal && dev.raw_value !== null && dev.raw_value !== undefined) {
-                    elVal.textContent = `${Number(dev.raw_value).toFixed(2)} °C`;
-                }
-                const elStatus = document.getElementById("dev-status-temp");
-                if (elStatus) {
-                    elStatus.textContent = dev.status;
-                    elStatus.className = `badge ${
-                        dev.status_class === "status-critical"
-                            ? "badge-critical"
-                            : dev.status_class === "status-optimal"
-                            ? "badge-optimal"
-                            : "badge-warning"
-                    }`;
-                }
-            }
-
-            if (dev.id === "dfrobot_ph") {
-                const elVal = document.getElementById("dev-val-ph");
-                if (elVal && dev.raw_value !== null && dev.raw_value !== undefined) {
-                    elVal.textContent = `${Number(dev.raw_value).toFixed(2)} pH`;
-                }
-                const elStatus = document.getElementById("dev-status-ph");
-                if (elStatus) {
-                    elStatus.textContent = dev.status;
-                    elStatus.className = `badge ${
-                        dev.status_class === "status-critical"
-                            ? "badge-critical"
-                            : dev.status_class === "status-optimal"
-                            ? "badge-optimal"
-                            : "badge-warning"
-                    }`;
-                }
-            }
-
-            if (dev.id === "sx1278_lora") {
-                const elRssi = document.getElementById("dev-val-rssi");
-                if (elRssi && dev.rssi) elRssi.textContent = dev.rssi;
-                const elSnr = document.getElementById("dev-val-snr");
-                if (elSnr && dev.snr) elSnr.textContent = dev.snr;
-            }
+            tr.innerHTML = `
+                <td>
+                    <span class="device-id-badge">${dev.id}</span>
+                </td>
+                <td>
+                    <div class="device-name-cell">
+                        <span class="device-name-title">${dev.name}</span>
+                        <span class="device-name-subtitle">${dev.details || ""}</span>
+                    </div>
+                </td>
+                <td>
+                    <span class="device-type-badge">${dev.type}</span>
+                </td>
+                <td>
+                    <span class="device-status-pill ${statusClass}">
+                        <span class="status-dot"></span> ${dev.status}
+                    </span>
+                </td>
+                <td>
+                    <span class="device-last-seen-cell">
+                        ${dev.last_seen || "Just now"}
+                    </span>
+                </td>
+            `;
+            tbody.appendChild(tr);
         });
+    }
+
+    const countBadge = document.getElementById("table-device-count-badge");
+    if (countBadge) {
+        countBadge.textContent = `${total} Monitored Units`;
     }
 }
 
