@@ -162,88 +162,6 @@
             <span id="devices-alert-msg"></span>
         </div>
 
-        <!-- HARDWARE TELEMETRY & ACTION STRIP -->
-        <section class="dashboard-section devices-sync-section" aria-labelledby="hw-control-heading">
-
-            <div class="tools-sync-banner devices-sync-banner">
-                <div class="sync-banner-info">
-                    <div class="sync-banner-icon">
-                        <svg class="ui-icon" aria-hidden="true">
-                            <use href="#icon-cpu"></use>
-                        </svg>
-                    </div>
-                    <div>
-                        <span class="tools-eyebrow">PHYSICAL IOT INFRASTRUCTURE</span>
-                        <h2 id="hw-control-heading">Active Hardware Stream &amp; Gateway</h2>
-                    </div>
-                </div>
-
-                <div class="sync-telemetry-badges">
-                    <div class="telemetry-badge">
-                        <span class="telemetry-label">GATEWAY SERIAL BRIDGE</span>
-                        <span id="badge-gw-status" class="telemetry-value {% if hw_connected %}telemetry-status-optimal{% else %}telemetry-status-warning{% endif %}">
-                            {{ "Online" if hw_connected else "Standby" }}
-                        </span>
-                        <span id="badge-gw-port" class="telemetry-substatus">
-                            {{ hardware_stream.connected_port or "COM8" if hardware_stream and hardware_stream.connected_port else "COM8" }} (115200 baud)
-                        </span>
-                    </div>
-
-                    <div class="telemetry-badge">
-                        <span class="telemetry-label">POND TRANSMITTER</span>
-                        <span id="badge-node-id" class="telemetry-value">
-                            {{ hardware_stream.device_id or "NODE01" }}
-                        </span>
-                        <span id="badge-node-seq" class="telemetry-substatus">
-                            {% if hardware_stream.seq %}Seq #{{ hardware_stream.seq }}{% else %}Awaiting broadcast{% endif %}
-                        </span>
-                    </div>
-
-                    <div class="telemetry-badge">
-                        <span class="telemetry-label">LORA RF RADIO LINK</span>
-                        <span id="badge-rf-rssi" class="telemetry-value">
-                            {% if hardware_stream.rssi %}{{ hardware_stream.rssi }} dBm{% else %}-72 dBm (Nominal){% endif %}
-                        </span>
-                        <span id="badge-rf-snr" class="telemetry-substatus">
-                            {% if hardware_stream.snr %}SNR: +{{ hardware_stream.snr }} dB{% else %}SNR: +9.2 dB{% endif %} &bull; 433.5 MHz
-                        </span>
-                    </div>
-
-                    <div class="telemetry-badge">
-                        <span class="telemetry-label">LAST INGESTION</span>
-                        <span id="badge-last-sync" class="telemetry-value" style="font-size: 14px;">
-                            {% if hardware_stream and hardware_stream.recorded_at %}{{ hardware_stream.recorded_at.split('T')[-1][:8] if 'T' in hardware_stream.recorded_at else hardware_stream.recorded_at.split(' ')[-1][:8] }}{% elif latest_reading and latest_reading.date %}{{ (latest_reading.date ~ '').split('T')[-1][:8] if 'T' in (latest_reading.date ~ '') else (latest_reading.date ~ '').split(' ')[-1][:8] }}{% else %}Ready{% endif %}
-                        </span>
-                        <span id="badge-last-ago" class="telemetry-substatus">Just now</span>
-                    </div>
-                </div>
-
-                <div class="sync-banner-actions devices-actions-bar">
-                    <button type="button" id="btn-sync-devices" class="tools-btn-secondary" title="Poll latest hardware state and telemetry">
-                        <svg class="ui-icon" aria-hidden="true">
-                            <use href="#icon-monitor"></use>
-                        </svg>
-                        <span>Sync Hardware</span>
-                    </button>
-
-                    <button type="button" id="btn-reconnect-gateway" class="tools-btn-secondary" title="Rescan and probe COM ports for Node 2 receiver">
-                        <svg class="ui-icon" aria-hidden="true">
-                            <use href="#icon-settings"></use>
-                        </svg>
-                        <span>Reconnect Gateway</span>
-                    </button>
-
-                    <button type="button" id="btn-run-diagnostics" class="tools-btn-primary devices-btn-diag" title="Perform automated sensor and link diagnostics check">
-                        <svg class="ui-icon" aria-hidden="true">
-                            <use href="#icon-check-circle"></use>
-                        </svg>
-                        <span>Run Diagnostics</span>
-                    </button>
-                </div>
-            </div>
-
-        </section>
-
         <!-- 4 TOP INDICATOR CARDS: Total Devices, Online, Offline, Connected Sensors -->
         <section class="dashboard-section" aria-labelledby="devices-overview-heading">
             <div class="section-heading-row">
@@ -251,69 +169,113 @@
                     <span class="section-eyebrow">SYSTEM STATUS INDICATORS</span>
                     <h2 id="devices-overview-heading">Hardware Metrics Overview</h2>
                 </div>
-                <span class="section-count">4 Indicators</span>
+
+                <div class="devices-toolbar-actions">
+                    <button type="button" id="btn-sync-devices" class="telemetry-test-btn" title="Poll latest hardware state and telemetry">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-monitor"></use></svg>
+                        <span>Sync Hardware</span>
+                    </button>
+
+                    <button type="button" id="btn-reconnect-gateway" class="telemetry-test-btn" title="Rescan and probe COM ports for Node 2 receiver">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-settings"></use></svg>
+                        <span>Reconnect Gateway</span>
+                    </button>
+
+                    <button type="button" id="btn-run-diagnostics" class="telemetry-sync-btn" title="Perform automated sensor and link diagnostics check">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
+                        <span>Run Diagnostics</span>
+                    </button>
+                </div>
             </div>
 
-            <div class="devices-overview-cards">
+            <div class="cards dashboard-metric-cards devices-metric-cards">
 
                 <!-- 1. TOTAL DEVICES -->
-                <article class="devices-overview-card">
-                    <div class="card-top">
-                        <div class="card-icon" style="background: #e0f2fe; color: #0284c7;">
+                <article class="card dashboard-metric-card devices-metric-card">
+                    <div class="metric-card-top">
+                        <div class="metric-icon" style="background: #e0f2fe; color: #0284c7;">
                             <svg class="ui-icon" aria-hidden="true"><use href="#icon-cpu"></use></svg>
                         </div>
-                        <span class="card-type">INVENTORY</span>
+                        <span class="metric-type">INVENTORY</span>
                     </div>
-                    <div class="card-reading">
-                        <h2 id="top-total-devices">{{ total_devices or 9 }}</h2>
-                        <span class="sub-label">Units</span>
+                    <div class="metric-card-content">
+                        <h3>Total Devices</h3>
+                        <div class="metric-reading">
+                            <h2 id="top-total-devices">{{ total_devices or 9 }}</h2>
+                            <span class="metric-unit">Units</span>
+                        </div>
+                        <p class="metric-status">All Monitored Hardware Units</p>
                     </div>
-                    <p class="card-desc">Total Devices Monitored</p>
+                    <div class="metric-card-footer">
+                        <span class="metric-footer-dot" style="background: #0284c7;"></span>
+                        <span>Hardware network inventory</span>
+                    </div>
                 </article>
 
-                <!-- 2. ONLINE -->
-                <article class="devices-overview-card">
-                    <div class="card-top">
-                        <div class="card-icon" style="background: #ecfdf5; color: #059669;">
+                <!-- 2. ONLINE DEVICES -->
+                <article class="card dashboard-metric-card devices-metric-card">
+                    <div class="metric-card-top">
+                        <div class="metric-icon" style="background: #ecfdf5; color: #059669;">
                             <svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
                         </div>
-                        <span class="card-type" style="color: #059669;">ACTIVE</span>
+                        <span class="metric-type" style="color: #059669;">ACTIVE</span>
                     </div>
-                    <div class="card-reading">
-                        <h2 id="top-online-devices" style="color: #059669;">{{ online_devices or 8 }}</h2>
-                        <span class="sub-label">Online</span>
+                    <div class="metric-card-content">
+                        <h3>Online Devices</h3>
+                        <div class="metric-reading">
+                            <h2 id="top-online-devices" style="color: #059669;">{{ online_devices or 8 }}</h2>
+                            <span class="metric-unit">Online</span>
+                        </div>
+                        <p class="metric-status">Operational &amp; Broadcasting</p>
                     </div>
-                    <p class="card-desc">Operational &amp; Connected</p>
+                    <div class="metric-card-footer">
+                        <span class="metric-footer-dot" style="background: #10b981;"></span>
+                        <span>Nominal radio telemetry</span>
+                    </div>
                 </article>
 
-                <!-- 3. OFFLINE -->
-                <article class="devices-overview-card">
-                    <div class="card-top">
-                        <div class="card-icon" style="background: #f1f5f9; color: #64748b;">
+                <!-- 3. OFFLINE DEVICES -->
+                <article class="card dashboard-metric-card devices-metric-card">
+                    <div class="metric-card-top">
+                        <div class="metric-icon" style="background: #f1f5f9; color: #64748b;">
                             <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
                         </div>
-                        <span class="card-type" style="color: #64748b;">STANDBY</span>
+                        <span class="metric-type" style="color: #64748b;">STANDBY</span>
                     </div>
-                    <div class="card-reading">
-                        <h2 id="top-offline-devices" style="color: #475569;">{{ offline_devices or 1 }}</h2>
-                        <span class="sub-label">Offline</span>
+                    <div class="metric-card-content">
+                        <h3>Offline Devices</h3>
+                        <div class="metric-reading">
+                            <h2 id="top-offline-devices" style="color: #475569;">{{ offline_devices or 1 }}</h2>
+                            <span class="metric-unit">Offline</span>
+                        </div>
+                        <p class="metric-status">Standby / Awaiting LoRa Link</p>
                     </div>
-                    <p class="card-desc">Standby / Awaiting Link</p>
+                    <div class="metric-card-footer">
+                        <span class="metric-footer-dot" style="background: #94a3b8;"></span>
+                        <span>Awaiting transmission window</span>
+                    </div>
                 </article>
 
                 <!-- 4. CONNECTED SENSORS -->
-                <article class="devices-overview-card">
-                    <div class="card-top">
-                        <div class="card-icon" style="background: #eff6ff; color: #2563eb;">
+                <article class="card dashboard-metric-card devices-metric-card">
+                    <div class="metric-card-top">
+                        <div class="metric-icon" style="background: #eff6ff; color: #2563eb;">
                             <svg class="ui-icon" aria-hidden="true"><use href="#icon-droplet"></use></svg>
                         </div>
-                        <span class="card-type" style="color: #2563eb;">TELEMETRY PROBES</span>
+                        <span class="metric-type" style="color: #2563eb;">TELEMETRY PROBES</span>
                     </div>
-                    <div class="card-reading">
-                        <h2 id="top-connected-sensors" style="color: #2563eb;">{{ connected_sensors or 2 }}</h2>
-                        <span class="sub-label">Probes</span>
+                    <div class="metric-card-content">
+                        <h3>Connected Sensors</h3>
+                        <div class="metric-reading">
+                            <h2 id="top-connected-sensors" style="color: #2563eb;">{{ connected_sensors or 2 }}</h2>
+                            <span class="metric-unit">Probes</span>
+                        </div>
+                        <p class="metric-status">Water Quality Telemetry Active</p>
                     </div>
-                    <p class="card-desc">Connected Sensors Active</p>
+                    <div class="metric-card-footer">
+                        <span class="metric-footer-dot" style="background: #3b82f6;"></span>
+                        <span>DS18B20 &amp; DFRobot pH probes</span>
+                    </div>
                 </article>
 
             </div>
@@ -336,7 +298,7 @@
                     </div>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <span id="diag-overall-badge" class="badge badge-optimal" style="font-size: 13px; padding: 6px 14px; text-transform: uppercase;">HEALTHY</span>
-                        <button type="button" id="btn-close-diag" class="tools-btn-secondary" style="padding: 4px 8px; font-size: 12px;" title="Dismiss report">Close</button>
+                        <button type="button" id="btn-close-diag" class="telemetry-test-btn" style="height: 32px; padding: 0 10px; font-size: 12px;" title="Dismiss report">Close</button>
                     </div>
                 </div>
 
@@ -345,14 +307,14 @@
                         Diagnostics running...
                     </p>
 
-                    <div class="table-responsive">
-                        <table class="history-table" style="width: 100%; border-collapse: collapse;">
+                    <div class="devices-table-wrap">
+                        <table class="devices-table">
                             <thead>
                                 <tr>
-                                    <th style="padding: 10px 14px; text-align: left; font-size: 12px;">Hardware Component</th>
-                                    <th style="padding: 10px 14px; text-align: left; font-size: 12px;">Diagnostic Routine</th>
-                                    <th style="padding: 10px 14px; text-align: center; font-size: 12px;">Result</th>
-                                    <th style="padding: 10px 14px; text-align: left; font-size: 12px;">Engineering Details</th>
+                                    <th>Hardware Component</th>
+                                    <th>Diagnostic Routine</th>
+                                    <th style="text-align: center;">Result</th>
+                                    <th>Engineering Details</th>
                                 </tr>
                             </thead>
                             <tbody id="diag-table-body">
@@ -373,56 +335,63 @@
             <div class="devices-main-grid">
 
                 <!-- LEFT: DEVICE LIST IN TABLE FORM -->
-                <div class="devices-table-card">
-                    <div class="table-card-header">
-                        <div>
-                            <h2 id="devices-table-heading">Device List</h2>
-                            <p>All monitored system devices, physical sensor probes, and communication gateways</p>
+                <article class="panel dashboard-panel devices-table-panel">
+                    <div class="panel-heading">
+                        <div style="display: flex; align-items: center; gap: 11px;">
+                            <div class="panel-heading-icon status-heading-icon">
+                                <svg class="ui-icon" aria-hidden="true">
+                                    <use href="#icon-cpu"></use>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 id="devices-table-heading">Device List</h2>
+                                <p>All monitored system devices, physical sensor probes, and communication gateways</p>
+                            </div>
                         </div>
-                        <span id="table-device-count-badge" class="category-count-badge" style="font-weight: 700; color: #126b4f;">
+                        <span id="table-device-count-badge" class="badge badge-optimal" style="font-weight: 700; font-size: 12px; padding: 5px 12px;">
                             {{ total_devices or 9 }} Monitored Units
                         </span>
                     </div>
 
-                    <div class="table-responsive">
+                    <div class="devices-table-wrap">
                         <table class="devices-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 110px;">ID</th>
-                                    <th>Device Name</th>
-                                    <th style="width: 220px;">Type</th>
-                                    <th style="width: 120px;">Status</th>
-                                    <th style="width: 140px;">Last Seen</th>
+                                    <th scope="col" style="width: 110px;">ID</th>
+                                    <th scope="col">Device Name</th>
+                                    <th scope="col" style="width: 220px;">Type</th>
+                                    <th scope="col" style="width: 130px;">Status</th>
+                                    <th scope="col" style="width: 140px;">Last Seen</th>
                                 </tr>
                             </thead>
                             <tbody id="devices-table-body">
                                 {% for dev in devices_list %}
                                 <tr>
                                     <td>
-                                        <span class="device-id-badge">{{ dev.id }}</span>
+                                        <span class="device-id-code">{{ dev.id }}</span>
                                     </td>
                                     <td>
-                                        <div class="device-name-cell">
-                                            <span class="device-name-title">{{ dev.name }}</span>
-                                            <span class="device-name-subtitle">{{ dev.details }}</span>
+                                        <div class="device-cell-meta">
+                                            <span class="device-cell-name">{{ dev.name }}</span>
+                                            <span class="device-cell-sub">{{ dev.details }}</span>
                                         </div>
                                     </td>
                                     <td>
-                                        <span class="device-type-badge">{{ dev.type }}</span>
+                                        <span class="device-cell-type">{{ dev.type }}</span>
                                     </td>
                                     <td>
                                         {% if dev.status == 'Online' %}
-                                        <span class="device-status-pill online">
-                                            <span class="status-dot"></span> Online
+                                        <span class="table-status status-optimal">
+                                            <span class="status-indicator-dot dot-optimal"></span> Online
                                         </span>
                                         {% else %}
-                                        <span class="device-status-pill offline">
-                                            <span class="status-dot"></span> Offline
+                                        <span class="table-status status-warning">
+                                            <span class="status-indicator-dot dot-warning"></span> Offline
                                         </span>
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <span class="device-last-seen-cell">
+                                        <span class="device-cell-seen">
                                             {{ dev.last_seen }}
                                         </span>
                                     </td>
@@ -437,19 +406,24 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </article>
 
                 <!-- RIGHT: DEVICE STATUS (TOP) & DEVICE CATEGORY (BOTTOM) -->
-                <aside class="devices-side-column" aria-label="Device status and categories">
+                <aside class="devices-side-widgets" aria-label="Device status and categories">
 
                     <!-- 1. DEVICE STATUS WIDGET -->
-                    <div class="devices-widget-card">
-                        <div class="devices-widget-header">
-                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
-                            <h3>Device Status</h3>
+                    <article class="panel dashboard-panel device-status-widget">
+                        <div class="panel-heading">
+                            <div class="panel-heading-icon alerts-heading-icon" style="background: #eaf6ef; color: #126b4f;">
+                                <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
+                            </div>
+                            <div>
+                                <h3 style="margin: 0; font-size: 13px; font-weight: 800; color: #294535;">Device Status</h3>
+                                <p style="margin: 2px 0 0; font-size: 10px; color: #8b9990;">Active network ratio</p>
+                            </div>
                         </div>
 
-                        <div class="device-status-ratio-box">
+                        <div class="status-ratio-box">
                             <div class="status-ratio-number">
                                 <span id="side-ratio-online">{{ online_devices or 8 }}</span>/<span id="side-ratio-total">{{ total_devices or 9 }}</span>
                             </div>
@@ -457,35 +431,40 @@
                                 {{ online_devices or 8 }} online and {{ offline_devices or 1 }} offline
                             </p>
 
-                            <div class="device-progress-track">
-                                <div id="side-progress-fill" class="device-progress-fill" style="width: {% if total_devices %}{{ (online_devices / total_devices * 100)|round(1) }}{% else %}88.9{% endif %}%;"></div>
+                            <div class="device-progress-track" style="height: 7px; background: #e5ece7; border-radius: 999px; overflow: hidden; margin-bottom: 14px;">
+                                <div id="side-progress-fill" style="height: 100%; background: #126b4f; border-radius: 999px; transition: width 0.3s ease; width: {% if total_devices %}{{ (online_devices / total_devices * 100)|round(1) }}{% else %}88.9{% endif %}%;"></div>
                             </div>
 
                             <div class="status-ratio-pills">
-                                <span class="ratio-pill online">
-                                    <span class="status-dot" style="width: 6px; height: 6px; background: #10b981; border-radius: 50%; display: inline-block;"></span>
+                                <span class="table-status status-optimal" style="font-size: 11.5px; padding: 4px 10px;">
+                                    <span class="status-indicator-dot dot-optimal"></span>
                                     Online: <strong id="side-pill-online">{{ online_devices or 8 }}</strong>
                                 </span>
-                                <span class="ratio-pill offline">
-                                    <span class="status-dot" style="width: 6px; height: 6px; background: #94a3b8; border-radius: 50%; display: inline-block;"></span>
+                                <span class="table-status status-warning" style="font-size: 11.5px; padding: 4px 10px;">
+                                    <span class="status-indicator-dot dot-warning"></span>
                                     Offline: <strong id="side-pill-offline">{{ offline_devices or 1 }}</strong>
                                 </span>
                             </div>
                         </div>
-                    </div>
+                    </article>
 
                     <!-- 2. DEVICE CATEGORY WIDGET -->
-                    <div class="devices-widget-card">
-                        <div class="devices-widget-header">
-                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-settings"></use></svg>
-                            <h3>Device Category</h3>
+                    <article class="panel dashboard-panel device-category-widget">
+                        <div class="panel-heading">
+                            <div class="panel-heading-icon wqi-heading-icon">
+                                <svg class="ui-icon" aria-hidden="true"><use href="#icon-settings"></use></svg>
+                            </div>
+                            <div>
+                                <h3 style="margin: 0; font-size: 13px; font-weight: 800; color: #294535;">Device Category</h3>
+                                <p style="margin: 2px 0 0; font-size: 10px; color: #8b9990;">Sensors, communication &amp; power</p>
+                            </div>
                         </div>
 
-                        <div class="device-categories-list">
+                        <div class="device-category-list">
 
                             <!-- SENSORS -->
                             <div class="device-category-item">
-                                <div class="device-category-left">
+                                <div class="category-left">
                                     <div class="category-icon-box" style="background: #eff6ff; color: #2563eb;">
                                         <svg class="ui-icon" aria-hidden="true"><use href="#icon-droplet"></use></svg>
                                     </div>
@@ -494,14 +473,14 @@
                                         <p title="DS18B20 Temp, DFRobot pH">Temperature &amp; pH Probes</p>
                                     </div>
                                 </div>
-                                <span id="cat-sensors-badge" class="category-count-badge">
+                                <span id="cat-sensors-badge" class="badge badge-optimal" style="font-size: 11px; font-weight: 700;">
                                     {{ category_stats.sensors.online if category_stats else 2 }}/{{ category_stats.sensors.total if category_stats else 2 }} Online
                                 </span>
                             </div>
 
                             <!-- COMMUNICATION -->
                             <div class="device-category-item">
-                                <div class="device-category-left">
+                                <div class="category-left">
                                     <div class="category-icon-box" style="background: #faf5ff; color: #9333ea;">
                                         <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
                                     </div>
@@ -510,186 +489,33 @@
                                         <p title="Node 2 Gateway, Node 1 Pond Unit, SX1278 LoRa, 20x4 LCD">LoRa RF, Serial Gateway, LCD</p>
                                     </div>
                                 </div>
-                                <span id="cat-comm-badge" class="category-count-badge">
+                                <span id="cat-comm-badge" class="badge badge-optimal" style="font-size: 11px; font-weight: 700;">
                                     {{ category_stats.communication.online if category_stats else 3 }}/{{ category_stats.communication.total if category_stats else 4 }} Online
                                 </span>
                             </div>
 
                             <!-- POWER -->
                             <div class="device-category-item">
-                                <div class="device-category-left">
+                                <div class="category-left">
                                     <div class="category-icon-box" style="background: #ecfdf5; color: #059669;">
                                         <svg class="ui-icon" aria-hidden="true"><use href="#icon-cpu"></use></svg>
                                     </div>
                                     <div class="category-meta">
                                         <h4>Power</h4>
-                                        <p title="Pond Solar Boost Unit & 3.7V Li-ion Battery">Solar Boost &amp; 3.7V Li-ion</p>
+                                        <p title="Pond Solar Boost Unit &amp; 3.7V Li-ion Battery">Solar Boost &amp; 3.7V Li-ion</p>
                                     </div>
                                 </div>
-                                <span id="cat-power-badge" class="category-count-badge">
+                                <span id="cat-power-badge" class="badge badge-optimal" style="font-size: 11px; font-weight: 700;">
                                     {{ category_stats.power.online if category_stats else 2 }}/{{ category_stats.power.total if category_stats else 2 }} Online
                                 </span>
                             </div>
 
                         </div>
-                    </div>
+                    </article>
 
                 </aside>
 
             </div>
-        </section>
-
-        <!-- HARDWARE PINOUT & SPECIFICATIONS TABLE REFERENCE -->
-        <section class="dashboard-section" aria-labelledby="pinout-heading">
-            <article class="panel dashboard-panel">
-                <div class="panel-heading">
-                    <div class="panel-heading-icon" style="background: #f1f5f9; color: #475569;">
-                        <svg class="ui-icon" aria-hidden="true">
-                            <use href="#icon-settings"></use>
-                        </svg>
-                    </div>
-                    <div>
-                        <h2 id="pinout-heading">Hardware Pinout &amp; Wiring Reference</h2>
-                        <p>Electrical wiring connections, GPIO pin assignments, operating voltages, and bus protocols for Node 1 and Node 2.</p>
-                    </div>
-                </div>
-
-                <div style="padding: 16px 20px;">
-                    <div class="table-responsive">
-                        <table class="history-table" style="width: 100%; border-collapse: collapse;">
-                            <thead>
-                                <tr>
-                                    <th style="padding: 10px 14px; text-align: left; font-size: 12px;">Component</th>
-                                    <th style="padding: 10px 14px; text-align: left; font-size: 12px;">Hardware Pin / Signal</th>
-                                    <th style="padding: 10px 14px; text-align: left; font-size: 12px;">MCU GPIO Assignment</th>
-                                    <th style="padding: 10px 14px; text-align: left; font-size: 12px;">Operating Voltage</th>
-                                    <th style="padding: 10px 14px; text-align: left; font-size: 12px;">Bus Protocol / Interface</th>
-                                    <th style="padding: 10px 14px; text-align: left; font-size: 12px;">Engineering Notes</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td rowspan="3" style="font-weight: 700; color: #0284c7; vertical-align: top; padding: 10px 14px;">
-                                        DS18B20 Temp Probe
-                                    </td>
-                                    <td style="padding: 8px 14px; font-family: monospace;">VCC (Red)</td>
-                                    <td style="padding: 8px 14px;">3.3V or 5.0V Rail</td>
-                                    <td style="padding: 8px 14px;">3.0V &ndash; 5.5V DC</td>
-                                    <td style="padding: 8px 14px;">Power Rail</td>
-                                    <td style="padding: 8px 14px; font-size: 12px; color: #64748b;">Direct connection to microcontroller VCC rail.</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 8px 14px; font-family: monospace;">DATA (Yellow)</td>
-                                    <td style="padding: 8px 14px; font-weight: 700;">GPIO 4 (D4)</td>
-                                    <td style="padding: 8px 14px;">3.3V Logic</td>
-                                    <td style="padding: 8px 14px;">Maxim 1-Wire Bus</td>
-                                    <td style="padding: 8px 14px; font-size: 12px; color: #b45309; font-weight: 600;">Requires 4.7k&Omega; pull-up resistor to 3.3V.</td>
-                                </tr>
-                                <tr style="border-bottom: 1px solid #e2e8f0;">
-                                    <td style="padding: 8px 14px; font-family: monospace;">GND (Black)</td>
-                                    <td style="padding: 8px 14px;">Common GND</td>
-                                    <td style="padding: 8px 14px;">0V (Ground)</td>
-                                    <td style="padding: 8px 14px;">System Ground</td>
-                                    <td style="padding: 8px 14px; font-size: 12px; color: #64748b;">Must share common ground with MCU and ADC.</td>
-                                </tr>
-
-                                <tr>
-                                    <td rowspan="3" style="font-weight: 700; color: #16a34a; vertical-align: top; padding: 10px 14px;">
-                                        DFRobot pH Sensor (SEN0161)
-                                    </td>
-                                    <td style="padding: 8px 14px; font-family: monospace;">VCC (+)</td>
-                                    <td style="padding: 8px 14px;">5.0V or 3.3V Rail</td>
-                                    <td style="padding: 8px 14px;">5.0V Recommended</td>
-                                    <td style="padding: 8px 14px;">Power Rail</td>
-                                    <td style="padding: 8px 14px; font-size: 12px; color: #64748b;">Powers operational amplifier conditioning board.</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 8px 14px; font-family: monospace;">AOUT (Analog Out)</td>
-                                    <td style="padding: 8px 14px; font-weight: 700;">GPIO 34 (ADC1_CH6)</td>
-                                    <td style="padding: 8px 14px;">0.0V &ndash; 3.3V ADC</td>
-                                    <td style="padding: 8px 14px;">Analog Voltage Output</td>
-                                    <td style="padding: 8px 14px; font-size: 12px; color: #64748b;">Low-noise input on ADC1 (unaffected by Wi-Fi).</td>
-                                </tr>
-                                <tr style="border-bottom: 1px solid #e2e8f0;">
-                                    <td style="padding: 8px 14px; font-family: monospace;">GND (-)</td>
-                                    <td style="padding: 8px 14px;">Common GND</td>
-                                    <td style="padding: 8px 14px;">0V (Ground)</td>
-                                    <td style="padding: 8px 14px;">System Ground</td>
-                                    <td style="padding: 8px 14px; font-size: 12px; color: #64748b;">Ensure clean analog ground plane.</td>
-                                </tr>
-
-                                <tr>
-                                    <td rowspan="5" style="font-weight: 700; color: #9333ea; vertical-align: top; padding: 10px 14px;">
-                                        SX1278 LoRa Module (433.5 MHz)
-                                    </td>
-                                    <td style="padding: 8px 14px; font-family: monospace;">SCK (Clock)</td>
-                                    <td style="padding: 8px 14px;">GPIO 18</td>
-                                    <td style="padding: 8px 14px;">3.3V Logic</td>
-                                    <td style="padding: 8px 14px;">SPI Bus (Clock)</td>
-                                    <td style="padding: 8px 14px; font-size: 12px; color: #64748b;">High-speed SPI bus up to 10 MHz.</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 8px 14px; font-family: monospace;">MISO</td>
-                                    <td style="padding: 8px 14px;">GPIO 19</td>
-                                    <td style="padding: 8px 14px;">3.3V Logic</td>
-                                    <td style="padding: 8px 14px;">SPI Bus (Data In)</td>
-                                    <td style="padding: 8px 14px; font-size: 12px; color: #64748b;">Master In Slave Out telemetry feed.</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 8px 14px; font-family: monospace;">MOSI</td>
-                                    <td style="padding: 8px 14px;">GPIO 23</td>
-                                    <td style="padding: 8px 14px;">3.3V Logic</td>
-                                    <td style="padding: 8px 14px;">SPI Bus (Data Out)</td>
-                                    <td style="padding: 8px 14px; font-size: 12px; color: #64748b;">Master Out Slave In command channel.</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 8px 14px; font-family: monospace;">NSS (Chip Select)</td>
-                                    <td style="padding: 8px 14px;">GPIO 5</td>
-                                    <td style="padding: 8px 14px;">3.3V Logic</td>
-                                    <td style="padding: 8px 14px;">SPI Slave Select</td>
-                                    <td style="padding: 8px 14px; font-size: 12px; color: #64748b;">Active LOW chip enable pin.</td>
-                                </tr>
-                                <tr style="border-bottom: 1px solid #e2e8f0;">
-                                    <td style="padding: 8px 14px; font-family: monospace;">DIO0 (Interrupt)</td>
-                                    <td style="padding: 8px 14px;">GPIO 2</td>
-                                    <td style="padding: 8px 14px;">3.3V Logic</td>
-                                    <td style="padding: 8px 14px;">Hardware Interrupt</td>
-                                    <td style="padding: 8px 14px; font-size: 12px; color: #64748b;">Triggers MCU immediately on RxDone / TxDone.</td>
-                                </tr>
-
-                                <tr>
-                                    <td rowspan="2" style="font-weight: 700; color: #d97706; vertical-align: top; padding: 10px 14px;">
-                                        20x4 I2C LCD Display
-                                    </td>
-                                    <td style="padding: 8px 14px; font-family: monospace;">SDA (Serial Data)</td>
-                                    <td style="padding: 8px 14px;">GPIO 21</td>
-                                    <td style="padding: 8px 14px;">3.3V / 5.0V Logic</td>
-                                    <td style="padding: 8px 14px;">I2C Data Bus</td>
-                                    <td style="padding: 8px 14px; font-size: 12px; color: #64748b;">Hardware I2C data at address 0x27.</td>
-                                </tr>
-                                <tr style="border-bottom: 1px solid #e2e8f0;">
-                                    <td style="padding: 8px 14px; font-family: monospace;">SCL (Serial Clock)</td>
-                                    <td style="padding: 8px 14px;">GPIO 22</td>
-                                    <td style="padding: 8px 14px;">3.3V / 5.0V Logic</td>
-                                    <td style="padding: 8px 14px;">I2C Clock Bus</td>
-                                    <td style="padding: 8px 14px; font-size: 12px; color: #64748b;">Hardware I2C standard-mode (100 kHz).</td>
-                                </tr>
-
-                                <tr>
-                                    <td style="font-weight: 700; color: #1e293b; vertical-align: top; padding: 10px 14px;">
-                                        Node 2 Serial Bridge
-                                    </td>
-                                    <td style="padding: 8px 14px; font-family: monospace;">USB-UART CDC</td>
-                                    <td style="padding: 8px 14px; font-weight: 700;">COM8 (or auto)</td>
-                                    <td style="padding: 8px 14px;">5.0V USB Bus</td>
-                                    <td style="padding: 8px 14px;">Win32 Kernel32 UART</td>
-                                    <td style="padding: 8px 14px; font-size: 12px; color: #16a34a; font-weight: 600;">115200 Baud, 8 Data Bits, No Parity, 1 Stop Bit.</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </article>
         </section>
 
     </main>

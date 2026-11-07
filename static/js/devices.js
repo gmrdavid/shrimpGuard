@@ -178,28 +178,29 @@ function renderDevices(data) {
             const tr = document.createElement("tr");
 
             const isDevOnline = dev.status === "Online";
-            const statusClass = isDevOnline ? "online" : "offline";
+            const statusClass = isDevOnline ? "status-optimal" : "status-warning";
+            const dotClass = isDevOnline ? "dot-optimal" : "dot-warning";
 
             tr.innerHTML = `
                 <td>
-                    <span class="device-id-badge">${dev.id}</span>
+                    <span class="device-id-code">${dev.id}</span>
                 </td>
                 <td>
-                    <div class="device-name-cell">
-                        <span class="device-name-title">${dev.name}</span>
-                        <span class="device-name-subtitle">${dev.details || ""}</span>
+                    <div class="device-cell-meta">
+                        <span class="device-cell-name">${dev.name}</span>
+                        <span class="device-cell-sub">${dev.details || ""}</span>
                     </div>
                 </td>
                 <td>
-                    <span class="device-type-badge">${dev.type}</span>
+                    <span class="device-cell-type">${dev.type}</span>
                 </td>
                 <td>
-                    <span class="device-status-pill ${statusClass}">
-                        <span class="status-dot"></span> ${dev.status}
+                    <span class="table-status ${statusClass}">
+                        <span class="status-indicator-dot ${dotClass}"></span> ${dev.status}
                     </span>
                 </td>
                 <td>
-                    <span class="device-last-seen-cell">
+                    <span class="device-cell-seen">
                         ${dev.last_seen || "Just now"}
                     </span>
                 </td>
