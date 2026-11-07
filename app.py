@@ -2522,12 +2522,17 @@ def save_aquaculture_calculation():
 
 
 @app.route("/api/calculators/history", methods=["GET"])
-@role_required("Client")
+@role_required("Client", "Admin")
 def get_aquaculture_history():
     try:
-        count = db.session.query(func.count(AquacultureCalculation.id)).scalar() or 0
+        user_email = session.get("user_id")
+        user_role = session.get("user_role") or (session.get("role") if "role" in session else "Client")
+        query = AquacultureCalculation.query
+        if user_role != "Admin":
+            query = query.filter(AquacultureCalculation.user_email == user_email)
+        count = query.count()
         latest_records = (
-            AquacultureCalculation.query.order_by(AquacultureCalculation.created_at.desc())
+            query.order_by(AquacultureCalculation.created_at.desc())
             .limit(10)
             .all()
         )
@@ -2619,8 +2624,13 @@ def export_aquaculture_calculations():
                 row.append("")
         rows.append(row)
     else:
-        # Exporting from database records
-        query = AquacultureCalculation.query.order_by(AquacultureCalculation.created_at.desc())
+        # Exporting from database records (isolated per user)
+        user_email = session.get("user_id")
+        user_role = session.get("user_role") or (session.get("role") if "role" in session else "Client")
+        query = AquacultureCalculation.query
+        if user_role != "Admin":
+            query = query.filter(AquacultureCalculation.user_email == user_email)
+        query = query.order_by(AquacultureCalculation.created_at.desc())
 
         # Date filtering
         now = datetime.now()
@@ -2723,10 +2733,32 @@ def settings():
             elif ntfy_topic and not is_valid_topic(ntfy_topic):
                 flash("Invalid ntfy topic. Use 3-64 characters (letters, numbers, hyphens, and underscores only).", "error")
             else:
-                user.user_name = user_name
-                user.email = email
-                user.ntfy_topic = ntfy_topic
+                new_topic = ntfy_topic if ntfy_topic else None
                 try:
+                    if email != user_email:
+                        db.session.expunge(user)
+                        db.session.execute(
+                            update(User)
+                            .where(User.email == user_email)
+                            .values(
+                                user_name=user_name,
+                                email=email,
+                                ntfy_topic=new_topic,
+                            )
+                        )
+                        db.session.execute(
+                            update(ActivityLog)
+                            .where(ActivityLog.user_email == user_email)
+                            .values(user_email=email)
+                        )
+                        db.session.execute(
+                            update(AquacultureCalculation)
+                            .where(AquacultureCalculation.user_email == user_email)
+                            .values(user_email=email)
+                        )
+                    else:
+                        user.user_name = user_name
+                        user.ntfy_topic = new_topic
                     db.session.commit()
                 except SQLAlchemyError:
                     db.session.rollback()
@@ -2740,7 +2772,7 @@ def settings():
                         details=f"Updated profile details (Name: {user_name}, Email: {email}).",
                         user_email=email,
                         user_name=user_name,
-                        role=user.role,
+                        role="Client",
                     )
                     flash("Profile updated successfully.", "success")
         elif action == "password":

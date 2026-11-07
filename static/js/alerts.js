@@ -29,17 +29,28 @@ function updateDeviceTime() {
     }
 }
 
+function parseSafeDate(val) {
+    if (!val) return null;
+    if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
+    const s = String(val).trim();
+    let d = new Date(s);
+    if (!isNaN(d.getTime())) return d;
+    d = new Date(s.replace(" ", "T"));
+    if (!isNaN(d.getTime())) return d;
+    return null;
+}
+
 function formatDateTime(isoString) {
     if (!isoString) return "-";
-    const date = new Date(isoString);
-    if (isNaN(date.getTime())) return isoString;
+    const date = parseSafeDate(isoString);
+    if (!date || isNaN(date.getTime())) return isoString;
     return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
 }
 
 function localDate(reading) {
     if (!reading || !reading.recorded_at) return "";
-    const date = new Date(reading.recorded_at);
-    if (isNaN(date.getTime())) return "";
+    const date = parseSafeDate(reading.recorded_at);
+    if (!date || isNaN(date.getTime())) return "";
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 

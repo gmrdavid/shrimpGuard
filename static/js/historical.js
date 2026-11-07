@@ -64,8 +64,21 @@ function getPhStatus(phLevel) {
     return { label: "Optimal", level: "optimal", badgeClass: "status-optimal" };
 }
 
+function parseSafeDate(val) {
+    if (!val) return null;
+    if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
+    const s = String(val).trim();
+    let d = new Date(s);
+    if (!isNaN(d.getTime())) return d;
+    d = new Date(s.replace(" ", "T"));
+    if (!isNaN(d.getTime())) return d;
+    return null;
+}
+
 function localDate(reading) {
-    const date = new Date(reading.recorded_at);
+    if (!reading || !reading.recorded_at) return "";
+    const date = parseSafeDate(reading.recorded_at);
+    if (!date || isNaN(date.getTime())) return "";
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 

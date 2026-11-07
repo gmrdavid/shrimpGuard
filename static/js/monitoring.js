@@ -1,5 +1,16 @@
 const chartColors = ["#2f6fbd", "#2f8a57"];
 
+function parseSafeDate(val) {
+    if (!val) return null;
+    if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
+    const s = String(val).trim();
+    let d = new Date(s);
+    if (!isNaN(d.getTime())) return d;
+    d = new Date(s.replace(" ", "T"));
+    if (!isNaN(d.getTime())) return d;
+    return null;
+}
+
 let currentHistory = [];
 let currentPoints = null;
 let hoverIndex = null;
@@ -95,8 +106,8 @@ function updateSummary(reading) {
     if (statusDot) {
         statusDot.className = `monitoring-status-dot dot-${status.toLowerCase()}`;
     }
-    const dateObj = reading.recorded_at ? new Date(reading.recorded_at) : null;
-    document.getElementById("monitoring-updated").textContent = dateObj && !isNaN(dateObj)
+    const dateObj = parseSafeDate(reading.recorded_at);
+    document.getElementById("monitoring-updated").textContent = dateObj && !isNaN(dateObj.getTime())
         ? "Last updated " + dateObj.toLocaleString([], { dateStyle: "medium", timeStyle: "medium" })
         : "Last updated recently";
     document.getElementById("monitoring-demo-note").hidden = reading.status !== "Demo";
@@ -752,4 +763,4 @@ window.addEventListener("resize", () => {
         drawTrendChart(currentHistory);
     }
 });
-setInterval(loadMonitoringData, 10000);
+setInterval(loadMonitoringData, 5000);

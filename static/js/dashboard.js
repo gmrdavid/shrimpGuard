@@ -1,3 +1,14 @@
+function parseSafeDate(val) {
+    if (!val) return null;
+    if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
+    const s = String(val).trim();
+    let d = new Date(s);
+    if (!isNaN(d.getTime())) return d;
+    d = new Date(s.replace(" ", "T"));
+    if (!isNaN(d.getTime())) return d;
+    return null;
+}
+
 function displayResults(data) {
     const tempNum = Number(data.temperature);
     const phNum = Number(data.ph);
@@ -44,7 +55,7 @@ function displayResults(data) {
     }
 
     // Update telemetry header indicators
-    const recDate = data.recorded_at ? new Date(data.recorded_at) : null;
+    const recDate = parseSafeDate(data.recorded_at);
     const now = new Date();
     const secondsAgo = recDate ? Math.max(0, Math.floor((now - recDate) / 1000)) : 999;
 
@@ -67,7 +78,7 @@ function displayResults(data) {
 
     const lastSyncEl = document.getElementById("telemetry-last-sync");
     if (lastSyncEl) {
-        lastSyncEl.textContent = recDate && !isNaN(recDate)
+        lastSyncEl.textContent = recDate && !isNaN(recDate.getTime())
             ? recDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
             : "Listening...";
     }
@@ -91,9 +102,12 @@ function displayResults(data) {
         mlBadgeEl.style.color = overall === "Optimal" ? "#126b4f" : (overall === "Warning" ? "#d97706" : "#dc2626");
     }
 
-    document.getElementById("last-updated").textContent = data.recorded_at
-        ? `Last updated ${new Date(data.recorded_at).toLocaleString()}`
-        : "";
+    const lastUpdEl = document.getElementById("last-updated");
+    if (lastUpdEl) {
+        lastUpdEl.textContent = recDate && !isNaN(recDate.getTime())
+            ? `Last updated ${recDate.toLocaleString()}`
+            : "";
+    }
     document.getElementById("dashboard-demo-note").hidden = data.status !== "Demo";
     updateStatus(data);
     calculateWQI(data);
