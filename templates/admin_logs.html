@@ -399,7 +399,7 @@
                     </thead>
                     <tbody id="logs-table-body">
                         {% for l in logs %}
-                        <tr data-log-row data-timestamp="{{ l.timestamp.strftime('%Y-%m-%d %H:%M:%S') if l.timestamp and l.timestamp.strftime is defined else l.timestamp }}" data-date="{{ l.timestamp.strftime('%Y-%m-%d') if l.timestamp and l.timestamp.strftime is defined else '' }}" data-action="{{ (l.action or '')|lower }}" data-role="{{ (l.role or '')|lower }}" data-user="{{ (l.user_name or 'System')|lower }}" data-search="{{ (l.user_name or '')|lower }} {{ (l.user_email or '')|lower }} {{ (l.action or '')|lower }} {{ (l.details or '')|lower }} {{ (l.ip_address or '')|lower }}">
+                        <tr data-log-row data-timestamp="{{ l.timestamp.strftime('%Y-%m-%d %H:%M:%S') if l.timestamp and l.timestamp.strftime is defined else l.timestamp }}" data-date="{{ l.timestamp.strftime('%Y-%m-%d') if l.timestamp and l.timestamp.strftime is defined else '' }}" data-action="{{ (l.action or '')|lower }}" data-role="{{ (l.role or '')|lower }}" data-user="{{ (l.user_name or 'System')|lower }}" data-email="{{ (l.user_email or 'system@shrimpguard')|lower }}" data-search="{{ (l.user_name or '')|lower }} {{ (l.user_email or '')|lower }} {{ (l.action or '')|lower }} {{ (l.details or '')|lower }} {{ (l.ip_address or '')|lower }}">
                             <td>
                                 <time datetime="{{ l.timestamp }}" style="font-size: 11.5px; font-weight: 600; color: #475a4e;">
                                     {% if l.timestamp and l.timestamp.strftime is defined %}
@@ -524,81 +524,224 @@
         </div>
     </form>
 </dialog>
-<!-- EXPORT AUDIT LOGS DIALOG (TARGET USER, SCOPE, TIMEFRAME) -->
-<dialog class="admin-user-dialog" id="export-logs-dialog" aria-labelledby="export-dialog-title">
-    <div class="admin-user-dialog-heading">
-        <div class="admin-modal-title-group">
-            <span class="admin-modal-icon-badge" style="background: #e0f2fe; color: #0284c7;" aria-hidden="true">
-                <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <use href="#icon-download"></use>
-                </svg>
-            </span>
-            <div class="admin-modal-heading-text">
-                <h2 id="export-dialog-title">Export Audit Trail (CSV)</h2>
-                <p class="admin-modal-subtitle">
-                    Select a specific user account or download the full platform audit logs.
-                </p>
+<!-- EXPORT AUDIT LOGS MODAL DIALOG (MATCHING HISTORICAL READINGS EXPORT DESIGN) -->
+<div id="historical-export-modal" class="modal-dialog-backdrop" hidden>
+    <div class="modal-dialog-container historical-export-dialog" role="dialog" aria-modal="true" aria-labelledby="export-modal-title">
+
+        <div class="modal-dialog-header">
+            <div class="modal-header-text">
+                <div class="panel-heading-icon export-modal-icon">
+                    <svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 3v12"></path>
+                        <path d="m7 10 5 5 5-5"></path>
+                        <path d="M5 17v4h14v-4"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h3 id="export-modal-title">Export Audit Trail &amp; System Logs</h3>
+                    <p>Customize target user, date scope, event category, and download file format.</p>
+                </div>
             </div>
-        </div>
-
-        <button class="admin-dialog-close" type="button" data-close-dialog="export-logs-dialog" aria-label="Close dialog">
-            <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="m18 6-12 12M6 6l12 12"/>
-            </svg>
-        </button>
-    </div>
-
-    <form class="admin-user-form" method="get" action="{{ url_for('admin_logs_export') }}">
-        <div class="admin-form-section">
-            <!-- TARGET USER SELECTION -->
-            <div class="admin-form-field">
-                <label for="export-user-select">Target User Account *</label>
-                <select id="export-user-select" name="user">
-                    <option value="all" selected>All Users (Full System Audit Trail)</option>
-                    <option value="system">System (Automated Daemon &amp; Hardware Gateway)</option>
-                    {% for u in users %}
-                    <option value="{{ u.email }}">{{ u.user_name }} ({{ u.email }}) &bull; {{ u.role }}</option>
-                    {% endfor %}
-                </select>
-                <small>Select an individual user to export only their authentications, profile updates, and actions.</small>
-            </div>
-
-            <!-- ACTIVITY CATEGORY FILTER -->
-            <div class="admin-form-field" style="margin-top: 14px;">
-                <label for="export-action-category">Activity Scope</label>
-                <select id="export-action-category" name="action_category">
-                    <option value="all" selected>All Activity Types</option>
-                    <option value="auth">Authentication Only (LOGIN, LOGOUT, SIGNUP)</option>
-                    <option value="mgmt">Account Control (USER_CREATE, USER_EDIT, USER_DELETE, PASSWORD_RESET)</option>
-                    <option value="telemetry">IoT Telemetry Ingestion</option>
-                    <option value="security">Security &amp; Maintenance (LOG_PURGE)</option>
-                </select>
-                <small>Optionally filter exported rows by operation category.</small>
-            </div>
-
-            <!-- DATE WINDOW -->
-            <div class="admin-form-field" style="margin-top: 14px;">
-                <label for="export-date-window">Date Window</label>
-                <select id="export-date-window" name="date_window">
-                    <option value="all" selected>All Time Records</option>
-                    <option value="today">Today Only</option>
-                    <option value="7">Last 7 Days</option>
-                    <option value="30">Last 30 Days</option>
-                    <option value="90">Last 90 Days</option>
-                </select>
-                <small>Limit audit history to a specific timeframe.</small>
-            </div>
-        </div>
-
-        <div class="admin-user-form-actions">
-            <button class="admin-user-cancel" type="button" data-close-dialog="export-logs-dialog">Cancel</button>
-            <button class="admin-user-submit" type="submit" style="background: #0284c7; border-color: #0284c7;">
-                <svg class="ui-icon" aria-hidden="true" style="margin-right: 6px;"><use href="#icon-download"></use></svg>
-                Generate &amp; Download CSV
+            <button type="button" id="close-export-modal" class="modal-close-btn" aria-label="Close export dialog">
+                &times;
             </button>
         </div>
-    </form>
-</dialog>
+
+        <div class="modal-dialog-body export-modal-body">
+            <!-- 1. TARGET USER SCOPE -->
+            <div class="export-modal-section">
+                <label class="export-section-label">
+                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-users"></use></svg>
+                    <span>1. Target User Account</span>
+                </label>
+                <div class="export-scope-toggle-group">
+                    <label class="export-radio-card" id="card-user-all">
+                        <input type="radio" name="export-user-scope" id="export-user-all" value="all" checked>
+                        <div class="radio-card-content">
+                            <span class="radio-card-title">All System Accounts</span>
+                            <span class="radio-card-desc">Full audit trail across all operators, clients &amp; administrators.</span>
+                        </div>
+                    </label>
+
+                    <label class="export-radio-card" id="card-user-specific">
+                        <input type="radio" name="export-user-scope" id="export-user-specific" value="specific">
+                        <div class="radio-card-content">
+                            <span class="radio-card-title">Specific User / System</span>
+                            <span class="radio-card-desc">Export logs generated by an individual account or gateway daemon.</span>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Specific User Dropdown Wrap -->
+                <div class="export-single-date-box" id="export-user-select-wrap" hidden>
+                    <label for="export-target-user" class="export-input-sublabel">Select Target Account:</label>
+                    <div class="export-date-input-row">
+                        <select id="export-target-user" class="export-date-input" aria-label="Choose specific user account">
+                            <option value="system">System (Automated Daemon &amp; Hardware Gateway)</option>
+                            {% for u in users %}
+                            <option value="{{ u.email }}">{{ u.user_name }} ({{ u.email }}) &bull; {{ u.role }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. DATE RANGE SELECTION -->
+            <div class="export-modal-section">
+                <label class="export-section-label">
+                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg>
+                    <span>2. Target Date Range</span>
+                </label>
+                <div class="export-scope-toggle-group">
+                    <label class="export-radio-card" id="card-date-all">
+                        <input type="radio" name="export-date-scope" id="export-date-all" value="all" checked>
+                        <div class="radio-card-content">
+                            <span class="radio-card-title">All Logged Dates</span>
+                            <span class="radio-card-desc">Download complete historical records across all time.</span>
+                        </div>
+                    </label>
+
+                    <label class="export-radio-card" id="card-date-window">
+                        <input type="radio" name="export-date-scope" id="export-date-window" value="window">
+                        <div class="radio-card-content">
+                            <span class="radio-card-title">Date Timeframe Window</span>
+                            <span class="radio-card-desc">Filter events recorded within a specific timeframe window.</span>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Date Window Selector Wrap -->
+                <div class="export-single-date-box" id="export-date-window-wrap" hidden>
+                    <label for="export-target-date-window" class="export-input-sublabel">Select Timeframe Window:</label>
+                    <div class="export-date-input-row">
+                        <select id="export-target-date-window" class="export-date-input" aria-label="Choose export timeframe">
+                            <option value="today">Today Only</option>
+                            <option value="7">Last 7 Days</option>
+                            <option value="30" selected>Last 30 Days</option>
+                            <option value="60">Last 60 Days</option>
+                            <option value="90">Last 90 Days</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. ACTIVITY & EVENT CATEGORY -->
+            <div class="export-modal-section">
+                <label class="export-section-label">
+                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
+                    <span>3. Activity &amp; Event Scope</span>
+                </label>
+                <div class="export-status-grid">
+                    <label class="export-status-option" id="card-cat-all">
+                        <input type="radio" name="export-action-category" value="all" checked>
+                        <div class="status-option-content">
+                            <span class="status-pill-dot dot-all"></span>
+                            <div class="status-option-info">
+                                <span class="status-option-title">All Event Types</span>
+                                <span class="status-option-badge">Full audit trail</span>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="export-status-option" id="card-cat-auth">
+                        <input type="radio" name="export-action-category" value="auth">
+                        <div class="status-option-content">
+                            <span class="status-pill-dot dot-optimal"></span>
+                            <div class="status-option-info">
+                                <span class="status-option-title">Authentication Only</span>
+                                <span class="status-option-badge badge-optimal">LOGIN, LOGOUT, SIGNUP</span>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="export-status-option" id="card-cat-mgmt">
+                        <input type="radio" name="export-action-category" value="mgmt">
+                        <div class="status-option-content">
+                            <span class="status-pill-dot dot-warning"></span>
+                            <div class="status-option-info">
+                                <span class="status-option-title">Account Control</span>
+                                <span class="status-option-badge badge-warning">USER_CREATE, EDIT, RESET</span>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="export-status-option" id="card-cat-security">
+                        <input type="radio" name="export-action-category" value="security">
+                        <div class="status-option-content">
+                            <span class="status-pill-dot dot-critical"></span>
+                            <div class="status-option-info">
+                                <span class="status-option-title">Security &amp; Purges</span>
+                                <span class="status-option-badge badge-critical">LOG_PURGE &amp; Maintenance</span>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 4. FILE FORMAT -->
+            <div class="export-modal-section">
+                <label class="export-section-label">
+                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-chart"></use></svg>
+                    <span>4. File Format</span>
+                </label>
+                <div class="export-format-toggle-group">
+                    <label class="export-format-pill" id="card-format-csv">
+                        <input type="radio" name="export-file-format" value="csv" checked>
+                        <div class="format-pill-content">
+                            <span class="format-badge-icon csv-badge">CSV</span>
+                            <div class="format-text-meta">
+                                <span class="format-name">Comma-Separated Values (.csv)</span>
+                                <span class="format-sub">Standard tabular format for Excel, SIEM &amp; audit analysis</span>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="export-format-pill" id="card-format-xlsx">
+                        <input type="radio" name="export-file-format" value="xlsx">
+                        <div class="format-pill-content">
+                            <span class="format-badge-icon xlsx-badge">XLSX</span>
+                            <div class="format-text-meta">
+                                <span class="format-name">Microsoft Excel (.xlsx)</span>
+                                <span class="format-sub">Styled spreadsheet with auto-width columns and audit headers</span>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 5. LIVE PREVIEW BANNER -->
+            <div id="export-preview-card" class="export-preview-card">
+                <div class="preview-card-icon" id="export-preview-icon">
+                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
+                </div>
+                <div class="preview-card-info">
+                    <div class="preview-card-header">
+                        <span class="preview-card-label">EXPORT PREVIEW</span>
+                        <span id="export-preview-badge" class="preview-badge preview-badge-ready">Calculating...</span>
+                    </div>
+                    <p id="export-preview-text" class="preview-card-desc">
+                        Matching audit records based on selected filters...
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-dialog-footer export-modal-footer">
+            <button type="button" id="cancel-export-btn" class="export-btn-secondary">
+                Cancel
+            </button>
+            <button type="button" id="confirm-export-btn" class="export-btn-primary">
+                <svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3v12"></path>
+                    <path d="m7 10 5 5 5-5"></path>
+                    <path d="M5 17v4h14v-4"></path>
+                </svg>
+                <span id="confirm-export-text">Download CSV (.csv)</span>
+            </button>
+        </div>
+
+    </div>
+</div>
 
 <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
 <script src="{{ url_for('static', filename='js/adminlogout.js') }}"></script>
@@ -621,13 +764,207 @@
         });
     }
 
-    const exportModal = document.getElementById("export-logs-dialog");
-    const openExportBtn = document.getElementById("open-export-modal");
-    if (openExportBtn && exportModal) {
-        openExportBtn.addEventListener("click", () => {
-            exportModal.showModal();
+    // Historical-style Audit Logs Export Modal Controller
+    (() => {
+        const exportModal = document.getElementById("historical-export-modal");
+        const openExportBtn = document.getElementById("open-export-modal");
+        const closeExportBtn = document.getElementById("close-export-modal");
+        const cancelExportBtn = document.getElementById("cancel-export-btn");
+        const confirmExportBtn = document.getElementById("confirm-export-btn");
+        const confirmExportText = document.getElementById("confirm-export-text");
+
+        const userScopeRadios = document.querySelectorAll('input[name="export-user-scope"]');
+        const userSelectWrap = document.getElementById("export-user-select-wrap");
+        const userSelect = document.getElementById("export-target-user");
+
+        const dateScopeRadios = document.querySelectorAll('input[name="export-date-scope"]');
+        const dateWindowWrap = document.getElementById("export-date-window-wrap");
+        const dateWindowSelect = document.getElementById("export-target-date-window");
+
+        const actionCategoryRadios = document.querySelectorAll('input[name="export-action-category"]');
+        const fileFormatRadios = document.querySelectorAll('input[name="export-file-format"]');
+
+        const previewCard = document.getElementById("export-preview-card");
+        const previewBadge = document.getElementById("export-preview-badge");
+        const previewText = document.getElementById("export-preview-text");
+
+        if (!exportModal || !openExportBtn) return;
+
+        function openExportModal() {
+            exportModal.hidden = false;
+            document.body.style.overflow = "hidden";
+            updateExportPreview();
+        }
+
+        function closeExportModal() {
+            exportModal.hidden = true;
+            document.body.style.overflow = "";
+        }
+
+        openExportBtn.addEventListener("click", openExportModal);
+        if (closeExportBtn) closeExportBtn.addEventListener("click", closeExportModal);
+        if (cancelExportBtn) cancelExportBtn.addEventListener("click", closeExportModal);
+
+        exportModal.addEventListener("click", (e) => {
+            if (e.target === exportModal) {
+                closeExportModal();
+            }
         });
-    }
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && !exportModal.hidden) {
+                closeExportModal();
+            }
+        });
+
+        userScopeRadios.forEach(radio => {
+            radio.addEventListener("change", () => {
+                if (userSelectWrap) {
+                    userSelectWrap.hidden = radio.value !== "specific";
+                }
+                updateExportPreview();
+            });
+        });
+
+        dateScopeRadios.forEach(radio => {
+            radio.addEventListener("change", () => {
+                if (dateWindowWrap) {
+                    dateWindowWrap.hidden = radio.value !== "window";
+                }
+                updateExportPreview();
+            });
+        });
+
+        if (userSelect) userSelect.addEventListener("change", updateExportPreview);
+        if (dateWindowSelect) dateWindowSelect.addEventListener("change", updateExportPreview);
+        actionCategoryRadios.forEach(r => r.addEventListener("change", updateExportPreview));
+        fileFormatRadios.forEach(r => r.addEventListener("change", updateExportPreview));
+
+        function getSelectedFilters() {
+            const userScope = document.querySelector('input[name="export-user-scope"]:checked')?.value || "all";
+            const targetUser = userScope === "specific" ? (userSelect?.value || "all") : "all";
+
+            const dateScope = document.querySelector('input[name="export-date-scope"]:checked')?.value || "all";
+            const dateWindow = dateScope === "window" ? (dateWindowSelect?.value || "30") : "all";
+
+            const actionCategory = document.querySelector('input[name="export-action-category"]:checked')?.value || "all";
+            const fileFormat = document.querySelector('input[name="export-file-format"]:checked')?.value || "csv";
+
+            return { targetUser, dateWindow, actionCategory, fileFormat, userScope, dateScope };
+        }
+
+        function calculateMatchingLogs(targetUser, dateWindow, actionCategory) {
+            const allRows = document.querySelectorAll("[data-log-row]");
+            const now = new Date();
+            let count = 0;
+
+            allRows.forEach(row => {
+                // User filter
+                if (targetUser !== "all") {
+                    const rowEmail = (row.dataset.email || "").toLowerCase();
+                    const rowUser = (row.dataset.user || "").toLowerCase();
+                    if (targetUser === "system") {
+                        if (rowUser !== "system" && rowEmail !== "system@shrimpguard") return;
+                    } else {
+                        if (rowEmail !== targetUser.toLowerCase() && !rowUser.includes(targetUser.toLowerCase())) return;
+                    }
+                }
+
+                // Action category filter
+                if (actionCategory !== "all") {
+                    const act = (row.dataset.action || "").toLowerCase();
+                    if (actionCategory === "auth" && !["login", "logout", "signup"].includes(act)) return;
+                    if (actionCategory === "mgmt" && !["user_create", "user_edit", "user_delete", "password_reset"].includes(act)) return;
+                    if (actionCategory === "security" && !["log_purge"].includes(act)) return;
+                }
+
+                // Date window filter
+                if (dateWindow !== "all") {
+                    const rowDateStr = row.dataset.date;
+                    if (!rowDateStr) return;
+                    if (dateWindow === "today") {
+                        const todayStr = now.toISOString().split("T")[0];
+                        if (rowDateStr !== todayStr) return;
+                    } else {
+                        const days = parseInt(dateWindow, 10);
+                        if (!isNaN(days)) {
+                            const cutoff = new Date(now.getTime() - days * 86400000);
+                            const rowDate = new Date(rowDateStr);
+                            if (rowDate < cutoff) return;
+                        }
+                    }
+                }
+
+                count++;
+            });
+
+            return count;
+        }
+
+        function updateExportPreview() {
+            const filters = getSelectedFilters();
+            const matchCount = calculateMatchingLogs(filters.targetUser, filters.dateWindow, filters.actionCategory);
+
+            const formatLabel = filters.fileFormat === "xlsx" ? "Excel (.xlsx)" : "CSV (.csv)";
+            if (confirmExportText) {
+                confirmExportText.textContent = `Download ${formatLabel}`;
+            }
+
+            let userDesc = "all accounts";
+            if (filters.userScope === "specific") {
+                if (filters.targetUser === "system") {
+                    userDesc = "System daemon logs";
+                } else {
+                    userDesc = filters.targetUser;
+                }
+            }
+
+            let dateDesc = "all logged dates";
+            if (filters.dateScope === "window") {
+                if (filters.dateWindow === "today") dateDesc = "today only";
+                else dateDesc = `last ${filters.dateWindow} days`;
+            }
+
+            let scopeDesc = "all event types";
+            if (filters.actionCategory === "auth") scopeDesc = "Authentication events";
+            else if (filters.actionCategory === "mgmt") scopeDesc = "Account management events";
+            else if (filters.actionCategory === "security") scopeDesc = "Security & maintenance events";
+
+            if (matchCount > 0) {
+                if (previewCard) previewCard.classList.remove("no-matches");
+                if (previewBadge) {
+                    previewBadge.textContent = `${matchCount} event${matchCount === 1 ? "" : "s"} ready`;
+                    previewBadge.className = "preview-badge preview-badge-ready";
+                }
+                if (previewText) {
+                    previewText.textContent = `Ready to export ${matchCount} audit log record${matchCount === 1 ? "" : "s"} (${scopeDesc}, ${userDesc}, ${dateDesc}) in ${formatLabel} format.`;
+                }
+                if (confirmExportBtn) confirmExportBtn.disabled = false;
+            } else {
+                if (previewCard) previewCard.classList.add("no-matches");
+                if (previewBadge) {
+                    previewBadge.textContent = "0 events found";
+                    previewBadge.className = "preview-badge preview-badge-empty";
+                }
+                if (previewText) {
+                    previewText.textContent = `No audit events match ${scopeDesc} for ${userDesc} (${dateDesc}). Please select a different scope or timeframe.`;
+                }
+                if (confirmExportBtn) confirmExportBtn.disabled = true;
+            }
+        }
+
+        if (confirmExportBtn) {
+            confirmExportBtn.addEventListener("click", () => {
+                if (confirmExportBtn.disabled) return;
+                const filters = getSelectedFilters();
+                const url = `/admin/logs/export?user=${encodeURIComponent(filters.targetUser)}&action_category=${encodeURIComponent(filters.actionCategory)}&date_window=${encodeURIComponent(filters.dateWindow)}&format=${encodeURIComponent(filters.fileFormat)}`;
+                
+                // Trigger download and close modal
+                window.location.href = url;
+                setTimeout(closeExportModal, 800);
+            });
+        }
+    })();
 
     document.querySelectorAll("[data-close-dialog]").forEach(btn => {
         btn.addEventListener("click", () => {

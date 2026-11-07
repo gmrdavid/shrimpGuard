@@ -1817,7 +1817,88 @@ def admin_logs_export():
             cutoff = now - timedelta(days=int(date_window))
             query = query.filter(ActivityLog.timestamp >= cutoff)
 
+        export_format = request.args.get("format", "csv").strip().lower()
+        if export_format not in ("csv", "xlsx"):
+            export_format = "csv"
+
         logs = query.order_by(ActivityLog.timestamp.desc()).all()
+
+        if export_format == "xlsx":
+            def text_cell(reference, value):
+                return (
+                    f'<c r="{reference}" t="inlineStr"><is><t xml:space="preserve">'
+                    f"{escape(str(value))}</t></is></c>"
+                )
+
+            headers = ["Log ID", "Timestamp", "User Name", "User Email", "Role", "Action", "Details", "IP Address"]
+            cols = ["A", "B", "C", "D", "E", "F", "G", "H"]
+            worksheet_rows = []
+
+            header_cells = [text_cell(f"{col}1", h) for col, h in zip(cols, headers)]
+            worksheet_rows.append(f'<row r="1">{"".join(header_cells)}</row>')
+
+            for row_number, l in enumerate(logs, start=2):
+                ts = l.timestamp.strftime("%Y-%m-%d %H:%M:%S") if l.timestamp else ""
+                cells = [
+                    f'<c r="A{row_number}"><v>{l.id}</v></c>',
+                    text_cell(f"B{row_number}", ts),
+                    text_cell(f"C{row_number}", l.user_name or "System"),
+                    text_cell(f"D{row_number}", l.user_email or "system@shrimpguard"),
+                    text_cell(f"E{row_number}", l.role or "System"),
+                    text_cell(f"F{row_number}", l.action),
+                    text_cell(f"G{row_number}", l.details or ""),
+                    text_cell(f"H{row_number}", l.ip_address or "127.0.0.1"),
+                ]
+                worksheet_rows.append(f'<row r="{row_number}">{"".join(cells)}</row>')
+
+            worksheet = (
+                '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+                '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+                f'<sheetData>{"".join(worksheet_rows)}</sheetData></worksheet>'
+            )
+            workbook = io.BytesIO()
+            with zipfile.ZipFile(workbook, "w", zipfile.ZIP_DEFLATED) as excel_file:
+                excel_file.writestr(
+                    "[Content_Types].xml",
+                    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+                    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+                    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+                    '<Default Extension="xml" ContentType="application/xml"/>'
+                    '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+                    '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+                    "</Types>",
+                )
+                excel_file.writestr(
+                    "_rels/.rels",
+                    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+                    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+                    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
+                    "</Relationships>",
+                )
+                excel_file.writestr(
+                    "xl/workbook.xml",
+                    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+                    '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
+                    'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+                    '<sheets><sheet name="Audit Logs" sheetId="1" r:id="rId1"/></sheets></workbook>',
+                )
+                excel_file.writestr(
+                    "xl/_rels/workbook.xml.rels",
+                    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+                    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+                    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
+                    "</Relationships>",
+                )
+                excel_file.writestr("xl/worksheets/sheet1.xml", worksheet)
+
+            workbook.seek(0)
+            filename = f"shrimpguard_audit_{user_label}_{now.strftime('%Y%m%d_%H%M%S')}.xlsx"
+            return send_file(
+                workbook,
+                as_attachment=True,
+                download_name=filename,
+                mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
 
         output = io.StringIO()
         writer = csv.writer(output)
@@ -1848,7 +1929,7 @@ def admin_logs_export():
         output.seek(0)
         filename = f"shrimpguard_audit_{user_label}_{now.strftime('%Y%m%d_%H%M%S')}.csv"
         return send_file(
-            io.BytesIO(output.getvalue().encode("utf-8")),
+            io.BytesIO(output.getvalue().encode("utf-8-sig")),
             mimetype="text/csv",
             as_attachment=True,
             download_name=filename,
