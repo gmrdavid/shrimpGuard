@@ -242,7 +242,12 @@ function updateDeviceTime() {
             const topicInput = document.getElementById("profile-ntfy-topic");
             const topic = topicInput && topicInput.value.trim() ? topicInput.value.trim() : "";
             if (!topic) {
-                window.alert("Please enter or generate a topic first!");
+                const warnDialog = document.getElementById("test-ntfy-warning-dialog");
+                if (warnDialog && typeof warnDialog.showModal === "function") {
+                    warnDialog.showModal();
+                } else if (warnDialog) {
+                    warnDialog.setAttribute("open", "");
+                }
                 return;
             }
             try {
@@ -258,15 +263,61 @@ function updateDeviceTime() {
         });
     }
 
+    function escapeHtml(str) {
+        if (!str) return "";
+        return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
     // Send Test ntfy Push Notification
     const testNtfyButton = document.getElementById("test-ntfy-button");
+    const testNtfyWarnDialog = document.getElementById("test-ntfy-warning-dialog");
+    const closeTestNtfyWarnBtn = document.getElementById("close-test-ntfy-warning");
+    const actionGenTopicBtn = document.getElementById("action-generate-topic");
+
+    const testNtfyResultDialog = document.getElementById("test-ntfy-result-dialog");
+    const closeTestNtfyResultBtn = document.getElementById("close-test-ntfy-result");
+    const testNtfyResultTitle = document.getElementById("test-ntfy-result-title");
+    const testNtfyResultSubtitle = document.getElementById("test-ntfy-result-subtitle");
+    const testNtfyResultIcon = document.getElementById("test-ntfy-result-icon");
+    const testNtfyResultBody = document.getElementById("test-ntfy-result-body");
+    const testNtfyOpenLink = document.getElementById("test-ntfy-open-link");
+
+    if (closeTestNtfyWarnBtn && testNtfyWarnDialog) {
+        closeTestNtfyWarnBtn.addEventListener("click", () => testNtfyWarnDialog.close());
+    }
+    if (actionGenTopicBtn && testNtfyWarnDialog) {
+        actionGenTopicBtn.addEventListener("click", () => {
+            testNtfyWarnDialog.close();
+            if (generateTopicBtn) generateTopicBtn.click();
+        });
+    }
+    if (closeTestNtfyResultBtn && testNtfyResultDialog) {
+        closeTestNtfyResultBtn.addEventListener("click", () => testNtfyResultDialog.close());
+    }
+
+    [testNtfyWarnDialog, testNtfyResultDialog].forEach(dlg => {
+        if (dlg) {
+            dlg.addEventListener("click", (e) => {
+                if (e.target === dlg) dlg.close();
+            });
+        }
+    });
+
     if (testNtfyButton) {
         testNtfyButton.addEventListener("click", async () => {
             const topicInput = document.getElementById("profile-ntfy-topic");
             const topic = topicInput ? topicInput.value.trim() : "";
             if (!topic) {
-                window.alert("Please enter or generate an ntfy topic first to test push notifications.\n\nTip: Click 'Generate Secure Topic' to create an unguessable private topic.");
-                if (topicInput) topicInput.focus();
+                if (testNtfyWarnDialog && typeof testNtfyWarnDialog.showModal === "function") {
+                    testNtfyWarnDialog.showModal();
+                } else if (testNtfyWarnDialog) {
+                    testNtfyWarnDialog.setAttribute("open", "");
+                }
                 return;
             }
             const originalHtml = testNtfyButton.innerHTML;
@@ -280,12 +331,81 @@ function updateDeviceTime() {
                 });
                 const res = await resp.json();
                 if (res.success) {
-                    window.alert(`Push Notification Dispatched Successfully!\n\nStatus: ${res.status}\nTopic: ${res.topic}\nServer: ${res.server || "ntfy.sh"}\n\nTo view on your phone or browser, open:\nhttps://ntfy.sh/${res.topic}`);
+                    if (testNtfyResultTitle) testNtfyResultTitle.textContent = "Test Notification Dispatched!";
+                    if (testNtfyResultSubtitle) testNtfyResultSubtitle.textContent = "Alert successfully transmitted via ntfy.sh gateway";
+                    if (testNtfyResultIcon) {
+                        testNtfyResultIcon.style.background = "#ecfdf5";
+                        testNtfyResultIcon.style.color = "#059669";
+                        testNtfyResultIcon.innerHTML = `<svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>`;
+                    }
+                    if (testNtfyResultBody) {
+                        testNtfyResultBody.innerHTML = `
+                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; font-size: 13px; line-height: 1.6; color: #334155;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                    <span style="color: #64748b;">Status:</span>
+                                    <strong style="color: #059669;">Dispatched (200 OK)</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                    <span style="color: #64748b;">Topic:</span>
+                                    <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-weight: 700; color: #0f172a;">${escapeHtml(res.topic || topic)}</code>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="color: #64748b;">Server Gateway:</span>
+                                    <span>${escapeHtml(res.server || "ntfy.sh")}</span>
+                                </div>
+                            </div>
+                            <p style="margin: 12px 0 0; font-size: 12px; color: #64748b; line-height: 1.5;">
+                                A test water quality notification has been sent. If you are subscribed to this topic on your mobile phone or browser, you will receive an alert chime now.
+                            </p>
+                        `;
+                    }
+                    if (testNtfyOpenLink) {
+                        testNtfyOpenLink.href = `https://ntfy.sh/${encodeURIComponent(res.topic || topic)}`;
+                        testNtfyOpenLink.style.display = "inline-flex";
+                    }
                 } else {
-                    window.alert(`Notification Delivery Notice: ${res.error || "Unable to send push notification."}`);
+                    if (testNtfyResultTitle) testNtfyResultTitle.textContent = "Delivery Notice";
+                    if (testNtfyResultSubtitle) testNtfyResultSubtitle.textContent = "Unable to dispatch notification";
+                    if (testNtfyResultIcon) {
+                        testNtfyResultIcon.style.background = "#fee2e2";
+                        testNtfyResultIcon.style.color = "#dc2626";
+                        testNtfyResultIcon.innerHTML = `<svg class="ui-icon" aria-hidden="true"><use href="#icon-alert"></use></svg>`;
+                    }
+                    if (testNtfyResultBody) {
+                        testNtfyResultBody.innerHTML = `
+                            <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 14px 16px; font-size: 13px; color: #991b1b; line-height: 1.5;">
+                                ${escapeHtml(res.error || "Unable to dispatch push notification. Please check your network connection.")}
+                            </div>
+                        `;
+                    }
+                    if (testNtfyOpenLink) testNtfyOpenLink.style.display = "none";
+                }
+                if (testNtfyResultDialog && typeof testNtfyResultDialog.showModal === "function") {
+                    testNtfyResultDialog.showModal();
+                } else if (testNtfyResultDialog) {
+                    testNtfyResultDialog.setAttribute("open", "");
                 }
             } catch (err) {
-                window.alert(`Error sending test push notification: ${err.message}`);
+                if (testNtfyResultTitle) testNtfyResultTitle.textContent = "Delivery Error";
+                if (testNtfyResultSubtitle) testNtfyResultSubtitle.textContent = "Network request failed";
+                if (testNtfyResultIcon) {
+                    testNtfyResultIcon.style.background = "#fee2e2";
+                    testNtfyResultIcon.style.color = "#dc2626";
+                    testNtfyResultIcon.innerHTML = `<svg class="ui-icon" aria-hidden="true"><use href="#icon-alert"></use></svg>`;
+                }
+                if (testNtfyResultBody) {
+                    testNtfyResultBody.innerHTML = `
+                        <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 14px 16px; font-size: 13px; color: #991b1b;">
+                            Error communicating with notification server: ${escapeHtml(err.message)}
+                        </div>
+                    `;
+                }
+                if (testNtfyOpenLink) testNtfyOpenLink.style.display = "none";
+                if (testNtfyResultDialog && typeof testNtfyResultDialog.showModal === "function") {
+                    testNtfyResultDialog.showModal();
+                } else if (testNtfyResultDialog) {
+                    testNtfyResultDialog.setAttribute("open", "");
+                }
             } finally {
                 testNtfyButton.disabled = false;
                 testNtfyButton.innerHTML = originalHtml;
@@ -512,12 +632,37 @@ function updateDeviceTime() {
             });
         }
 
-        if (resetBtn) {
+        const resetAdaptiveDialog = document.getElementById("reset-adaptive-dialog");
+        const cancelResetAdaptiveBtn = document.getElementById("cancel-reset-adaptive");
+        const confirmResetAdaptiveBtn = document.getElementById("confirm-reset-adaptive");
+
+        if (resetAdaptiveDialog) {
+            resetAdaptiveDialog.addEventListener("click", (e) => {
+                if (e.target === resetAdaptiveDialog) resetAdaptiveDialog.close();
+            });
+        }
+
+        if (cancelResetAdaptiveBtn && resetAdaptiveDialog) {
+            cancelResetAdaptiveBtn.addEventListener("click", () => {
+                resetAdaptiveDialog.close();
+            });
+        }
+
+        if (confirmResetAdaptiveBtn && resetAdaptiveDialog) {
+            confirmResetAdaptiveBtn.addEventListener("click", () => {
+                resetAdaptiveDialog.close();
+                window.ShrimpGuardAdaptive.resetModel();
+                initAdaptiveSettings();
+                showPresentationNotice("Learned profile and presentation reset to factory defaults.");
+            });
+        }
+
+        if (resetBtn && resetAdaptiveDialog) {
             resetBtn.addEventListener("click", () => {
-                if (confirm("Reset your learned adaptive profile to factory defaults?")) {
-                    window.ShrimpGuardAdaptive.resetModel();
-                    initAdaptiveSettings();
-                    showPresentationNotice("Learned profile and presentation reset to factory defaults.");
+                if (typeof resetAdaptiveDialog.showModal === "function") {
+                    resetAdaptiveDialog.showModal();
+                } else {
+                    resetAdaptiveDialog.setAttribute("open", "");
                 }
             });
         }

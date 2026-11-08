@@ -656,6 +656,99 @@
         </div>
     </div>
 </dialog>
+
+<!-- RESET ADAPTIVE MODEL CONFIRMATION DIALOG -->
+<dialog id="reset-adaptive-dialog"
+        class="admin-user-dialog settings-confirmation-dialog"
+        aria-labelledby="reset-adaptive-title">
+
+    <div class="admin-user-dialog-heading">
+        <span class="settings-dialog-icon" style="background: #fef3c7; color: #d97706;">
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-alert"></use>
+            </svg>
+        </span>
+        <div>
+            <h2 id="reset-adaptive-title">Reset Learned Profile?</h2>
+            <p>Restore interaction model to factory defaults.</p>
+        </div>
+    </div>
+
+    <div class="profile-confirmation-content">
+        <p>Are you sure you want to reset your learned behavioral profile? All interaction counters, dwell times, and custom layout adaptations will be cleared and re-evaluated from 0%.</p>
+        <div class="profile-confirmation-actions">
+            <button id="cancel-reset-adaptive" class="admin-user-cancel" type="button">
+                Cancel
+            </button>
+            <button id="confirm-reset-adaptive" class="admin-user-submit" type="button" style="background: #dc2626; border-color: #dc2626; color: #ffffff;">
+                Yes, Reset Profile
+            </button>
+        </div>
+    </div>
+</dialog>
+
+<!-- NTFY TOPIC REQUIRED WARNING DIALOG -->
+<dialog id="test-ntfy-warning-dialog"
+        class="admin-user-dialog settings-confirmation-dialog"
+        aria-labelledby="test-ntfy-warning-title">
+
+    <div class="admin-user-dialog-heading">
+        <span class="settings-dialog-icon" style="background: #fef3c7; color: #d97706;">
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-alert"></use>
+            </svg>
+        </span>
+        <div>
+            <h2 id="test-ntfy-warning-title">ntfy Topic Required</h2>
+            <p>Please provide or generate an alert topic first.</p>
+        </div>
+    </div>
+
+    <div class="profile-confirmation-content">
+        <p>You haven't set an alert topic yet. Click <strong>"Generate Secure Topic"</strong> to create a private topic (e.g. <code>sg-pond-8a3f9c</code>), or enter your existing topic name.</p>
+        <div class="profile-confirmation-actions">
+            <button id="close-test-ntfy-warning" class="admin-user-cancel" type="button">
+                Close
+            </button>
+            <button id="action-generate-topic" class="admin-user-submit" type="button">
+                Generate Secure Topic
+            </button>
+        </div>
+    </div>
+</dialog>
+
+<!-- TEST NTFY RESULT STATUS DIALOG -->
+<dialog id="test-ntfy-result-dialog"
+        class="admin-user-dialog settings-confirmation-dialog"
+        aria-labelledby="test-ntfy-result-title" style="max-width: 480px;">
+
+    <div class="admin-user-dialog-heading">
+        <span id="test-ntfy-result-icon" class="settings-dialog-icon" style="background: #e0f2fe; color: #0284c7;">
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-bell"></use>
+            </svg>
+        </span>
+        <div>
+            <h2 id="test-ntfy-result-title">Test Push Notification</h2>
+            <p id="test-ntfy-result-subtitle">Dispatched via ntfy.sh alert gateway</p>
+        </div>
+    </div>
+
+    <div class="profile-confirmation-content">
+        <div id="test-ntfy-result-body" style="margin-bottom: 20px;">
+            <!-- Dynamically populated -->
+        </div>
+        <div class="profile-confirmation-actions">
+            <a id="test-ntfy-open-link" href="#" target="_blank" rel="noopener noreferrer" class="admin-user-cancel" style="display: none; align-items: center; gap: 6px; text-decoration: none;">
+                <svg class="ui-icon" aria-hidden="true" style="width: 14px; height: 14px;"><use href="#icon-monitor"></use></svg>
+                <span>Open in ntfy.sh</span>
+            </a>
+            <button id="close-test-ntfy-result" class="admin-user-submit" type="button">
+                Done
+            </button>
+        </div>
+    </div>
+</dialog>
 <!-- NTFY.SH SETUP & USER GUIDE POPUP DIALOG -->
 <div id="ntfy-guide-modal" class="modal-dialog-backdrop" hidden>
     <div class="modal-dialog-container ntfy-guide-dialog-container" role="dialog" aria-modal="true" aria-labelledby="ntfy-guide-title">
