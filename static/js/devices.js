@@ -193,7 +193,6 @@ function renderDevices(data) {
             tr.innerHTML = `
                 <td>
                     <div class="device-cell-title-row">
-                        <span class="device-id-badge device-id-${catSlug}">${dev.id || ""}</span>
                         <span class="device-cell-name">${dev.name}</span>
                     </div>
                 </td>
