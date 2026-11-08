@@ -1,0 +1,112 @@
+===================================================================================
+SHRIMPGUARD - HARDWARE NODE PAIRING & TELEMETRY ROUTING GUIDE
+===================================================================================
+
+This guide explains where to find the required information when pairing an ESP32
+LoRa transmitter unit with your ShrimpGuard account on the "Devices & Hardware" page.
+
+-----------------------------------------------------------------------------------
+1. HARDWARE NODE ID * (Required)
+-----------------------------------------------------------------------------------
+What it is:
+  The physical hardware broadcast identifier programmed into your ESP32 LoRa
+  transmitter (Node 1). Every telemetry packet sent over radio includes this ID
+  so the ShrimpGuard receiver can distinguish which pond node sent the reading.
+
+Where to find it:
+  1. 20x4 LCD Screen (Node 2 Receiver Base Station):
+     Look at Row 1 of the physical LCD screen when data is received:
+       [NODE01]   Seq:42
+     The text inside the brackets "[NODE01]" is your Hardware Node ID.
+
+  2. Physical Hardware Enclosure Label:
+     The waterproof box or 3D-printed enclosure of your pond transmitter is
+     typically labeled with its hardware ID (e.g., NODE01, NODE02).
+
+  3. In the ESP32 Transmitter Arduino Firmware:
+     Open: node1_temp_ph_transmitter/node1_temp_ph_transmitter.ino
+     Look around Line 81:
+       // --- Packet Identity ---
+       const char DEVICE_ID[] = "NODE01";
+
+  4. In the Arduino Serial Monitor (115200 baud):
+     When the receiver catches a transmission, it displays:
+       [RX] OK  Node=NODE01 | Seq=2215 | Temp=27.62 C | pH=5.32 | Status=Optimal
+     Or the raw CSV format:
+       SG1,NODE01,2215,27.62,5.32,Optimal
+
+Format Requirement:
+  - Letters, numbers, underscores, and hyphens only (e.g., NODE01, NODE02).
+  - Automatically converted to uppercase.
+  - Length: 2 to 30 characters.
+
+-----------------------------------------------------------------------------------
+2. NODE LABEL / FRIENDLY NAME (Optional)
+-----------------------------------------------------------------------------------
+What it is:
+  A custom, human-friendly nickname you give to your hardware unit so you and your
+  team can recognize it easily without memorizing raw serial/hardware codes.
+
+Where to find it:
+  - This is NOT hardcoded in the hardware! You choose this name yourself.
+  - Examples you can use:
+      * Node 1 Autonomous Pond Transmitter Unit
+      * North Pond Surface Probe
+      * Nursery Tank 1 Water Monitor
+      * Main Pond Alpha Floating Station
+
+Default Behavior:
+  - If left blank, ShrimpGuard automatically names it:
+    "Pond Node <NODE_ID>" (e.g., Pond Node NODE02).
+
+-----------------------------------------------------------------------------------
+3. POND LOCATION / SITE (Optional)
+-----------------------------------------------------------------------------------
+What it is:
+  The specific physical pond, tank, or section of your aquaculture facility where
+  this sensor is deployed in the water.
+
+Where to find it:
+  - This is also user-defined based on your farm layout.
+  - Examples you can use:
+      * Pond Alpha
+      * Pond Beta
+      * Nursery Pond 2
+      * Grow-out Sector 3
+      * Quarantine Tank A
+
+Why it matters:
+  - This pond location is displayed across your Live Monitoring dashboard,
+    Historical Data charts, and Automated Alerts, allowing you to instantly know
+    which pond is experiencing abnormal or critical water quality.
+
+===================================================================================
+STEP-BY-STEP PAIRING WALKTHROUGH
+===================================================================================
+1. Log in to your ShrimpGuard account.
+2. In the sidebar, navigate to "Devices & Hardware" (/devices).
+3. In the top toolbar, click the green "Pair Pond Node" button.
+4. Fill in the modal form:
+     - Hardware Node ID *: e.g., NODE02
+     - Node Label:         e.g., Pond 2 Primary Monitor
+     - Pond Location:      e.g., Pond Beta
+5. Click "Pair Hardware Node".
+6. The node will now appear under your "Paired Pond Telemetry Nodes" table.
+7. Any telemetry packets broadcast by that transmitter will now automatically
+   route to your account's dashboard, charts, analytics, and mobile alerts.
+
+===================================================================================
+MULTI-USER HARDWARE ROUTING RULES
+===================================================================================
+- Ownership Protection:
+  Each Hardware Node ID can only be paired to one user account at a time.
+  If another account attempts to pair an already-owned node, the system returns
+  a 409 Conflict error to prevent telemetry hijacking.
+
+- Unpairing:
+  You can click "Unpair" at any time from the "Paired Pond Telemetry Nodes" table
+  if you want to release the node, reassign it, or pair it with another account.
+
+- Default Ownership:
+  By default, NODE01 is reserved for the primary farm administrator (rio@gmail.com).
+===================================================================================
