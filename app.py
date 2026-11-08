@@ -330,6 +330,100 @@ class AquacultureCalculation(db.Model):
         }
 
 
+# ==========================================
+# EMAIL VALIDATION UTILITIES (LEGIT & ACTIVE DOMAIN RULES)
+# ==========================================
+
+DISPOSABLE_EMAIL_DOMAINS = {
+    "mailinator.com", "tempmail.com", "10minutemail.com", "guerrillamail.com",
+    "guerrillamail.block", "guerrillamail.net", "guerrillamail.org", "sharklasers.com",
+    "yopmail.com", "yopmail.fr", "yopmail.net", "trashmail.com", "trashmail.net",
+    "dispostable.com", "getairmail.com", "throwawaymail.com", "fakemailgenerator.com",
+    "temp-mail.org", "tempmail.net", "generator.email", "mohmal.com", "nada.ltd",
+    "crazymailing.com", "inboxkitten.com", "mytemp.email", "tempinbox.com",
+    "burnermail.io", "maildrop.cc", "emailondeck.com", "zillamail.com",
+    "trashmail.org", "dropmail.me", "mohmal.im", "armyspy.com", "dayrep.com",
+    "teleworm.us", "rhyta.com", "cuvox.de", "superrito.com"
+}
+
+BLOCKED_PLACEHOLDER_DOMAINS = {
+    "example.com", "example.org", "example.net", "example.edu",
+    "test.com", "testing.com", "test.test", "sample.com", "fake.com",
+    "temp.com", "invalid", "localhost", "none.com", "null.com",
+    "asdf.com", "qwerty.com", "xyz.com", "domain.com", "email.com",
+    "placeholder.com", "foo.com", "bar.com"
+}
+
+COMMON_DOMAIN_TYPOS = {
+    "gmial.com": "gmail.com",
+    "gmai.com": "gmail.com",
+    "gamil.com": "gmail.com",
+    "gmaill.com": "gmail.com",
+    "yaho.com": "yahoo.com",
+    "yahooo.com": "yahoo.com",
+    "hotmial.com": "hotmail.com",
+    "hotmaill.com": "hotmail.com",
+    "outlok.com": "outlook.com",
+    "outllok.com": "outlook.com",
+    "iclud.com": "icloud.com",
+}
+
+EMAIL_RFC_REGEX = re.compile(
+    r"^(?![.])(?!.*[.]{2})[a-zA-Z0-9_.+-]+(?<![.])"
+    r"@"
+    r"(?![.-])(?!.*[.]{2})(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,24}$"
+)
+
+
+def validate_legit_email(email_str):
+    """
+    Validates that an email is structurally valid and represents a legitimate,
+    non-disposable, non-placeholder email address.
+    Returns: (is_valid: bool, error_message: str | None)
+    """
+    if not email_str or not isinstance(email_str, str):
+        return False, "Please enter an email address."
+
+    email = email_str.strip().lower()
+
+    if len(email) < 6:
+        return False, "Email address is too short."
+
+    if len(email) > 254:
+        return False, "Email address exceeds the 254-character limit."
+
+    if email.count("@") != 1:
+        return False, "Email must contain exactly one '@' symbol."
+
+    local_part, domain_part = email.split("@", 1)
+
+    if not local_part or len(local_part) > 64:
+        return False, "The username portion before '@' must be between 1 and 64 characters."
+
+    if not domain_part or len(domain_part) < 3:
+        return False, "The domain portion after '@' is incomplete."
+
+    if not EMAIL_RFC_REGEX.match(email):
+        return False, "Enter a valid email address with a recognized domain (e.g., name@gmail.com)."
+
+    if domain_part in DISPOSABLE_EMAIL_DOMAINS:
+        return False, "Disposable or temporary email addresses are not permitted. Please use a legitimate email."
+
+    if domain_part in BLOCKED_PLACEHOLDER_DOMAINS or domain_part.endswith(".invalid") or domain_part.endswith(".localhost"):
+        return False, "Placeholder or dummy email domains are not allowed. Please enter your real email address."
+
+    if local_part in {"test", "testing", "fake", "temp", "asdf", "dummy", "admin", "user", "none"} and domain_part in {
+        "test.com", "fake.com", "dummy.com", "temp.com", "asdf.com", "user.com", "admin.com"
+    }:
+        return False, "Please provide a real, active email address."
+
+    if domain_part in COMMON_DOMAIN_TYPOS:
+        suggested = COMMON_DOMAIN_TYPOS[domain_part]
+        return False, f"Did you mean '{local_part}@{suggested}'? Please verify your domain spelling."
+
+    return True, None
+
+
 def log_activity(action, details=None, user_email=None, user_name=None, role=None, ip_address=None):
     try:
         if not user_email and has_request_context():
@@ -1730,10 +1824,11 @@ def create_user():
     status = request.form.get("status", "").strip()
     password = request.form.get("password", "")
 
+    is_valid_email, email_error = validate_legit_email(email)
     if not user_name or len(user_name) > 80:
         flash("Enter a name between 1 and 80 characters.", "error")
-    elif not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email) or len(email) > 255:
-        flash("Enter a valid email address.", "error")
+    elif not is_valid_email:
+        flash(email_error, "error")
     elif role not in {"Admin", "Client"}:
         flash("Choose Admin or Client as the role.", "error")
     elif status not in {"Active", "Inactive"}:
@@ -1827,10 +1922,11 @@ def edit_user():
     status = request.form.get("status", "").strip()
     new_password = request.form.get("new_password", "").strip()
 
+    is_valid_email, email_error = validate_legit_email(email)
     if not user_name or len(user_name) > 80:
         flash("Enter a name between 1 and 80 characters.", "error")
-    elif not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email) or len(email) > 255:
-        flash("Enter a valid email address.", "error")
+    elif not is_valid_email:
+        flash(email_error, "error")
     elif role not in {"Admin", "Client"}:
         flash("Choose Admin or Client as the role.", "error")
     elif status not in {"Active", "Inactive"}:
@@ -2538,12 +2634,13 @@ def signup():
         password = request.form.get("password", "")
         confirm_password = request.form.get("confirm_password", "")
 
+        is_valid_email, email_error = validate_legit_email(email)
         if not expected_token or not hmac.compare_digest(expected_token, submitted_token):
             error = "Your sign-up request expired. Please try again."
         elif not user_name or len(user_name) > 80:
             error = "Enter a username between 1 and 80 characters."
-        elif not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email) or len(email) > 255:
-            error = "Enter a valid email address."
+        elif not is_valid_email:
+            error = email_error
         elif len(password) < 8:
             error = "Use a password with at least 8 characters."
         elif password != confirm_password:
@@ -3203,10 +3300,11 @@ def settings():
             user_name = request.form.get("name", "").strip()
             email = request.form.get("email", "").strip().lower()
             ntfy_topic = request.form.get("ntfy_topic", "").strip()
+            is_valid_email, email_error = validate_legit_email(email)
             if not user_name or len(user_name) > 80:
                 flash("Enter a name between 1 and 80 characters.", "error")
-            elif not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email) or len(email) > 255:
-                flash("Enter a valid email address.", "error")
+            elif not is_valid_email:
+                flash(email_error, "error")
             elif User.query.filter(User.email != user_email, User.email == email).first():
                 flash("An account with that email already exists.", "error")
             elif User.query.filter(User.email != user_email, User.user_name == user_name).first():

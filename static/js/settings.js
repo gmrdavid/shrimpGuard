@@ -12,8 +12,141 @@ function updateDeviceTime() {
     const saveProfileButton = document.getElementById("save-profile-button");
     const cancelProfileButton = document.getElementById("cancel-profile-update");
     const confirmProfileButton = document.getElementById("confirm-profile-update");
+    const emailInput = document.getElementById("profile-email");
+    const emailFeedback = document.getElementById("profile-email-feedback");
+
+    const DISPOSABLE_EMAIL_DOMAINS = new Set([
+        "mailinator.com", "tempmail.com", "10minutemail.com", "guerrillamail.com",
+        "guerrillamail.block", "guerrillamail.net", "guerrillamail.org", "sharklasers.com",
+        "yopmail.com", "yopmail.fr", "yopmail.net", "trashmail.com", "trashmail.net",
+        "dispostable.com", "getairmail.com", "throwawaymail.com", "fakemailgenerator.com",
+        "temp-mail.org", "tempmail.net", "generator.email", "mohmal.com", "nada.ltd",
+        "crazymailing.com", "inboxkitten.com", "mytemp.email", "tempinbox.com",
+        "burnermail.io", "maildrop.cc", "emailondeck.com", "zillamail.com"
+    ]);
+
+    const BLOCKED_PLACEHOLDER_DOMAINS = new Set([
+        "example.com", "example.org", "example.net", "example.edu",
+        "test.com", "testing.com", "test.test", "sample.com", "fake.com",
+        "temp.com", "invalid", "localhost", "none.com", "null.com",
+        "asdf.com", "qwerty.com", "xyz.com", "domain.com", "email.com"
+    ]);
+
+    const COMMON_DOMAIN_TYPOS = {
+        "gmial.com": "gmail.com",
+        "gmai.com": "gmail.com",
+        "gamil.com": "gmail.com",
+        "gmaill.com": "gmail.com",
+        "yaho.com": "yahoo.com",
+        "yahooo.com": "yahoo.com",
+        "hotmial.com": "hotmail.com",
+        "hotmaill.com": "hotmail.com",
+        "outlok.com": "outlook.com",
+        "outllok.com": "outlook.com",
+        "iclud.com": "icloud.com"
+    };
+
+    const EMAIL_REGEX = /^(?![.])(?!.*[.]{2})[a-zA-Z0-9_.+-]+(?<![.])@(?![.-])(?!.*[.]{2})(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,24}$/;
+
+    function validateEmailInput(showSuccess = false) {
+        if (!emailInput || !emailFeedback) return true;
+        const val = emailInput.value.trim().toLowerCase();
+
+        if (!val) {
+            emailFeedback.className = "settings-email-feedback is-invalid";
+            emailFeedback.textContent = "Please enter an email address.";
+            emailInput.style.borderColor = "#dc2626";
+            return false;
+        }
+
+        if (val.length < 6 || val.length > 254) {
+            emailFeedback.className = "settings-email-feedback is-invalid";
+            emailFeedback.textContent = "Email must be between 6 and 254 characters.";
+            emailInput.style.borderColor = "#dc2626";
+            return false;
+        }
+
+        if ((val.match(/@/g) || []).length !== 1) {
+            emailFeedback.className = "settings-email-feedback is-invalid";
+            emailFeedback.textContent = "Email must contain exactly one '@' symbol.";
+            emailInput.style.borderColor = "#dc2626";
+            return false;
+        }
+
+        const parts = val.split("@");
+        const localPart = parts[0];
+        const domainPart = parts[1];
+
+        if (!localPart || localPart.length > 64) {
+            emailFeedback.className = "settings-email-feedback is-invalid";
+            emailFeedback.textContent = "Username before '@' must be 1 to 64 characters.";
+            emailInput.style.borderColor = "#dc2626";
+            return false;
+        }
+
+        if (!domainPart || domainPart.length < 3) {
+            emailFeedback.className = "settings-email-feedback is-invalid";
+            emailFeedback.textContent = "Domain after '@' is incomplete.";
+            emailInput.style.borderColor = "#dc2626";
+            return false;
+        }
+
+        if (!EMAIL_REGEX.test(val)) {
+            emailFeedback.className = "settings-email-feedback is-invalid";
+            emailFeedback.textContent = "Enter a valid email address with a recognized domain (e.g., name@gmail.com).";
+            emailInput.style.borderColor = "#dc2626";
+            return false;
+        }
+
+        if (DISPOSABLE_EMAIL_DOMAINS.has(domainPart)) {
+            emailFeedback.className = "settings-email-feedback is-invalid";
+            emailFeedback.textContent = "Temporary / disposable email addresses are not permitted.";
+            emailInput.style.borderColor = "#dc2626";
+            return false;
+        }
+
+        if (BLOCKED_PLACEHOLDER_DOMAINS.has(domainPart) || domainPart.endsWith(".invalid") || domainPart.endsWith(".localhost")) {
+            emailFeedback.className = "settings-email-feedback is-invalid";
+            emailFeedback.textContent = "Placeholder or dummy email domains are not allowed.";
+            emailInput.style.borderColor = "#dc2626";
+            return false;
+        }
+
+        if (COMMON_DOMAIN_TYPOS[domainPart]) {
+            const suggested = COMMON_DOMAIN_TYPOS[domainPart];
+            emailFeedback.className = "settings-email-feedback is-warning";
+            emailFeedback.textContent = `Did you mean '${localPart}@${suggested}'? Please verify your domain spelling.`;
+            emailInput.style.borderColor = "#d97706";
+            return false;
+        }
+
+        // Valid!
+        emailInput.style.borderColor = "";
+        if (showSuccess) {
+            emailFeedback.className = "settings-email-feedback is-valid";
+            emailFeedback.textContent = "✓ Valid email address.";
+        } else {
+            emailFeedback.className = "settings-email-feedback";
+            emailFeedback.textContent = "";
+        }
+        return true;
+    }
+
+    if (emailInput) {
+        emailInput.addEventListener("input", () => validateEmailInput(false));
+        emailInput.addEventListener("blur", () => validateEmailInput(true));
+    }
 
     saveProfileButton.addEventListener("click", () => {
+        const isEmailValid = validateEmailInput(true);
+        if (!isEmailValid) {
+            if (emailInput) {
+                emailInput.focus();
+                emailInput.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+            return;
+        }
+
         if (typeof confirmationDialog.showModal === "function") {
             confirmationDialog.showModal();
         } else if (profileForm.reportValidity()) {
@@ -161,6 +294,14 @@ function updateDeviceTime() {
     }
 
     confirmProfileButton.addEventListener("click", () => {
+        if (!validateEmailInput(true)) {
+            confirmationDialog.close();
+            if (emailInput) {
+                emailInput.focus();
+                emailInput.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+            return;
+        }
         if (profileForm.reportValidity()) {
             confirmationDialog.close();
             profileForm.requestSubmit();

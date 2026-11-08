@@ -247,12 +247,13 @@
                             id="profile-email"
                             name="email"
                             type="email"
-                            maxlength="255"
+                            maxlength="254"
                             value="{{ user.email }}"
                             autocomplete="email"
-                            placeholder="Enter your email address"
+                            placeholder="e.g. name@gmail.com"
                             required>
-                        <small>Use an email address you can access.</small>
+                        <small id="profile-email-hint">Use a legitimate, active email address you can access.</small>
+                        <div id="profile-email-feedback" class="settings-email-feedback" aria-live="polite"></div>
                     </div>
 
                         <div class="settings-field">
