@@ -60,37 +60,59 @@ def load_secret_key():
 
 class AdaptiveSessionInterface(SecureCookieSessionInterface):
     """
-    Dynamically configures session cookie flags for maximum compatibility and security.
-    In secure contexts (HTTPS or localhost/127.0.0.1 loopback), sets SameSite=None, Secure,
-    and Partitioned so that embedded views (such as the VS Code Mobile Preview webview iframe)
-    and desktop browsers reliably maintain authentication sessions without being blocked
-    by modern third-party cookie restrictions.
-    In plain HTTP over local LAN (e.g. 192.168.x.x), falls back to SameSite=Lax without Secure
-    so physical mobile devices on the local network can connect and authenticate properly.
+    Dynamically configures session cookie flags for maximum compatibility and security across browsers.
+    - When running over plain HTTP (e.g. http://localhost:5000, http://127.0.0.1:5000, or local LAN 192.168.x.x),
+      standalone desktop and mobile browsers (especially Microsoft Edge) strictly reject cookies with
+      Secure or SameSite=None on insecure origins, causing immediate session loss and redirect loops upon login.
+      For these top-level browser navigations, standard SameSite=Lax without Secure is used.
+    - When running inside an embedded third-party iframe (such as the VS Code Mobile Preview webview iframe)
+      on loopback, SameSite=None, Secure, and Partitioned are used so third-party cookie restrictions
+      in Electron webviews do not block the session.
+    - When running over genuine HTTPS (or reverse proxy with X-Forwarded-Proto=https), the Secure flag is enabled.
     """
 
-    def _is_secure_context(self) -> bool:
+    def _is_https(self) -> bool:
         if not has_request_context() or not request:
             return False
         if request.is_secure:
             return True
         proto = request.headers.get("X-Forwarded-Proto", "").strip().lower()
-        if proto == "https":
+        return proto == "https"
+
+    def _is_embedded_webview(self) -> bool:
+        if not has_request_context() or not request:
+            return False
+        user_agent = request.headers.get("User-Agent", "")
+        # Microsoft Edge is a standalone browser and must receive standard Lax cookies on HTTP
+        if "Edg/" in user_agent:
+            return False
+        dest = request.headers.get("Sec-Fetch-Dest", "").strip().lower()
+        site = request.headers.get("Sec-Fetch-Site", "").strip().lower()
+        if dest == "document" and site in {"none", "same-origin"}:
+            return False
+        if dest == "iframe" or site == "cross-site":
             return True
-        host = (request.host or "").split(":")[0].strip().lower()
-        return host in {"localhost", "127.0.0.1", "::1", "testserver"}
+        if "Electron" in user_agent or "VSCode" in user_agent:
+            return True
+        return False
 
     def get_cookie_secure(self, app: Flask) -> bool:
         configured = app.config.get("SESSION_COOKIE_SECURE_OVERRIDE")
         if configured is not None:
             return bool(configured)
-        return self._is_secure_context()
+        if self._is_https():
+            return True
+        if self._is_embedded_webview():
+            host = (request.host or "").split(":")[0].strip().lower() if request else ""
+            if host in {"localhost", "127.0.0.1", "::1", "testserver"}:
+                return True
+        return False
 
     def get_cookie_samesite(self, app: Flask) -> str | None:
         configured = app.config.get("SESSION_COOKIE_SAMESITE_OVERRIDE")
         if configured is not None:
             return configured
-        if self._is_secure_context():
+        if self._is_embedded_webview():
             return "None"
         return "Lax"
 
@@ -98,7 +120,9 @@ class AdaptiveSessionInterface(SecureCookieSessionInterface):
         configured = app.config.get("SESSION_COOKIE_PARTITIONED_OVERRIDE")
         if configured is not None:
             return bool(configured)
-        return self._is_secure_context()
+        if self._is_embedded_webview():
+            return True
+        return False
 
 
 app.config["SECRET_KEY"] = load_secret_key()
