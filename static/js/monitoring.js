@@ -932,13 +932,6 @@ function initTrendCalendarEvents() {
         });
     }
 
-    const jumpBtn = document.getElementById("trend-jump-latest-btn");
-    if (jumpBtn) {
-        jumpBtn.addEventListener("click", () => {
-            clearTrendDateFilter();
-        });
-    }
-
     // Close on outside click
     document.addEventListener("click", (e) => {
         const popup = document.getElementById("trend-calendar-popup");
@@ -961,7 +954,6 @@ function initTrendCalendarEvents() {
 
 function applyTrendDateFilter() {
     const emptyEl = document.getElementById("chart-empty");
-    const emptyText = document.getElementById("chart-empty-text");
     const countEl = document.getElementById("trend-count");
 
     if (!Array.isArray(allRawHistory) || allRawHistory.length === 0) {
@@ -971,8 +963,10 @@ function applyTrendDateFilter() {
             const ctx = canvas.getContext("2d");
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
-        if (emptyEl) emptyEl.hidden = false;
-        if (emptyText) emptyText.textContent = "Submit at least one dashboard reading to see the trend graph.";
+        if (emptyEl) {
+            emptyEl.hidden = false;
+            emptyEl.textContent = "Submit at least one dashboard reading to see the trend graph.";
+        }
         if (countEl) countEl.textContent = "No readings yet";
         return;
     }
@@ -990,9 +984,9 @@ function applyTrendDateFilter() {
 
     // Empty state handling
     if (filtered.length === 0) {
-        if (emptyEl) emptyEl.hidden = false;
-        if (emptyText) {
-            emptyText.textContent = `No telemetry readings recorded on ${formatFriendlyDate(trendFilterDate)}.`;
+        if (emptyEl) {
+            emptyEl.hidden = false;
+            emptyEl.textContent = `No telemetry readings recorded on ${formatFriendlyDate(trendFilterDate)}.`;
         }
         const canvas = document.getElementById("trend-chart");
         if (canvas) {
