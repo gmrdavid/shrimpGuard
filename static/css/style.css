@@ -6733,8 +6733,10 @@ nav a {
     width: 100%;
 }
 
-.login-header-top .login-brand {
-    margin-bottom: 0;
+.login-header-top .login-brand,
+.login-panel .login-header-top .login-brand,
+.signup-panel .login-header-top .login-brand {
+    margin-bottom: 0 !important;
 }
 
 .login-top-bar {
@@ -7261,18 +7263,13 @@ nav a {
 ========================================= */
 
 .signup-shell {
-    padding-top: 35px;
+    padding-top: 52px;
     padding-bottom: 24px;
 }
 
 .signup-panel {
-    max-width: 470px;
-    padding-top: 31px;
-    padding-bottom: 25px;
-}
-
-.signup-panel .login-brand {
-    margin-bottom: 25px;
+    max-width: 455px;
+    padding: 38px 40px 28px;
 }
 
 .signup-heading {
@@ -7336,15 +7333,14 @@ nav a {
 /* Smaller screens */
 @media (max-width: 520px) {
     .signup-shell {
-        padding: 22px 14px;
+        justify-content: center;
+        padding: 28px 15px 20px;
     }
 
     .signup-panel {
-        padding: 25px 21px 22px;
-    }
-
-    .signup-panel .login-brand {
-        margin-bottom: 23px;
+        max-width: 420px;
+        padding: 29px 23px 24px;
+        border-radius: 18px;
     }
 
     .signup-form {
@@ -7358,8 +7354,7 @@ nav a {
 
 @media (max-width: 360px) {
     .signup-panel {
-        padding-right: 17px;
-        padding-left: 17px;
+        padding: 25px 18px 21px;
     }
 }
 
