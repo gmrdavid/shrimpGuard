@@ -157,7 +157,7 @@
 
                 <input type="hidden"
                        name="csrf_token"
-                       value="{{ session['login_csrf_token'] }}">
+                       value="{{ login_csrf_token or session.get('login_csrf_token', '') }}">
 
                 <!-- Username or Email -->
                 <div class="login-field">

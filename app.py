@@ -13,7 +13,9 @@ from functools import wraps
 from xml.sax.saxutils import escape
 
 from flask import Flask, flash, has_request_context, jsonify, redirect, render_template, request, send_file, session, url_for
+from flask.sessions import SecureCookieSessionInterface
 from flask_sqlalchemy import SQLAlchemy
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from sqlalchemy import func, insert, select, text, update
 from sqlalchemy.engine import URL
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -56,9 +58,79 @@ def load_secret_key():
     return secret_key
 
 
+class AdaptiveSessionInterface(SecureCookieSessionInterface):
+    """
+    Dynamically configures session cookie flags for maximum compatibility and security.
+    In secure contexts (HTTPS or localhost/127.0.0.1 loopback), sets SameSite=None, Secure,
+    and Partitioned so that embedded views (such as the VS Code Mobile Preview webview iframe)
+    and desktop browsers reliably maintain authentication sessions without being blocked
+    by modern third-party cookie restrictions.
+    In plain HTTP over local LAN (e.g. 192.168.x.x), falls back to SameSite=Lax without Secure
+    so physical mobile devices on the local network can connect and authenticate properly.
+    """
+
+    def _is_secure_context(self) -> bool:
+        if not has_request_context() or not request:
+            return False
+        if request.is_secure:
+            return True
+        proto = request.headers.get("X-Forwarded-Proto", "").strip().lower()
+        if proto == "https":
+            return True
+        host = (request.host or "").split(":")[0].strip().lower()
+        return host in {"localhost", "127.0.0.1", "::1", "testserver"}
+
+    def get_cookie_secure(self, app: Flask) -> bool:
+        configured = app.config.get("SESSION_COOKIE_SECURE_OVERRIDE")
+        if configured is not None:
+            return bool(configured)
+        return self._is_secure_context()
+
+    def get_cookie_samesite(self, app: Flask) -> str | None:
+        configured = app.config.get("SESSION_COOKIE_SAMESITE_OVERRIDE")
+        if configured is not None:
+            return configured
+        if self._is_secure_context():
+            return "None"
+        return "Lax"
+
+    def get_cookie_partitioned(self, app: Flask) -> bool:
+        configured = app.config.get("SESSION_COOKIE_PARTITIONED_OVERRIDE")
+        if configured is not None:
+            return bool(configured)
+        return self._is_secure_context()
+
+
 app.config["SECRET_KEY"] = load_secret_key()
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=30)
 app.config["SESSION_REFRESH_EACH_REQUEST"] = True
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.session_interface = AdaptiveSessionInterface()
+
+
+def generate_timed_csrf_token(purpose: str) -> str:
+    s = URLSafeTimedSerializer(app.secret_key, salt=f"shrimpguard-csrf-{purpose}")
+    return s.dumps(purpose)
+
+
+def verify_timed_csrf_token(token: str, purpose: str, max_age: int = 3600) -> bool:
+    if not token:
+        return False
+    s = URLSafeTimedSerializer(app.secret_key, salt=f"shrimpguard-csrf-{purpose}")
+    try:
+        data = s.loads(token, max_age=max_age)
+        return data == purpose
+    except (BadSignature, SignatureExpired):
+        return False
+
+
+def validate_csrf(submitted_token: str, session_token_key: str, purpose: str, max_age: int = 3600) -> bool:
+    if not submitted_token:
+        return False
+    expected = session.get(session_token_key, "")
+    if expected and hmac.compare_digest(expected, submitted_token):
+        return True
+    return verify_timed_csrf_token(submitted_token, purpose=purpose, max_age=max_age)
 
 
 def get_database_uri():
@@ -469,10 +541,12 @@ def inject_logout_csrf_token():
         current_u = db.session.get(User, user_email)
     except Exception:
         pass
+    logout_token = session.get("logout_csrf_token")
+    if not logout_token or not verify_timed_csrf_token(logout_token, purpose="logout", max_age=86400):
+        logout_token = generate_timed_csrf_token("logout")
+        session["logout_csrf_token"] = logout_token
     return {
-        "logout_csrf_token": session.setdefault(
-            "logout_csrf_token", secrets.token_urlsafe(32)
-        ),
+        "logout_csrf_token": logout_token,
         "current_user": current_u,
     }
 
@@ -2553,15 +2627,16 @@ def login():
                     return redirect(url_for("dashboard"))
                 session.clear()
 
-        session["login_csrf_token"] = secrets.token_urlsafe(32)
+        existing_token = session.get("login_csrf_token")
+        if not existing_token or not verify_timed_csrf_token(existing_token, purpose="login"):
+            session["login_csrf_token"] = generate_timed_csrf_token("login")
 
     else:
-        expected_token = session.get("login_csrf_token", "")
         submitted_token = request.form.get("csrf_token", "")
         user_name = request.form.get("user_name", "").strip()
         password = request.form.get("password", "")
 
-        if not expected_token or not hmac.compare_digest(expected_token, submitted_token):
+        if not validate_csrf(submitted_token, session_token_key="login_csrf_token", purpose="login"):
             error = "Your sign-in request expired. Please try again."
         elif not user_name or not password:
             error = "Enter your username and password."
@@ -2617,7 +2692,12 @@ def login():
                             destination = "admin_home" if role == "admin" else "dashboard"
                             return redirect(url_for(destination))
 
-    return render_template("login.html", error=error)
+    login_csrf = session.get("login_csrf_token")
+    if not login_csrf or not verify_timed_csrf_token(login_csrf, purpose="login"):
+        login_csrf = generate_timed_csrf_token("login")
+        session["login_csrf_token"] = login_csrf
+
+    return render_template("login.html", error=error, login_csrf_token=login_csrf)
 
 
 @app.route("/signup", methods=["GET", "POST"])
@@ -2625,9 +2705,10 @@ def signup():
     error = None
 
     if request.method == "GET":
-        session["signup_csrf_token"] = secrets.token_urlsafe(32)
+        existing_token = session.get("signup_csrf_token")
+        if not existing_token or not verify_timed_csrf_token(existing_token, purpose="signup"):
+            session["signup_csrf_token"] = generate_timed_csrf_token("signup")
     else:
-        expected_token = session.get("signup_csrf_token", "")
         submitted_token = request.form.get("csrf_token", "")
         user_name = request.form.get("user_name", "").strip()
         email = request.form.get("email", "").strip().lower()
@@ -2635,7 +2716,7 @@ def signup():
         confirm_password = request.form.get("confirm_password", "")
 
         is_valid_email, email_error = validate_legit_email(email)
-        if not expected_token or not hmac.compare_digest(expected_token, submitted_token):
+        if not validate_csrf(submitted_token, session_token_key="signup_csrf_token", purpose="signup"):
             error = "Your sign-up request expired. Please try again."
         elif not user_name or len(user_name) > 80:
             error = "Enter a username between 1 and 80 characters."
@@ -2685,16 +2766,18 @@ def signup():
                         flash("Your account was created. Please sign in.", "success")
                         return redirect(url_for("login"))
 
-        session["signup_csrf_token"] = secrets.token_urlsafe(32)
+    signup_csrf = session.get("signup_csrf_token")
+    if not signup_csrf or not verify_timed_csrf_token(signup_csrf, purpose="signup"):
+        signup_csrf = generate_timed_csrf_token("signup")
+        session["signup_csrf_token"] = signup_csrf
 
-    return render_template("signup.html", error=error)
+    return render_template("signup.html", error=error, signup_csrf_token=signup_csrf)
 
 
 @app.route("/logout", methods=["POST"])
 def logout():
-    expected_token = session.get("logout_csrf_token", "")
     submitted_token = request.form.get("csrf_token", "")
-    if not expected_token or not hmac.compare_digest(expected_token, submitted_token):
+    if not validate_csrf(submitted_token, session_token_key="logout_csrf_token", purpose="logout", max_age=86400):
         return "Invalid logout request.", 400
 
     user_email = session.get("user_id")
@@ -3290,11 +3373,15 @@ def settings():
         session.clear()
         return redirect(url_for("login"))
 
-    csrf_token = session.setdefault("settings_csrf_token", secrets.token_urlsafe(32))
+    csrf_token = session.get("settings_csrf_token")
+    if not csrf_token or not verify_timed_csrf_token(csrf_token, purpose="settings"):
+        csrf_token = generate_timed_csrf_token("settings")
+        session["settings_csrf_token"] = csrf_token
+
     if request.method == "POST":
         submitted_token = request.form.get("csrf_token", "")
         action = request.form.get("action", "")
-        if not hmac.compare_digest(csrf_token, submitted_token):
+        if not validate_csrf(submitted_token, session_token_key="settings_csrf_token", purpose="settings"):
             flash("Your request expired. Please try again.", "error")
         elif action == "profile":
             user_name = request.form.get("name", "").strip()
