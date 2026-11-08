@@ -55,6 +55,10 @@
             confirmLogout.disabled = true;
             confirmLogout.classList.add("loading");
 
+            try {
+                localStorage.removeItem("shrimpguard_adaptive_model");
+            } catch (e) {}
+
             // Direct submission of logoutForm (fallback to window.location.href)
             let submitted = false;
             try {

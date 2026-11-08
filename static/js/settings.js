@@ -403,6 +403,7 @@ function updateDeviceTime() {
         const modalityEl = document.getElementById("adaptive-input-modality");
 
         const titles = {
+            evaluating: "Evaluating Usage",
             field_inspector: "Real-time Telemetry Monitor",
             farm_planner: "Aquaculture Farm Planner",
             data_analyst: "Pond Data Analyst",
@@ -410,6 +411,7 @@ function updateDeviceTime() {
         };
 
         const descs = {
+            evaluating: "No interaction history recorded yet for this new account. Navigate across monitoring, calculators, and analytics to train your behavioral profile.",
             field_inspector: "High engagement with real-time pond telemetry and alarms. System prioritizes live sensor metrics and responsive telemetry views.",
             farm_planner: "High engagement with bio-mass formulas, feeding rates, liming, and molasses dosing. System prioritizes calculator toolbars and dosage recommendations.",
             data_analyst: "High engagement with 24-hour trends, historical logs, and data exports. System prioritizes dense information grids and multi-variable analytical views.",
@@ -417,7 +419,7 @@ function updateDeviceTime() {
         };
 
         if (badgeEl) {
-            badgeEl.querySelector("span").textContent = titles[persona.persona_id] || "Balanced Operator";
+            badgeEl.querySelector("span").textContent = titles[persona.persona_id] || "Evaluating...";
         }
         if (descEl) {
             descEl.textContent = descs[persona.persona_id] || descs.balanced_operator;

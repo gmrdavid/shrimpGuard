@@ -559,6 +559,21 @@ def log_activity(action, details=None, user_email=None, user_name=None, role=Non
 
 
 ADAPTIVE_PERSONAS = {
+    "evaluating": {
+        "id": "evaluating",
+        "title": "Evaluating Usage",
+        "badge": "New Account",
+        "description": "No interaction history recorded yet for this new account. Navigate across monitoring, calculators, and analytics to train your behavioral profile.",
+        "icon": "icon-sparkles",
+        "shortcuts": [
+            {"label": "Pond Dashboard", "url": "/dashboard", "icon": "icon-dashboard"},
+            {"label": "Live Monitoring", "url": "/monitoring", "icon": "icon-monitor"},
+            {"label": "Aquaculture Tools", "url": "/calculators", "icon": "icon-calculator"},
+            {"label": "Alerts & Notifications", "url": "/alerts", "icon": "icon-alert"},
+        ],
+        "default_density": "auto",
+        "preferred_metrics": ["temperature", "ph"],
+    },
     "field_inspector": {
         "id": "field_inspector",
         "title": "Real-time Monitoring & Telemetry",
@@ -631,8 +646,8 @@ def inject_logout_csrf_token():
             "current_user": None,
             "adaptive_profile": session.get("adaptive_profile") or {},
             "adaptive_persona": ADAPTIVE_PERSONAS.get(
-                (session.get("adaptive_profile") or {}).get("persona_id", "balanced_operator"),
-                ADAPTIVE_PERSONAS["balanced_operator"]
+                (session.get("adaptive_profile") or {}).get("persona_id", "evaluating"),
+                ADAPTIVE_PERSONAS["evaluating"]
             ),
         }
     current_u = None
@@ -646,8 +661,8 @@ def inject_logout_csrf_token():
         session["logout_csrf_token"] = logout_token
 
     adaptive_profile = session.get("adaptive_profile") or {}
-    persona_id = adaptive_profile.get("persona_id", "balanced_operator")
-    persona_info = ADAPTIVE_PERSONAS.get(persona_id, ADAPTIVE_PERSONAS["balanced_operator"])
+    persona_id = adaptive_profile.get("persona_id", "evaluating")
+    persona_info = ADAPTIVE_PERSONAS.get(persona_id, ADAPTIVE_PERSONAS["evaluating"])
 
     return {
         "logout_csrf_token": logout_token,
@@ -3964,6 +3979,8 @@ def compute_adaptive_persona(interactions, dwell_times):
         "devices": float(interactions.get("devices", 0)) + float(dwell_times.get("devices", 0)) / 60.0,
     }
     total_score = sum(raw_scores.values())
+    if total_score < 1.0:
+        return "evaluating", {"monitoring": 0, "calculators": 0, "analytics": 0, "alerts": 0, "devices": 0}
     if total_score < 4.0:
         return "balanced_operator", {"monitoring": 25, "calculators": 25, "analytics": 25, "alerts": 25, "devices": 0}
 
@@ -4026,6 +4043,15 @@ def get_adaptive_next_action(persona_id, user_email=None):
             "cta": "Adjust Feed Ratio",
         }
 
+    if persona_id == "evaluating":
+        return {
+            "type": "optimal",
+            "title": "Welcome to ShrimpGuard",
+            "message": "Explore real-time pond monitoring, calculators, and water quality analysis to personalize your workflow.",
+            "url": "/monitoring",
+            "cta": "Explore Monitoring",
+        }
+
     if persona_id == "farm_planner":
         return {
             "type": "optimal",
@@ -4055,14 +4081,14 @@ def get_adaptive_next_action(persona_id, user_email=None):
 def get_adaptive_profile():
     user_email = session.get("user_id")
     stored = session.get("adaptive_profile") or {}
-    persona_id = stored.get("persona_id", "balanced_operator")
-    persona_info = ADAPTIVE_PERSONAS.get(persona_id, ADAPTIVE_PERSONAS["balanced_operator"])
+    persona_id = stored.get("persona_id", "evaluating")
+    persona_info = ADAPTIVE_PERSONAS.get(persona_id, ADAPTIVE_PERSONAS["evaluating"])
     next_action = get_adaptive_next_action(persona_id, user_email=user_email)
 
     return jsonify({
         "persona": persona_info,
         "persona_id": persona_id,
-        "percentages": stored.get("percentages", {"monitoring": 25, "calculators": 25, "analytics": 25, "alerts": 25, "devices": 0}),
+        "percentages": stored.get("percentages", {"monitoring": 0, "calculators": 0, "analytics": 0, "alerts": 0, "devices": 0}),
         "device": stored.get("device", {"type": "desktop_workstation", "is_touch": False}),
         "preferences": stored.get("preferences", {"auto_adapt": True, "sunlight_mode": "auto", "density": "auto"}),
         "next_action": next_action,
@@ -4114,14 +4140,14 @@ def reset_adaptive_profile():
     session.pop("adaptive_profile", None)
     session.pop("last_logged_persona", None)
     user_email = session.get("user_id")
-    default_persona = ADAPTIVE_PERSONAS["balanced_operator"]
+    default_persona = ADAPTIVE_PERSONAS["evaluating"]
     return jsonify({
         "success": True,
         "message": "Adaptive interaction model reset to factory defaults.",
         "persona": default_persona,
-        "persona_id": "balanced_operator",
-        "percentages": {"monitoring": 25, "calculators": 25, "analytics": 25, "alerts": 25, "devices": 0},
-        "next_action": get_adaptive_next_action("balanced_operator", user_email=user_email),
+        "persona_id": "evaluating",
+        "percentages": {"monitoring": 0, "calculators": 0, "analytics": 0, "alerts": 0, "devices": 0},
+        "next_action": get_adaptive_next_action("evaluating", user_email=user_email),
     })
 
 

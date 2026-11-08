@@ -12,7 +12,7 @@
           href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
-<body class="alerts-page">
+<body class="alerts-page" data-user-email="{{ current_user.email if current_user else '' }}">
 
 {% include "_icon_sprite.html" %}
 

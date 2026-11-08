@@ -6,10 +6,36 @@
 (() => {
     "use strict";
 
-    const STORAGE_KEY = "shrimpguard_adaptive_model";
     const SYNC_INTERVAL_MS = 45000;
 
+    function getCurrentUserEmail() {
+        const bodyEmail = document.body && document.body.dataset && document.body.dataset.userEmail;
+        if (bodyEmail) return bodyEmail.trim().toLowerCase();
+        const meta = document.querySelector('meta[name="user-email"]');
+        if (meta && meta.content) return meta.content.trim().toLowerCase();
+        return "";
+    }
+
+    function getStorageKey() {
+        const email = getCurrentUserEmail();
+        return email ? `shrimpguard_adaptive_model_${email}` : "shrimpguard_adaptive_model";
+    }
+
     const PERSONA_CONFIGS = {
+        evaluating: {
+            id: "evaluating",
+            title: "Evaluating Usage",
+            badge: "New Account",
+            description: "No interaction history yet. Navigate across monitoring, calculators, and analytics to train your adaptive model.",
+            icon: "icon-sparkles",
+            density: "auto",
+            shortcuts: [
+                { label: "Pond Dashboard", url: "/dashboard", icon: "icon-dashboard" },
+                { label: "Real-time Monitoring", url: "/monitoring", icon: "icon-monitor" },
+                { label: "Aquaculture Calculators", url: "/calculators", icon: "icon-calculator" },
+                { label: "Alerts & Notifications", url: "/alerts", icon: "icon-alert" }
+            ]
+        },
         field_inspector: {
             id: "field_inspector",
             title: "Real-time Monitoring & Telemetry",
@@ -73,20 +99,20 @@
         return {
             version: "2.0",
             interactions: {
-                monitoring: 1,
+                monitoring: 0,
                 calculators: 0,
                 analytics: 0,
                 alerts: 0,
                 devices: 0
             },
             dwell_times: {
-                monitoring: 10,
+                monitoring: 0,
                 calculators: 0,
                 analytics: 0,
                 alerts: 0,
                 devices: 0
             },
-            total_actions: 1,
+            total_actions: 0,
             preferences: {
                 auto_adapt: true,
                 density: "auto",         // 'auto', 'compact', 'comfort'
@@ -100,7 +126,8 @@
 
     function loadModel() {
         try {
-            const raw = localStorage.getItem(STORAGE_KEY);
+            const key = getStorageKey();
+            const raw = localStorage.getItem(key);
             if (!raw) return getDefaultModel();
             const parsed = JSON.parse(raw);
             return Object.assign(getDefaultModel(), parsed);
@@ -109,15 +136,23 @@
         }
     }
 
-    function saveModel(model) {
+    function saveModel(modelToSave) {
         try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(model));
+            const key = getStorageKey();
+            localStorage.setItem(key, JSON.stringify(modelToSave));
         } catch (e) {
             console.warn("Adaptive model could not be written to localStorage:", e);
         }
     }
 
     let model = loadModel();
+
+    // Clean up any stale un-scoped model from legacy sessions
+    try {
+        if (localStorage.getItem("shrimpguard_adaptive_model")) {
+            localStorage.removeItem("shrimpguard_adaptive_model");
+        }
+    } catch (e) {}
 
     // --- 2. DEVICE & ENVIRONMENT DETECTION ---
     function detectDevice() {
@@ -160,6 +195,12 @@
         };
 
         const total = Object.values(rawScores).reduce((a, b) => a + b, 0);
+        if (total < 1.0) {
+            return {
+                persona_id: "evaluating",
+                percentages: { monitoring: 0, calculators: 0, analytics: 0, alerts: 0, devices: 0 }
+            };
+        }
         if (total < 4.0) {
             return {
                 persona_id: "balanced_operator",
