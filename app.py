@@ -534,9 +534,9 @@ def log_activity(action, details=None, user_email=None, user_name=None, role=Non
 ADAPTIVE_PERSONAS = {
     "field_inspector": {
         "id": "field_inspector",
-        "title": "Field Inspector",
-        "badge": "Field Inspector",
-        "description": "Optimized for fast-paced pond-side telemetry checks, anomaly response, and mobile touch operation.",
+        "title": "Real-time Monitoring & Telemetry",
+        "badge": "Monitoring & Sensors",
+        "description": "Optimized for pond-side telemetry checks, anomaly response, and responsive telemetry views.",
         "icon": "icon-monitor",
         "shortcuts": [
             {"label": "Real-time Monitoring", "url": "/monitoring", "icon": "icon-monitor", "badge": "Live"},

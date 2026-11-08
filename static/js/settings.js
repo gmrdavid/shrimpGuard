@@ -403,14 +403,14 @@ function updateDeviceTime() {
         const modalityEl = document.getElementById("adaptive-input-modality");
 
         const titles = {
-            field_inspector: "Field Inspector",
+            field_inspector: "Real-time Telemetry Monitor",
             farm_planner: "Aquaculture Farm Planner",
             data_analyst: "Pond Data Analyst",
             balanced_operator: "Balanced Farm Operator"
         };
 
         const descs = {
-            field_inspector: "High engagement with real-time pond telemetry and alarms. System prioritizes live sensor metrics, outdoor contrast, and mobile field shortcuts.",
+            field_inspector: "High engagement with real-time pond telemetry and alarms. System prioritizes live sensor metrics and responsive telemetry views.",
             farm_planner: "High engagement with bio-mass formulas, feeding rates, liming, and molasses dosing. System prioritizes calculator toolbars and dosage recommendations.",
             data_analyst: "High engagement with 24-hour trends, historical logs, and data exports. System prioritizes dense information grids and multi-variable analytical views.",
             balanced_operator: "Even distribution of activity across monitoring, calculators, and system notifications."

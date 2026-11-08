@@ -12,9 +12,9 @@
     const PERSONA_CONFIGS = {
         field_inspector: {
             id: "field_inspector",
-            title: "Field Inspector",
-            badge: "Field Inspector",
-            description: "Tailored for rapid pond-side telemetry checks, alarm monitoring, and touch operation.",
+            title: "Real-time Monitoring & Telemetry",
+            badge: "Monitoring & Sensors",
+            description: "Tailored for pond-side telemetry checks, alarm monitoring, and responsive views.",
             icon: "icon-monitor",
             density: "comfort",
             shortcuts: [
@@ -295,73 +295,11 @@
 
     // --- 6. AUTOMATIC STRUCTURE ADAPTATION ---
     function renderAdaptiveShortcutsBar() {
-        if (!model.preferences.auto_adapt) {
-            const existing = document.getElementById("adaptive-shortcuts-bar");
-            if (existing) existing.remove();
-            return;
+        // Completely removed: no inspector mode banner or intrusive shortcuts bar on any webpage
+        const existing = document.getElementById("adaptive-shortcuts-bar");
+        if (existing) {
+            existing.remove();
         }
-
-        // Only render on authenticated dashboard/client app layouts
-        const layoutHeader = document.querySelector(".dashboard-header, .settings-header, .history-header, .analytics-header, .tools-header, .monitoring-header, .historical-header, .alerts-header, .devices-header");
-        const mainEl = document.querySelector(".dashboard-layout > main, .dashboard-main, .settings-layout-page > main, main.main-content, main");
-        if (!layoutHeader || !mainEl) return;
-
-        let bar = document.getElementById("adaptive-shortcuts-bar");
-        if (!bar) {
-            bar = document.createElement("nav");
-            bar.id = "adaptive-shortcuts-bar";
-            bar.className = "adaptive-shortcuts-bar";
-            bar.setAttribute("aria-label", "Adaptive smart shortcuts");
-            layoutHeader.insertAdjacentElement("afterend", bar);
-        }
-
-        const { persona_id } = classifyPersona(model);
-        const personaCfg = PERSONA_CONFIGS[persona_id] || PERSONA_CONFIGS.balanced_operator;
-        const currentPath = window.location.pathname.toLowerCase();
-
-        const shortcutsHtml = personaCfg.shortcuts
-            .map(sc => {
-                const isActive = currentPath.startsWith(sc.url.split("#")[0]);
-                const badge = sc.badge ? `<span class="adaptive-chip-badge">${sc.badge}</span>` : "";
-                return `
-                    <a href="${sc.url}" class="adaptive-chip ${isActive ? "active" : ""}">
-                        <svg class="ui-icon" aria-hidden="true"><use href="#${sc.icon}"></use></svg>
-                        <span>${sc.label}</span>
-                        ${badge}
-                    </a>
-                `;
-            })
-            .join("");
-
-        const isSunlight = document.body.classList.contains("adaptive-sunlight");
-
-        bar.innerHTML = `
-            <div class="adaptive-shortcuts-left">
-                <span class="adaptive-persona-pill" title="${personaCfg.description}">
-                    <svg class="ui-icon" aria-hidden="true"><use href="#${personaCfg.icon}"></use></svg>
-                    <span>${personaCfg.badge} Mode</span>
-                </span>
-                <div class="adaptive-chips-group">
-                    ${shortcutsHtml}
-                </div>
-            </div>
-            <div class="adaptive-shortcuts-right">
-                <div id="adaptive-next-action-slot" class="adaptive-next-action-slot"></div>
-                <button type="button" id="adaptive-toggle-sunlight" class="adaptive-sunlight-toggle ${isSunlight ? "active" : ""}" title="Toggle high-contrast outdoor field mode">
-                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg>
-                    <span>${isSunlight ? "Sunlight ON" : "Field View"}</span>
-                </button>
-            </div>
-        `;
-
-        const sunBtn = bar.querySelector("#adaptive-toggle-sunlight");
-        if (sunBtn) {
-            sunBtn.addEventListener("click", () => {
-                toggleSunlightMode();
-            });
-        }
-
-        updateNextActionBanner();
     }
 
     function renderMobileBottomNav() {
