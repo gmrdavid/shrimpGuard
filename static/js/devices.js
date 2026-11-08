@@ -414,11 +414,17 @@ function renderPairedNodes(nodes) {
     const tbody = document.getElementById("paired-nodes-table-body");
     if (!tbody) return;
 
+    const countBadge = document.getElementById("paired-nodes-count-badge");
+    const count = Array.isArray(nodes) ? nodes.length : 0;
+    if (countBadge) {
+        countBadge.textContent = `${count} Paired ${count === 1 ? "Unit" : "Units"}`;
+    }
+
     if (!nodes || nodes.length === 0) {
         tbody.innerHTML = `
             <tr id="empty-paired-nodes-row">
                 <td colspan="6" style="text-align: center; padding: 24px; color: #64748b;">
-                    No hardware telemetry nodes paired yet. Click <strong>+ Pair Pond Node</strong> to link your Node ID (e.g. <code>NODE01</code>, <code>NODE02</code>).
+                    No hardware telemetry nodes paired yet. Click <strong>Pair Pond Node</strong> in the toolbar above to link your Node ID (e.g. <code>NODE01</code>, <code>NODE02</code>).
                 </td>
             </tr>
         `;
