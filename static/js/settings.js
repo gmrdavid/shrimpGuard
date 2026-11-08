@@ -388,3 +388,95 @@ function updateDeviceTime() {
             event.preventDefault();
         }
     });
+
+    // --- ADAPTIVE SYSTEM SETTINGS LOGIC ---
+    function initAdaptiveSettings() {
+        if (!window.ShrimpGuardAdaptive) return;
+
+        const model = window.ShrimpGuardAdaptive.getModel();
+        const persona = window.ShrimpGuardAdaptive.getPersona();
+        const device = window.ShrimpGuardAdaptive.getDevice();
+
+        const badgeEl = document.getElementById("adaptive-persona-badge");
+        const descEl = document.getElementById("adaptive-persona-desc");
+        const deviceTypeEl = document.getElementById("adaptive-device-type");
+        const modalityEl = document.getElementById("adaptive-input-modality");
+
+        const titles = {
+            field_inspector: "Field Inspector",
+            farm_planner: "Aquaculture Farm Planner",
+            data_analyst: "Pond Data Analyst",
+            balanced_operator: "Balanced Farm Operator"
+        };
+
+        const descs = {
+            field_inspector: "High engagement with real-time pond telemetry and alarms. System prioritizes live sensor metrics, outdoor contrast, and mobile field shortcuts.",
+            farm_planner: "High engagement with bio-mass formulas, feeding rates, liming, and molasses dosing. System prioritizes calculator toolbars and dosage recommendations.",
+            data_analyst: "High engagement with 24-hour trends, historical logs, and data exports. System prioritizes dense information grids and multi-variable analytical views.",
+            balanced_operator: "Even distribution of activity across monitoring, calculators, and system notifications."
+        };
+
+        if (badgeEl) {
+            badgeEl.querySelector("span").textContent = titles[persona.persona_id] || "Balanced Operator";
+        }
+        if (descEl) {
+            descEl.textContent = descs[persona.persona_id] || descs.balanced_operator;
+        }
+        if (deviceTypeEl) {
+            deviceTypeEl.textContent = device.is_mobile ? "Mobile Field Device" : (device.is_tablet ? "Tablet Hybrid" : "Desktop Workstation");
+        }
+        if (modalityEl) {
+            modalityEl.textContent = device.is_touch ? "Touch Screen (Thumb-Zone Enabled)" : "Pointer / Mouse";
+        }
+
+        // Fill meters
+        const percentages = persona.percentages || {};
+        for (const [key, val] of Object.entries(percentages)) {
+            const valEl = document.getElementById(`meter-val-${key}`);
+            const barEl = document.getElementById(`meter-bar-${key}`);
+            if (valEl) valEl.textContent = `${val}%`;
+            if (barEl) barEl.style.width = `${val}%`;
+        }
+
+        // Preference controls
+        const autoAdaptCheck = document.getElementById("adaptive-pref-autoadapt");
+        const sunlightSelect = document.getElementById("adaptive-pref-sunlight");
+        const densitySelect = document.getElementById("adaptive-pref-density");
+        const dataSaverSelect = document.getElementById("adaptive-pref-datasaver");
+        const resetBtn = document.getElementById("reset-adaptive-btn");
+
+        const prefs = model.preferences || {};
+        if (autoAdaptCheck) autoAdaptCheck.checked = prefs.auto_adapt !== false;
+        if (sunlightSelect) sunlightSelect.value = prefs.sunlight_mode || "auto";
+        if (densitySelect) densitySelect.value = prefs.density || "auto";
+        if (dataSaverSelect) dataSaverSelect.value = prefs.data_saver || "auto";
+
+        function savePrefs() {
+            window.ShrimpGuardAdaptive.updatePreferences({
+                auto_adapt: autoAdaptCheck ? autoAdaptCheck.checked : true,
+                sunlight_mode: sunlightSelect ? sunlightSelect.value : "auto",
+                density: densitySelect ? densitySelect.value : "auto",
+                data_saver: dataSaverSelect ? dataSaverSelect.value : "auto"
+            });
+        }
+
+        if (autoAdaptCheck) autoAdaptCheck.addEventListener("change", savePrefs);
+        if (sunlightSelect) sunlightSelect.addEventListener("change", savePrefs);
+        if (densitySelect) densitySelect.addEventListener("change", savePrefs);
+        if (dataSaverSelect) dataSaverSelect.addEventListener("change", savePrefs);
+
+        if (resetBtn) {
+            resetBtn.addEventListener("click", () => {
+                if (confirm("Reset your learned adaptive profile to factory defaults?")) {
+                    window.ShrimpGuardAdaptive.resetModel();
+                    initAdaptiveSettings();
+                }
+            });
+        }
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initAdaptiveSettings);
+    } else {
+        initAdaptiveSettings();
+    }

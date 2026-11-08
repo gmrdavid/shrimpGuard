@@ -446,6 +446,146 @@
         </section>
 
 
+        <!-- ADAPTIVE EXPERIENCE & PERSONALIZATION SYSTEM -->
+        <section class="settings-section" aria-labelledby="adaptive-settings-title" style="margin-top: 28px;">
+            <article class="panel dashboard-panel settings-panel">
+                <div class="tools-panel-header" style="justify-content: space-between; align-items: flex-start;">
+                    <div style="display: flex; gap: 14px; align-items: center;">
+                        <div class="panel-heading-icon profile-heading-icon" style="background: #eef7f2; color: #126b4f;">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-sparkles"></use>
+                            </svg>
+                        </div>
+                        <div>
+                            <span class="section-eyebrow" style="color: #126b4f; font-weight: 750;">ADAPTIVE INTELLIGENCE</span>
+                            <h2 id="adaptive-settings-title"><b>Adaptive System &amp; Behavior Model</b></h2>
+                            <p style="color: #64748b; font-size: 13px; margin: 4px 0 0;">
+                                ShrimpGuard learns from your interactions and device type to automatically optimize layout, shortcuts, density, and outdoor readability.
+                            </p>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <button type="button" id="reset-adaptive-btn" class="sim-btn-cancel" style="padding: 7px 14px; font-size: 12px; cursor: pointer;" title="Reset interaction history and relearn preferences">
+                            Reset Model
+                        </button>
+                    </div>
+                </div>
+
+                <div class="settings-panel-divider"></div>
+
+                <div class="adaptive-settings-grid">
+                    <!-- Behavioral Persona & Telemetry Insights -->
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <span style="font-size: 11px; font-weight: 750; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Learned Behavioral Persona</span>
+                            <span id="adaptive-persona-badge" class="adaptive-persona-pill" style="font-size: 11px; padding: 4px 10px;">
+                                <svg class="ui-icon" aria-hidden="true"><use href="#icon-monitor"></use></svg>
+                                <span>Evaluating...</span>
+                            </span>
+                        </div>
+                        <p id="adaptive-persona-desc" style="font-size: 13px; color: #334155; line-height: 1.5; margin: 0 0 16px;">
+                            Evaluating user interaction frequency across pond monitoring, aquaculture calculators, and historical analytics.
+                        </p>
+
+                        <div style="font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 8px;">Module Engagement Profile:</div>
+                        <div class="adaptive-meter-group">
+                            <div class="adaptive-meter-row">
+                                <div class="adaptive-meter-label">
+                                    <span>Real-time Monitoring</span>
+                                    <span id="meter-val-monitoring">0%</span>
+                                </div>
+                                <div class="adaptive-meter-bar"><div id="meter-bar-monitoring" class="adaptive-meter-fill" style="width: 0%;"></div></div>
+                            </div>
+                            <div class="adaptive-meter-row">
+                                <div class="adaptive-meter-label">
+                                    <span>Aquaculture Calculators</span>
+                                    <span id="meter-val-calculators">0%</span>
+                                </div>
+                                <div class="adaptive-meter-bar"><div id="meter-bar-calculators" class="adaptive-meter-fill" style="width: 0%; background: linear-gradient(90deg, #3b82f6, #2563eb);"></div></div>
+                            </div>
+                            <div class="adaptive-meter-row">
+                                <div class="adaptive-meter-label">
+                                    <span>Analytics &amp; Historical Audits</span>
+                                    <span id="meter-val-analytics">0%</span>
+                                </div>
+                                <div class="adaptive-meter-bar"><div id="meter-bar-analytics" class="adaptive-meter-fill" style="width: 0%; background: linear-gradient(90deg, #8b5cf6, #7c3aed);"></div></div>
+                            </div>
+                            <div class="adaptive-meter-row">
+                                <div class="adaptive-meter-label">
+                                    <span>Alerts &amp; Notifications</span>
+                                    <span id="meter-val-alerts">0%</span>
+                                </div>
+                                <div class="adaptive-meter-bar"><div id="meter-bar-alerts" class="adaptive-meter-fill" style="width: 0%; background: linear-gradient(90deg, #f59e0b, #d97706);"></div></div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 12px; margin-top: 18px; padding-top: 14px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b;">
+                            <div><strong>Device Type:</strong> <span id="adaptive-device-type">Detecting...</span></div>
+                            <div>&bull;</div>
+                            <div><strong>Input Modality:</strong> <span id="adaptive-input-modality">Detecting...</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Adaptive Controls & Overrides -->
+                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px;">
+                        <div style="font-size: 11px; font-weight: 750; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">Adaptive Presentation Controls</div>
+
+                        <div class="adaptive-control-row">
+                            <div class="adaptive-control-info">
+                                <span class="adaptive-control-title">Automatic UI Adaptation</span>
+                                <span class="adaptive-control-desc">Dynamically inject shortcuts, reorder priority cards, and adjust layouts</span>
+                            </div>
+                            <label class="switch-label" style="display: inline-flex; align-items: center; cursor: pointer;">
+                                <input type="checkbox" id="adaptive-pref-autoadapt" checked style="width: 18px; height: 18px; accent-color: #126b4f;">
+                            </label>
+                        </div>
+
+                        <div class="adaptive-control-row">
+                            <div class="adaptive-control-info">
+                                <span class="adaptive-control-title">Field Sunlight Mode</span>
+                                <span class="adaptive-control-desc">High-contrast, glare-resistant display for outdoor tropical sunlight</span>
+                            </div>
+                            <select id="adaptive-pref-sunlight" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 12px; font-weight: 600;">
+                                <option value="auto">Auto (Detect)</option>
+                                <option value="always">Always ON</option>
+                                <option value="off">Off (Standard)</option>
+                            </select>
+                        </div>
+
+                        <div class="adaptive-control-row">
+                            <div class="adaptive-control-info">
+                                <span class="adaptive-control-title">Layout Density</span>
+                                <span class="adaptive-control-desc">Comfortable touch targets vs high-density desktop data view</span>
+                            </div>
+                            <select id="adaptive-pref-density" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 12px; font-weight: 600;">
+                                <option value="auto">Auto (Device Based)</option>
+                                <option value="comfort">Comfortable (Field Touch)</option>
+                                <option value="compact">Compact (Dense Data)</option>
+                            </select>
+                        </div>
+
+                        <div class="adaptive-control-row">
+                            <div class="adaptive-control-info">
+                                <span class="adaptive-control-title">Network Data-Saver Mode</span>
+                                <span class="adaptive-control-desc">Throttle background telemetry polling on low-bandwidth rural cellular</span>
+                            </div>
+                            <select id="adaptive-pref-datasaver" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 12px; font-weight: 600;">
+                                <option value="auto">Auto (Detect)</option>
+                                <option value="on">Data Saver ON</option>
+                                <option value="off">Standard (Real-time)</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-top: 14px; font-size: 11px; color: #64748b; line-height: 1.4;">
+                            <svg class="ui-icon" style="width: 14px; height: 14px; vertical-align: middle; fill: #126b4f;"><use href="#icon-check-circle"></use></svg>
+                            All learned models are processed client-side and synced privately with your encrypted account session.
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+
         <!-- FOOTER -->
         <footer class="dashboard-footer settings-footer">
             <span>
@@ -644,6 +784,7 @@
 
 
 <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+<script src="{{ url_for('static', filename='js/adaptive.js') }}"></script>
 <script src="{{ url_for('static', filename='js/settings.js') }}"></script>
 </body>
 </html>

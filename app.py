@@ -531,11 +531,83 @@ def log_activity(action, details=None, user_email=None, user_name=None, role=Non
         app.logger.warning("Failed to record activity log: %s", exc)
 
 
+ADAPTIVE_PERSONAS = {
+    "field_inspector": {
+        "id": "field_inspector",
+        "title": "Field Inspector",
+        "badge": "Field Inspector",
+        "description": "Optimized for fast-paced pond-side telemetry checks, anomaly response, and mobile touch operation.",
+        "icon": "icon-monitor",
+        "shortcuts": [
+            {"label": "Real-time Monitoring", "url": "/monitoring", "icon": "icon-monitor", "badge": "Live"},
+            {"label": "Pond Telemetry", "url": "/dashboard", "icon": "icon-dashboard"},
+            {"label": "Active Alerts", "url": "/alerts", "icon": "icon-alert"},
+            {"label": "Hardware Devices", "url": "/devices", "icon": "icon-cpu"},
+        ],
+        "default_density": "comfort",
+        "preferred_metrics": ["temperature", "ph"],
+    },
+    "farm_planner": {
+        "id": "farm_planner",
+        "title": "Aquaculture Farm Planner",
+        "badge": "Farm Planner",
+        "description": "Optimized for bio-mass forecasting, feeding rate adjustments, lime treatment, and molasses dosing.",
+        "icon": "icon-calculator",
+        "shortcuts": [
+            {"label": "Aquaculture Calculators", "url": "/calculators", "icon": "icon-calculator", "badge": "Tools"},
+            {"label": "Feeding & Biomass", "url": "/calculators#feeding-calculator-panel", "icon": "icon-calculator"},
+            {"label": "Water Quality Check", "url": "/monitoring", "icon": "icon-monitor"},
+            {"label": "Telemetry Dashboard", "url": "/dashboard", "icon": "icon-dashboard"},
+        ],
+        "default_density": "comfort",
+        "preferred_metrics": ["ph", "temperature"],
+    },
+    "data_analyst": {
+        "id": "data_analyst",
+        "title": "Pond Data Analyst",
+        "badge": "Data Analyst",
+        "description": "Optimized for high-density multi-parameter trend audits, historical reporting, and CSV data export.",
+        "icon": "icon-chart",
+        "shortcuts": [
+            {"label": "Analytics & Trends", "url": "/analytics", "icon": "icon-chart", "badge": "Reports"},
+            {"label": "Historical Audits", "url": "/historical", "icon": "icon-history"},
+            {"label": "Live Monitoring", "url": "/monitoring", "icon": "icon-monitor"},
+            {"label": "Calculators & Tools", "url": "/calculators", "icon": "icon-calculator"},
+        ],
+        "default_density": "compact",
+        "preferred_metrics": ["temperature", "ph"],
+    },
+    "balanced_operator": {
+        "id": "balanced_operator",
+        "title": "Balanced Farm Operator",
+        "badge": "Standard Operator",
+        "description": "Balanced workflow providing an even overview of telemetry, calculations, and alert notifications.",
+        "icon": "icon-dashboard",
+        "shortcuts": [
+            {"label": "Pond Dashboard", "url": "/dashboard", "icon": "icon-dashboard"},
+            {"label": "Live Monitoring", "url": "/monitoring", "icon": "icon-monitor"},
+            {"label": "Aquaculture Tools", "url": "/calculators", "icon": "icon-calculator"},
+            {"label": "Alerts & Notifications", "url": "/alerts", "icon": "icon-alert"},
+        ],
+        "default_density": "auto",
+        "preferred_metrics": ["temperature", "ph"],
+    },
+}
+
+
 @app.context_processor
 def inject_logout_csrf_token():
     user_email = session.get("user_id")
     if user_email is None:
-        return {"logout_csrf_token": "", "current_user": None}
+        return {
+            "logout_csrf_token": "",
+            "current_user": None,
+            "adaptive_profile": session.get("adaptive_profile") or {},
+            "adaptive_persona": ADAPTIVE_PERSONAS.get(
+                (session.get("adaptive_profile") or {}).get("persona_id", "balanced_operator"),
+                ADAPTIVE_PERSONAS["balanced_operator"]
+            ),
+        }
     current_u = None
     try:
         current_u = db.session.get(User, user_email)
@@ -545,9 +617,16 @@ def inject_logout_csrf_token():
     if not logout_token or not verify_timed_csrf_token(logout_token, purpose="logout", max_age=86400):
         logout_token = generate_timed_csrf_token("logout")
         session["logout_csrf_token"] = logout_token
+
+    adaptive_profile = session.get("adaptive_profile") or {}
+    persona_id = adaptive_profile.get("persona_id", "balanced_operator")
+    persona_info = ADAPTIVE_PERSONAS.get(persona_id, ADAPTIVE_PERSONAS["balanced_operator"])
+
     return {
         "logout_csrf_token": logout_token,
         "current_user": current_u,
+        "adaptive_profile": adaptive_profile,
+        "adaptive_persona": persona_info,
     }
 
 
@@ -3721,6 +3800,191 @@ def calculator_ai_insight():
     except Exception as exc:
         app.logger.exception("Error generating calculator AI insight: %s", exc)
         return jsonify({"error": "Failed to generate AI evaluation.", "details": str(exc)}), 500
+
+
+def compute_adaptive_persona(interactions, dwell_times):
+    # Normalized activity units: interactions count + dwell in minutes
+    raw_scores = {
+        "monitoring": float(interactions.get("monitoring", 0)) + float(dwell_times.get("monitoring", 0)) / 60.0,
+        "calculators": float(interactions.get("calculators", 0)) + float(dwell_times.get("calculators", 0)) / 60.0,
+        "analytics": float(interactions.get("analytics", 0)) + float(dwell_times.get("analytics", 0)) / 60.0,
+        "alerts": float(interactions.get("alerts", 0)) + float(dwell_times.get("alerts", 0)) / 60.0,
+        "devices": float(interactions.get("devices", 0)) + float(dwell_times.get("devices", 0)) / 60.0,
+    }
+    total_score = sum(raw_scores.values())
+    if total_score < 4.0:
+        return "balanced_operator", {"monitoring": 25, "calculators": 25, "analytics": 25, "alerts": 25, "devices": 0}
+
+    percentages = {k: int(round((v / total_score) * 100)) for k, v in raw_scores.items()}
+
+    sorted_cats = sorted(percentages.items(), key=lambda x: x[1], reverse=True)
+    top_cat, top_pct = sorted_cats[0]
+    second_pct = sorted_cats[1][1] if len(sorted_cats) > 1 else 0
+
+    if top_pct >= 38 and (top_pct - second_pct >= 8):
+        if top_cat == "monitoring" or (top_cat == "alerts" and percentages.get("monitoring", 0) >= 20):
+            return "field_inspector", percentages
+        if top_cat == "calculators":
+            return "farm_planner", percentages
+        if top_cat == "analytics":
+            return "data_analyst", percentages
+
+    if percentages.get("monitoring", 0) + percentages.get("alerts", 0) >= 55:
+        return "field_inspector", percentages
+
+    return "balanced_operator", percentages
+
+
+def get_adaptive_next_action(persona_id):
+    latest = get_latest_sensor_dict()
+    if not latest:
+        return {
+            "type": "info",
+            "title": "Awaiting Telemetry",
+            "message": "Pond telemetry receiver active. Verify transmitter power on Node 1.",
+            "url": "/devices",
+            "cta": "Check Devices",
+        }
+
+    temp = float(latest.get("temperature") or 28.5)
+    ph = float(latest.get("ph") or 7.8)
+
+    if ph > 8.5:
+        return {
+            "type": "warning",
+            "title": "High pH Detected",
+            "message": f"Pond water pH is alkaline ({ph:.2f}). Consider biofloc carbon addition.",
+            "url": "/calculators#molasses-calculator-panel",
+            "cta": "Calculate Molasses Dosing",
+        }
+    if ph < 7.5:
+        return {
+            "type": "warning",
+            "title": "Low pH Detected",
+            "message": f"Pond water pH is acidic ({ph:.2f}). Check agricultural lime dosage.",
+            "url": "/calculators#lime-calculator-panel",
+            "cta": "Calculate Liming Dose",
+        }
+    if temp < 26.0 or temp > 32.0:
+        return {
+            "type": "warning",
+            "title": "Temperature Deviation",
+            "message": f"Water temp is {temp:.2f} °C (outside optimal 26-32 °C range). Adjust feeding rate.",
+            "url": "/calculators#feeding-calculator-panel",
+            "cta": "Adjust Feed Ratio",
+        }
+
+    if persona_id == "farm_planner":
+        return {
+            "type": "optimal",
+            "title": "Pond Conditions Stable",
+            "message": "Water parameters optimal for Penaeus vannamei. Ready to calculate daily biomass feed.",
+            "url": "/calculators#feeding-calculator-panel",
+            "cta": "Run Feed Calculator",
+        }
+    if persona_id == "data_analyst":
+        return {
+            "type": "optimal",
+            "title": "Stable 24h Baseline",
+            "message": "Parameters within threshold. Audit today's multivariate WQI trends and export CSV log.",
+            "url": "/analytics",
+            "cta": "View Analytics",
+        }
+    return {
+        "type": "optimal",
+        "title": "Pond Parameters Optimal",
+        "message": f"Current: Temp {temp:.2f} °C, pH {ph:.2f}. System operating within target parameters.",
+        "url": "/monitoring",
+        "cta": "Inspect Gauges",
+    }
+
+
+@app.route("/api/adaptive/profile", methods=["GET"])
+def get_adaptive_profile():
+    stored = session.get("adaptive_profile") or {}
+    persona_id = stored.get("persona_id", "balanced_operator")
+    persona_info = ADAPTIVE_PERSONAS.get(persona_id, ADAPTIVE_PERSONAS["balanced_operator"])
+    next_action = get_adaptive_next_action(persona_id)
+
+    return jsonify({
+        "persona": persona_info,
+        "persona_id": persona_id,
+        "percentages": stored.get("percentages", {"monitoring": 25, "calculators": 25, "analytics": 25, "alerts": 25, "devices": 0}),
+        "device": stored.get("device", {"type": "desktop_workstation", "is_touch": False}),
+        "preferences": stored.get("preferences", {"auto_adapt": True, "sunlight_mode": "auto", "density": "auto"}),
+        "next_action": next_action,
+    })
+
+
+@app.route("/api/adaptive/sync", methods=["POST"])
+def sync_adaptive_telemetry():
+    payload = request.get_json(silent=True) or {}
+    interactions = payload.get("interactions") or {}
+    dwell_times = payload.get("dwell") or {}
+    device_info = payload.get("device") or {}
+    user_prefs = payload.get("preferences") or {}
+
+    persona_id, percentages = compute_adaptive_persona(interactions, dwell_times)
+    persona_info = ADAPTIVE_PERSONAS.get(persona_id, ADAPTIVE_PERSONAS["balanced_operator"])
+    next_action = get_adaptive_next_action(persona_id)
+
+    profile_data = {
+        "persona_id": persona_id,
+        "percentages": percentages,
+        "device": device_info,
+        "preferences": user_prefs,
+        "updated_at": datetime.now().isoformat(),
+    }
+    session["adaptive_profile"] = profile_data
+
+    user_email = session.get("user_id")
+    if user_email and session.get("last_logged_persona") != persona_id:
+        session["last_logged_persona"] = persona_id
+        log_activity(
+            action="ADAPTIVE_PROFILE_UPDATE",
+            details=f"User interaction model classified persona as {persona_info['title']} ({device_info.get('type', 'standard')}).",
+            user_email=user_email,
+        )
+
+    return jsonify({
+        "success": True,
+        "persona": persona_info,
+        "persona_id": persona_id,
+        "percentages": percentages,
+        "next_action": next_action,
+        "density": persona_info["default_density"] if user_prefs.get("density") == "auto" else user_prefs.get("density", "auto"),
+    })
+
+
+@app.route("/api/adaptive/reset", methods=["POST"])
+def reset_adaptive_profile():
+    session.pop("adaptive_profile", None)
+    session.pop("last_logged_persona", None)
+    default_persona = ADAPTIVE_PERSONAS["balanced_operator"]
+    return jsonify({
+        "success": True,
+        "message": "Adaptive interaction model reset to factory defaults.",
+        "persona": default_persona,
+        "persona_id": "balanced_operator",
+        "percentages": {"monitoring": 25, "calculators": 25, "analytics": 25, "alerts": 25, "devices": 0},
+        "next_action": get_adaptive_next_action("balanced_operator"),
+    })
+
+
+@app.route("/api/adaptive/settings", methods=["POST"])
+def update_adaptive_settings():
+    payload = request.get_json(silent=True) or {}
+    stored = session.get("adaptive_profile") or {}
+    prefs = stored.get("preferences", {"auto_adapt": True, "sunlight_mode": "auto", "density": "auto"})
+
+    for k in ["auto_adapt", "sunlight_mode", "density", "data_saver"]:
+        if k in payload:
+            prefs[k] = payload[k]
+
+    stored["preferences"] = prefs
+    session["adaptive_profile"] = stored
+
+    return jsonify({"success": True, "preferences": prefs})
 
 
 def start_lora_hardware_service():
