@@ -6,9 +6,9 @@ let tableFilterStatus = "all"; // 'all', 'optimal', 'warning', 'critical'
 let calYear = new Date().getFullYear();
 let calMonth = new Date().getMonth();
 let calInitialized = false;
-let chartFilterDate = null; // null or 'YYYY-MM-DD'
-let chartCalYear = new Date().getFullYear();
-let chartCalMonth = new Date().getMonth();
+let historyFilterDate = null; // null or 'YYYY-MM-DD'
+let historyCalYear = new Date().getFullYear();
+let historyCalMonth = new Date().getMonth();
 const parameterLabels = {
     temperature: "Temperature",
     ph: "pH Level"
@@ -86,7 +86,7 @@ function localDate(reading) {
 }
 
 function filterHistory(history) {
-    const selectedDate = chartFilterDate || document.getElementById("history-date")?.value;
+    const selectedDate = historyFilterDate || document.getElementById("history-date")?.value;
     const intervalEl = document.getElementById("history-interval");
     const interval = intervalEl ? intervalEl.value : "all";
     const now = Date.now();
@@ -587,19 +587,19 @@ function selectStatusFilter(status) {
     updateTable();
 }
 
-function renderChartCalendar() {
-    const titleEl = document.getElementById("chart-cal-month-title");
-    const gridEl = document.getElementById("chart-calendar-days-grid");
+function renderHistoryCalendar() {
+    const titleEl = document.getElementById("history-cal-month-title");
+    const gridEl = document.getElementById("history-calendar-days-grid");
     if (!titleEl || !gridEl) return;
 
-    titleEl.textContent = `${monthNames[chartCalMonth]} ${chartCalYear}`;
+    titleEl.textContent = `${monthNames[historyCalMonth]} ${historyCalYear}`;
     gridEl.innerHTML = "";
 
     const datesWithReadings = getDatesWithReadingsSet();
 
-    const firstDayIndex = new Date(chartCalYear, chartCalMonth, 1).getDay();
-    const totalDays = new Date(chartCalYear, chartCalMonth + 1, 0).getDate();
-    const prevMonthDays = new Date(chartCalYear, chartCalMonth, 0).getDate();
+    const firstDayIndex = new Date(historyCalYear, historyCalMonth, 1).getDay();
+    const totalDays = new Date(historyCalYear, historyCalMonth + 1, 0).getDate();
+    const prevMonthDays = new Date(historyCalYear, historyCalMonth, 0).getDate();
 
     for (let i = firstDayIndex - 1; i >= 0; i--) {
         const filler = document.createElement("div");
@@ -609,9 +609,9 @@ function renderChartCalendar() {
     }
 
     for (let day = 1; day <= totalDays; day++) {
-        const dayStr = `${chartCalYear}-${String(chartCalMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+        const dayStr = `${historyCalYear}-${String(historyCalMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
         const hasData = datesWithReadings.has(dayStr);
-        const isSelected = chartFilterDate === dayStr;
+        const isSelected = historyFilterDate === dayStr;
 
         const dayBtn = document.createElement("button");
         dayBtn.type = "button";
@@ -630,103 +630,103 @@ function renderChartCalendar() {
         dayBtn.appendChild(dot);
 
         dayBtn.addEventListener("click", () => {
-            selectChartDateFilter(dayStr);
+            selectHistoryDateFilter(dayStr);
         });
 
         gridEl.appendChild(dayBtn);
     }
 }
 
-function selectChartDateFilter(dateStr) {
-    if (chartFilterDate === dateStr) {
-        chartFilterDate = null;
+function selectHistoryDateFilter(dateStr) {
+    if (historyFilterDate === dateStr) {
+        historyFilterDate = null;
     } else {
-        chartFilterDate = dateStr;
+        historyFilterDate = dateStr;
     }
     const histDateInput = document.getElementById("history-date");
-    if (histDateInput) histDateInput.value = chartFilterDate || "";
-    updateChartDateFilterUI();
-    closeChartCalendarPopup();
+    if (histDateInput) histDateInput.value = historyFilterDate || "";
+    updateHistoryDateFilterUI();
+    closeHistoryCalendarPopup();
     applyFilters();
 }
 
-function updateChartDateFilterUI() {
-    const textEl = document.getElementById("chart-filter-date-text");
-    const clearBtn = document.getElementById("chart-cal-clear-btn");
+function updateHistoryDateFilterUI() {
+    const textEl = document.getElementById("history-filter-date-text");
+    const clearBtn = document.getElementById("history-cal-clear-btn");
     if (textEl) {
-        if (!chartFilterDate) {
+        if (!historyFilterDate) {
             textEl.textContent = "Filter Date: All";
             if (clearBtn) clearBtn.classList.remove("active");
         } else {
-            const parts = chartFilterDate.split("-");
+            const parts = historyFilterDate.split("-");
             const y = parseInt(parts[0], 10);
             const m = parseInt(parts[1], 10) - 1;
             const d = parseInt(parts[2], 10);
             const dateObj = new Date(y, m, d);
             const formatted = isNaN(dateObj.getTime())
-                ? chartFilterDate
+                ? historyFilterDate
                 : dateObj.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
             textEl.textContent = `Date: ${formatted}`;
             if (clearBtn) clearBtn.classList.add("active");
         }
     }
-    renderChartCalendar();
+    renderHistoryCalendar();
 }
 
-function clearChartDateFilter() {
-    chartFilterDate = null;
+function clearHistoryDateFilter() {
+    historyFilterDate = null;
     const histDateInput = document.getElementById("history-date");
     if (histDateInput) histDateInput.value = "";
-    updateChartDateFilterUI();
-    closeChartCalendarPopup();
+    updateHistoryDateFilterUI();
+    closeHistoryCalendarPopup();
     applyFilters();
 }
 
-function prevChartMonth() {
-    chartCalMonth--;
-    if (chartCalMonth < 0) {
-        chartCalMonth = 11;
-        chartCalYear--;
+function prevHistoryMonth() {
+    historyCalMonth--;
+    if (historyCalMonth < 0) {
+        historyCalMonth = 11;
+        historyCalYear--;
     }
-    renderChartCalendar();
+    renderHistoryCalendar();
 }
 
-function nextChartMonth() {
-    chartCalMonth++;
-    if (chartCalMonth > 11) {
-        chartCalMonth = 0;
-        chartCalYear++;
+function nextHistoryMonth() {
+    historyCalMonth++;
+    if (historyCalMonth > 11) {
+        historyCalMonth = 0;
+        historyCalYear++;
     }
-    renderChartCalendar();
+    renderHistoryCalendar();
 }
 
-function openChartCalendarPopup() {
-    const popup = document.getElementById("chart-calendar-popup");
-    const btn = document.getElementById("chart-filter-date-btn");
+function openHistoryCalendarPopup() {
+    const popup = document.getElementById("history-calendar-popup");
+    const btn = document.getElementById("history-filter-date-btn");
     if (!popup) return;
     closeCalendarPopup();
     closeStatusDropdown();
     popup.hidden = false;
     popup.style.display = "block";
     if (btn) btn.setAttribute("aria-expanded", "true");
-    renderChartCalendar();
+    renderHistoryCalendar();
 }
 
-function closeChartCalendarPopup() {
-    const popup = document.getElementById("chart-calendar-popup");
-    const btn = document.getElementById("chart-filter-date-btn");
+function closeHistoryCalendarPopup() {
+    const popup = document.getElementById("history-calendar-popup");
+    const btn = document.getElementById("history-filter-date-btn");
     if (!popup) return;
     popup.hidden = true;
     popup.style.display = "none";
     if (btn) btn.setAttribute("aria-expanded", "false");
 }
 
-function toggleChartCalendarPopup() {
-    const popup = document.getElementById("chart-calendar-popup");
+function toggleHistoryCalendarPopup() {
+    const popup = document.getElementById("history-calendar-popup");
     if (popup && (!popup.hidden && popup.style.display !== "none")) {
-        closeChartCalendarPopup();
+        closeHistoryCalendarPopup();
     } else {
-        openChartCalendarPopup();
+        openHistoryCalendarPopup();
     }
 }
 
@@ -734,7 +734,7 @@ function openCalendarPopup() {
     const popup = document.getElementById("calendar-popup");
     const btn = document.getElementById("filter-date-btn");
     if (!popup) return;
-    closeChartCalendarPopup();
+    closeHistoryCalendarPopup();
     closeStatusDropdown();
     popup.hidden = false;
     popup.style.display = "block";
@@ -764,7 +764,7 @@ function openStatusDropdown() {
     const menu = document.getElementById("status-dropdown-menu");
     const btn = document.getElementById("filter-status-btn");
     if (!menu) return;
-    closeChartCalendarPopup();
+    closeHistoryCalendarPopup();
     closeCalendarPopup();
     menu.hidden = false;
     menu.style.display = "flex";
@@ -1235,36 +1235,36 @@ if (tableLimitSelect) {
     });
 }
 
-// Bind Trend Chart Date Filter button & Calendar nav
-const chartFilterDateBtn = document.getElementById("chart-filter-date-btn");
-if (chartFilterDateBtn) {
-    chartFilterDateBtn.addEventListener("click", (e) => {
+// Bind History Filter Date button & Calendar nav
+const historyFilterDateBtn = document.getElementById("history-filter-date-btn");
+if (historyFilterDateBtn) {
+    historyFilterDateBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        toggleChartCalendarPopup();
+        toggleHistoryCalendarPopup();
     });
 }
 
-const chartCalPrevBtn = document.getElementById("chart-cal-prev-month");
-if (chartCalPrevBtn) {
-    chartCalPrevBtn.addEventListener("click", (e) => {
+const historyCalPrevBtn = document.getElementById("history-cal-prev-month");
+if (historyCalPrevBtn) {
+    historyCalPrevBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        prevChartMonth();
+        prevHistoryMonth();
     });
 }
 
-const chartCalNextBtn = document.getElementById("chart-cal-next-month");
-if (chartCalNextBtn) {
-    chartCalNextBtn.addEventListener("click", (e) => {
+const historyCalNextBtn = document.getElementById("history-cal-next-month");
+if (historyCalNextBtn) {
+    historyCalNextBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        nextChartMonth();
+        nextHistoryMonth();
     });
 }
 
-const chartCalClearBtn = document.getElementById("chart-cal-clear-btn");
-if (chartCalClearBtn) {
-    chartCalClearBtn.addEventListener("click", (e) => {
+const historyCalClearBtn = document.getElementById("history-cal-clear-btn");
+if (historyCalClearBtn) {
+    historyCalClearBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        clearChartDateFilter();
+        clearHistoryDateFilter();
     });
 }
 
@@ -1321,11 +1321,11 @@ statusMenuItems.forEach((btn) => {
 
 // Close popups/dropdown when clicking outside
 document.addEventListener("click", (e) => {
-    const chartPopup = document.getElementById("chart-calendar-popup");
-    const chartBtn = document.getElementById("chart-filter-date-btn");
-    if (chartPopup && !chartPopup.hidden && chartPopup.style.display !== "none") {
-        if (!chartPopup.contains(e.target) && !chartBtn?.contains(e.target)) {
-            closeChartCalendarPopup();
+    const histPopup = document.getElementById("history-calendar-popup");
+    const histBtn = document.getElementById("history-filter-date-btn");
+    if (histPopup && !histPopup.hidden && histPopup.style.display !== "none") {
+        if (!histPopup.contains(e.target) && !histBtn?.contains(e.target)) {
+            closeHistoryCalendarPopup();
         }
     }
 
@@ -1346,7 +1346,7 @@ document.addEventListener("click", (e) => {
 // Close on Escape key
 document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
-        closeChartCalendarPopup();
+        closeHistoryCalendarPopup();
         closeCalendarPopup();
         closeStatusDropdown();
     }
@@ -1357,9 +1357,6 @@ const historyFilterForm = document.getElementById("history-filter");
 if (historyFilterForm) {
     historyFilterForm.addEventListener("submit", (event) => {
         event.preventDefault();
-        const dateVal = document.getElementById("history-date")?.value || null;
-        chartFilterDate = dateVal;
-        updateChartDateFilterUI();
         applyFilters();
     });
 }
@@ -1383,13 +1380,13 @@ async function loadHistory() {
             if (!isNaN(latestDate.getTime())) {
                 calYear = latestDate.getFullYear();
                 calMonth = latestDate.getMonth();
-                chartCalYear = latestDate.getFullYear();
-                chartCalMonth = latestDate.getMonth();
+                historyCalYear = latestDate.getFullYear();
+                historyCalMonth = latestDate.getMonth();
                 calInitialized = true;
             }
         }
         renderCalendar();
-        renderChartCalendar();
+        renderHistoryCalendar();
     } catch (error) {
         console.error("Unable to load saved sensor history:", error);
         sensorHistory = [];
@@ -1418,7 +1415,7 @@ async function loadHistory() {
     updateTable();
 }
 
-closeChartCalendarPopup();
+closeHistoryCalendarPopup();
 closeCalendarPopup();
 closeStatusDropdown();
 updateDeviceTime();
