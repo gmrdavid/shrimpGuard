@@ -1094,4 +1094,13 @@ window.addEventListener("resize", () => {
         drawTrendChart(currentHistory);
     }
 });
-setInterval(loadMonitoringData, 5000);
+let monitoringPollTimer = null;
+function restartMonitoringPolling() {
+    if (monitoringPollTimer) clearInterval(monitoringPollTimer);
+    const interval = window.ShrimpGuardAdaptive && window.ShrimpGuardAdaptive.getPollInterval
+        ? window.ShrimpGuardAdaptive.getPollInterval(5000, 25000)
+        : 5000;
+    monitoringPollTimer = setInterval(loadMonitoringData, interval);
+}
+restartMonitoringPolling();
+window.addEventListener("shrimpguard:preferences-changed", restartMonitoringPolling);

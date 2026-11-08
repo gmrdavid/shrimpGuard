@@ -272,6 +272,44 @@
         saveModel(model);
     }
 
+    function isDataSaverActive() {
+        const prefs = model.preferences || {};
+        if (prefs.data_saver === "on") return true;
+        if (prefs.data_saver === "off") return false;
+        return Boolean(detectDevice().save_data);
+    }
+
+    function getPollInterval(defaultMs = 4000, throttledMs = 25000) {
+        return isDataSaverActive() ? throttledMs : defaultMs;
+    }
+
+    function renderStatusBadges(isSunlight, isDataSaver) {
+        let container = document.getElementById("adaptive-status-container");
+        if (!isSunlight && !isDataSaver) {
+            if (container) container.remove();
+            return;
+        }
+        if (!container) {
+            container = document.createElement("div");
+            container.id = "adaptive-status-container";
+            container.style.cssText = "position: fixed; bottom: 16px; right: 16px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none;";
+            document.body.appendChild(container);
+        }
+        container.innerHTML = "";
+        if (isSunlight) {
+            const b = document.createElement("div");
+            b.className = "adaptive-status-indicator-badge sunlight";
+            b.innerHTML = `<span>☀️ Field Sunlight Mode Active</span>`;
+            container.appendChild(b);
+        }
+        if (isDataSaver) {
+            const b = document.createElement("div");
+            b.className = "adaptive-status-indicator-badge data-saver";
+            b.innerHTML = `<span>📶 Data-Saver Active (Throttled Telemetry)</span>`;
+            container.appendChild(b);
+        }
+    }
+
     // --- 5. AUTOMATIC PRESENTATION ADAPTATION ---
     function applyPresentationClasses() {
         const device = detectDevice();
@@ -301,18 +339,26 @@
 
         if (device.is_touch) body.classList.add("adaptive-touch");
 
-        // Persona class
-        body.classList.add(`adaptive-persona-${persona_id}`);
+        // 1. Automatic UI Adaptation
+        const isAutoAdapt = prefs.auto_adapt !== false;
+        if (isAutoAdapt) {
+            body.classList.add(`adaptive-persona-${persona_id}`);
+        } else {
+            const tempCard = document.getElementById("temperature")?.closest(".metric-card, .metric-box, .sensor-metric-card");
+            const phCard = document.getElementById("ph")?.closest(".metric-card, .metric-box, .sensor-metric-card");
+            if (tempCard) tempCard.style.order = "";
+            if (phCard) phCard.style.order = "";
+        }
 
-        // Density adaptation
-        let density = prefs.density;
+        // 2. Density adaptation
+        let density = prefs.density || "auto";
         if (density === "auto") {
-            density = device.is_touch ? "comfort" : personaCfg.density;
+            density = device.is_touch ? "comfort" : "compact";
         }
         if (density === "comfort") body.classList.add("adaptive-comfort");
         else if (density === "compact") body.classList.add("adaptive-compact");
 
-        // Sunlight / Outdoor mode adaptation
+        // 3. Sunlight / Outdoor mode adaptation
         let sunlight = false;
         if (prefs.sunlight_mode === "always") {
             sunlight = true;
@@ -321,17 +367,17 @@
         } else {
             // Auto: active if user enabled high contrast in OS or outdoor daytime touch
             const highContrastOS = window.matchMedia && window.matchMedia("(prefers-contrast: more)").matches;
-            sunlight = Boolean(highContrastOS);
+            const hour = new Date().getHours();
+            const isDaytimeOutdoor = (device.is_mobile || device.is_touch) && (hour >= 7 && hour < 17);
+            sunlight = Boolean(highContrastOS || isDaytimeOutdoor);
         }
         if (sunlight) body.classList.add("adaptive-sunlight");
 
-        // Data-Saver adaptation
-        let dataSaver = false;
-        if (prefs.data_saver === "on") dataSaver = true;
-        else if (prefs.data_saver === "off") dataSaver = false;
-        else dataSaver = device.save_data;
-
+        // 4. Data-Saver adaptation
+        const dataSaver = isDataSaverActive();
         if (dataSaver) body.classList.add("adaptive-data-saver");
+
+        renderStatusBadges(sunlight, dataSaver);
     }
 
     // --- 6. AUTOMATIC STRUCTURE ADAPTATION ---
@@ -392,6 +438,11 @@
     async function updateNextActionBanner() {
         const slot = document.getElementById("adaptive-next-action-slot");
         if (!slot) return;
+
+        if (model.preferences && model.preferences.auto_adapt === false) {
+            slot.innerHTML = "";
+            return;
+        }
 
         try {
             // Check latest sensor telemetry
@@ -466,6 +517,12 @@
         const phCard = document.getElementById("ph")?.closest(".metric-card, .metric-box, .sensor-metric-card");
         if (!tempCard && !phCard) return;
 
+        if (model.preferences && model.preferences.auto_adapt === false) {
+            if (tempCard) tempCard.style.order = "";
+            if (phCard) phCard.style.order = "";
+            return;
+        }
+
         const { persona_id } = classifyPersona(model);
         if (persona_id === "farm_planner" && phCard) {
             phCard.style.order = "-1";
@@ -497,8 +554,13 @@
     }
 
     function adaptGuidanceTooltips() {
-        const proficiency = getProficiencyLevel(model);
         const root = document.documentElement;
+        if (model.preferences && model.preferences.auto_adapt === false) {
+            root.classList.remove("adaptive-guidance-active");
+            return;
+        }
+
+        const proficiency = getProficiencyLevel(model);
 
         if (proficiency === "novice") {
             root.classList.add("adaptive-guidance-active");
@@ -553,6 +615,13 @@
         saveModel(model);
         applyAdaptations();
         syncModelToBackend();
+        window.dispatchEvent(new CustomEvent("shrimpguard:preferences-changed", {
+            detail: {
+                preferences: model.preferences,
+                isDataSaver: isDataSaverActive(),
+                pollInterval: getPollInterval()
+            }
+        }));
     }
 
     function resetModel() {
@@ -657,6 +726,8 @@
         updatePreferences,
         resetModel,
         toggleSunlightMode,
-        applyAdaptations
+        applyAdaptations,
+        isDataSaver: isDataSaverActive,
+        getPollInterval: getPollInterval
     };
 })();

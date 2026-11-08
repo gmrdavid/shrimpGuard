@@ -340,11 +340,19 @@ document.addEventListener("DOMContentLoaded", () => {
     setupPairNodeModal();
     attachUnpairHandlers();
 
-    // 4s polling
-    pollTimer = setInterval(() => {
-        fetchDevicesInventory();
-        fetchPairedNodes();
-    }, 4000);
+    // Dynamic polling (throttled under Data-Saver)
+    function restartPolling() {
+        if (pollTimer) clearInterval(pollTimer);
+        const interval = window.ShrimpGuardAdaptive && window.ShrimpGuardAdaptive.getPollInterval
+            ? window.ShrimpGuardAdaptive.getPollInterval(4000, 25000)
+            : 4000;
+        pollTimer = setInterval(() => {
+            fetchDevicesInventory();
+            fetchPairedNodes();
+        }, interval);
+    }
+    restartPolling();
+    window.addEventListener("shrimpguard:preferences-changed", restartPolling);
 
     // Relative time updater
     setInterval(() => {

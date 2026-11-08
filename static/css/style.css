@@ -24305,20 +24305,22 @@ nav a {
 }
 
 /* =========================================================
-   FIELD SUNLIGHT MODE (OUTDOOR HIGH-CONTRAST)
-   Glaring outdoor tropical sun readability.
+   PRESENTATION CONTROLS: FIELD SUNLIGHT MODE (OUTDOOR HIGH-CONTRAST)
+   Glaring outdoor tropical sun readability & anti-glare.
    ========================================================= */
 body.adaptive-sunlight {
-    background: #fcfdfc !important;
-    color: #020c08 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
 }
 
 body.adaptive-sunlight .dashboard-header h1,
 body.adaptive-sunlight .analytics-heading h1,
 body.adaptive-sunlight .settings-heading h1,
 body.adaptive-sunlight .dashboard-heading h1,
+body.adaptive-sunlight h1,
 body.adaptive-sunlight h2,
-body.adaptive-sunlight h3 {
+body.adaptive-sunlight h3,
+body.adaptive-sunlight h4 {
     color: #000000 !important;
     font-weight: 900 !important;
 }
@@ -24326,24 +24328,327 @@ body.adaptive-sunlight h3 {
 body.adaptive-sunlight p,
 body.adaptive-sunlight span,
 body.adaptive-sunlight small,
-body.adaptive-sunlight label {
-    color: #1e293b !important;
-    font-weight: 600 !important;
+body.adaptive-sunlight label,
+body.adaptive-sunlight .subtitle,
+body.adaptive-sunlight .section-eyebrow,
+body.adaptive-sunlight .date-time-label,
+body.adaptive-sunlight .time-value,
+body.adaptive-sunlight .sidebar-section-label {
+    color: #0f172a !important;
+    font-weight: 700 !important;
 }
 
 body.adaptive-sunlight .card,
 body.adaptive-sunlight .panel,
 body.adaptive-sunlight .dashboard-panel,
+body.adaptive-sunlight .settings-panel,
 body.adaptive-sunlight .telemetry-stream-panel,
 body.adaptive-sunlight .input-panel {
-    border-color: #475569 !important;
-    border-width: 2px !important;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12) !important;
+    background: #ffffff !important;
+    border: 2px solid #0f172a !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22) !important;
+}
+
+body.adaptive-sunlight .dashboard-sidebar {
+    background: #ffffff !important;
+    border-right: 2px solid #0f172a !important;
+}
+
+body.adaptive-sunlight .dashboard-nav a {
+    color: #0f172a !important;
+    font-weight: 750 !important;
+    border: 1px solid transparent;
+}
+
+body.adaptive-sunlight .dashboard-nav a:hover,
+body.adaptive-sunlight .dashboard-nav a.active {
+    background: #0f172a !important;
+    color: #ffffff !important;
+    border-color: #0f172a !important;
+}
+
+body.adaptive-sunlight .dashboard-nav a.active .ui-icon,
+body.adaptive-sunlight .dashboard-nav a:hover .ui-icon {
+    color: #ffffff !important;
 }
 
 body.adaptive-sunlight .metric-reading h2 {
     color: #000000 !important;
     font-weight: 900 !important;
+}
+
+body.adaptive-sunlight .metric-card,
+body.adaptive-sunlight .dashboard-metric-card {
+    border: 2px solid #1e293b !important;
+}
+
+body.adaptive-sunlight .badge-optimal,
+body.adaptive-sunlight .table-status.status-optimal {
+    background: #047857 !important;
+    color: #ffffff !important;
+    border: 1.5px solid #064e3b !important;
+    font-weight: 800 !important;
+}
+
+body.adaptive-sunlight .badge-warning,
+body.adaptive-sunlight .table-status.status-warning {
+    background: #b45309 !important;
+    color: #ffffff !important;
+    border: 1.5px solid #78350f !important;
+    font-weight: 800 !important;
+}
+
+body.adaptive-sunlight .badge-critical,
+body.adaptive-sunlight .table-status.status-critical {
+    background: #b91c1c !important;
+    color: #ffffff !important;
+    border: 1.5px solid #7f1d1d !important;
+    font-weight: 800 !important;
+}
+
+body.adaptive-sunlight input,
+body.adaptive-sunlight select,
+body.adaptive-sunlight textarea {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 2px solid #0f172a !important;
+    font-weight: 700 !important;
+}
+
+body.adaptive-sunlight .devices-table th,
+body.adaptive-sunlight .history-table th,
+body.adaptive-sunlight .admin-table th {
+    background: #0f172a !important;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    border-bottom: 2px solid #000000 !important;
+}
+
+body.adaptive-sunlight .devices-table td,
+body.adaptive-sunlight .history-table td,
+body.adaptive-sunlight .admin-table td {
+    border-bottom: 1.5px solid #334155 !important;
+    color: #000000 !important;
+    font-weight: 700 !important;
+}
+
+/* =========================================================
+   PRESENTATION CONTROLS: LAYOUT DENSITY (COMFORTABLE)
+   Field touch / gloved operation / comfortable tap targets.
+   ========================================================= */
+body.adaptive-comfort .dashboard-layout,
+body.adaptive-comfort .dashboard-main,
+body.adaptive-comfort .settings-main {
+    gap: 26px;
+}
+
+body.adaptive-comfort .card,
+body.adaptive-comfort .panel,
+body.adaptive-comfort .dashboard-panel,
+body.adaptive-comfort .settings-panel,
+body.adaptive-comfort .telemetry-stream-panel,
+body.adaptive-comfort .input-panel {
+    padding: 24px 28px !important;
+}
+
+body.adaptive-comfort .dashboard-metric-cards,
+body.adaptive-comfort .monitoring-metric-cards,
+body.adaptive-comfort .devices-metric-cards {
+    gap: 20px !important;
+}
+
+body.adaptive-comfort button,
+body.adaptive-comfort .btn,
+body.adaptive-comfort .telemetry-sync-btn,
+body.adaptive-comfort .telemetry-test-btn,
+body.adaptive-comfort .calc-btn-calculate,
+body.adaptive-comfort .calc-btn-reset,
+body.adaptive-comfort .settings-save-button,
+body.adaptive-comfort .dashboard-action-btn {
+    min-height: 44px !important;
+    padding: 10px 20px !important;
+    font-size: 14.5px !important;
+}
+
+body.adaptive-comfort input[type="text"],
+body.adaptive-comfort input[type="number"],
+body.adaptive-comfort input[type="email"],
+body.adaptive-comfort input[type="password"],
+body.adaptive-comfort select,
+body.adaptive-comfort .settings-input,
+body.adaptive-comfort .settings-select-input,
+body.adaptive-comfort .calc-input {
+    min-height: 44px !important;
+    padding: 10px 14px !important;
+    font-size: 14.5px !important;
+}
+
+body.adaptive-comfort .devices-table th,
+body.adaptive-comfort .devices-table td,
+body.adaptive-comfort .history-table th,
+body.adaptive-comfort .history-table td,
+body.adaptive-comfort .admin-table th,
+body.adaptive-comfort .admin-table td {
+    padding: 14px 16px !important;
+    font-size: 14px !important;
+}
+
+body.adaptive-comfort .metric-reading h2 {
+    font-size: 2.25rem !important;
+}
+
+body.adaptive-comfort .dashboard-nav a {
+    padding: 13px 16px !important;
+    font-size: 14.5px !important;
+}
+
+/* =========================================================
+   PRESENTATION CONTROLS: LAYOUT DENSITY (COMPACT)
+   High-density desktop data view for analysts & operators.
+   ========================================================= */
+body.adaptive-compact .dashboard-layout,
+body.adaptive-compact .dashboard-main,
+body.adaptive-compact .settings-main {
+    gap: 12px;
+}
+
+body.adaptive-compact .dashboard-header,
+body.adaptive-compact .settings-header,
+body.adaptive-compact .analytics-header {
+    margin-bottom: 12px !important;
+    padding-bottom: 8px !important;
+}
+
+body.adaptive-compact .card,
+body.adaptive-compact .panel,
+body.adaptive-compact .dashboard-panel,
+body.adaptive-compact .settings-panel,
+body.adaptive-compact .telemetry-stream-panel,
+body.adaptive-compact .input-panel {
+    padding: 12px 16px !important;
+}
+
+body.adaptive-compact .panel-heading {
+    margin-bottom: 10px !important;
+    padding-bottom: 6px !important;
+}
+
+body.adaptive-compact .panel-heading h2,
+body.adaptive-compact .panel-heading h3 {
+    font-size: 15px !important;
+}
+
+body.adaptive-compact .panel-heading p {
+    font-size: 11.5px !important;
+}
+
+body.adaptive-compact .dashboard-metric-cards,
+body.adaptive-compact .monitoring-metric-cards,
+body.adaptive-compact .devices-metric-cards {
+    gap: 10px !important;
+}
+
+body.adaptive-compact .metric-card,
+body.adaptive-compact .dashboard-metric-card {
+    padding: 12px 14px !important;
+}
+
+body.adaptive-compact .metric-reading h2 {
+    font-size: 1.55rem !important;
+}
+
+body.adaptive-compact .metric-reading .metric-unit {
+    font-size: 11px !important;
+}
+
+body.adaptive-compact .metric-status {
+    font-size: 11px !important;
+    margin-top: 2px !important;
+}
+
+body.adaptive-compact .metric-card-footer {
+    margin-top: 8px !important;
+    padding-top: 6px !important;
+    font-size: 10.5px !important;
+}
+
+body.adaptive-compact button,
+body.adaptive-compact .btn,
+body.adaptive-compact .telemetry-sync-btn,
+body.adaptive-compact .telemetry-test-btn,
+body.adaptive-compact .calc-btn-calculate,
+body.adaptive-compact .calc-btn-reset,
+body.adaptive-compact .settings-save-button,
+body.adaptive-compact .dashboard-action-btn {
+    min-height: 32px !important;
+    padding: 5px 12px !important;
+    font-size: 12.5px !important;
+}
+
+body.adaptive-compact input[type="text"],
+body.adaptive-compact input[type="number"],
+body.adaptive-compact input[type="email"],
+body.adaptive-compact input[type="password"],
+body.adaptive-compact select,
+body.adaptive-compact .settings-input,
+body.adaptive-compact .settings-select-input,
+body.adaptive-compact .calc-input {
+    min-height: 32px !important;
+    padding: 5px 10px !important;
+    font-size: 12.5px !important;
+}
+
+body.adaptive-compact .devices-table th,
+body.adaptive-compact .devices-table td,
+body.adaptive-compact .history-table th,
+body.adaptive-compact .history-table td,
+body.adaptive-compact .admin-table th,
+body.adaptive-compact .admin-table td {
+    padding: 6px 10px !important;
+    font-size: 12px !important;
+}
+
+body.adaptive-compact .dashboard-nav a {
+    padding: 8px 12px !important;
+    font-size: 12.5px !important;
+}
+
+/* =========================================================
+   PRESENTATION CONTROLS: NETWORK DATA-SAVER MODE
+   Throttles background telemetry polling and disables animations.
+   ========================================================= */
+body.adaptive-data-saver * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+}
+
+.adaptive-status-indicator-badge {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    z-index: 9999;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 750;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
+    pointer-events: none;
+    transition: opacity 200ms ease;
+}
+
+.adaptive-status-indicator-badge.data-saver {
+    background: #0284c7;
+    color: #ffffff;
+    border: 1.5px solid #0369a1;
+}
+
+.adaptive-status-indicator-badge.sunlight {
+    background: #f59e0b;
+    color: #000000;
+    border: 1.5px solid #d97706;
 }
 
 /* =========================================================

@@ -561,6 +561,15 @@ setInterval(updateDeviceTime, 1000);
 updateGreeting();
 setInterval(updateGreeting, 60000);
 
-// Poll live sensor telemetry every 4 seconds (Node 1 transmits every 5 seconds)
+// Poll live sensor telemetry (throttled under Data-Saver)
 loadLatestReading();
-setInterval(loadLatestReading, 4000);
+let dashboardPollTimer = null;
+function restartDashboardPolling() {
+    if (dashboardPollTimer) clearInterval(dashboardPollTimer);
+    const interval = window.ShrimpGuardAdaptive && window.ShrimpGuardAdaptive.getPollInterval
+        ? window.ShrimpGuardAdaptive.getPollInterval(4000, 25000)
+        : 4000;
+    dashboardPollTimer = setInterval(loadLatestReading, interval);
+}
+restartDashboardPolling();
+window.addEventListener("shrimpguard:preferences-changed", restartDashboardPolling);

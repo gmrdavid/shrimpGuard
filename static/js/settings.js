@@ -453,6 +453,28 @@ function updateDeviceTime() {
         if (densitySelect) densitySelect.value = prefs.density || "auto";
         if (dataSaverSelect) dataSaverSelect.value = prefs.data_saver || "auto";
 
+        function showPresentationNotice(message) {
+            let noticeBox = document.getElementById("presentation-notice-toast");
+            if (!noticeBox) {
+                noticeBox = document.createElement("div");
+                noticeBox.id = "presentation-notice-toast";
+                noticeBox.style.cssText = "position: fixed; top: 24px; right: 24px; z-index: 10000; background: #065f46; color: #ffffff; padding: 12px 18px; border-radius: 8px; font-size: 13px; font-weight: 650; box-shadow: 0 8px 24px rgba(0,0,0,0.18); display: flex; align-items: center; gap: 8px; transition: opacity 300ms ease, transform 300ms ease;";
+                document.body.appendChild(noticeBox);
+            }
+            noticeBox.innerHTML = `
+                <svg class="ui-icon" style="width:16px;height:16px;fill:currentColor;"><use href="#icon-check-circle"></use></svg>
+                <span>${message}</span>
+            `;
+            noticeBox.style.opacity = "1";
+            noticeBox.style.transform = "translateY(0)";
+
+            clearTimeout(noticeBox._timer);
+            noticeBox._timer = setTimeout(() => {
+                noticeBox.style.opacity = "0";
+                noticeBox.style.transform = "translateY(-10px)";
+            }, 3500);
+        }
+
         function savePrefs() {
             window.ShrimpGuardAdaptive.updatePreferences({
                 auto_adapt: autoAdaptCheck ? autoAdaptCheck.checked : true,
@@ -462,16 +484,40 @@ function updateDeviceTime() {
             });
         }
 
-        if (autoAdaptCheck) autoAdaptCheck.addEventListener("change", savePrefs);
-        if (sunlightSelect) sunlightSelect.addEventListener("change", savePrefs);
-        if (densitySelect) densitySelect.addEventListener("change", savePrefs);
-        if (dataSaverSelect) dataSaverSelect.addEventListener("change", savePrefs);
+        if (autoAdaptCheck) {
+            autoAdaptCheck.addEventListener("change", () => {
+                savePrefs();
+                showPresentationNotice(`Automatic UI Adaptation ${autoAdaptCheck.checked ? "enabled" : "disabled"}.`);
+            });
+        }
+        if (sunlightSelect) {
+            sunlightSelect.addEventListener("change", () => {
+                savePrefs();
+                const txt = sunlightSelect.options[sunlightSelect.selectedIndex].text;
+                showPresentationNotice(`Field Sunlight Mode set to: ${txt}`);
+            });
+        }
+        if (densitySelect) {
+            densitySelect.addEventListener("change", () => {
+                savePrefs();
+                const txt = densitySelect.options[densitySelect.selectedIndex].text;
+                showPresentationNotice(`Layout Density set to: ${txt}`);
+            });
+        }
+        if (dataSaverSelect) {
+            dataSaverSelect.addEventListener("change", () => {
+                savePrefs();
+                const txt = dataSaverSelect.options[dataSaverSelect.selectedIndex].text;
+                showPresentationNotice(`Network Data-Saver set to: ${txt}`);
+            });
+        }
 
         if (resetBtn) {
             resetBtn.addEventListener("click", () => {
                 if (confirm("Reset your learned adaptive profile to factory defaults?")) {
                     window.ShrimpGuardAdaptive.resetModel();
                     initAdaptiveSettings();
+                    showPresentationNotice("Learned profile and presentation reset to factory defaults.");
                 }
             });
         }
