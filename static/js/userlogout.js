@@ -3,6 +3,8 @@
  * Robust modal confirmation and secure session termination.
  */
 (function () {
+    "use strict";
+
     function initLogout() {
         const logoutForm = document.getElementById("logoutForm");
         const logoutButton = document.getElementById("logoutButton");
@@ -30,14 +32,17 @@
                 event.preventDefault();
                 event.stopPropagation();
             }
+            logoutModal.removeAttribute("hidden");
             logoutModal.hidden = false;
-            // Prevent body scroll behind modal
+            logoutModal.style.display = "flex";
             document.body.classList.add("modal-open");
             cancelLogout.focus();
         }
 
         function closeLogoutModal() {
+            logoutModal.setAttribute("hidden", "");
             logoutModal.hidden = true;
+            logoutModal.style.display = "none";
             document.body.classList.remove("modal-open");
             logoutButton.focus();
         }
@@ -50,21 +55,24 @@
             confirmLogout.disabled = true;
             confirmLogout.classList.add("loading");
 
-            // Attempt standard form submission first
+            // Direct submission of logoutForm (fallback to window.location.href)
+            let submitted = false;
             try {
-                if (typeof logoutForm.requestSubmit === "function") {
-                    logoutForm.requestSubmit();
-                    return;
+                if (logoutForm && typeof logoutForm.submit === "function") {
+                    logoutForm.submit();
+                    submitted = true;
                 }
             } catch (err) {
-                // requestSubmit failed, fall through to submit()
+                submitted = false;
             }
 
-            try {
-                logoutForm.submit();
-            } catch (err) {
-                // Direct navigation fallback if form submission is completely blocked
+            if (!submitted) {
                 window.location.href = logoutForm.getAttribute("action") || "/logout";
+            } else {
+                // Safety timeout fallback: if page hasn't navigated in 1.2s, force direct navigation
+                setTimeout(function () {
+                    window.location.href = "/logout";
+                }, 1200);
             }
         });
 
@@ -82,7 +90,7 @@
             }
         });
 
-        // Accessible trap
+        // Accessible focus trap
         logoutModal.addEventListener("keydown", function (event) {
             if (event.key !== "Tab" || logoutModal.hidden) return;
 
@@ -100,6 +108,10 @@
         });
     }
 
+    // Initialize immediately if DOM elements already parsed, or on DOMContentLoaded
+    if (document.getElementById("logoutButton")) {
+        initLogout();
+    }
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", initLogout);
     } else {

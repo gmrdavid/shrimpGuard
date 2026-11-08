@@ -1,3 +1,7 @@
+/**
+ * ShrimpGuard - Admin Logout Handler
+ * Robust modal confirmation and secure session termination.
+ */
 (() => {
     "use strict";
 
@@ -19,15 +23,36 @@
             return;
         }
 
+        // Avoid duplicate initialization
+        if (logoutButton.dataset.logoutInitialized === "true") {
+            return;
+        }
+        logoutButton.dataset.logoutInitialized = "true";
+
+        // Relocate modal to document.body if needed
+        if (logoutModal.parentElement !== document.body) {
+            document.body.appendChild(logoutModal);
+        }
+
         // Open the confirmation popup.
-        function openLogoutModal() {
+        function openLogoutModal(event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            logoutModal.removeAttribute("hidden");
             logoutModal.hidden = false;
+            logoutModal.style.display = "flex";
+            document.body.classList.add("modal-open");
             cancelLogout.focus();
         }
 
         // Close the popup without logging out.
         function closeLogoutModal() {
+            logoutModal.setAttribute("hidden", "");
             logoutModal.hidden = true;
+            logoutModal.style.display = "none";
+            document.body.classList.remove("modal-open");
             logoutButton.focus();
         }
 
@@ -37,9 +62,29 @@
         // Click Cancel.
         cancelLogout.addEventListener("click", closeLogoutModal);
 
-        // Confirm logout and submit the original POST form.
-        confirmLogout.addEventListener("click", function () {
-            logoutForm.requestSubmit();
+        // Confirm logout and submit.
+        confirmLogout.addEventListener("click", function (event) {
+            if (event) event.preventDefault();
+            confirmLogout.disabled = true;
+            confirmLogout.classList.add("loading");
+
+            let submitted = false;
+            try {
+                if (logoutForm && typeof logoutForm.submit === "function") {
+                    logoutForm.submit();
+                    submitted = true;
+                }
+            } catch (err) {
+                submitted = false;
+            }
+
+            if (!submitted) {
+                window.location.href = logoutForm.getAttribute("action") || "/logout";
+            } else {
+                setTimeout(function () {
+                    window.location.href = "/logout";
+                }, 1200);
+            }
         });
 
         // Close the popup when clicking the dark overlay.
@@ -87,6 +132,9 @@
         });
     }
 
+    if (document.getElementById("logoutButton")) {
+        initLogout();
+    }
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", initLogout);
     } else {

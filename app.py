@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from functools import wraps
 from xml.sax.saxutils import escape
 
-from flask import Flask, flash, has_request_context, jsonify, redirect, render_template, request, send_file, session, url_for
+from flask import Flask, flash, has_request_context, jsonify, make_response, redirect, render_template, request, send_file, session, url_for
 from flask.sessions import SecureCookieSessionInterface
 from flask_sqlalchemy import SQLAlchemy
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
@@ -2713,6 +2713,38 @@ def login():
     error = None
 
     if request.method == "GET":
+        # If user arrived from logout or explicitly requests logout state, FORCE CLEAR session and render login page
+        if request.args.get("logged_out"):
+            session.clear()
+            login_csrf = session.get("login_csrf_token")
+            if not login_csrf or not verify_timed_csrf_token(login_csrf, purpose="login"):
+                login_csrf = generate_timed_csrf_token("login")
+                session["login_csrf_token"] = login_csrf
+
+            resp = make_response(render_template("login.html", error=None, login_csrf_token=login_csrf))
+            cookie_name = app.config.get("SESSION_COOKIE_NAME", "session")
+            cookie_path = app.session_interface.get_cookie_path(app)
+            cookie_domain = app.session_interface.get_cookie_domain(app)
+            for s_secure, s_samesite, s_part in [
+                (False, "Lax", False),
+                (True, "None", True),
+                (True, "Lax", False),
+                (False, None, False),
+            ]:
+                try:
+                    resp.delete_cookie(
+                        cookie_name,
+                        domain=cookie_domain,
+                        path=cookie_path,
+                        secure=s_secure,
+                        httponly=True,
+                        samesite=s_samesite,
+                        partitioned=s_part,
+                    )
+                except Exception:
+                    pass
+            return resp
+
         user_id = session.get("user_id")
         if user_id is not None:
             try:
@@ -2895,8 +2927,32 @@ def logout():
             pass
 
     session.clear()
-    resp = redirect(url_for("login"))
-    resp.delete_cookie("session")
+    resp = redirect(url_for("login", logged_out="1"))
+
+    # Comprehensively purge session cookies across all browser variants and security contexts
+    cookie_name = app.config.get("SESSION_COOKIE_NAME", "session")
+    cookie_path = app.session_interface.get_cookie_path(app)
+    cookie_domain = app.session_interface.get_cookie_domain(app)
+
+    for s_secure, s_samesite, s_part in [
+        (False, "Lax", False),
+        (True, "None", True),
+        (True, "Lax", False),
+        (False, None, False),
+    ]:
+        try:
+            resp.delete_cookie(
+                cookie_name,
+                domain=cookie_domain,
+                path=cookie_path,
+                secure=s_secure,
+                httponly=True,
+                samesite=s_samesite,
+                partitioned=s_part,
+            )
+        except Exception:
+            pass
+
     return resp
 
 
