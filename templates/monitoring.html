@@ -421,53 +421,48 @@
                     <p>Continuous trend visualization for water temperature and pH.</p>
                 </div>
 
-                <span id="trend-count" class="section-count">No readings yet</span>
+                <div class="trend-heading-actions" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <!-- FILTER DATE BUTTON & POPUP CALENDAR -->
+                    <div class="calendar-picker-anchor">
+                        <button id="trend-filter-date-btn" class="historical-toolbar-btn" type="button" aria-expanded="false" aria-haspopup="dialog" aria-label="Filter trend by date calendar" title="Select a date to filter trend">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg>
+                            <span id="trend-filter-date-text">Filter Date: All</span>
+                            <span class="toolbar-arrow">▾</span>
+                        </button>
+
+                        <div id="trend-calendar-popup" class="calendar-popup" hidden style="display: none;" role="dialog" aria-label="Trend Date Picker">
+                            <div class="calendar-popup-header">
+                                <button type="button" id="trend-cal-prev-month" class="cal-nav-btn" aria-label="Previous month">‹</button>
+                                <span id="trend-cal-month-title" class="cal-month-title">November 2026</span>
+                                <button type="button" id="trend-cal-next-month" class="cal-nav-btn" aria-label="Next month">›</button>
+                            </div>
+
+                            <div class="calendar-weekdays">
+                                <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+                            </div>
+
+                            <div id="trend-calendar-days-grid" class="calendar-days-grid"></div>
+
+                            <div class="calendar-popup-footer">
+                                <div class="calendar-legend">
+                                    <span class="cal-legend-item">
+                                        <span class="cal-dot cal-dot-green"></span> With readings
+                                    </span>
+                                    <span class="cal-legend-item">
+                                        <span class="cal-dot cal-dot-red"></span> No readings
+                                    </span>
+                                </div>
+                                <button type="button" id="trend-cal-clear-btn" class="cal-clear-btn">Show All Dates</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <span id="trend-count" class="section-count monitoring-trend-count">No readings yet</span>
+                </div>
 
             </div>
 
             <div class="panel trend-panel monitoring-trend-panel">
-
-                <!-- WATER QUALITY TREND DATE & TIMELINE CONTROLS -->
-                <div class="trend-toolbar" aria-label="Water quality trend date controls">
-                    <div class="trend-toolbar-left">
-                        <div class="trend-preset-buttons" role="group" aria-label="Quick date presets">
-                            <button type="button" id="trend-preset-today" class="trend-preset-btn active" data-preset="today">
-                                Today
-                            </button>
-                            <button type="button" id="trend-preset-yesterday" class="trend-preset-btn" data-preset="yesterday">
-                                Yesterday
-                            </button>
-                            <button type="button" id="trend-preset-all" class="trend-preset-btn" data-preset="all">
-                                All Readings
-                            </button>
-                        </div>
-
-                        <div class="trend-date-stepper-wrap">
-                            <button type="button" id="trend-prev-day-btn" class="trend-stepper-btn" title="Previous day" aria-label="Previous day">
-                                &#x2039;
-                            </button>
-                            <div class="trend-date-input-wrap">
-                                <svg class="ui-icon trend-calendar-icon" aria-hidden="true">
-                                    <use href="#icon-calendar"></use>
-                                </svg>
-                                <input type="date" id="trend-date-input" class="trend-date-input" aria-label="Select specific trend date">
-                            </div>
-                            <button type="button" id="trend-next-day-btn" class="trend-stepper-btn" title="Next day" aria-label="Next day">
-                                &#x203A;
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="trend-toolbar-right">
-                        <div id="trend-live-status-pill" class="trend-status-pill is-live">
-                            <span class="trend-live-dot"></span>
-                            <span id="trend-live-label">Real-time Stream</span>
-                        </div>
-                        <span id="trend-date-summary" class="trend-date-summary">
-                            Showing today's telemetry
-                        </span>
-                    </div>
-                </div>
 
                 <div class="chart-wrap monitoring-chart-wrap">
 
@@ -486,7 +481,7 @@
                         </div>
                         <p id="chart-empty-text">Submit at least one dashboard reading to see the trend graph.</p>
                         <button type="button" id="trend-jump-latest-btn" class="trend-jump-btn">
-                            Jump to Latest Active Date
+                            Show All Dates
                         </button>
                     </div>
 

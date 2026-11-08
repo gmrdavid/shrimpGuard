@@ -308,7 +308,42 @@
 
                     </div>
 
-                    <div class="history-export-actions historical-export-actions">
+                    <div class="history-export-actions historical-export-actions" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+
+                        <!-- TREND SPECIFIC CALENDAR DATE FILTER -->
+                        <div class="calendar-picker-anchor">
+                            <button id="chart-filter-date-btn" class="historical-toolbar-btn" type="button" aria-expanded="false" aria-haspopup="dialog" aria-label="Filter trend by date calendar" title="Select a date for water quality trend">
+                                <svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg>
+                                <span id="chart-filter-date-text">Filter Date: All</span>
+                                <span class="toolbar-arrow">▾</span>
+                            </button>
+
+                            <div id="chart-calendar-popup" class="calendar-popup" hidden style="display: none;" role="dialog" aria-label="Chart Date Picker">
+                                <div class="calendar-popup-header">
+                                    <button type="button" id="chart-cal-prev-month" class="cal-nav-btn" aria-label="Previous month">‹</button>
+                                    <span id="chart-cal-month-title" class="cal-month-title">November 2026</span>
+                                    <button type="button" id="chart-cal-next-month" class="cal-nav-btn" aria-label="Next month">›</button>
+                                </div>
+
+                                <div class="calendar-weekdays">
+                                    <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+                                </div>
+
+                                <div id="chart-calendar-days-grid" class="calendar-days-grid"></div>
+
+                                <div class="calendar-popup-footer">
+                                    <div class="calendar-legend">
+                                        <span class="cal-legend-item">
+                                            <span class="cal-dot cal-dot-green"></span> With readings
+                                        </span>
+                                        <span class="cal-legend-item">
+                                            <span class="cal-dot cal-dot-red"></span> No readings
+                                        </span>
+                                    </div>
+                                    <button type="button" id="chart-cal-clear-btn" class="cal-clear-btn">Show All Dates</button>
+                                </div>
+                            </div>
+                        </div>
 
                         <span id="history-count" class="historical-count-badge">
                             0 readings

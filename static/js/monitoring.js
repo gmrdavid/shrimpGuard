@@ -13,9 +13,10 @@ function parseSafeDate(val) {
 
 let currentHistory = [];
 let allRawHistory = [];
-let activeTrendDateMode = "today"; // 'today', 'yesterday', 'specific', 'all'
-let selectedTrendDate = ""; // 'YYYY-MM-DD'
-let trendDateFilterInitialized = false;
+let trendFilterDate = null; // null = all dates, or 'YYYY-MM-DD'
+let trendCalYear = new Date().getFullYear();
+let trendCalMonth = new Date().getMonth();
+let trendCalendarEventsInitialized = false;
 
 let currentPoints = null;
 let hoverIndex = null;
@@ -751,6 +752,213 @@ async function loadRecommendation(reading) {
     return recommendation;
 }
 
+const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+];
+
+function getTrendDatesWithReadingsSet() {
+    const set = new Set();
+    if (Array.isArray(allRawHistory)) {
+        allRawHistory.forEach((r) => {
+            const dateKey = getReadingDateKey(r);
+            if (dateKey) set.add(dateKey);
+        });
+    }
+    return set;
+}
+
+function renderTrendCalendar() {
+    const titleEl = document.getElementById("trend-cal-month-title");
+    const gridEl = document.getElementById("trend-calendar-days-grid");
+    if (!titleEl || !gridEl) return;
+
+    titleEl.textContent = `${monthNames[trendCalMonth]} ${trendCalYear}`;
+    gridEl.innerHTML = "";
+
+    const datesWithReadings = getTrendDatesWithReadingsSet();
+
+    const firstDayIndex = new Date(trendCalYear, trendCalMonth, 1).getDay();
+    const totalDays = new Date(trendCalYear, trendCalMonth + 1, 0).getDate();
+    const prevMonthDays = new Date(trendCalYear, trendCalMonth, 0).getDate();
+
+    for (let i = firstDayIndex - 1; i >= 0; i--) {
+        const filler = document.createElement("div");
+        filler.className = "cal-day cal-day-empty";
+        filler.textContent = String(prevMonthDays - i);
+        gridEl.appendChild(filler);
+    }
+
+    for (let day = 1; day <= totalDays; day++) {
+        const dayStr = `${trendCalYear}-${String(trendCalMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+        const hasData = datesWithReadings.has(dayStr);
+        const isSelected = (trendFilterDate === dayStr);
+
+        const dayBtn = document.createElement("button");
+        dayBtn.type = "button";
+        dayBtn.className = `cal-day-btn ${hasData ? "has-data" : "no-data"}${isSelected ? " selected" : ""}`;
+        dayBtn.setAttribute("data-date", dayStr);
+        dayBtn.setAttribute("title", `${dayStr}: ${hasData ? "Readings available" : "No readings"}`);
+
+        const dayNum = document.createElement("span");
+        dayNum.className = "cal-day-num";
+        dayNum.textContent = String(day);
+
+        const dot = document.createElement("span");
+        dot.className = `cal-dot ${hasData ? "cal-dot-green" : "cal-dot-red"}`;
+
+        dayBtn.appendChild(dayNum);
+        dayBtn.appendChild(dot);
+
+        dayBtn.addEventListener("click", () => {
+            selectTrendDateFilter(dayStr);
+        });
+
+        gridEl.appendChild(dayBtn);
+    }
+}
+
+function selectTrendDateFilter(dateStr) {
+    if (trendFilterDate === dateStr) {
+        trendFilterDate = null;
+    } else {
+        trendFilterDate = dateStr;
+    }
+    updateTrendDateFilterUI();
+    closeTrendCalendarPopup();
+    applyTrendDateFilter();
+}
+
+function updateTrendDateFilterUI() {
+    const textEl = document.getElementById("trend-filter-date-text");
+    const clearBtn = document.getElementById("trend-cal-clear-btn");
+    if (textEl) {
+        if (!trendFilterDate) {
+            textEl.textContent = "Filter Date: All";
+            if (clearBtn) clearBtn.classList.remove("active");
+        } else {
+            textEl.textContent = `Date: ${formatFriendlyDate(trendFilterDate)}`;
+            if (clearBtn) clearBtn.classList.add("active");
+        }
+    }
+    renderTrendCalendar();
+}
+
+function clearTrendDateFilter() {
+    trendFilterDate = null;
+    updateTrendDateFilterUI();
+    closeTrendCalendarPopup();
+    applyTrendDateFilter();
+}
+
+function prevTrendMonth() {
+    trendCalMonth--;
+    if (trendCalMonth < 0) {
+        trendCalMonth = 11;
+        trendCalYear--;
+    }
+    renderTrendCalendar();
+}
+
+function nextTrendMonth() {
+    trendCalMonth++;
+    if (trendCalMonth > 11) {
+        trendCalMonth = 0;
+        trendCalYear++;
+    }
+    renderTrendCalendar();
+}
+
+function openTrendCalendarPopup() {
+    const popup = document.getElementById("trend-calendar-popup");
+    const btn = document.getElementById("trend-filter-date-btn");
+    if (!popup) return;
+    popup.hidden = false;
+    popup.style.display = "block";
+    if (btn) btn.setAttribute("aria-expanded", "true");
+    renderTrendCalendar();
+}
+
+function closeTrendCalendarPopup() {
+    const popup = document.getElementById("trend-calendar-popup");
+    const btn = document.getElementById("trend-filter-date-btn");
+    if (!popup) return;
+    popup.hidden = true;
+    popup.style.display = "none";
+    if (btn) btn.setAttribute("aria-expanded", "false");
+}
+
+function toggleTrendCalendarPopup() {
+    const popup = document.getElementById("trend-calendar-popup");
+    if (popup && (!popup.hidden && popup.style.display !== "none")) {
+        closeTrendCalendarPopup();
+    } else {
+        openTrendCalendarPopup();
+    }
+}
+
+function initTrendCalendarEvents() {
+    if (trendCalendarEventsInitialized) return;
+
+    const filterBtn = document.getElementById("trend-filter-date-btn");
+    if (filterBtn) {
+        filterBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            toggleTrendCalendarPopup();
+        });
+    }
+
+    const prevBtn = document.getElementById("trend-cal-prev-month");
+    if (prevBtn) {
+        prevBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            prevTrendMonth();
+        });
+    }
+
+    const nextBtn = document.getElementById("trend-cal-next-month");
+    if (nextBtn) {
+        nextBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            nextTrendMonth();
+        });
+    }
+
+    const clearBtn = document.getElementById("trend-cal-clear-btn");
+    if (clearBtn) {
+        clearBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            clearTrendDateFilter();
+        });
+    }
+
+    const jumpBtn = document.getElementById("trend-jump-latest-btn");
+    if (jumpBtn) {
+        jumpBtn.addEventListener("click", () => {
+            clearTrendDateFilter();
+        });
+    }
+
+    // Close on outside click
+    document.addEventListener("click", (e) => {
+        const popup = document.getElementById("trend-calendar-popup");
+        const btn = document.getElementById("trend-filter-date-btn");
+        if (!popup || popup.hidden || popup.style.display === "none") return;
+        if (!popup.contains(e.target) && !btn?.contains(e.target)) {
+            closeTrendCalendarPopup();
+        }
+    });
+
+    // Close on Escape key
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+            closeTrendCalendarPopup();
+        }
+    });
+
+    trendCalendarEventsInitialized = true;
+}
+
 function applyTrendDateFilter() {
     const emptyEl = document.getElementById("chart-empty");
     const emptyText = document.getElementById("chart-empty-text");
@@ -769,79 +977,11 @@ function applyTrendDateFilter() {
         return;
     }
 
-    const todayStr = getLocalDateKey(new Date());
-    const availableDates = [...new Set(allRawHistory.map(getReadingDateKey).filter(Boolean))].sort();
-
-    // Default to today if available, or newest available recorded date
-    if (!selectedTrendDate) {
-        if (availableDates.includes(todayStr)) {
-            selectedTrendDate = todayStr;
-            activeTrendDateMode = "today";
-        } else if (availableDates.length > 0) {
-            selectedTrendDate = availableDates[availableDates.length - 1];
-            activeTrendDateMode = (selectedTrendDate === todayStr) ? "today" : "specific";
-        } else {
-            selectedTrendDate = todayStr;
-            activeTrendDateMode = "today";
-        }
-    }
-
-    // Filter readings based on active mode and selectedTrendDate
     let filtered = [];
-    if (activeTrendDateMode === "all") {
+    if (!trendFilterDate) {
         filtered = [...allRawHistory];
     } else {
-        filtered = allRawHistory.filter((r) => getReadingDateKey(r) === selectedTrendDate);
-    }
-
-    // Sync date input value
-    const dateInput = document.getElementById("trend-date-input");
-    if (dateInput && selectedTrendDate) {
-        dateInput.value = selectedTrendDate;
-    }
-
-    // Sync preset buttons
-    const btnToday = document.getElementById("trend-preset-today");
-    const btnYesterday = document.getElementById("trend-preset-yesterday");
-    const btnAll = document.getElementById("trend-preset-all");
-
-    const yesterdayDate = new Date();
-    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
-    const yesterdayStr = getLocalDateKey(yesterdayDate);
-
-    const isToday = (selectedTrendDate === todayStr && activeTrendDateMode !== "all");
-    const isYesterday = (selectedTrendDate === yesterdayStr && activeTrendDateMode !== "all");
-
-    if (btnToday) btnToday.classList.toggle("active", activeTrendDateMode === "today" || isToday);
-    if (btnYesterday) btnYesterday.classList.toggle("active", activeTrendDateMode === "yesterday" || isYesterday);
-    if (btnAll) btnAll.classList.toggle("active", activeTrendDateMode === "all");
-
-    // Sync live indicator pill & summary
-    const statusPill = document.getElementById("trend-live-status-pill");
-    const liveLabel = document.getElementById("trend-live-label");
-    const summaryLabel = document.getElementById("trend-date-summary");
-
-    if (statusPill && liveLabel) {
-        if (isToday) {
-            statusPill.className = "trend-status-pill is-live";
-            liveLabel.textContent = "Real-time Stream";
-        } else if (activeTrendDateMode === "all") {
-            statusPill.className = "trend-status-pill is-live";
-            liveLabel.textContent = "All Records";
-        } else {
-            statusPill.className = "trend-status-pill is-archived";
-            liveLabel.textContent = "Archived Date";
-        }
-    }
-
-    if (summaryLabel) {
-        if (activeTrendDateMode === "all") {
-            summaryLabel.textContent = `All time records (${filtered.length} readings across ${availableDates.length} days)`;
-        } else if (isToday) {
-            summaryLabel.textContent = `Today • ${filtered.length} reading${filtered.length === 1 ? "" : "s"} live`;
-        } else {
-            summaryLabel.textContent = `${formatFriendlyDate(selectedTrendDate)} • ${filtered.length} reading${filtered.length === 1 ? "" : "s"}`;
-        }
+        filtered = allRawHistory.filter((r) => getReadingDateKey(r) === trendFilterDate);
     }
 
     if (countEl) {
@@ -852,7 +992,7 @@ function applyTrendDateFilter() {
     if (filtered.length === 0) {
         if (emptyEl) emptyEl.hidden = false;
         if (emptyText) {
-            emptyText.textContent = `No telemetry readings recorded on ${formatFriendlyDate(selectedTrendDate)}.`;
+            emptyText.textContent = `No telemetry readings recorded on ${formatFriendlyDate(trendFilterDate)}.`;
         }
         const canvas = document.getElementById("trend-chart");
         if (canvas) {
@@ -867,92 +1007,6 @@ function applyTrendDateFilter() {
 
     initChartEvents();
     drawTrendChart(filtered);
-}
-
-function initTrendDateControls() {
-    if (trendDateFilterInitialized) return;
-
-    const btnToday = document.getElementById("trend-preset-today");
-    const btnYesterday = document.getElementById("trend-preset-yesterday");
-    const btnAll = document.getElementById("trend-preset-all");
-    const dateInput = document.getElementById("trend-date-input");
-    const prevBtn = document.getElementById("trend-prev-day-btn");
-    const nextBtn = document.getElementById("trend-next-day-btn");
-    const jumpBtn = document.getElementById("trend-jump-latest-btn");
-
-    if (btnToday) {
-        btnToday.addEventListener("click", () => {
-            selectedTrendDate = getLocalDateKey(new Date());
-            activeTrendDateMode = "today";
-            applyTrendDateFilter();
-        });
-    }
-
-    if (btnYesterday) {
-        btnYesterday.addEventListener("click", () => {
-            const yDate = new Date();
-            yDate.setDate(yDate.getDate() - 1);
-            selectedTrendDate = getLocalDateKey(yDate);
-            activeTrendDateMode = "yesterday";
-            applyTrendDateFilter();
-        });
-    }
-
-    if (btnAll) {
-        btnAll.addEventListener("click", () => {
-            activeTrendDateMode = "all";
-            applyTrendDateFilter();
-        });
-    }
-
-    if (dateInput) {
-        dateInput.addEventListener("change", (e) => {
-            if (!e.target.value) return;
-            selectedTrendDate = e.target.value;
-            const todayStr = getLocalDateKey(new Date());
-            activeTrendDateMode = (selectedTrendDate === todayStr) ? "today" : "specific";
-            applyTrendDateFilter();
-        });
-    }
-
-    if (prevBtn) {
-        prevBtn.addEventListener("click", () => {
-            const curDate = selectedTrendDate ? new Date(`${selectedTrendDate}T00:00:00`) : new Date();
-            curDate.setDate(curDate.getDate() - 1);
-            selectedTrendDate = getLocalDateKey(curDate);
-            const todayStr = getLocalDateKey(new Date());
-            activeTrendDateMode = (selectedTrendDate === todayStr) ? "today" : "specific";
-            applyTrendDateFilter();
-        });
-    }
-
-    if (nextBtn) {
-        nextBtn.addEventListener("click", () => {
-            const curDate = selectedTrendDate ? new Date(`${selectedTrendDate}T00:00:00`) : new Date();
-            curDate.setDate(curDate.getDate() + 1);
-            selectedTrendDate = getLocalDateKey(curDate);
-            const todayStr = getLocalDateKey(new Date());
-            activeTrendDateMode = (selectedTrendDate === todayStr) ? "today" : "specific";
-            applyTrendDateFilter();
-        });
-    }
-
-    if (jumpBtn) {
-        jumpBtn.addEventListener("click", () => {
-            const availableDates = [...new Set(allRawHistory.map(getReadingDateKey).filter(Boolean))].sort();
-            const todayStr = getLocalDateKey(new Date());
-            if (availableDates.includes(todayStr)) {
-                selectedTrendDate = todayStr;
-                activeTrendDateMode = "today";
-            } else if (availableDates.length > 0) {
-                selectedTrendDate = availableDates[availableDates.length - 1];
-                activeTrendDateMode = "specific";
-            }
-            applyTrendDateFilter();
-        });
-    }
-
-    trendDateFilterInitialized = true;
 }
 
 async function loadMonitoringData() {
@@ -1012,7 +1066,11 @@ async function loadMonitoringData() {
                 updateRecommendations(trueLatest, null);
             });
             allRawHistory = history;
-            initTrendDateControls();
+            initTrendCalendarEvents();
+            const calPopup = document.getElementById("trend-calendar-popup");
+            if (calPopup && !calPopup.hidden && calPopup.style.display !== "none") {
+                renderTrendCalendar();
+            }
             applyTrendDateFilter();
             return;
         }
