@@ -365,24 +365,27 @@
                             </thead>
                             <tbody id="devices-table-body">
                                 {% for dev in devices_list %}
-                                <tr>
+                                <tr class="device-row device-row-{{ dev.status|lower }}">
                                     <td>
                                         <div class="device-cell-meta">
-                                            <span class="device-cell-name">{{ dev.name }}</span>
+                                            <div class="device-cell-title-row">
+                                                <span class="device-id-badge device-id-{{ dev.category|lower|replace(' & ', '-')|replace(' ', '-') }}">{{ dev.id }}</span>
+                                                <span class="device-cell-name">{{ dev.name }}</span>
+                                            </div>
                                             <span class="device-cell-sub">{{ dev.details }}</span>
                                         </div>
                                     </td>
                                     <td>
-                                        <span class="device-cell-type">{{ dev.type }}</span>
+                                        <span class="device-cell-type type-{{ dev.category|lower|replace(' & ', '-')|replace(' ', '-') }}">{{ dev.type }}</span>
                                     </td>
                                     <td>
                                         {% if dev.status == 'Online' %}
-                                        <span class="table-status status-optimal">
+                                        <span class="table-status status-optimal status-online">
                                             <span class="status-indicator-dot dot-optimal"></span> Online
                                         </span>
                                         {% else %}
-                                        <span class="table-status status-warning">
-                                            <span class="status-indicator-dot dot-warning"></span> Offline
+                                        <span class="table-status status-warning status-offline">
+                                            <span class="status-indicator-dot dot-warning dot-offline"></span> Offline
                                         </span>
                                         {% endif %}
                                     </td>

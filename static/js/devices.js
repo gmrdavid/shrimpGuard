@@ -185,18 +185,23 @@ function renderDevices(data) {
             const tr = document.createElement("tr");
 
             const isDevOnline = dev.status === "Online";
-            const statusClass = isDevOnline ? "status-optimal" : "status-warning";
-            const dotClass = isDevOnline ? "dot-optimal" : "dot-warning";
+            const statusClass = isDevOnline ? "status-optimal status-online" : "status-warning status-offline";
+            const dotClass = isDevOnline ? "dot-optimal" : "dot-warning dot-offline";
+            const catSlug = (dev.category || "communication").toLowerCase().replace(/ & /g, "-").replace(/\s+/g, "-");
 
+            tr.className = `device-row device-row-${dev.status ? dev.status.toLowerCase() : "offline"}`;
             tr.innerHTML = `
                 <td>
                     <div class="device-cell-meta">
-                        <span class="device-cell-name">${dev.name}</span>
+                        <div class="device-cell-title-row">
+                            <span class="device-id-badge device-id-${catSlug}">${dev.id || ""}</span>
+                            <span class="device-cell-name">${dev.name}</span>
+                        </div>
                         <span class="device-cell-sub">${dev.details || ""}</span>
                     </div>
                 </td>
                 <td>
-                    <span class="device-cell-type">${dev.type}</span>
+                    <span class="device-cell-type type-${catSlug}">${dev.type}</span>
                 </td>
                 <td>
                     <span class="table-status ${statusClass}">
