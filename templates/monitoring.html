@@ -427,6 +427,48 @@
 
             <div class="panel trend-panel monitoring-trend-panel">
 
+                <!-- WATER QUALITY TREND DATE & TIMELINE CONTROLS -->
+                <div class="trend-toolbar" aria-label="Water quality trend date controls">
+                    <div class="trend-toolbar-left">
+                        <div class="trend-preset-buttons" role="group" aria-label="Quick date presets">
+                            <button type="button" id="trend-preset-today" class="trend-preset-btn active" data-preset="today">
+                                Today
+                            </button>
+                            <button type="button" id="trend-preset-yesterday" class="trend-preset-btn" data-preset="yesterday">
+                                Yesterday
+                            </button>
+                            <button type="button" id="trend-preset-all" class="trend-preset-btn" data-preset="all">
+                                All Readings
+                            </button>
+                        </div>
+
+                        <div class="trend-date-stepper-wrap">
+                            <button type="button" id="trend-prev-day-btn" class="trend-stepper-btn" title="Previous day" aria-label="Previous day">
+                                &#x2039;
+                            </button>
+                            <div class="trend-date-input-wrap">
+                                <svg class="ui-icon trend-calendar-icon" aria-hidden="true">
+                                    <use href="#icon-calendar"></use>
+                                </svg>
+                                <input type="date" id="trend-date-input" class="trend-date-input" aria-label="Select specific trend date">
+                            </div>
+                            <button type="button" id="trend-next-day-btn" class="trend-stepper-btn" title="Next day" aria-label="Next day">
+                                &#x203A;
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="trend-toolbar-right">
+                        <div id="trend-live-status-pill" class="trend-status-pill is-live">
+                            <span class="trend-live-dot"></span>
+                            <span id="trend-live-label">Real-time Stream</span>
+                        </div>
+                        <span id="trend-date-summary" class="trend-date-summary">
+                            Showing today's telemetry
+                        </span>
+                    </div>
+                </div>
+
                 <div class="chart-wrap monitoring-chart-wrap">
 
                     <canvas
@@ -438,9 +480,15 @@
 
                     <div id="chart-tooltip" class="monitoring-chart-tooltip" hidden></div>
 
-                    <p id="chart-empty">
-                        Submit at least one dashboard reading to see the trend graph.
-                    </p>
+                    <div id="chart-empty" class="trend-chart-empty-state" hidden>
+                        <div class="empty-icon-wrap">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>
+                        </div>
+                        <p id="chart-empty-text">Submit at least one dashboard reading to see the trend graph.</p>
+                        <button type="button" id="trend-jump-latest-btn" class="trend-jump-btn">
+                            Jump to Latest Active Date
+                        </button>
+                    </div>
 
                 </div>
 

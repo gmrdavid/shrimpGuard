@@ -9747,6 +9747,233 @@ nav a {
     line-height: 1.6;
 }
 
+/* =========================================================
+   MONITORING — WATER QUALITY TREND DATE & TIMELINE TOOLBAR
+   ========================================================= */
+
+.trend-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 16px;
+    margin-bottom: 18px;
+    background: #f8fbf9;
+    border: 1px solid #e2ede6;
+    border-radius: 12px;
+    flex-wrap: wrap;
+}
+
+.trend-toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.trend-preset-buttons {
+    display: inline-flex;
+    align-items: center;
+    background: #eef4f0;
+    padding: 3px;
+    border-radius: 9px;
+    gap: 3px;
+}
+
+.trend-preset-btn {
+    padding: 6px 13px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: #4a6155;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 150ms ease;
+    white-space: nowrap;
+}
+
+.trend-preset-btn:hover {
+    color: #126b4f;
+    background: rgba(255, 255, 255, 0.65);
+}
+
+.trend-preset-btn.active {
+    background: #ffffff;
+    color: #126b4f;
+    box-shadow: 0 1px 3px rgba(18, 107, 79, 0.12);
+}
+
+.trend-date-stepper-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #ffffff;
+    border: 1px solid #d7e4dc;
+    border-radius: 9px;
+    padding: 3px 6px;
+}
+
+.trend-stepper-btn {
+    width: 26px;
+    height: 26px;
+    display: grid;
+    place-items: center;
+    border: none;
+    background: transparent;
+    color: #3b584a;
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 140ms ease;
+}
+
+.trend-stepper-btn:hover {
+    background: #eef7f2;
+    color: #126b4f;
+}
+
+.trend-date-input-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 4px;
+}
+
+.trend-date-input-wrap .trend-calendar-icon {
+    width: 14px;
+    height: 14px;
+    color: #126b4f;
+    flex-shrink: 0;
+}
+
+.trend-date-input {
+    border: none;
+    background: transparent;
+    font-size: 12px;
+    font-weight: 700;
+    color: #19382b;
+    outline: none;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 3px 0;
+}
+
+.trend-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.trend-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6.5px;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.trend-status-pill.is-live {
+    background: #e8f7ee;
+    color: #0d6b4a;
+    border: 1px solid #bce6cd;
+}
+
+.trend-status-pill.is-archived {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.trend-live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 0 2.5px rgba(16, 185, 129, 0.25);
+    display: inline-block;
+    animation: trendPulse 2s infinite ease-in-out;
+}
+
+.trend-status-pill.is-archived .trend-live-dot {
+    background: #94a3b8;
+    box-shadow: none;
+    animation: none;
+}
+
+@keyframes trendPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.22); opacity: 0.7; }
+}
+
+.trend-date-summary {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.trend-chart-empty-state {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(4px);
+    z-index: 5;
+    padding: 24px;
+    text-align: center;
+}
+
+.trend-chart-empty-state .empty-icon-wrap {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #f1f5f9;
+    color: #64748b;
+    display: grid;
+    place-items: center;
+}
+
+.trend-chart-empty-state .empty-icon-wrap .ui-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.trend-chart-empty-state p {
+    margin: 0;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #475569;
+    max-width: 320px;
+}
+
+.trend-jump-btn {
+    padding: 7px 16px;
+    border-radius: 8px;
+    background: #126b4f;
+    color: #ffffff;
+    border: none;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 150ms ease, transform 120ms ease;
+}
+
+.trend-jump-btn:hover {
+    background: #0d533d;
+    transform: translateY(-1px);
+}
+
 .monitoring-page .monitoring-chart-wrap {
     position: relative;
     width: 100%;
