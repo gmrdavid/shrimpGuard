@@ -310,8 +310,10 @@ def _run_listener_loop(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dis
                             with app.app_context():
                                 try:
                                     from sqlalchemy import insert
+                                    lora_user_email = os.getenv("LORA_DEFAULT_USER_EMAIL", "rio@gmail.com")
                                     db.session.execute(
                                         insert(sensor_readings_table).values(
+                                            user_email=lora_user_email,
                                             ph_level=ph,
                                             temperature=temp,
                                             date=now_str,

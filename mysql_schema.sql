@@ -29,10 +29,15 @@ CREATE TABLE IF NOT EXISTS roles (
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS sensors (
+    id INT NOT NULL AUTO_INCREMENT,
+    user_email VARCHAR(255) NULL,
     ph_level FLOAT NOT NULL,
     temperature FLOAT NOT NULL,
     `date` VARCHAR(45) NOT NULL,
-    status VARCHAR(45) NOT NULL
+    status VARCHAR(45) NOT NULL,
+    PRIMARY KEY (id),
+    KEY idx_sensors_user_email (user_email),
+    KEY idx_sensors_date (`date`)
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS activity_logs (

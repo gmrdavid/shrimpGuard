@@ -157,7 +157,7 @@ function updateGreeting() {
     } else if (hour >= 12 && hour < 18) {
         timeGreeting = "Good afternoon";
     }
-    const userName = greetingEl.dataset.userName || "Rio";
+    const userName = greetingEl.dataset.userName || "Grower";
     greetingEl.textContent = `${timeGreeting}, ${userName}!`;
 }
 
@@ -436,9 +436,24 @@ async function loadLatestReading() {
         if (reading) {
             displayResults(reading);
         } else {
-            document.getElementById("overall-status").textContent = "Awaiting first sensor transmission from pond...";
+            const overallStatusEl = document.getElementById("overall-status");
+            if (overallStatusEl) overallStatusEl.textContent = "Awaiting first sensor transmission from pond...";
             const lastSyncEl = document.getElementById("telemetry-last-sync");
             if (lastSyncEl) lastSyncEl.textContent = "Awaiting Node 1";
+            const tempEl = document.getElementById("temperature");
+            if (tempEl) tempEl.textContent = "--";
+            const phEl = document.getElementById("ph");
+            if (phEl) phEl.textContent = "--";
+            const tempStatusEl = document.getElementById("temperature-status");
+            if (tempStatusEl) {
+                tempStatusEl.textContent = "No data";
+                tempStatusEl.className = "metric-status";
+            }
+            const phStatusEl = document.getElementById("ph-status");
+            if (phStatusEl) {
+                phStatusEl.textContent = "No data";
+                phStatusEl.className = "metric-status";
+            }
         }
     } catch (error) {
         console.error("Unable to load the latest sensor reading:", error);

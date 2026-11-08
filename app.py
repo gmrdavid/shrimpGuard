@@ -16,7 +16,7 @@ from flask import Flask, flash, has_request_context, jsonify, make_response, red
 from flask.sessions import SecureCookieSessionInterface
 from flask_sqlalchemy import SQLAlchemy
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
-from sqlalchemy import func, insert, select, text, update
+from sqlalchemy import delete, func, insert, select, text, update
 from sqlalchemy.engine import URL
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -194,10 +194,13 @@ db = SQLAlchemy(app)
 sensor_readings = db.Table(
     "sensors",
     db.metadata,
+    db.Column("id", db.Integer, primary_key=True, autoincrement=True),
+    db.Column("user_email", db.String(255), nullable=True, index=True),
     db.Column("ph_level", db.Float, nullable=False),
     db.Column("temperature", db.Float, nullable=False),
-    db.Column("date", db.String(45), primary_key=True, nullable=False),
+    db.Column("date", db.String(45), nullable=False),
     db.Column("status", db.String(45), nullable=False),
+    extend_existing=True,
 )
 
 # --- TABLE 2: USERS ---
@@ -795,8 +798,21 @@ with app.app_context():
     try:
         db.engine.connect()
         db.create_all()
-        # Automatically synchronize missing columns on aquaculture_calculations table
+        # Automatically synchronize missing columns on sensors and aquaculture_calculations tables
         with db.engine.connect() as conn:
+            try:
+                res_sens = conn.execute(text("DESCRIBE sensors;"))
+                sensor_cols = {row[0].lower() for row in res_sens.fetchall()}
+                if "user_email" not in sensor_cols:
+                    conn.execute(text("ALTER TABLE sensors ADD COLUMN user_email VARCHAR(255) NULL;"))
+                    conn.execute(text("CREATE INDEX idx_sensors_user_email ON sensors (user_email);"))
+                    conn.execute(text("UPDATE sensors SET user_email = 'rio@gmail.com' WHERE user_email IS NULL;"))
+                if "id" not in sensor_cols:
+                    conn.execute(text("ALTER TABLE sensors ADD COLUMN id INT NOT NULL AUTO_INCREMENT PRIMARY KEY FIRST;"))
+                conn.commit()
+            except Exception:
+                pass
+
             try:
                 res = conn.execute(text("DESCRIBE aquaculture_calculations;"))
                 existing_cols = {row[0].lower() for row in res.fetchall()}
@@ -867,6 +883,14 @@ def create_reading():
 
     recorded_at_str = recorded_at.strftime("%Y-%m-%dT%H:%M:%S.%f")
 
+    # Associate reading with the authenticated client or specified user
+    target_user_email = (
+        session.get("user_id")
+        or (payload.get("user_email") if isinstance(payload, dict) else None)
+        or request.args.get("user_email")
+        or os.getenv("LORA_DEFAULT_USER_EMAIL", "rio@gmail.com")
+    )
+
     # ML-based classification & comprehensive analysis: solely determined by the DecisionTreeClassifier model
     try:
         analysis = calculate_ml_water_quality_analysis(temperature, ph)
@@ -879,6 +903,7 @@ def create_reading():
     try:
         db.session.execute(
             insert(sensor_readings).values(
+                user_email=target_user_email,
                 ph_level=ph,
                 temperature=temperature,
                 date=recorded_at_str,
@@ -891,7 +916,11 @@ def create_reading():
         if status in ("Critical", "Warning"):
             try:
                 topics = []
-                users_with_topic = db.session.query(User).filter(User.ntfy_topic.isnot(None), User.ntfy_topic != "").all()
+                users_with_topic = db.session.query(User).filter(
+                    User.email == target_user_email,
+                    User.ntfy_topic.isnot(None),
+                    User.ntfy_topic != "",
+                ).all()
                 for u in users_with_topic:
                     if u.ntfy_topic and is_valid_topic(u.ntfy_topic):
                         topics.append(u.ntfy_topic)
@@ -913,6 +942,7 @@ def create_reading():
             "ph": ph,
             "recorded_at": recorded_at_str,
             "status": status,
+            "user_email": target_user_email,
         }
         if analysis:
             resp_payload.update({
@@ -936,11 +966,16 @@ def create_reading():
 @app.route("/api/readings/latest")
 @role_required("Client", "Admin")
 def latest_reading():
+    user_id = session.get("user_id")
+    user_role = session.get("role") or "Client"
+    hw_default_owner = os.getenv("LORA_DEFAULT_USER_EMAIL", "rio@gmail.com")
+
     latest_reading_dict = None
     try:
-        latest_row = db.session.execute(
-            select(sensor_readings).order_by(sensor_readings.c.date.desc()).limit(1)
-        ).mappings().first()
+        query = select(sensor_readings).order_by(sensor_readings.c.date.desc())
+        if user_role != "Admin" and user_id:
+            query = query.where(sensor_readings.c.user_email == user_id)
+        latest_row = db.session.execute(query.limit(1)).mappings().first()
         if latest_row:
             latest_reading_dict = dict(latest_row)
     except SQLAlchemyError:
@@ -949,21 +984,25 @@ def latest_reading():
 
     from hardware_serial import LATEST_HARDWARE_STREAM
 
+    # Only fallback to live hardware serial stream if Admin or the designated hardware owner
+    is_hw_authorized = (user_role == "Admin") or (user_id and user_id.lower() == hw_default_owner.lower())
+
     if latest_reading_dict:
         res = serialize_sensor_reading(latest_reading_dict)
-    elif LATEST_HARDWARE_STREAM.get("temperature") is not None:
+    elif is_hw_authorized and LATEST_HARDWARE_STREAM.get("temperature") is not None:
         reading_dict = {
             "temperature": LATEST_HARDWARE_STREAM["temperature"],
             "ph_level": LATEST_HARDWARE_STREAM["ph"],
             "date": LATEST_HARDWARE_STREAM.get("recorded_at") or datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "status": LATEST_HARDWARE_STREAM.get("status") or "Optimal",
+            "user_email": hw_default_owner,
         }
         res = serialize_sensor_reading(reading_dict)
     else:
         return jsonify(None)
 
-    res["is_connected"] = LATEST_HARDWARE_STREAM.get("is_connected", False)
-    res["connected_port"] = LATEST_HARDWARE_STREAM.get("connected_port")
+    res["is_connected"] = bool(LATEST_HARDWARE_STREAM.get("is_connected", False)) if is_hw_authorized else False
+    res["connected_port"] = LATEST_HARDWARE_STREAM.get("connected_port") if is_hw_authorized else None
     return jsonify(res)
 
 
@@ -978,7 +1017,12 @@ def get_system_devices_inventory():
     """Generates the comprehensive device inventory list, categories, and summary metrics."""
     from hardware_serial import LATEST_HARDWARE_STREAM
 
-    stream = LATEST_HARDWARE_STREAM or {}
+    user_email = session.get("user_id") if has_request_context() else None
+    user_role = session.get("role") if has_request_context() else None
+    hw_default_owner = os.getenv("LORA_DEFAULT_USER_EMAIL", "rio@gmail.com")
+    is_hw_authorized = (user_role == "Admin") or (user_email and user_email.lower() == hw_default_owner.lower())
+
+    stream = (LATEST_HARDWARE_STREAM or {}) if is_hw_authorized else {}
     hw_connected = bool(stream.get("is_connected") or stream.get("connected"))
     port = stream.get("connected_port") or os.getenv("LORA_PORT", "COM8")
     seq = stream.get("seq")
@@ -1029,12 +1073,13 @@ def get_system_devices_inventory():
     # Pond Node 1 transmitter and connected modules: online only if Gateway is connected AND live packet received recently
     node1_online = hw_connected and is_live_packet
 
-    # Query last DB reading for historical reference display (NOT for spoofing online state)
+    # Query last DB reading for historical reference display (scoped to authenticated user)
     latest_db_reading = None
     try:
-        latest_row = db.session.execute(
-            select(sensor_readings).order_by(sensor_readings.c.date.desc()).limit(1)
-        ).mappings().first()
+        query = select(sensor_readings).order_by(sensor_readings.c.date.desc())
+        if user_role != "Admin" and user_email:
+            query = query.where(sensor_readings.c.user_email == user_email)
+        latest_row = db.session.execute(query.limit(1)).mappings().first()
         if latest_row:
             latest_db_reading = dict(latest_row)
     except SQLAlchemyError:
@@ -1225,7 +1270,12 @@ def api_hardware_diagnostics():
     """Runs an immediate automated health and telemetry diagnostics check across all hardware."""
     from hardware_serial import LATEST_HARDWARE_STREAM, detect_receiver_port
 
-    stream = LATEST_HARDWARE_STREAM or {}
+    user_email = session.get("user_id")
+    user_role = session.get("role") or "Client"
+    hw_default_owner = os.getenv("LORA_DEFAULT_USER_EMAIL", "rio@gmail.com")
+    is_hw_authorized = (user_role == "Admin") or (user_email and user_email.lower() == hw_default_owner.lower())
+
+    stream = (LATEST_HARDWARE_STREAM or {}) if is_hw_authorized else {}
     hw_connected = bool(stream.get("is_connected") or stream.get("connected"))
     port = stream.get("connected_port") or os.getenv("LORA_PORT", "COM8")
     temp = stream.get("temperature")
@@ -1234,12 +1284,13 @@ def api_hardware_diagnostics():
     rssi = stream.get("rssi")
     snr = stream.get("snr")
 
-    # DB reading
+    # DB reading (scoped to authenticated user)
     latest_db = None
     try:
-        latest_row = db.session.execute(
-            select(sensor_readings).order_by(sensor_readings.c.date.desc()).limit(1)
-        ).mappings().first()
+        query = select(sensor_readings).order_by(sensor_readings.c.date.desc())
+        if user_role != "Admin" and user_email:
+            query = query.where(sensor_readings.c.user_email == user_email)
+        latest_row = db.session.execute(query.limit(1)).mappings().first()
         if latest_row:
             latest_db = dict(latest_row)
     except SQLAlchemyError:
@@ -1487,10 +1538,13 @@ def create_recommendation():
 @app.route("/api/readings/history")
 @role_required("Client", "Admin")
 def reading_history():
+    user_id = session.get("user_id")
+    user_role = session.get("role") or "Client"
     try:
-        readings = db.session.execute(
-            select(sensor_readings)
-        ).mappings().all()
+        query = select(sensor_readings)
+        if user_role != "Admin" and user_id:
+            query = query.where(sensor_readings.c.user_email == user_id)
+        readings = db.session.execute(query).mappings().all()
     except SQLAlchemyError:
         db.session.rollback()
         app.logger.exception("Unable to load sensor reading history.")
@@ -1572,13 +1626,13 @@ def get_alerts():
     user_id = session.get("user_id")
     if user_id is None:
         return jsonify({"error": "Authentication required."}), 401
+    user_role = session.get("role") or "Client"
 
     try:
-        readings = db.session.execute(
-            select(sensor_readings)
-            .order_by(sensor_readings.c.date.desc())
-            .limit(100)
-        ).mappings().all()
+        query = select(sensor_readings).order_by(sensor_readings.c.date.desc()).limit(100)
+        if user_role != "Admin" and user_id:
+            query = query.where(sensor_readings.c.user_email == user_id)
+        readings = db.session.execute(query).mappings().all()
     except SQLAlchemyError:
         db.session.rollback()
         app.logger.exception("Unable to load sensor readings for alerts.")
@@ -1729,6 +1783,7 @@ def get_alerts():
         "recent_notifications": recent_notifications,
         "history_items": history_items,
         "summary": {
+            "total_evaluations": len(readings),
             "critical_count": critical_count,
             "warning_count": warning_count,
             "normalized_count": normalized_count,
@@ -1746,6 +1801,8 @@ def get_alerts():
 @app.route("/historical/export")
 @role_required("Client", "Admin")
 def export_historical_data():
+    user_id = session.get("user_id")
+    user_role = session.get("role") or "Client"
     target_date = request.args.get("date", "all").strip()
     target_status = request.args.get("status", "all").strip().lower()
     export_format = request.args.get("format", "xlsx").strip().lower()
@@ -1753,9 +1810,10 @@ def export_historical_data():
         export_format = "xlsx"
 
     try:
-        readings = db.session.execute(
-            select(sensor_readings).order_by(sensor_readings.c.date.asc())
-        ).mappings().all()
+        query = select(sensor_readings).order_by(sensor_readings.c.date.asc())
+        if user_role != "Admin" and user_id:
+            query = query.where(sensor_readings.c.user_email == user_id)
+        readings = db.session.execute(query).mappings().all()
     except SQLAlchemyError:
         db.session.rollback()
         app.logger.exception("Unable to load sensor readings for export.")
@@ -2062,6 +2120,7 @@ def delete_user():
         deleted_name = user.user_name
         deleted_email = user.email
         db.session.delete(user)
+        db.session.execute(delete(sensor_readings).where(sensor_readings.c.user_email == deleted_email))
         db.session.commit()
         session["admin_csrf_token"] = secrets.token_urlsafe(32)
         log_activity(
@@ -2140,6 +2199,11 @@ def edit_user():
                 db.session.execute(
                     update(AquacultureCalculation)
                     .where(AquacultureCalculation.user_email == current_email)
+                    .values(user_email=email)
+                )
+                db.session.execute(
+                    update(sensor_readings)
+                    .where(sensor_readings.c.user_email == current_email)
                     .values(user_email=email)
                 )
             else:
@@ -3582,6 +3646,11 @@ def settings():
                             .where(AquacultureCalculation.user_email == user_email)
                             .values(user_email=email)
                         )
+                        db.session.execute(
+                            update(sensor_readings)
+                            .where(sensor_readings.c.user_email == user_email)
+                            .values(user_email=email)
+                        )
                     else:
                         user.user_name = user_name
                         user.ntfy_topic = new_topic
@@ -3713,18 +3782,20 @@ def mark_alerts_read():
 
 
 
-def get_latest_sensor_dict():
+def get_latest_sensor_dict(user_email=None):
     try:
-        latest = db.session.execute(
-            select(sensor_readings).order_by(sensor_readings.c.date.desc()).limit(1)
-        ).mappings().first()
+        query = select(sensor_readings).order_by(sensor_readings.c.date.desc())
+        if user_email:
+            query = query.where(sensor_readings.c.user_email == user_email)
+        latest = db.session.execute(query.limit(1)).mappings().first()
         if not latest:
             return None
         return {
             "temperature": float(latest["temperature"]),
             "ph": float(latest["ph_level"]),
             "status": str(latest.get("status") or "Optimal"),
-            "recorded_at": str(latest["date"])
+            "recorded_at": str(latest["date"]),
+            "user_email": latest.get("user_email"),
         }
     except Exception:
         return None
@@ -3753,7 +3824,7 @@ def calculate_co2():
     ph = data.get("ph")
 
     if temp is None or ph is None or str(temp).strip() == "" or str(ph).strip() == "":
-        latest = get_latest_sensor_dict()
+        latest = get_latest_sensor_dict(user_email=user_id)
         if not latest or latest.get("temperature") is None or latest.get("ph") is None:
             return jsonify({"error": "No sensor readings available to calculate free CO2. Please provide temperature and pH."}), 400
         temp = latest["temperature"]
@@ -3795,7 +3866,7 @@ def calculate_ammonia():
     ph = data.get("ph")
 
     if temp is None or ph is None or str(temp).strip() == "" or str(ph).strip() == "":
-        latest = get_latest_sensor_dict()
+        latest = get_latest_sensor_dict(user_email=user_id)
         if not latest or latest.get("temperature") is None or latest.get("ph") is None:
             return jsonify({"error": "No sensor readings available to calculate unionized ammonia. Please provide temperature and pH."}), 400
         temp = latest["temperature"]
@@ -3916,8 +3987,8 @@ def compute_adaptive_persona(interactions, dwell_times):
     return "balanced_operator", percentages
 
 
-def get_adaptive_next_action(persona_id):
-    latest = get_latest_sensor_dict()
+def get_adaptive_next_action(persona_id, user_email=None):
+    latest = get_latest_sensor_dict(user_email=user_email)
     if not latest:
         return {
             "type": "info",
@@ -3982,10 +4053,11 @@ def get_adaptive_next_action(persona_id):
 
 @app.route("/api/adaptive/profile", methods=["GET"])
 def get_adaptive_profile():
+    user_email = session.get("user_id")
     stored = session.get("adaptive_profile") or {}
     persona_id = stored.get("persona_id", "balanced_operator")
     persona_info = ADAPTIVE_PERSONAS.get(persona_id, ADAPTIVE_PERSONAS["balanced_operator"])
-    next_action = get_adaptive_next_action(persona_id)
+    next_action = get_adaptive_next_action(persona_id, user_email=user_email)
 
     return jsonify({
         "persona": persona_info,
@@ -4005,9 +4077,10 @@ def sync_adaptive_telemetry():
     device_info = payload.get("device") or {}
     user_prefs = payload.get("preferences") or {}
 
+    user_email = session.get("user_id")
     persona_id, percentages = compute_adaptive_persona(interactions, dwell_times)
     persona_info = ADAPTIVE_PERSONAS.get(persona_id, ADAPTIVE_PERSONAS["balanced_operator"])
-    next_action = get_adaptive_next_action(persona_id)
+    next_action = get_adaptive_next_action(persona_id, user_email=user_email)
 
     profile_data = {
         "persona_id": persona_id,
@@ -4018,7 +4091,6 @@ def sync_adaptive_telemetry():
     }
     session["adaptive_profile"] = profile_data
 
-    user_email = session.get("user_id")
     if user_email and session.get("last_logged_persona") != persona_id:
         session["last_logged_persona"] = persona_id
         log_activity(
@@ -4041,6 +4113,7 @@ def sync_adaptive_telemetry():
 def reset_adaptive_profile():
     session.pop("adaptive_profile", None)
     session.pop("last_logged_persona", None)
+    user_email = session.get("user_id")
     default_persona = ADAPTIVE_PERSONAS["balanced_operator"]
     return jsonify({
         "success": True,
@@ -4048,7 +4121,7 @@ def reset_adaptive_profile():
         "persona": default_persona,
         "persona_id": "balanced_operator",
         "percentages": {"monitoring": 25, "calculators": 25, "analytics": 25, "alerts": 25, "devices": 0},
-        "next_action": get_adaptive_next_action("balanced_operator"),
+        "next_action": get_adaptive_next_action("balanced_operator", user_email=user_email),
     })
 
 
