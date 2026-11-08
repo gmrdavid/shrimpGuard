@@ -880,7 +880,8 @@ function updateTable() {
     const addPageButton = (label, page, options = {}) => {
         const button = document.createElement("button");
         button.type = "button";
-        button.className = "readings-page-button";
+        const isNav = Boolean(options.label);
+        button.className = "readings-page-button pagination-btn" + (isNav ? " pagination-btn-nav" : " pagination-page-num") + (options.current ? " active" : "");
         button.textContent = label;
         if (options.label) button.setAttribute("aria-label", options.label);
         if (options.current) button.setAttribute("aria-current", "page");
@@ -892,7 +893,7 @@ function updateTable() {
         pagination.appendChild(button);
     };
 
-    addPageButton("‹", historyPage - 1, {
+    addPageButton("‹ Prev", historyPage - 1, {
         label: "Previous page",
         disabled: historyPage === 1
     });
@@ -911,7 +912,7 @@ function updateTable() {
     visiblePages.forEach((page) => {
         if (typeof page !== "number") {
             const ellipsis = document.createElement("span");
-            ellipsis.className = "readings-page-ellipsis";
+            ellipsis.className = "readings-page-ellipsis pagination-ellipsis";
             ellipsis.textContent = page;
             ellipsis.setAttribute("aria-hidden", "true");
             pagination.appendChild(ellipsis);
@@ -920,7 +921,7 @@ function updateTable() {
         addPageButton(String(page), page, { current: page === historyPage });
     });
 
-    addPageButton("›", historyPage + 1, {
+    addPageButton("Next ›", historyPage + 1, {
         label: "Next page",
         disabled: historyPage === pageCount
     });

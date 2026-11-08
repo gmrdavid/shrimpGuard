@@ -455,15 +455,15 @@
                         </table>
                     </div>
 
-                    <div class="historical-table-footer">
+                    <div class="historical-table-footer table-pagination-footer">
 
-                        <span id="table-page-info" class="table-page-info" aria-live="polite">
+                        <span id="table-page-info" class="table-page-info pagination-page-info" aria-live="polite">
                             Showing 0 readings
                         </span>
 
                         <nav
                             id="alert-history-pagination"
-                            class="readings-pagination historical-pagination"
+                            class="readings-pagination historical-pagination pagination-controls"
                             aria-label="Alert history pages">
                         </nav>
 
@@ -524,14 +524,15 @@
                     </div>
 
                     <!-- Recent Notifications Pagination Controls -->
-                    <div id="recent-notifications-pagination" class="recent-notifications-pagination" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-top: 1px solid #e8edea; background: #fafcfb; font-size: 11px; color: #6a7c72;">
-                        <span id="recent-page-info">Page 1 of 1</span>
-                        <div style="display: flex; gap: 6px;">
-                            <button type="button" id="recent-prev-btn" class="recent-nav-btn" disabled style="padding: 4px 10px; border-radius: 6px; border: 1px solid #d2ded7; background: #fff; font-size: 11px; font-weight: 600; cursor: pointer; color: #1e3a2b;">
-                                ← Prev
+                    <div id="recent-notifications-pagination" class="table-pagination-footer recent-notifications-pagination">
+                        <span id="recent-page-info" class="pagination-page-info">Showing notifications...</span>
+                        <div class="pagination-controls">
+                            <button type="button" id="recent-prev-btn" class="pagination-btn prev-btn" disabled>
+                                ‹ Prev
                             </button>
-                            <button type="button" id="recent-next-btn" class="recent-nav-btn" disabled style="padding: 4px 10px; border-radius: 6px; border: 1px solid #d2ded7; background: #fff; font-size: 11px; font-weight: 600; cursor: pointer; color: #1e3a2b;">
-                                Next →
+                            <span id="recent-current-page" class="pagination-page-badge">Page 1 of 1</span>
+                            <button type="button" id="recent-next-btn" class="pagination-btn next-btn" disabled>
+                                Next ›
                             </button>
                         </div>
                     </div>

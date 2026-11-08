@@ -447,12 +447,12 @@
             </div>
 
             <!-- PAGINATION -->
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; border-top: 1px solid #edf1ee; background: #fbfdfc; flex-wrap: wrap; gap: 10px;">
-                <span id="log-page-info" style="font-size: 12px; font-weight: 600; color: #64796b;">Showing logs...</span>
-                <div style="display: flex; gap: 8px; align-items: center;">
-                    <button type="button" id="log-prev-btn" class="activity-page-btn prev-btn" style="padding: 4px 10px; font-size: 11px;">Prev</button>
-                    <span id="log-current-page" style="font-size: 12px; font-weight: 700; color: #1e3a2b;">Page 1</span>
-                    <button type="button" id="log-next-btn" class="activity-page-btn next-btn" style="padding: 4px 10px; font-size: 11px;">Next</button>
+            <div id="log-pagination" class="table-pagination-footer">
+                <span id="log-page-info" class="pagination-page-info">Showing logs...</span>
+                <div class="pagination-controls">
+                    <button type="button" id="log-prev-btn" class="pagination-btn prev-btn">‹ Prev</button>
+                    <span id="log-current-page" class="pagination-page-badge">Page 1</span>
+                    <button type="button" id="log-next-btn" class="pagination-btn next-btn">Next ›</button>
                 </div>
             </div>
 

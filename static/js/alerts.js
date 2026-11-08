@@ -190,7 +190,13 @@ function renderRecentNotifications(notifications) {
     const pageItems = cachedRecentNotifications.slice(startIdx, endIdx);
 
     if (pageInfo) {
-        pageInfo.textContent = `Showing ${startIdx + 1}–${endIdx} of ${cachedRecentNotifications.length}`;
+        pageInfo.textContent = cachedRecentNotifications.length > 0 
+            ? `Showing ${startIdx + 1}–${endIdx} of ${cachedRecentNotifications.length}`
+            : "No notifications";
+    }
+    const recentCurrentBadge = document.getElementById("recent-current-page");
+    if (recentCurrentBadge) {
+        recentCurrentBadge.textContent = `Page ${recentCurrentPage} of ${totalPages}`;
     }
     if (prevBtn) prevBtn.disabled = (recentCurrentPage <= 1);
     if (nextBtn) nextBtn.disabled = (recentCurrentPage >= totalPages);
@@ -539,7 +545,8 @@ function renderAlertHistory(history) {
         const addPageButton = (label, page, options = {}) => {
             const button = document.createElement("button");
             button.type = "button";
-            button.className = "readings-page-button";
+            const isNav = Boolean(options.label);
+            button.className = "readings-page-button pagination-btn" + (isNav ? " pagination-btn-nav" : " pagination-page-num") + (options.current ? " active" : "");
             button.textContent = label;
             if (options.label) button.setAttribute("aria-label", options.label);
             if (options.current) button.setAttribute("aria-current", "page");
@@ -551,7 +558,7 @@ function renderAlertHistory(history) {
             pagination.appendChild(button);
         };
 
-        addPageButton("‹", historyPage - 1, {
+        addPageButton("‹ Prev", historyPage - 1, {
             label: "Previous page",
             disabled: historyPage === 1
         });
@@ -570,7 +577,7 @@ function renderAlertHistory(history) {
         visiblePages.forEach((page) => {
             if (typeof page !== "number") {
                 const ellipsis = document.createElement("span");
-                ellipsis.className = "readings-page-ellipsis";
+                ellipsis.className = "readings-page-ellipsis pagination-ellipsis";
                 ellipsis.textContent = page;
                 ellipsis.setAttribute("aria-hidden", "true");
                 pagination.appendChild(ellipsis);
@@ -579,7 +586,7 @@ function renderAlertHistory(history) {
             addPageButton(String(page), page, { current: page === historyPage });
         });
 
-        addPageButton("›", historyPage + 1, {
+        addPageButton("Next ›", historyPage + 1, {
             label: "Next page",
             disabled: historyPage === pageCount
         });

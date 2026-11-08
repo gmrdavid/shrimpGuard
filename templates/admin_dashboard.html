@@ -667,18 +667,16 @@
 
                     <!-- ACTIVITY PAGINATION -->
                     <nav class="activity-pagination" id="activity-pagination" aria-label="Activity pagination">
-                        <button type="button" class="activity-page-btn prev-btn" id="activity-prev-btn" aria-label="Previous page">
-                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-arrow"></use></svg>
-                            <span>Prev</span>
+                        <button type="button" class="activity-page-btn pagination-btn prev-btn" id="activity-prev-btn" aria-label="Previous page">
+                            <span>‹ Prev</span>
                         </button>
 
-                        <div class="activity-page-numbers" id="activity-page-numbers">
+                        <div class="activity-page-numbers pagination-controls" id="activity-page-numbers">
                             <!-- Populated dynamically by script -->
                         </div>
 
-                        <button type="button" class="activity-page-btn next-btn" id="activity-next-btn" aria-label="Next page">
-                            <span>Next</span>
-                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-arrow"></use></svg>
+                        <button type="button" class="activity-page-btn pagination-btn next-btn" id="activity-next-btn" aria-label="Next page">
+                            <span>Next ›</span>
                         </button>
                     </nav>
                     {% else %}
@@ -784,7 +782,7 @@
                         if (totalPages <= 7 || p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1) {
                             const btn = document.createElement("button");
                             btn.type = "button";
-                            btn.className = "activity-page-num" + (p === currentPage ? " active" : "");
+                            btn.className = "activity-page-num pagination-btn pagination-page-num" + (p === currentPage ? " active" : "");
                             btn.textContent = p;
                             btn.setAttribute("aria-label", "Page " + p);
                             if (p === currentPage) btn.setAttribute("aria-current", "page");
@@ -795,9 +793,8 @@
                             pageNumbers.appendChild(btn);
                         } else if ((p === 2 && currentPage > 3) || (p === totalPages - 1 && currentPage < totalPages - 2)) {
                             const dots = document.createElement("span");
-                            dots.className = "activity-page-dots";
+                            dots.className = "activity-page-dots pagination-ellipsis";
                             dots.textContent = "…";
-                            dots.style.cssText = "padding: 0 4px; color: var(--dash-muted); font-size: 12px;";
                             pageNumbers.appendChild(dots);
                         }
                     }
