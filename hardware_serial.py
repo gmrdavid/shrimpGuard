@@ -236,7 +236,7 @@ def scan_and_reconnect_port():
     }
 
 
-def _run_listener_loop(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dispatch_fn, user_model):
+def _run_listener_loop(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dispatch_fn, user_model, user_device_model=None):
     """Background worker thread that reads from Node 2 LoRa Receiver and writes to DB."""
     logger.info("[HardwareSerial] Background LoRa listener thread started.")
 
@@ -310,10 +310,26 @@ def _run_listener_loop(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dis
                             with app.app_context():
                                 try:
                                     from sqlalchemy import insert
-                                    lora_user_email = os.getenv("LORA_DEFAULT_USER_EMAIL", "rio@gmail.com")
+                                    target_user = None
+                                    if user_device_model:
+                                        try:
+                                            paired = db.session.query(user_device_model).filter(
+                                                user_device_model.device_id == dev_id,
+                                                user_device_model.status == "Active",
+                                            ).first()
+                                            if paired:
+                                                target_user = paired.user_email
+                                                paired.last_seen = now_dt
+                                        except Exception as pe:
+                                            logger.debug(f"Device lookup error: {pe}")
+
+                                    if not target_user:
+                                        target_user = os.getenv("LORA_DEFAULT_USER_EMAIL", "rio@gmail.com")
+
                                     db.session.execute(
                                         insert(sensor_readings_table).values(
-                                            user_email=lora_user_email,
+                                            user_email=target_user,
+                                            device_id=dev_id,
                                             ph_level=ph,
                                             temperature=temp,
                                             date=now_str,
@@ -322,22 +338,18 @@ def _run_listener_loop(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dis
                                     )
                                     db.session.commit()
                                     logger.info(
-                                        f"[LoRa SYNC] Ingested Live Sensor Data -> Temp: {temp:.2f} \u00b0C | "
-                                        f"pH: {ph:.2f} | Status: {status} | Node: {dev_id} (Seq {seq})"
+                                        f"[LoRa SYNC] Ingested Live Sensor Data -> User: {target_user} | Node: {dev_id} | "
+                                        f"Temp: {temp:.2f} \u00b0C | pH: {ph:.2f} | Status: {status} (Seq {seq})"
                                     )
 
                                     # Trigger ntfy alerts on Warning/Critical
                                     if status in ("Critical", "Warning") and ntfy_dispatch_fn:
                                         try:
                                             topics = []
-                                            if user_model:
-                                                users_with_topic = db.session.query(user_model).filter(
-                                                    user_model.ntfy_topic.isnot(None),
-                                                    user_model.ntfy_topic != "",
-                                                ).all()
-                                                for u in users_with_topic:
-                                                    if u.ntfy_topic and u.ntfy_topic not in topics:
-                                                        topics.append(u.ntfy_topic)
+                                            if user_model and target_user:
+                                                u = db.session.query(user_model).filter_by(email=target_user).first()
+                                                if u and u.ntfy_topic and u.ntfy_topic not in topics:
+                                                    topics.append(u.ntfy_topic)
                                             def_topic = os.getenv("NTFY_DEFAULT_TOPIC")
                                             if def_topic and def_topic not in topics:
                                                 topics.append(def_topic)
@@ -381,11 +393,11 @@ def _run_listener_loop(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dis
             time.sleep(3)
 
 
-def start_hardware_listener(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dispatch_fn, user_model):
+def start_hardware_listener(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dispatch_fn, user_model, user_device_model=None):
     """Spawns the background hardware serial reader daemon."""
     t = threading.Thread(
         target=_run_listener_loop,
-        args=(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dispatch_fn, user_model),
+        args=(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dispatch_fn, user_model, user_device_model),
         daemon=True,
         name="LoRa-Hardware-Serial-Listener",
     )

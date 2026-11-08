@@ -336,10 +336,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Initial load
     fetchDevicesInventory();
+    fetchPairedNodes();
+    setupPairNodeModal();
+    attachUnpairHandlers();
 
     // 4s polling
     pollTimer = setInterval(() => {
         fetchDevicesInventory();
+        fetchPairedNodes();
     }, 4000);
 
     // Relative time updater
@@ -377,3 +381,231 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+
+/* ==========================================================================
+   PAIRED POND NODES MANAGEMENT (MULTI-ACCOUNT HARDWARE TELEMETRY ROUTING)
+   ========================================================================== */
+
+function escapeHtml(str) {
+    if (!str) return "";
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+async function fetchPairedNodes() {
+    const tbody = document.getElementById("paired-nodes-table-body");
+    if (!tbody) return;
+    try {
+        const res = await fetch("/api/devices/paired");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data.success || !Array.isArray(data.devices)) return;
+        renderPairedNodes(data.devices);
+    } catch (err) {
+        console.warn("[Devices] Failed to fetch paired nodes:", err);
+    }
+}
+
+function renderPairedNodes(nodes) {
+    const tbody = document.getElementById("paired-nodes-table-body");
+    if (!tbody) return;
+
+    if (!nodes || nodes.length === 0) {
+        tbody.innerHTML = `
+            <tr id="empty-paired-nodes-row">
+                <td colspan="6" style="text-align: center; padding: 24px; color: #64748b;">
+                    No hardware telemetry nodes paired yet. Click <strong>+ Pair Pond Node</strong> to link your Node ID (e.g. <code>NODE01</code>, <code>NODE02</code>).
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = nodes.map(node => {
+        const isStreaming = Boolean(node.is_streaming);
+        const lastSeenText = node.last_seen ? timeAgo(node.last_seen) : "Awaiting first packet";
+        const linkBadge = isStreaming
+            ? `<span class="table-status status-optimal" style="background: #ecfdf5; color: #059669;"><span class="status-indicator-dot dot-optimal"></span> Streaming Live</span>`
+            : `<span class="table-status status-optimal"><span class="status-indicator-dot dot-optimal"></span> Active</span>`;
+
+        return `
+            <tr class="device-row" data-node-id="${escapeHtml(node.device_id)}">
+                <td>
+                    <span class="device-id-badge" style="background: #e0f2fe; color: #0369a1; font-weight: 700;">${escapeHtml(node.device_id)}</span>
+                </td>
+                <td>
+                    <div class="device-cell-title-row">
+                        <strong class="device-cell-name">${escapeHtml(node.device_name)}</strong>
+                        <span style="font-size: 12px; color: #64748b; margin-left: 8px;">(${escapeHtml(node.pond_location || 'Pond Site')})</span>
+                    </div>
+                </td>
+                <td>
+                    <span style="font-size: 12.5px; color: #475569;">${escapeHtml(node.user_email)}</span>
+                </td>
+                <td>
+                    ${linkBadge}
+                </td>
+                <td>
+                    <span class="device-cell-seen node-last-seen-cell" title="${node.last_seen || ''}">
+                        ${lastSeenText}
+                    </span>
+                </td>
+                <td style="text-align: center;">
+                    <button type="button" class="btn-unpair-node" data-node-id="${escapeHtml(node.device_id)}" style="background: none; border: 1px solid #fecaca; color: #dc2626; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">
+                        Unpair
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join("");
+
+    attachUnpairHandlers();
+}
+
+function attachUnpairHandlers() {
+    document.querySelectorAll(".btn-unpair-node").forEach(btn => {
+        btn.onclick = async () => {
+            const nodeId = btn.getAttribute("data-node-id");
+            if (!nodeId) return;
+            if (!confirm(`Are you sure you want to unpair Node '${nodeId}' from your account? Live telemetry from this node will no longer route to your dashboard.`)) {
+                return;
+            }
+
+            try {
+                btn.disabled = true;
+                const res = await fetch("/api/devices/unpair", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ device_id: nodeId }),
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showNotice(data.message || `Node '${nodeId}' successfully unpaired.`, false);
+                    fetchPairedNodes();
+                    fetchDevicesInventory();
+                } else {
+                    showNotice(data.error || "Failed to unpair node.", true);
+                }
+            } catch (err) {
+                showNotice("Network error while unpairing node.", true);
+            } finally {
+                btn.disabled = false;
+            }
+        };
+    });
+}
+
+function setupPairNodeModal() {
+    const dialog = document.getElementById("pair-node-dialog");
+    const openBtns = [document.getElementById("btn-open-pair-modal"), ...document.querySelectorAll(".btn-trigger-pair-modal")];
+    const cancelBtn = document.getElementById("cancel-pair-node");
+    const form = document.getElementById("pair-node-form");
+    const errBox = document.getElementById("pair-node-error");
+    const submitBtn = document.getElementById("submit-pair-node");
+
+    if (!dialog) return;
+
+    openBtns.forEach(btn => {
+        if (btn) {
+            btn.addEventListener("click", () => {
+                if (errBox) errBox.style.display = "none";
+                if (form) form.reset();
+                if (typeof dialog.showModal === "function") {
+                    dialog.showModal();
+                } else {
+                    dialog.setAttribute("open", "");
+                }
+            });
+        }
+    });
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener("click", () => {
+            if (typeof dialog.close === "function") {
+                dialog.close();
+            } else {
+                dialog.removeAttribute("open");
+            }
+        });
+    }
+
+    dialog.addEventListener("click", (e) => {
+        if (e.target === dialog) {
+            if (typeof dialog.close === "function") {
+                dialog.close();
+            } else {
+                dialog.removeAttribute("open");
+            }
+        }
+    });
+
+    if (form) {
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (errBox) errBox.style.display = "none";
+            const nodeIdInput = document.getElementById("pair-node-id");
+            const nodeNameInput = document.getElementById("pair-node-name");
+            const pondLocInput = document.getElementById("pair-pond-location");
+
+            const nodeId = (nodeIdInput ? nodeIdInput.value : "").trim().toUpperCase();
+            const nodeName = nodeNameInput ? nodeNameInput.value.trim() : "";
+            const pondLoc = pondLocInput ? pondLocInput.value.trim() : "";
+
+            if (!nodeId) {
+                if (errBox) {
+                    errBox.textContent = "Please enter a Hardware Node ID.";
+                    errBox.style.display = "block";
+                }
+                return;
+            }
+
+            try {
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = "Pairing...";
+                }
+
+                const res = await fetch("/api/devices/pair", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        device_id: nodeId,
+                        device_name: nodeName,
+                        pond_location: pondLoc,
+                    }),
+                });
+
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    if (typeof dialog.close === "function") {
+                        dialog.close();
+                    } else {
+                        dialog.removeAttribute("open");
+                    }
+                    showNotice(data.message || `Node '${nodeId}' paired successfully!`, false);
+                    fetchPairedNodes();
+                    fetchDevicesInventory();
+                } else {
+                    if (errBox) {
+                        errBox.textContent = data.error || "Failed to pair device.";
+                        errBox.style.display = "block";
+                    }
+                }
+            } catch (err) {
+                if (errBox) {
+                    errBox.textContent = "Network error while pairing device.";
+                    errBox.style.display = "block";
+                }
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "Pair Hardware Node";
+                }
+            }
+        });
+    }
+}

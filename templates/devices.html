@@ -171,6 +171,11 @@
                 </div>
 
                 <div class="devices-toolbar-actions">
+                    <button type="button" id="btn-open-pair-modal" class="telemetry-sync-btn" style="background: #126b4f; border-color: #126b4f; color: #ffffff;" title="Pair a LoRa transmitter Node ID with this account">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-cpu"></use></svg>
+                        <span>Pair Pond Node</span>
+                    </button>
+
                     <button type="button" id="btn-sync-devices" class="telemetry-test-btn" title="Poll latest hardware state and telemetry">
                         <svg class="ui-icon" aria-hidden="true"><use href="#icon-monitor"></use></svg>
                         <span>Sync Hardware</span>
@@ -326,6 +331,85 @@
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </article>
+        </section>
+
+        <!-- PAIRED POND TELEMETRY NODES (MULTI-ACCOUNT HARDWARE ROUTING) -->
+        <section class="dashboard-section" aria-labelledby="paired-nodes-heading">
+            <article class="panel dashboard-panel">
+                <div class="panel-heading" style="justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div style="display: flex; align-items: center; gap: 11px;">
+                        <div class="panel-heading-icon" style="background: #ecfdf5; color: #059669;">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-cpu"></use>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 id="paired-nodes-heading">Paired Pond Telemetry Nodes</h2>
+                            <p>LoRa transmitter hardware units linked to your account for live telemetry routing</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <button type="button" class="telemetry-sync-btn btn-trigger-pair-modal" style="background: #126b4f; border-color: #126b4f; color: #ffffff;" title="Pair a LoRa transmitter Node ID with this account">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-cpu"></use></svg>
+                            <span>+ Pair Pond Node</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="devices-table-wrap">
+                    <table class="devices-table">
+                        <thead>
+                            <tr>
+                                <th scope="col" style="width: 150px;">Hardware Node ID</th>
+                                <th scope="col">Node / Pond Location</th>
+                                <th scope="col" style="width: 140px;">Account Owner</th>
+                                <th scope="col" style="width: 140px;">LoRa Link</th>
+                                <th scope="col" style="width: 180px;">Last Telemetry</th>
+                                <th scope="col" style="width: 110px; text-align: center;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paired-nodes-table-body">
+                            {% for node in paired_nodes %}
+                            <tr class="device-row" data-node-id="{{ node.device_id }}">
+                                <td>
+                                    <span class="device-id-badge" style="background: #e0f2fe; color: #0369a1; font-weight: 700;">{{ node.device_id }}</span>
+                                </td>
+                                <td>
+                                    <div class="device-cell-title-row">
+                                        <strong class="device-cell-name">{{ node.device_name }}</strong>
+                                        <span style="font-size: 12px; color: #64748b; margin-left: 8px;">({{ node.pond_location or 'Pond Site' }})</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span style="font-size: 12.5px; color: #475569;">{{ node.user_email }}</span>
+                                </td>
+                                <td>
+                                    <span class="table-status status-optimal">
+                                        <span class="status-indicator-dot dot-optimal"></span> Active
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="device-cell-seen node-last-seen-cell">
+                                        {{ node.last_seen.strftime('%Y-%m-%d %H:%M:%S') if node.last_seen else 'Awaiting first packet' }}
+                                    </span>
+                                </td>
+                                <td style="text-align: center;">
+                                    <button type="button" class="btn-unpair-node" data-node-id="{{ node.device_id }}" style="background: none; border: 1px solid #fecaca; color: #dc2626; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">
+                                        Unpair
+                                    </button>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr id="empty-paired-nodes-row">
+                                <td colspan="6" style="text-align: center; padding: 24px; color: #64748b;">
+                                    No hardware telemetry nodes paired yet. Click <strong>+ Pair Pond Node</strong> to link your Node ID (e.g. <code>NODE01</code>, <code>NODE02</code>).
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </article>
         </section>
@@ -547,6 +631,50 @@
     </main>
 
 </div>
+
+<!-- PAIR POND NODE MODAL DIALOG -->
+<dialog id="pair-node-dialog" class="admin-user-dialog" aria-labelledby="pair-dialog-title" style="max-width: 480px; width: 92%;">
+    <div class="admin-user-dialog-heading">
+        <span class="settings-dialog-icon" style="background: #ecfdf5; color: #059669; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 8px;">
+            <svg class="ui-icon" aria-hidden="true" style="width: 22px; height: 22px;">
+                <use href="#icon-cpu"></use>
+            </svg>
+        </span>
+        <div>
+            <h2 id="pair-dialog-title" style="margin: 0; font-size: 18px; color: #1e293b;">Pair Pond Telemetry Node</h2>
+            <p style="margin: 2px 0 0; font-size: 12px; color: #64748b;">Link a physical LoRa transmitter (ESP32) to your account</p>
+        </div>
+    </div>
+
+    <form id="pair-node-form" style="padding: 18px 22px; display: flex; flex-direction: column; gap: 14px;">
+        <div id="pair-node-error" style="display: none; padding: 10px 14px; background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; border-radius: 6px; font-size: 13px;"></div>
+
+        <div>
+            <label for="pair-node-id" style="display: block; font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">Hardware Node ID *</label>
+            <input type="text" id="pair-node-id" name="device_id" required placeholder="e.g. NODE01, NODE02" style="width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 6px; font-size: 14px; text-transform: uppercase;">
+            <p style="font-size: 11.5px; color: #64748b; margin-top: 4px;">Matches the <code>Node=NODE01</code> identifier programmed into your ESP32 LoRa transmitter.</p>
+        </div>
+
+        <div>
+            <label for="pair-node-name" style="display: block; font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">Node Label / Friendly Name</label>
+            <input type="text" id="pair-node-name" name="device_name" placeholder="e.g. Node 1 Autonomous Pond Transmitter Unit" style="width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 6px; font-size: 14px;">
+        </div>
+
+        <div>
+            <label for="pair-pond-location" style="display: block; font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">Pond Location / Site</label>
+            <input type="text" id="pair-pond-location" name="pond_location" placeholder="e.g. Pond Alpha, Nursery Pond 2" style="width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 6px; font-size: 14px;">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;">
+            <button id="cancel-pair-node" class="admin-user-cancel" type="button" style="padding: 9px 16px; border: 1px solid #cbd5e1; background: #ffffff; border-radius: 6px; font-size: 13px; cursor: pointer;">
+                Cancel
+            </button>
+            <button id="submit-pair-node" class="admin-user-submit" type="submit" style="padding: 9px 18px; border: none; background: #126b4f; color: #ffffff; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">
+                Pair Hardware Node
+            </button>
+        </div>
+    </form>
+</dialog>
 
 <script src="{{ url_for('static', filename='js/devices.js') }}"></script>
 <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>

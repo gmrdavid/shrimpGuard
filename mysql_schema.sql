@@ -31,13 +31,29 @@ CREATE TABLE IF NOT EXISTS roles (
 CREATE TABLE IF NOT EXISTS sensors (
     id INT NOT NULL AUTO_INCREMENT,
     user_email VARCHAR(255) NULL,
+    device_id VARCHAR(50) NULL DEFAULT 'NODE01',
     ph_level FLOAT NOT NULL,
     temperature FLOAT NOT NULL,
     `date` VARCHAR(45) NOT NULL,
     status VARCHAR(45) NOT NULL,
     PRIMARY KEY (id),
     KEY idx_sensors_user_email (user_email),
+    KEY idx_sensors_device_id (device_id),
     KEY idx_sensors_date (`date`)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS user_devices (
+    id INT NOT NULL AUTO_INCREMENT,
+    device_id VARCHAR(50) NOT NULL,
+    user_email VARCHAR(255) NOT NULL,
+    device_name VARCHAR(100) NOT NULL DEFAULT 'Pond Telemetry Node',
+    pond_location VARCHAR(100) NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'Active',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_seen DATETIME NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_device_id (device_id),
+    KEY idx_user_devices_email (user_email)
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS activity_logs (

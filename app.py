@@ -196,6 +196,7 @@ sensor_readings = db.Table(
     db.metadata,
     db.Column("id", db.Integer, primary_key=True, autoincrement=True),
     db.Column("user_email", db.String(255), nullable=True, index=True),
+    db.Column("device_id", db.String(50), nullable=True, index=True),
     db.Column("ph_level", db.Float, nullable=False),
     db.Column("temperature", db.Float, nullable=False),
     db.Column("date", db.String(45), nullable=False),
@@ -426,6 +427,32 @@ class AquacultureCalculation(db.Model):
             "co2_factor": self.co2_factor,
             "co2_concentration_mg_l": self.co2_concentration_mg_l,
             "co2_status": self.co2_status,
+        }
+
+
+# --- TABLE 5: USER PAIRED DEVICES ---
+class UserDevice(db.Model):
+    __tablename__ = "user_devices"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    device_id = db.Column(db.String(50), nullable=False, unique=True, index=True)
+    user_email = db.Column(db.String(255), nullable=False, index=True)
+    device_name = db.Column(db.String(100), nullable=False, default="Pond Telemetry Node")
+    pond_location = db.Column(db.String(100), nullable=True)
+    status = db.Column(db.String(20), nullable=False, default="Active")
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    last_seen = db.Column(db.DateTime, nullable=True)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "device_id": self.device_id,
+            "user_email": self.user_email,
+            "device_name": self.device_name,
+            "pond_location": self.pond_location or "Pond Site",
+            "status": self.status,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "last_seen": self.last_seen.isoformat() if self.last_seen else None,
         }
 
 
@@ -1035,9 +1062,24 @@ def get_system_devices_inventory():
     user_email = session.get("user_id") if has_request_context() else None
     user_role = session.get("role") if has_request_context() else None
     hw_default_owner = os.getenv("LORA_DEFAULT_USER_EMAIL", "rio@gmail.com")
-    is_hw_authorized = (user_role == "Admin") or (user_email and user_email.lower() == hw_default_owner.lower())
+
+    paired_nodes = []
+    if user_email:
+        try:
+            paired_nodes = [d.device_id for d in UserDevice.query.filter_by(user_email=user_email, status="Active").all()]
+        except Exception:
+            paired_nodes = []
+
+    is_hw_authorized = (
+        (user_role == "Admin")
+        or (user_email and user_email.lower() == hw_default_owner.lower())
+        or bool(paired_nodes)
+    )
 
     stream = (LATEST_HARDWARE_STREAM or {}) if is_hw_authorized else {}
+    if user_role != "Admin" and user_email and user_email.lower() != hw_default_owner.lower():
+        if stream.get("device_id") not in paired_nodes:
+            stream = {}
     hw_connected = bool(stream.get("is_connected") or stream.get("connected"))
     port = stream.get("connected_port") or os.getenv("LORA_PORT", "COM8")
     seq = stream.get("seq")
@@ -1259,6 +1301,136 @@ def api_devices_inventory():
     """Returns a full inventory of all system hardware components and their live states."""
     data = get_system_devices_inventory()
     return jsonify(data)
+
+
+@app.route("/api/devices/paired")
+@role_required("Client", "Admin")
+def api_devices_paired():
+    """Returns all telemetry nodes paired with the authenticated user account."""
+    user_email = session.get("user_id")
+    user_role = session.get("role") or "Client"
+
+    try:
+        if user_role == "Admin":
+            nodes = UserDevice.query.order_by(UserDevice.created_at.desc()).all()
+        else:
+            nodes = UserDevice.query.filter_by(user_email=user_email).order_by(UserDevice.created_at.desc()).all()
+
+        from hardware_serial import LATEST_HARDWARE_STREAM
+        stream = LATEST_HARDWARE_STREAM or {}
+        stream_dev_id = stream.get("device_id")
+        is_live = False
+        last_packet_time = stream.get("last_packet_time", 0)
+        if last_packet_time and (time.time() - last_packet_time <= 20):
+            is_live = True
+
+        result = []
+        for n in nodes:
+            d_dict = n.to_dict()
+            d_dict["is_streaming"] = is_live and (stream_dev_id == n.device_id)
+            result.append(d_dict)
+
+        return jsonify({"success": True, "devices": result})
+    except Exception as exc:
+        app.logger.exception("Failed to retrieve paired devices: %s", exc)
+        return jsonify({"success": False, "error": str(exc), "devices": []}), 500
+
+
+@app.route("/api/devices/pair", methods=["POST"])
+@role_required("Client", "Admin")
+def api_devices_pair():
+    """Pairs an ESP32 LoRa transmitter Node ID with the user's account."""
+    user_email = session.get("user_id")
+    if not user_email:
+        return jsonify({"success": False, "error": "Authentication required."}), 401
+
+    payload = request.get_json(silent=True) or {}
+    raw_node_id = str(payload.get("device_id") or "").strip().upper()
+    device_name = str(payload.get("device_name") or "").strip()
+    pond_location = str(payload.get("pond_location") or "").strip()
+
+    if not raw_node_id:
+        return jsonify({"success": False, "error": "Hardware Node ID is required (e.g. NODE01, NODE02)."}), 400
+
+    if not re.match(r"^[A-Z0-9_\-]+$", raw_node_id) or len(raw_node_id) < 2 or len(raw_node_id) > 30:
+        return jsonify({"success": False, "error": "Node ID must be 2-30 characters (letters, numbers, hyphens/underscores)."}), 400
+
+    if not device_name:
+        device_name = f"Pond Node {raw_node_id}"
+
+    try:
+        existing = UserDevice.query.filter_by(device_id=raw_node_id).first()
+        if existing:
+            if existing.user_email != user_email and session.get("role") != "Admin":
+                return jsonify({
+                    "success": False,
+                    "error": f"Node ID '{raw_node_id}' is already paired with another account. Please verify your hardware node ID."
+                }), 409
+
+            # Re-activate or update existing node
+            existing.user_email = user_email
+            existing.device_name = device_name
+            existing.pond_location = pond_location or existing.pond_location
+            existing.status = "Active"
+            db.session.commit()
+            log_activity(user_email, "Pair Device", f"Updated pairing for node '{raw_node_id}' ({device_name})")
+            return jsonify({
+                "success": True,
+                "message": f"Hardware Node '{raw_node_id}' updated successfully.",
+                "device": existing.to_dict()
+            })
+
+        new_device = UserDevice(
+            device_id=raw_node_id,
+            user_email=user_email,
+            device_name=device_name,
+            pond_location=pond_location or "Pond Site",
+            status="Active"
+        )
+        db.session.add(new_device)
+        db.session.commit()
+        log_activity(user_email, "Pair Device", f"Paired hardware node '{raw_node_id}' ({device_name})")
+        return jsonify({
+            "success": True,
+            "message": f"Hardware Node '{raw_node_id}' paired successfully with your account.",
+            "device": new_device.to_dict()
+        }), 201
+    except Exception as exc:
+        db.session.rollback()
+        app.logger.exception("Failed to pair device: %s", exc)
+        return jsonify({"success": False, "error": f"Database error: {str(exc)}"}), 500
+
+
+@app.route("/api/devices/unpair", methods=["POST"])
+@role_required("Client", "Admin")
+def api_devices_unpair():
+    """Unpairs a hardware node from the authenticated user's account."""
+    user_email = session.get("user_id")
+    payload = request.get_json(silent=True) or {}
+    raw_node_id = str(payload.get("device_id") or "").strip().upper()
+
+    if not raw_node_id:
+        return jsonify({"success": False, "error": "Hardware Node ID is required."}), 400
+
+    try:
+        device = UserDevice.query.filter_by(device_id=raw_node_id).first()
+        if not device:
+            return jsonify({"success": False, "error": f"Node '{raw_node_id}' not found."}), 404
+
+        if device.user_email != user_email and session.get("role") != "Admin":
+            return jsonify({"success": False, "error": "You do not have permission to unpair this node."}), 403
+
+        db.session.delete(device)
+        db.session.commit()
+        log_activity(user_email, "Unpair Device", f"Unpaired hardware node '{raw_node_id}'")
+        return jsonify({
+            "success": True,
+            "message": f"Node '{raw_node_id}' successfully unpaired from your account."
+        })
+    except Exception as exc:
+        db.session.rollback()
+        app.logger.exception("Failed to unpair device: %s", exc)
+        return jsonify({"success": False, "error": f"Database error: {str(exc)}"}), 500
 
 
 
@@ -3048,8 +3220,17 @@ def monitoring():
 def devices():
     user_email = session.get("user_id")
     user = db.session.get(User, user_email) if user_email else None
+    user_role = session.get("role") or "Client"
 
     inv = get_system_devices_inventory()
+
+    try:
+        if user_role == "Admin":
+            paired_nodes = UserDevice.query.order_by(UserDevice.created_at.desc()).all()
+        else:
+            paired_nodes = UserDevice.query.filter_by(user_email=user_email).order_by(UserDevice.created_at.desc()).all()
+    except Exception:
+        paired_nodes = []
 
     return render_template(
         "devices.html",
@@ -3063,6 +3244,7 @@ def devices():
         hardware_stream=inv.get("latest_telemetry", {}),
         hw_connected=inv["is_connected"],
         latest_reading=inv.get("latest_telemetry", {}),
+        paired_nodes=paired_nodes,
     )
 
 
@@ -4178,6 +4360,7 @@ def start_lora_hardware_service():
             calculate_ml_fn=calculate_ml_water_quality_analysis,
             ntfy_dispatch_fn=_async_dispatch_ntfy,
             user_model=User,
+            user_device_model=UserDevice,
         )
         app.logger.info("Automatic LoRa hardware listener daemon spawned successfully.")
     except Exception as exc:
