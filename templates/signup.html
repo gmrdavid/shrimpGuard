@@ -32,6 +32,22 @@
 
             <!-- Back Button -->
             <div class="login-top-bar">
+            <!-- Top Header: Brand & Back to Home -->
+            <div class="login-header-top">
+                <a class="login-brand"
+                   href="{{ url_for('landing') }}"
+                   aria-label="ShrimpGuard home">
+                    <span class="login-brand-mark" aria-hidden="true">
+                        <svg class="ui-icon brand-icon"
+                             viewBox="0 0 24 24">
+                            <use href="#icon-shrimp"></use>
+                        </svg>
+                    </span>
+                    <span class="login-brand-name">
+                        Shrimp<span>Guard</span>
+                    </span>
+                </a>
+
                 <a class="login-back-button"
                    href="{{ url_for('landing') }}"
                    aria-label="Back to home page">

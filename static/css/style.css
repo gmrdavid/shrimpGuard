@@ -6721,13 +6721,26 @@ nav a {
 }
 
 /* =========================================
-   BACK BUTTON
+   LOGIN & SIGNUP HEADER TOP BAR & BACK BUTTON
 ========================================= */
+
+.login-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 28px;
+    width: 100%;
+}
+
+.login-header-top .login-brand {
+    margin-bottom: 0;
+}
 
 .login-top-bar {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: space-between;
     margin-bottom: 22px;
 }
 
@@ -6740,11 +6753,13 @@ nav a {
     border: 1px solid #dbe6df;
     background: #f7faf8;
     color: #435e50;
-    font-size: 12.5px;
+    font-size: 12px;
     font-weight: 650;
     text-decoration: none;
     transition: all 0.18s ease;
     box-shadow: 0 1px 3px rgba(18, 107, 79, 0.04);
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .login-back-button:hover,
@@ -6757,8 +6772,8 @@ nav a {
 }
 
 .login-back-button .ui-icon {
-    width: 15px;
-    height: 15px;
+    width: 14px;
+    height: 14px;
     flex-shrink: 0;
     transition: transform 0.18s ease;
 }
@@ -6766,6 +6781,18 @@ nav a {
 .login-back-button:hover .ui-icon,
 .login-back-button:focus-visible .ui-icon {
     transform: translateX(-2px);
+}
+
+@media (max-width: 440px) {
+    .login-header-top {
+        margin-bottom: 22px;
+    }
+
+    .login-back-button {
+        padding: 5px 10px 5px 8px;
+        font-size: 11.5px;
+        gap: 5px;
+    }
 }
 
 
@@ -23687,7 +23714,66 @@ nav a {
 .ai-modal-section-title {
     font-size: 11px;
     font-weight: 800;
-    lett
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #334155;
+}
+
+.ai-modal-eval-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #15803d;
+    border-radius: 9px;
+    padding: 14px 16px;
+}
+
+.ai-modal-eval-content {
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: #1e293b;
+    margin: 0;
+}
+
+.ai-modal-actions-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    padding: 12px 16px;
+}
+
+.ai-modal-actions-list {
+    margin: 0;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ai-modal-actions-list li {
+    font-size: 13px;
+    color: #1e293b;
+    line-height: 1.5;
+}
+
+.ai-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 22px;
+    border-top: 1px solid #edf2f7;
+    background: #f8fafc;
+}
+
+.ai-modal-footer-btns {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-ai-reanalyze {
+    display: inline-flex;
     align-items: center;
     gap: 6px;
     padding: 7px 14px;
