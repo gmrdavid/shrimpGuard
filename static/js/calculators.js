@@ -115,13 +115,47 @@ document.addEventListener("DOMContentLoaded", function () {
     // -------------------------------------------------------------
     // TOOL 1: Biomass & Feeding Calculator
     // -------------------------------------------------------------
+    function resetBiomassResultCards() {
+        const bKgEl = document.getElementById("res-biomass-kg");
+        const bTonsEl = document.getElementById("res-biomass-tons");
+        const sCountEl = document.getElementById("res-shrimp-count");
+        const tFactorEl = document.getElementById("res-temp-factor");
+        const tBadgeEl = document.getElementById("res-temp-badge");
+        const tGuideEl = document.getElementById("res-temp-guideline");
+        const adjFeedEl = document.getElementById("res-adjusted-feed");
+        const perMealEl = document.getElementById("res-per-meal");
+        const baseFeedEl = document.getElementById("res-base-feed");
+
+        if (bKgEl) bKgEl.textContent = "—";
+        if (bTonsEl) bTonsEl.textContent = "";
+        if (sCountEl) sCountEl.textContent = "Awaiting pond stocking parameters";
+        if (tFactorEl) tFactorEl.textContent = "—";
+        if (tBadgeEl) {
+            tBadgeEl.textContent = "Awaiting Data";
+            tBadgeEl.className = "wqi-metric-badge badge-neutral";
+        }
+        if (tGuideEl) tGuideEl.textContent = "Input parameters or connect telemetry to calculate feeding adjustment.";
+        if (adjFeedEl) adjFeedEl.textContent = "—";
+        if (perMealEl) perMealEl.textContent = "—";
+        if (baseFeedEl) baseFeedEl.textContent = "—";
+    }
+
     function calculateBiomassAndFeed() {
-        const area = Math.max(1, Number(document.getElementById("feed-pond-area")?.value || 1000));
+        const areaRaw = document.getElementById("feed-pond-area")?.value;
+        const densityRaw = document.getElementById("feed-stocking-density")?.value;
+        const abwRaw = document.getElementById("feed-abw")?.value;
+
+        if (!areaRaw || !densityRaw || !abwRaw) {
+            resetBiomassResultCards();
+            return;
+        }
+
+        const area = Math.max(1, Number(areaRaw));
         const depth = Math.max(0.1, Number(document.getElementById("feed-pond-depth")?.value || 1.2));
-        const density = Math.max(1, Number(document.getElementById("feed-stocking-density")?.value || 60));
+        const density = Math.max(1, Number(densityRaw));
         const survival = Math.min(100, Math.max(5, Number(document.getElementById("feed-survival-rate")?.value || 85)));
-        const abw = Math.max(0.1, Number(document.getElementById("feed-abw")?.value || 15.0));
-        const feedRatePct = Math.max(0.5, Number(document.getElementById("feed-rate-percent")?.value || 3.2));
+        const abw = Math.max(0.01, Number(abwRaw));
+        const feedRatePct = Math.max(0.1, Number(document.getElementById("feed-rate-percent")?.value || 3.2));
         const meals = Math.max(1, Math.min(8, Number(document.getElementById("feed-meals-day")?.value || 4)));
         const currentTemp = Number(document.getElementById("feed-current-temp")?.value || liveSensor.temperature);
 
@@ -224,10 +258,28 @@ document.addEventListener("DOMContentLoaded", function () {
     // -------------------------------------------------------------
     // TOOL 2: Water Treatment & Chemical Dosing
     // -------------------------------------------------------------
+    function resetLimeResultCards() {
+        const dosageKgEl = document.getElementById("lime-dosage-kg");
+        const dosagePpmEl = document.getElementById("lime-dosage-ppm");
+        const instructionEl = document.getElementById("lime-instruction");
+        if (dosageKgEl) dosageKgEl.textContent = "—";
+        if (dosagePpmEl) dosagePpmEl.textContent = "—";
+        if (instructionEl) instructionEl.textContent = "Enter pond volume and pH targets to calculate required liming buffer.";
+    }
+
     function calculateLimeDosage() {
-        const volume = Math.max(1, Number(document.getElementById("lime-pond-vol")?.value || 1200));
-        const currentPh = Number(document.getElementById("lime-current-ph")?.value || 7.10);
-        const targetPh = Number(document.getElementById("lime-target-ph")?.value || 8.00);
+        const volRaw = document.getElementById("lime-pond-vol")?.value;
+        const curPhRaw = document.getElementById("lime-current-ph")?.value;
+        const targetPhRaw = document.getElementById("lime-target-ph")?.value;
+
+        if (!volRaw || !curPhRaw || !targetPhRaw) {
+            resetLimeResultCards();
+            return;
+        }
+
+        const volume = Math.max(1, Number(volRaw));
+        const currentPh = Number(curPhRaw);
+        const targetPh = Number(targetPhRaw);
         const chemical = document.getElementById("lime-chemical-type")?.value || "caco3";
 
         const dosageKgEl = document.getElementById("lime-dosage-kg");
@@ -266,8 +318,21 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    function resetMolassesResultCards() {
+        const dosageKgEl = document.getElementById("molasses-dosage-kg");
+        const instructionEl = document.getElementById("molasses-instruction");
+        if (dosageKgEl) dosageKgEl.textContent = "—";
+        if (instructionEl) instructionEl.textContent = "Enter daily feed and crude protein to compute organic carbon requirement.";
+    }
+
     function calculateMolassesDosage() {
-        const dailyFeed = Math.max(0.1, Number(document.getElementById("molasses-daily-feed")?.value || 25.0));
+        const dailyFeedRaw = document.getElementById("molasses-daily-feed")?.value;
+        if (!dailyFeedRaw) {
+            resetMolassesResultCards();
+            return;
+        }
+
+        const dailyFeed = Math.max(0.1, Number(dailyFeedRaw));
         const proteinPct = Math.max(15, Number(document.getElementById("molasses-protein-pct")?.value || 35));
         const targetCn = Number(document.getElementById("molasses-target-cn")?.value || 15);
         const carbonSource = document.getElementById("molasses-carbon-source")?.value || "cane_molasses";
@@ -304,8 +369,23 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    function resetAeratorResultCards() {
+        const hpEl = document.getElementById("aero-power-hp");
+        const unitsEl = document.getElementById("aero-units");
+        const instructionEl = document.getElementById("aero-instruction");
+        if (hpEl) hpEl.textContent = "—";
+        if (unitsEl) unitsEl.textContent = "—";
+        if (instructionEl) instructionEl.textContent = "Enter shrimp biomass to calculate recommended paddlewheel aerator power.";
+    }
+
     function calculateAeratorPower() {
-        const biomass = Math.max(10, Number(document.getElementById("aero-biomass-input")?.value || 765));
+        const biomassRaw = document.getElementById("aero-biomass-input")?.value;
+        if (!biomassRaw) {
+            resetAeratorResultCards();
+            return;
+        }
+
+        const biomass = Math.max(10, Number(biomassRaw));
         const temp = Number(document.getElementById("aero-temp-input")?.value || liveSensor.temperature);
 
         // Standard Vannamei Aeration Ratio:
@@ -944,47 +1024,83 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     // Shared state storing current live calculation results
-    let currentGrowthState = {
-        isCount: 100000,
-        lhcCount: 85000,
-        docDays: 90,
-        ibwVal: 0.010,
-        bwInput: 1700,
-        bwGrams: 1700000,
-        bwKg: 1700,
-        tfgInput: 2125,
-        tfgKg: 2125,
-        tlCm: 12.9,
-        sr: 85.0,
-        mortalityCount: 15000,
-        mortalityPct: 15.0,
-        fabw: 20.0,
-        countPerKg: 50.0,
-        adwg: 0.2221,
-        weeklyGain: 1.555,
-        sgr: 8.445,
-        weightMult: 2000,
-        ibGrams: 1000,
-        ibKg: 1.0,
-        fbGrams: 1700000,
-        fbKg: 1700.0,
-        netGainKg: 1699.0,
-        fcr: 1.251,
-        feedEfficiency: 79.95,
-        kFactor: 0.9317
-    };
+    let currentGrowthState = null;
+
+    function resetGrowthResultCards() {
+        const ids = [
+            "gm-res-sr-val", "gm-res-fabw-val", "gm-res-adwg-val",
+            "gm-res-sgr-val", "gm-res-ib-kg", "gm-res-fb-kg",
+            "gm-res-fcr-val", "gm-res-k-val"
+        ];
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = "—";
+        });
+
+        const badges = [
+            "gm-res-sr-badge", "gm-res-fabw-badge", "gm-res-adwg-badge",
+            "gm-res-fcr-badge", "gm-res-k-badge"
+        ];
+        badges.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.textContent = "Awaiting Data";
+                el.className = "wqi-metric-badge badge-neutral";
+            }
+        });
+
+        const mortCountEl = document.getElementById("gm-res-mortality-count");
+        if (mortCountEl) mortCountEl.textContent = "—";
+        const mortPctEl = document.getElementById("gm-res-mortality-pct");
+        if (mortPctEl) mortPctEl.textContent = "—";
+        const countKgEl = document.getElementById("gm-res-count-per-kg");
+        if (countKgEl) countKgEl.textContent = "—";
+        const bulkSummaryEl = document.getElementById("gm-res-bulk-summary");
+        if (bulkSummaryEl) bulkSummaryEl.textContent = "—";
+        const weeklyGainEl = document.getElementById("gm-res-weekly-gain");
+        if (weeklyGainEl) weeklyGainEl.textContent = "—";
+        const weightMultEl = document.getElementById("gm-res-weight-mult");
+        if (weightMultEl) weightMultEl.textContent = "—";
+        const ibGramsEl = document.getElementById("gm-res-ib-grams");
+        if (ibGramsEl) ibGramsEl.textContent = "—";
+        const netBioEl = document.getElementById("gm-res-net-biomass");
+        if (netBioEl) netBioEl.textContent = "—";
+        const feedEffEl = document.getElementById("gm-res-feed-efficiency");
+        if (feedEffEl) feedEffEl.textContent = "—";
+        const tfgSummaryEl = document.getElementById("gm-res-tfg-summary");
+        if (tfgSummaryEl) tfgSummaryEl.textContent = "—";
+        const gainSummaryEl = document.getElementById("gm-res-gain-summary");
+        if (gainSummaryEl) gainSummaryEl.textContent = "—";
+        const kProfileEl = document.getElementById("gm-res-k-profile");
+        if (kProfileEl) kProfileEl.textContent = "Awaiting parameters";
+
+        currentGrowthState = null;
+    }
 
     // Master Engine (All-in-One Eqs. 1–8)
     function calculateMasterGrowth() {
-        const isCount = Math.max(1, Number(document.getElementById("gm-initial-stocking")?.value || 100000));
-        const lhcCount = Math.max(1, Number(document.getElementById("gm-live-harvest-count")?.value || 85000));
-        const docDays = Math.max(1, Number(document.getElementById("gm-days-of-culture")?.value || 90));
-        const ibwVal = Math.max(0.0001, Number(document.getElementById("gm-initial-weight")?.value || 0.010));
-        const bwInput = Math.max(0.1, Number(document.getElementById("gm-bulk-weight")?.value || 1700));
+        const isRaw = document.getElementById("gm-initial-stocking")?.value;
+        const lhcRaw = document.getElementById("gm-live-harvest-count")?.value;
+        const docRaw = document.getElementById("gm-days-of-culture")?.value;
+        const ibwRaw = document.getElementById("gm-initial-weight")?.value;
+        const bwRaw = document.getElementById("gm-bulk-weight")?.value;
+        const tfgRaw = document.getElementById("gm-total-feed")?.value;
+        const tlRaw = document.getElementById("gm-total-length")?.value;
+
+        if (!isRaw || !lhcRaw || !docRaw || !ibwRaw || !bwRaw) {
+            resetGrowthResultCards();
+            return;
+        }
+
+        const isCount = Math.max(1, Number(isRaw));
+        const lhcCount = Math.max(1, Number(lhcRaw));
+        const docDays = Math.max(1, Number(docRaw));
+        const ibwVal = Math.max(0.0001, Number(ibwRaw));
+        const bwInput = Math.max(0.1, Number(bwRaw));
         const bwUnit = document.getElementById("gm-bw-unit")?.value || "kg";
-        const tfgInput = Math.max(0.1, Number(document.getElementById("gm-total-feed")?.value || 2125));
+        const tfgInput = Math.max(0, Number(tfgRaw || 0));
         const feedUnit = document.getElementById("gm-feed-unit")?.value || "kg";
-        const tlCm = Math.max(0.1, Number(document.getElementById("gm-total-length")?.value || 12.9));
+        const tlCm = Math.max(0.1, Number(tlRaw || 0));
 
         // Normalizations
         const bwGrams = bwUnit === "kg" ? bwInput * 1000.0 : bwInput;
@@ -1018,11 +1134,11 @@ document.addEventListener("DOMContentLoaded", function () {
         const netGainKg = Math.max(0.0001, fbKg - ibKg);
 
         // Eq. 7: Feed Conversion Ratio (FCR) = TFG / (FB - IB)
-        const fcr = tfgKg / netGainKg;
+        const fcr = tfgKg > 0 ? (tfgKg / netGainKg) : 0;
         const feedEfficiency = fcr > 0 ? (100.0 / fcr) : 0;
 
         // Eq. 8: Fulton's Condition Factor (K) = (FABW / TL^3) * 100
-        const kFactor = (fabw / Math.pow(tlCm, 3)) * 100.0;
+        const kFactor = tlCm > 0 ? ((fabw / Math.pow(tlCm, 3)) * 100.0) : 0;
 
         // Update state
         currentGrowthState = {
@@ -1104,12 +1220,15 @@ document.addEventListener("DOMContentLoaded", function () {
         const feedEffEl = document.getElementById("gm-res-feed-efficiency");
         const tfgSummaryEl = document.getElementById("gm-res-tfg-summary");
         const gainSummaryEl = document.getElementById("gm-res-gain-summary");
-        if (fcrValEl) fcrValEl.textContent = fcr.toFixed(3);
-        if (feedEffEl) feedEffEl.textContent = `${feedEfficiency.toFixed(2)}%`;
+        if (fcrValEl) fcrValEl.textContent = fcr > 0 ? fcr.toFixed(3) : "—";
+        if (feedEffEl) feedEffEl.textContent = feedEfficiency > 0 ? `${feedEfficiency.toFixed(2)}%` : "—";
         if (tfgSummaryEl) tfgSummaryEl.textContent = `${tfgKg.toFixed(1)} kg`;
         if (gainSummaryEl) gainSummaryEl.textContent = `${netGainKg.toFixed(1)} kg`;
         if (fcrBadgeEl) {
-            if (fcr < 1.20) {
+            if (fcr <= 0) {
+                fcrBadgeEl.textContent = "Awaiting Feed";
+                fcrBadgeEl.className = "wqi-metric-badge badge-neutral";
+            } else if (fcr < 1.20) {
                 fcrBadgeEl.textContent = "Exceptional (<1.20)";
                 fcrBadgeEl.className = "wqi-metric-badge badge-optimal";
             } else if (fcr <= 1.50) {
@@ -1128,9 +1247,13 @@ document.addEventListener("DOMContentLoaded", function () {
         const kValEl = document.getElementById("gm-res-k-val");
         const kBadgeEl = document.getElementById("gm-res-k-badge");
         const kProfileEl = document.getElementById("gm-res-k-profile");
-        if (kValEl) kValEl.textContent = kFactor.toFixed(4);
+        if (kValEl) kValEl.textContent = kFactor > 0 ? kFactor.toFixed(4) : "—";
         if (kBadgeEl && kProfileEl) {
-            if (kFactor >= 0.80 && kFactor <= 1.15) {
+            if (kFactor <= 0) {
+                kBadgeEl.textContent = "Awaiting Length";
+                kBadgeEl.className = "wqi-metric-badge badge-neutral";
+                kProfileEl.textContent = "Enter total length to calculate Fulton's K condition";
+            } else if (kFactor >= 0.80 && kFactor <= 1.15) {
                 kBadgeEl.textContent = "Optimal Condition (0.80–1.15)";
                 kBadgeEl.className = "wqi-metric-badge badge-optimal";
                 kProfileEl.textContent = "Healthy, well-proportioned robust girth";
@@ -1144,6 +1267,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 kProfileEl.textContent = "High muscle density and heavy carapace girth";
             }
         }
+
+        const docPill = document.getElementById("graph-doc-pill");
+        if (docPill) docPill.textContent = `DOC 1–${docDays}`;
     }
 
     // Modal popup dialog definitions for Equations 1 to 8
@@ -1686,7 +1812,7 @@ document.addEventListener("DOMContentLoaded", function () {
             setVal("save-preview-co2", `${safeNum(cur.co2_concentration_mg_l).toFixed(2)} mg/L`);
 
             if (saveCalcNotes) {
-                saveCalcNotes.value = `Pond 1 - DOC ${cur.doc_days || 90} Run`;
+                saveCalcNotes.value = cur.doc_days ? `Pond 1 - DOC ${cur.doc_days} Run` : "Pond 1 - Calculation Snapshot";
             }
             if (saveStatusMsg) {
                 saveStatusMsg.hidden = true;
@@ -1749,6 +1875,9 @@ document.addEventListener("DOMContentLoaded", function () {
                         saveStatusMsg.hidden = false;
                         saveStatusMsg.className = "save-status-msg status-success";
                         saveStatusMsg.textContent = `✓ ${result.message || 'Snapshot successfully saved!'}`;
+                    }
+                    if (typeof loadSavedCalculationsFromDB === "function") {
+                        await loadSavedCalculationsFromDB();
                     }
                     setTimeout(() => {
                         closeSaveModal();
@@ -2114,15 +2243,40 @@ document.addEventListener("DOMContentLoaded", function () {
     const growthGraphExportBtn = document.getElementById("growth-graph-open-export");
 
     function generateGrowthTrajectory() {
-        const isCount = Math.max(1, Number(document.getElementById("gm-initial-stocking")?.value || 100000));
-        const lhcCount = Math.max(1, Number(document.getElementById("gm-live-harvest-count")?.value || 85000));
-        const docTotal = Math.max(1, Number(document.getElementById("gm-days-of-culture")?.value || 90));
-        const ibwVal = Math.max(0.0001, Number(document.getElementById("gm-initial-weight")?.value || 0.010));
-        const bwInput = Math.max(0.1, Number(document.getElementById("gm-bulk-weight")?.value || 1700));
-        const bwUnit = document.getElementById("gm-bw-unit")?.value || "kg";
-        const tfgInput = Math.max(0.1, Number(document.getElementById("gm-total-feed")?.value || 2125));
-        const feedUnit = document.getElementById("gm-feed-unit")?.value || "kg";
-        const tlCm = Math.max(0.1, Number(document.getElementById("gm-total-length")?.value || 12.9));
+        let isCount, lhcCount, docTotal, ibwVal, bwInput, bwUnit, tfgInput, feedUnit, tlCm;
+
+        const isRaw = document.getElementById("gm-initial-stocking")?.value;
+        const lhcRaw = document.getElementById("gm-live-harvest-count")?.value;
+        const docRaw = document.getElementById("gm-days-of-culture")?.value;
+        const ibwRaw = document.getElementById("gm-initial-weight")?.value;
+        const bwRaw = document.getElementById("gm-bulk-weight")?.value;
+
+        const saved = (growthHistoryRecords && growthHistoryRecords.length > 0) ? growthHistoryRecords[0] : null;
+
+        if (isRaw && lhcRaw && docRaw && ibwRaw && bwRaw) {
+            isCount = Math.max(1, Number(isRaw));
+            lhcCount = Math.max(1, Number(lhcRaw));
+            docTotal = Math.max(1, Number(docRaw));
+            ibwVal = Math.max(0.0001, Number(ibwRaw));
+            bwInput = Math.max(0.1, Number(bwRaw));
+            bwUnit = document.getElementById("gm-bw-unit")?.value || "kg";
+            tfgInput = Math.max(0, Number(document.getElementById("gm-total-feed")?.value || 0));
+            feedUnit = document.getElementById("gm-feed-unit")?.value || "kg";
+            tlCm = Math.max(0.1, Number(document.getElementById("gm-total-length")?.value || 0));
+        } else if (saved && saved.is_count && saved.lhc_count && saved.doc_days) {
+            isCount = Math.max(1, Number(saved.is_count));
+            lhcCount = Math.max(1, Number(saved.lhc_count));
+            docTotal = Math.max(1, Number(saved.doc_days));
+            ibwVal = Math.max(0.0001, Number(saved.ibw_g || 0.010));
+            bwInput = Math.max(0.1, Number(saved.bulk_weight_kg || 1));
+            bwUnit = "kg";
+            tfgInput = Math.max(0, Number(saved.total_feed_given_kg || 0));
+            feedUnit = "kg";
+            tlCm = Math.max(0.1, Number(saved.total_length_cm || 0));
+        } else {
+            // No saved calculations in database and no active parameters
+            return [];
+        }
 
         const bwGrams = bwUnit === "kg" ? bwInput * 1000.0 : bwInput;
         const fabwVal = bwGrams / lhcCount;
@@ -2139,24 +2293,24 @@ document.addEventListener("DOMContentLoaded", function () {
             const dayFrac = day / docTotal;
 
             // Exponential weight progression
-            const curW = i === 0 ? ibwVal : (i === steps - 1 ? fabwVal : ibwVal * Math.exp((sgr / 100.0) * day));
+            const curW = i === 0 ? ibwVal : (i === steps - 1 ? (saved?.eq2_fabw_g || fabwVal) : ibwVal * Math.exp((sgr / 100.0) * day));
             // Logistic mortality curve
             const curPop = Math.round(isCount - (isCount - lhcCount) * Math.pow(dayFrac, 0.85));
-            const curSR = (curPop / isCount) * 100.0;
+            const curSR = i === steps - 1 && saved?.eq1_sr_pct ? Number(saved.eq1_sr_pct) : (curPop / isCount) * 100.0;
             // Final Biomass at day t (Eq. 6)
-            const curFB = (curPop * curW) / 1000.0;
+            const curFB = i === steps - 1 && saved?.eq6_fb_kg ? Number(saved.eq6_fb_kg) : (curPop * curW) / 1000.0;
             // Daily gain (Eq. 3)
-            const curADWG = day > 1 ? (curW - ibwVal) / day : adwg;
+            const curADWG = i === steps - 1 && saved?.eq3_adwg_g_day ? Number(saved.eq3_adwg_g_day) : (day > 1 ? (curW - ibwVal) / day : adwg);
             // SGR (Eq. 4)
-            const curSGR = day > 1 ? ((Math.log(curW) - Math.log(ibwVal)) / day) * 100.0 : sgr;
+            const curSGR = i === steps - 1 && saved?.eq4_sgr_pct_day ? Number(saved.eq4_sgr_pct_day) : (day > 1 ? ((Math.log(curW) - Math.log(ibwVal)) / day) * 100.0 : sgr);
             // Cumulative feed & FCR (Eq. 7)
             const curFeed = tfgKg * Math.pow(dayFrac, 1.4);
             const ibKg = (isCount * ibwVal) / 1000.0;
             const curNet = Math.max(0.1, curFB - ibKg);
-            const curFCR = day > 10 ? Math.max(0.9, Math.min(2.2, curFeed / curNet)) : 1.18;
+            const curFCR = i === steps - 1 && saved?.eq7_fcr ? Number(saved.eq7_fcr) : (day > 10 ? Math.max(0.9, Math.min(2.2, curFeed / curNet)) : (saved?.eq7_fcr || 1.18));
             // Length & Fulton's K (Eq. 8)
-            const curTL = Math.max(1.0, tlCm * Math.pow(curW / fabwVal, 0.333));
-            const curK = (curW / Math.pow(curTL, 3)) * 100.0;
+            const curTL = tlCm > 0 ? Math.max(1.0, tlCm * Math.pow(curW / fabwVal, 0.333)) : 0;
+            const curK = i === steps - 1 && saved?.eq8_fulton_k ? Number(saved.eq8_fulton_k) : (curTL > 0 ? (curW / Math.pow(curTL, 3)) * 100.0 : (saved?.eq8_fulton_k || 0.9317));
 
             points.push({
                 label: `DOC ${day}`,
@@ -2208,7 +2362,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 emptyEl.hidden = false;
                 emptyEl.textContent = growthChartMode === "history"
                     ? "No saved database records found yet. Click 'Save Snapshot' above to store your first run."
-                    : "No calculation data available.";
+                    : "No saved growth calculations found in the database. Perform and save a calculation snapshot below to generate your pond's growth performance trend.";
             }
             return;
         }
@@ -2464,41 +2618,44 @@ document.addEventListener("DOMContentLoaded", function () {
     async function openGrowthGraphModal() {
         if (!growthGraphModal) return;
 
-        // 1. Immediately prepare trajectory data so points are ready synchronously with zero lag
+        // Ensure calculation history is loaded from database
+        if (!growthHistoryRecords || growthHistoryRecords.length === 0) {
+            try {
+                const res = await fetch("/api/calculators/history");
+                if (res.ok) {
+                    const data = await res.json();
+                    growthHistoryRecords = data.latest || [];
+                }
+            } catch (err) {
+                console.error("Failed to load calculation history:", err);
+            }
+        }
+
+        const saved = (growthHistoryRecords && growthHistoryRecords.length > 0) ? growthHistoryRecords[0] : null;
+        const docInputVal = Number(document.getElementById("gm-days-of-culture")?.value);
+        const docTotal = docInputVal || saved?.doc_days;
+
+        const docPill = document.getElementById("graph-doc-pill");
+        if (docPill) {
+            docPill.textContent = docTotal ? `DOC 1–${docTotal}` : "No Saved Data";
+        }
+
         if (growthChartMode !== "history") {
             growthChartMode = "trajectory";
             if (btnGraphModeTrajectory) btnGraphModeTrajectory.classList.add("active");
             if (btnGraphModeHistory) btnGraphModeHistory.classList.remove("active");
             currentGrowthChartData = generateGrowthTrajectory();
+        } else {
+            currentGrowthChartData = buildHistoryPoints(growthHistoryRecords);
         }
-
-        const docTotal = Math.max(1, Number(document.getElementById("gm-days-of-culture")?.value || 90));
-        const docPill = document.getElementById("graph-doc-pill");
-        if (docPill) docPill.textContent = docTotal;
 
         growthGraphModal.hidden = false;
         document.body.style.overflow = "hidden";
 
-        // Render immediately and on animation frame
         renderGrowthChart();
         requestAnimationFrame(() => {
             renderGrowthChart();
         });
-
-        // 2. Fetch history in background for Saved Database Batches view
-        try {
-            const res = await fetch("/api/calculators/history");
-            if (res.ok) {
-                const data = await res.json();
-                growthHistoryRecords = data.latest || [];
-                if (growthChartMode === "history" && growthHistoryRecords.length > 0) {
-                    currentGrowthChartData = buildHistoryPoints(growthHistoryRecords);
-                    renderGrowthChart();
-                }
-            }
-        } catch (err) {
-            console.error("Failed to load calculation history:", err);
-        }
     }
 
     function closeGrowthGraphModal() {
@@ -2929,31 +3086,31 @@ document.addEventListener("DOMContentLoaded", function () {
             const temp_factor = parseFloat(document.getElementById("res-temp-factor")?.textContent.replace("×", "")) || 1.0;
             return { area, depth, density, survival, abw, base_rate, meals, temp, biomass_kg, adjusted_feed_kg, temp_factor };
         } else if (moduleKey === "growth") {
-            const doc = parseFloat(document.getElementById("gm-doc")?.value) || 90;
-            const initial_stocking = parseFloat(document.getElementById("gm-init-stock")?.value) || 100000;
-            const live_count = parseFloat(document.getElementById("gm-live-count")?.value) || 85000;
-            const survival_rate = parseFloat(document.getElementById("gm-res-sr-val")?.textContent) || 85.0;
-            const fabw = parseFloat(document.getElementById("gm-res-fabw-val")?.textContent) || 20.0;
-            const adwg = parseFloat(document.getElementById("gm-res-adwg-val")?.textContent) || 0.222;
-            const sgr = parseFloat(document.getElementById("gm-res-sgr-val")?.textContent) || 8.44;
-            const final_biomass = parseFloat(document.getElementById("gm-res-fb-val")?.textContent) || 1700.0;
-            const fcr = parseFloat(document.getElementById("gm-res-fcr-val")?.textContent) || 1.25;
-            const k_factor = parseFloat(document.getElementById("gm-res-k-val")?.textContent) || 0.85;
+            const doc = parseFloat(document.getElementById("gm-days-of-culture")?.value) || 0;
+            const initial_stocking = parseFloat(document.getElementById("gm-initial-stocking")?.value) || 0;
+            const live_count = parseFloat(document.getElementById("gm-live-harvest-count")?.value) || 0;
+            const survival_rate = parseFloat(document.getElementById("gm-res-sr-val")?.textContent) || 0;
+            const fabw = parseFloat(document.getElementById("gm-res-fabw-val")?.textContent) || 0;
+            const adwg = parseFloat(document.getElementById("gm-res-adwg-val")?.textContent) || 0;
+            const sgr = parseFloat(document.getElementById("gm-res-sgr-val")?.textContent) || 0;
+            const final_biomass = parseFloat(document.getElementById("gm-res-fb-kg")?.textContent) || 0;
+            const fcr = parseFloat(document.getElementById("gm-res-fcr-val")?.textContent) || 0;
+            const k_factor = parseFloat(document.getElementById("gm-res-k-val")?.textContent) || 0;
             return { doc, initial_stocking, live_count, survival_rate, fabw, adwg, sgr, final_biomass, fcr, k_factor };
         } else if (moduleKey === "remediation") {
-            const lime_ph = parseFloat(document.getElementById("lime-current-ph")?.value) || 7.2;
-            const lime_target = parseFloat(document.getElementById("lime-target-ph")?.value) || 8.0;
-            const pond_volume = parseFloat(document.getElementById("lime-pond-volume")?.value) || 1200;
-            const lime_kg = parseFloat(document.getElementById("lime-dosage-kg")?.textContent) || 54.0;
-            const daily_feed = parseFloat(document.getElementById("molasses-daily-feed")?.value) || 25.0;
-            const protein_pct = parseFloat(document.getElementById("molasses-protein-pct")?.value) || 35;
+            const lime_ph = parseFloat(document.getElementById("lime-current-ph")?.value) || 0;
+            const lime_target = parseFloat(document.getElementById("lime-target-ph")?.value) || 0;
+            const pond_volume = parseFloat(document.getElementById("lime-pond-vol")?.value) || 0;
+            const lime_kg = parseFloat(document.getElementById("lime-dosage-kg")?.textContent) || 0;
+            const daily_feed = parseFloat(document.getElementById("molasses-daily-feed")?.value) || 0;
+            const protein_pct = parseFloat(document.getElementById("molasses-protein-pct")?.value) || 0;
             const target_cn = parseFloat(document.getElementById("molasses-target-cn")?.value) || 15;
             const carbon_source = document.getElementById("molasses-carbon-source")?.value || "cane_molasses";
-            const molasses_kg = parseFloat(document.getElementById("molasses-dosage-kg")?.textContent) || 18.4;
-            const biomass_aero = parseFloat(document.getElementById("aero-biomass-input")?.value) || 1000.0;
+            const molasses_kg = parseFloat(document.getElementById("molasses-dosage-kg")?.textContent) || 0;
+            const biomass_aero = parseFloat(document.getElementById("aero-biomass-input")?.value) || 0;
             const target_do = parseFloat(document.getElementById("aero-target-do")?.value) || 5.0;
-            const temp_aero = parseFloat(document.getElementById("aero-temp-input")?.value) || 29.5;
-            const aerator_hp = parseFloat(document.getElementById("aero-power-hp")?.textContent) || 2.0;
+            const temp_aero = parseFloat(document.getElementById("aero-temp-input")?.value) || (liveSensor ? liveSensor.temperature : 29.5);
+            const aerator_hp = parseFloat(document.getElementById("aero-power-hp")?.textContent) || 0;
             return { lime_ph, lime_target, pond_volume, lime_kg, daily_feed, protein_pct, target_cn, carbon_source, molasses_kg, biomass_aero, target_do, temp_aero, aerator_hp };
         } else if (moduleKey === "ammonia") {
             const tan = parseFloat(document.getElementById("tools-ammonia-tan")?.value) || 0.8;
@@ -3188,26 +3345,122 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
+    async function loadSavedCalculationsFromDB() {
+        try {
+            const res = await fetch("/api/calculators/history");
+            if (!res.ok) {
+                console.warn("Calculators history fetch returned status:", res.status);
+                return;
+            }
+            const data = await res.json();
+            if (!data || !data.success) return;
+
+            growthHistoryRecords = data.latest || [];
+            savedRecordsCount = data.total_count ?? growthHistoryRecords.length;
+
+            if (growthHistoryRecords.length > 0) {
+                const latest = growthHistoryRecords[0];
+
+                const setVal = (id, val) => {
+                    const el = document.getElementById(id);
+                    if (el && val !== null && val !== undefined && val !== "") {
+                        el.value = val;
+                    }
+                };
+
+                // 1. Growth & Performance inputs (Eqs 1–8)
+                setVal("gm-initial-stocking", latest.is_count);
+                setVal("gm-live-harvest-count", latest.lhc_count);
+                setVal("gm-days-of-culture", latest.doc_days);
+                setVal("gm-initial-weight", latest.ibw_g);
+                setVal("gm-bulk-weight", latest.bulk_weight_kg);
+                setVal("gm-total-feed", latest.total_feed_given_kg);
+                setVal("gm-total-length", latest.total_length_cm);
+
+                // 2. Biomass & Feeding inputs
+                setVal("feed-pond-area", latest.pond_area_m2);
+                setVal("feed-pond-depth", latest.pond_depth_m);
+                setVal("feed-stocking-density", latest.stocking_density_pl_m2);
+                setVal("feed-survival-rate", latest.survival_rate_pct);
+                setVal("feed-abw", latest.abw_g);
+                setVal("feed-rate-percent", latest.base_feeding_rate_pct);
+                setVal("feed-meals-day", latest.feedings_per_day);
+
+                // 3. Liming inputs
+                setVal("lime-pond-vol", latest.lime_pond_vol_m3);
+                setVal("lime-current-ph", latest.lime_current_ph);
+                setVal("lime-target-ph", latest.lime_target_ph);
+                if (latest.lime_chemical_type) {
+                    const chemEl = document.getElementById("lime-chemical-type");
+                    if (chemEl) chemEl.value = latest.lime_chemical_type;
+                }
+
+                // 4. Molasses inputs
+                setVal("molasses-daily-feed", latest.molasses_daily_feed_kg);
+                setVal("molasses-protein-pct", latest.molasses_protein_pct);
+                if (latest.molasses_target_cn) {
+                    const cnEl = document.getElementById("molasses-target-cn");
+                    if (cnEl) cnEl.value = String(Math.round(latest.molasses_target_cn));
+                }
+                if (latest.molasses_carbon_source) {
+                    const srcEl = document.getElementById("molasses-carbon-source");
+                    if (srcEl) srcEl.value = latest.molasses_carbon_source;
+                }
+
+                // 5. Aerator inputs
+                setVal("aero-biomass-input", latest.aero_biomass_kg);
+                setVal("aero-salinity-input", latest.aero_salinity_ppt);
+                setVal("aero-target-do", latest.aero_target_do_ppm);
+
+                // Recompute active modules with real database values
+                calculateBiomassAndFeed();
+                calculateMasterGrowth();
+                calculateLimeDosage();
+                calculateMolassesDosage();
+                calculateAeratorPower();
+
+                const docPill = document.getElementById("graph-doc-pill");
+                if (docPill) {
+                    docPill.textContent = latest.doc_days ? `DOC 1–${latest.doc_days}` : "Awaiting Data";
+                }
+            } else {
+                // No saved calculations in database for this user
+                resetGrowthResultCards();
+                resetBiomassResultCards();
+                resetLimeResultCards();
+                resetMolassesResultCards();
+                resetAeratorResultCards();
+
+                const docPill = document.getElementById("graph-doc-pill");
+                if (docPill) {
+                    docPill.textContent = "No Saved Data";
+                }
+                currentGrowthChartData = [];
+            }
+        } catch (err) {
+            console.error("Failed to load saved aquaculture calculations from database:", err);
+        }
+    }
+
     async function boot() {
         await fetchLatestTelemetry();
 
-        // Seed with live readings
-        const feedTemp = document.getElementById("feed-current-temp");
-        if (feedTemp) feedTemp.value = liveSensor.temperature.toFixed(1);
+        // Seed with live readings for dynamic temp/pH displays
+        const ammLiveTemp = document.getElementById("tools-ammonia-live-temp");
+        const ammLivePh = document.getElementById("tools-ammonia-live-ph");
+        if (ammLiveTemp) ammLiveTemp.textContent = liveSensor.temperature.toFixed(2);
+        if (ammLivePh) ammLivePh.textContent = liveSensor.ph.toFixed(2);
 
-        const limePh = document.getElementById("lime-current-ph");
-        if (limePh) limePh.value = liveSensor.ph.toFixed(2);
+        const co2LiveTemp = document.getElementById("tools-co2-live-temp");
+        const co2LivePh = document.getElementById("tools-co2-live-ph");
+        if (co2LiveTemp) co2LiveTemp.textContent = liveSensor.temperature.toFixed(2);
+        if (co2LivePh) co2LivePh.textContent = liveSensor.ph.toFixed(2);
 
-        const aeroTemp = document.getElementById("aero-temp-input");
-        if (aeroTemp) aeroTemp.value = liveSensor.temperature.toFixed(1);
-
-        calculateBiomassAndFeed();
-        calculateLimeDosage();
-        calculateMolassesDosage();
-        calculateAeratorPower();
         calculateAmmoniaTool();
         calculateCo2Tool();
-        calculateMasterGrowth();
+
+        // Load saved data from database (MySQL aquaculture_calculations)
+        await loadSavedCalculationsFromDB();
 
         initComputationModuleSelector();
         initAiModalListeners();

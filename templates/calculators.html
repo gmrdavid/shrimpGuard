@@ -358,7 +358,7 @@
                             <label class="tools-field-label" for="feed-pond-area">
                                 <span class="field-label-text">Pond Surface Area</span>
                                 <span class="dashboard-field-wrap">
-                                    <input type="number" id="feed-pond-area" min="10" max="100000" step="10" value="1000" placeholder="e.g. 1000">
+                                    <input type="number" id="feed-pond-area" min="10" max="100000" step="10" placeholder="e.g. 1000">
                                     <span class="input-unit">m²</span>
                                 </span>
                             </label>
@@ -367,7 +367,7 @@
                             <label class="tools-field-label" for="feed-pond-depth">
                                 <span class="field-label-text">Average Water Depth</span>
                                 <span class="dashboard-field-wrap">
-                                    <input type="number" id="feed-pond-depth" min="0.5" max="3.0" step="0.1" value="1.2" placeholder="e.g. 1.2">
+                                    <input type="number" id="feed-pond-depth" min="0.5" max="3.0" step="0.1" placeholder="e.g. 1.2">
                                     <span class="input-unit">m</span>
                                 </span>
                             </label>
@@ -376,7 +376,7 @@
                             <label class="tools-field-label" for="feed-stocking-density">
                                 <span class="field-label-text">Stocking Density</span>
                                 <span class="dashboard-field-wrap">
-                                    <input type="number" id="feed-stocking-density" min="5" max="300" step="5" value="60" placeholder="e.g. 60">
+                                    <input type="number" id="feed-stocking-density" min="5" max="300" step="5" placeholder="e.g. 60">
                                     <span class="input-unit">PL/m²</span>
                                 </span>
                             </label>
@@ -385,7 +385,7 @@
                             <label class="tools-field-label" for="feed-survival-rate">
                                 <span class="field-label-text">Estimated Survival Rate</span>
                                 <span class="dashboard-field-wrap">
-                                    <input type="number" id="feed-survival-rate" min="10" max="100" step="1" value="85" placeholder="e.g. 85">
+                                    <input type="number" id="feed-survival-rate" min="10" max="100" step="1" placeholder="e.g. 85">
                                     <span class="input-unit">%</span>
                                 </span>
                             </label>
@@ -394,7 +394,7 @@
                             <label class="tools-field-label" for="feed-abw">
                                 <span class="field-label-text">Average Body Weight (ABW)</span>
                                 <span class="dashboard-field-wrap">
-                                    <input type="number" id="feed-abw" min="0.1" max="50" step="0.1" value="15.0" placeholder="e.g. 15.0">
+                                    <input type="number" id="feed-abw" min="0.1" max="50" step="0.1" placeholder="e.g. 15.0">
                                     <span class="input-unit">grams</span>
                                 </span>
                             </label>
@@ -403,7 +403,7 @@
                             <label class="tools-field-label" for="feed-rate-percent">
                                 <span class="field-label-text">Base Feeding Rate</span>
                                 <span class="dashboard-field-wrap">
-                                    <input type="number" id="feed-rate-percent" min="1.0" max="10.0" step="0.1" value="3.2" placeholder="e.g. 3.2">
+                                    <input type="number" id="feed-rate-percent" min="1.0" max="10.0" step="0.1" placeholder="e.g. 3.2">
                                     <span class="input-unit">% body wt</span>
                                 </span>
                             </label>
@@ -412,7 +412,7 @@
                             <label class="tools-field-label" for="feed-meals-day">
                                 <span class="field-label-text">Feedings Per Day</span>
                                 <span class="dashboard-field-wrap">
-                                    <input type="number" id="feed-meals-day" min="1" max="8" step="1" value="4" placeholder="e.g. 4">
+                                    <input type="number" id="feed-meals-day" min="1" max="8" step="1" placeholder="e.g. 4">
                                     <span class="input-unit">meals/day</span>
                                 </span>
                             </label>
@@ -422,7 +422,7 @@
                                 <label class="tools-field-label" for="feed-current-temp">
                                     <span class="field-label-text">Water Temperature</span>
                                     <span class="dashboard-field-wrap">
-                                        <input type="number" id="feed-current-temp" min="15" max="42" step="0.1" value="29.5">
+                                        <input type="number" id="feed-current-temp" min="15" max="42" step="0.1" placeholder="e.g. 29.5">
                                         <span class="input-unit">°C</span>
                                     </span>
                                 </label>
@@ -445,25 +445,25 @@
                             <div class="tools-res-card">
                                 <span class="res-card-label">ESTIMATED STANDING BIOMASS</span>
                                 <div class="res-value-row">
-                                    <strong id="res-biomass-kg" class="res-big-value">765.0</strong>
+                                    <strong id="res-biomass-kg" class="res-big-value">—</strong>
                                     <span class="res-unit">kg</span>
-                                    <span id="res-biomass-tons" class="res-secondary-val">(0.77 metric tons)</span>
+                                    <span id="res-biomass-tons" class="res-secondary-val"></span>
                                 </div>
-                                <p id="res-shrimp-count" class="res-card-detail">Estimated 51,000 active shrimp in 1,200 m³ water</p>
+                                <p id="res-shrimp-count" class="res-card-detail">Awaiting pond stocking parameters</p>
                             </div>
 
                             <!-- Temperature Feeding Factor Card -->
                             <div class="tools-res-card" id="temp-factor-card">
                                 <div class="res-card-header">
                                     <span class="res-card-label">TEMPERATURE FEEDING ADJUSTMENT</span>
-                                    <span id="res-temp-badge" class="wqi-metric-badge badge-optimal">100% (Optimal)</span>
+                                    <span id="res-temp-badge" class="wqi-metric-badge badge-neutral">Awaiting Data</span>
                                 </div>
                                 <div class="res-value-row">
-                                    <strong id="res-temp-factor" class="res-big-value">1.00×</strong>
+                                    <strong id="res-temp-factor" class="res-big-value">—</strong>
                                     <span class="res-unit">factor</span>
                                 </div>
                                 <p id="res-temp-guideline" class="res-card-detail">
-                                    At 29.5 °C, water temperature is within the ML optimal range (28.0–32.0 °C). Full normal feed ration recommended.
+                                    Input parameters or connect telemetry to calculate feeding adjustment.
                                 </p>
                             </div>
 
@@ -471,12 +471,12 @@
                             <div class="tools-res-card highlight-card">
                                 <span class="res-card-label">ADJUSTED DAILY FEED REQUIREMENT</span>
                                 <div class="res-value-row">
-                                    <strong id="res-adjusted-feed" class="res-big-value res-accent-value">24.5</strong>
+                                    <strong id="res-adjusted-feed" class="res-big-value res-accent-value">—</strong>
                                     <span class="res-unit">kg / day</span>
                                 </div>
                                 <div class="res-meal-breakdown">
-                                    <span>Per meal (4 meals): <strong id="res-per-meal">6.1 kg / meal</strong></span>
-                                    <span class="res-base-note">Base unadjusted: <span id="res-base-feed">24.5</span> kg/day</span>
+                                    <span>Per meal: <strong id="res-per-meal">—</strong></span>
+                                    <span class="res-base-note">Base unadjusted: <span id="res-base-feed">—</span> kg/day</span>
                                 </div>
                             </div>
 
@@ -536,7 +536,7 @@
                         <label class="tools-field-label" for="gm-initial-stocking">
                             <span class="field-label-text">Initial Stocking (IS)</span>
                             <span class="dashboard-field-wrap">
-                                <input type="number" id="gm-initial-stocking" min="1000" max="5000000" step="1000" value="100000" placeholder="e.g. 100000">
+                                <input type="number" id="gm-initial-stocking" min="1000" max="5000000" step="1000" placeholder="e.g. 100000">
                                 <span class="input-unit">shrimp</span>
                             </span>
                         </label>
@@ -545,7 +545,7 @@
                         <label class="tools-field-label" for="gm-live-harvest-count">
                             <span class="field-label-text">Live Harvest Count (LHC)</span>
                             <span class="dashboard-field-wrap">
-                                <input type="number" id="gm-live-harvest-count" min="100" max="5000000" step="500" value="85000" placeholder="e.g. 85000">
+                                <input type="number" id="gm-live-harvest-count" min="100" max="5000000" step="500" placeholder="e.g. 85000">
                                 <span class="input-unit">shrimp</span>
                             </span>
                         </label>
@@ -554,7 +554,7 @@
                         <label class="tools-field-label" for="gm-days-of-culture">
                             <span class="field-label-text">Days of Culture (DOC)</span>
                             <span class="dashboard-field-wrap">
-                                <input type="number" id="gm-days-of-culture" min="1" max="365" step="1" value="90" placeholder="e.g. 90">
+                                <input type="number" id="gm-days-of-culture" min="1" max="365" step="1" placeholder="e.g. 90">
                                 <span class="input-unit">days</span>
                             </span>
                         </label>
@@ -563,7 +563,7 @@
                         <label class="tools-field-label" for="gm-initial-weight">
                             <span class="field-label-text">Initial Body Weight (IBW)</span>
                             <span class="dashboard-field-wrap">
-                                <input type="number" id="gm-initial-weight" min="0.001" max="10" step="0.005" value="0.010" placeholder="e.g. 0.010">
+                                <input type="number" id="gm-initial-weight" min="0.001" max="10" step="0.005" placeholder="e.g. 0.010">
                                 <span class="input-unit">grams</span>
                             </span>
                         </label>
@@ -572,7 +572,7 @@
                         <label class="tools-field-label" for="gm-bulk-weight">
                             <span class="field-label-text">Harvest Bulk Weight (BW)</span>
                             <span class="dashboard-field-wrap">
-                                <input type="number" id="gm-bulk-weight" min="10" max="500000" step="10" value="1700" placeholder="e.g. 1700">
+                                <input type="number" id="gm-bulk-weight" min="10" max="500000" step="10" placeholder="e.g. 1700">
                                 <span class="input-unit">kg</span>
                             </span>
                             <input type="hidden" id="gm-bw-unit" value="kg">
@@ -582,7 +582,7 @@
                         <label class="tools-field-label" for="gm-total-feed">
                             <span class="field-label-text">Total Feed Given (TFG)</span>
                             <span class="dashboard-field-wrap">
-                                <input type="number" id="gm-total-feed" min="10" max="500000" step="25" value="2125" placeholder="e.g. 2125">
+                                <input type="number" id="gm-total-feed" min="10" max="500000" step="25" placeholder="e.g. 2125">
                                 <span class="input-unit">kg</span>
                             </span>
                             <input type="hidden" id="gm-feed-unit" value="kg">
@@ -592,7 +592,7 @@
                         <label class="tools-field-label" for="gm-total-length">
                             <span class="field-label-text">Average Total Length (TL)</span>
                             <span class="dashboard-field-wrap">
-                                <input type="number" id="gm-total-length" min="1.0" max="30.0" step="0.1" value="12.9" placeholder="e.g. 12.9">
+                                <input type="number" id="gm-total-length" min="1.0" max="30.0" step="0.1" placeholder="e.g. 12.9">
                                 <span class="input-unit">cm</span>
                             </span>
                         </label>
@@ -633,10 +633,10 @@
                         <div class="tools-res-card">
                             <div class="res-card-header">
                                 <span class="res-card-label">SURVIVAL RATE</span>
-                                <span id="gm-res-sr-badge" class="wqi-metric-badge badge-optimal">Optimal</span>
+                                <span id="gm-res-sr-badge" class="wqi-metric-badge badge-neutral">Awaiting Data</span>
                             </div>
                             <div class="res-value-row">
-                                <strong id="gm-res-sr-val" class="res-big-value">85.00</strong>
+                                <strong id="gm-res-sr-val" class="res-big-value">—</strong>
                                 <span class="res-unit">%</span>
                             </div>
                             
@@ -652,10 +652,10 @@
                         <div class="tools-res-card">
                             <div class="res-card-header">
                                 <span class="res-card-label">Final Average Body Weight</span>
-                                <span id="gm-res-fabw-badge" class="wqi-metric-badge badge-optimal">Size 50</span>
+                                <span id="gm-res-fabw-badge" class="wqi-metric-badge badge-neutral">Awaiting Data</span>
                             </div>
                             <div class="res-value-row">
-                                <strong id="gm-res-fabw-val" class="res-big-value">20.00</strong>
+                                <strong id="gm-res-fabw-val" class="res-big-value">—</strong>
                                 <span class="res-unit">g / shrimp</span>
                             </div>
                             
@@ -671,10 +671,10 @@
                         <div class="tools-res-card">
                             <div class="res-card-header">
                                 <span class="res-card-label">Average Daily Weight Gain</span>
-                                <span id="gm-res-adwg-badge" class="wqi-metric-badge badge-optimal">Optimal Growth</span>
+                                <span id="gm-res-adwg-badge" class="wqi-metric-badge badge-neutral">Awaiting Data</span>
                             </div>
                             <div class="res-value-row">
-                                <strong id="gm-res-adwg-val" class="res-big-value">0.2221</strong>
+                                <strong id="gm-res-adwg-val" class="res-big-value">—</strong>
                                 <span class="res-unit">g / day</span>
                             </div>
                             
@@ -690,10 +690,10 @@
                         <div class="tools-res-card">
                             <div class="res-card-header">
                                 <span class="res-card-label">Specific Growth Rate</span>
-                                <span class="wqi-metric-badge badge-optimal">Logarithmic Velocity</span>
+                                <span class="wqi-metric-badge badge-neutral">Awaiting Data</span>
                             </div>
                             <div class="res-value-row">
-                                <strong id="gm-res-sgr-val" class="res-big-value">8.445</strong>
+                                <strong id="gm-res-sgr-val" class="res-big-value">—</strong>
                                 <span class="res-unit">% / day</span>
                             </div>
                             
@@ -712,7 +712,7 @@
                                 <span class="res-secondary-val">Stocking Mass</span>
                             </div>
                             <div class="res-value-row">
-                                <strong id="gm-res-ib-kg" class="res-big-value">1.00</strong>
+                                <strong id="gm-res-ib-kg" class="res-big-value">—</strong>
                                 <span class="res-unit">kg</span>
                             </div>
                             
@@ -731,7 +731,7 @@
                                 <span class="res-secondary-val">Standing Crop</span>
                             </div>
                             <div class="res-value-row">
-                                <strong id="gm-res-fb-kg" class="res-big-value">1,700.00</strong>
+                                <strong id="gm-res-fb-kg" class="res-big-value">—</strong>
                                 <span class="res-unit">kg</span>
                             </div>
                             
@@ -747,10 +747,10 @@
                         <div class="tools-res-card highlight-card">
                             <div class="res-card-header">
                                 <span class="res-card-label">FEED CONVERSION RATIO</span>
-                                <span id="gm-res-fcr-badge" class="wqi-metric-badge badge-optimal">Optimal</span>
+                                <span id="gm-res-fcr-badge" class="wqi-metric-badge badge-neutral">Awaiting Data</span>
                             </div>
                             <div class="res-value-row">
-                                <strong id="gm-res-fcr-val" class="res-big-value res-accent-value">1.251</strong>
+                                <strong id="gm-res-fcr-val" class="res-big-value res-accent-value">—</strong>
                                 <span class="res-unit">FCR</span>
                             </div>
                             
@@ -766,10 +766,10 @@
                         <div class="tools-res-card">
                             <div class="res-card-header">
                                 <span class="res-card-label">FULTON'S CONDITION FACTOR</span>
-                                <span id="gm-res-k-badge" class="wqi-metric-badge badge-optimal">Optimal</span>
+                                <span id="gm-res-k-badge" class="wqi-metric-badge badge-neutral">Awaiting Data</span>
                             </div>
                             <div class="res-value-row">
-                                <strong id="gm-res-k-val" class="res-big-value">0.9317</strong>
+                                <strong id="gm-res-k-val" class="res-big-value">—</strong>
                                 <span class="res-unit">K factor</span>
                             </div>
                             
@@ -827,7 +827,7 @@
                             <label class="tools-field-label" for="lime-pond-vol">
                                 <span class="field-label-text">Pond Water Volume</span>
                                 <span class="dashboard-field-wrap">
-                                    <input type="number" id="lime-pond-vol" min="10" max="500000" step="50" value="1200">
+                                    <input type="number" id="lime-pond-vol" min="10" max="500000" step="50" placeholder="e.g. 1200">
                                     <span class="input-unit">m³</span>
                                 </span>
                             </label>
@@ -835,7 +835,7 @@
                             <label class="tools-field-label" for="lime-current-ph">
                                 <span class="field-label-text">Current Water pH</span>
                                 <span class="dashboard-field-wrap">
-                                    <input type="number" id="lime-current-ph" min="5.0" max="10.0" step="0.05" value="7.10">
+                                    <input type="number" id="lime-current-ph" min="5.0" max="10.0" step="0.05" placeholder="e.g. 7.10">
                                     <span class="input-unit">pH</span>
                                 </span>
                             </label>
@@ -843,7 +843,7 @@
                             <label class="tools-field-label" for="lime-target-ph">
                                 <span class="field-label-text">Target pH (ML Midpoint)</span>
                                 <span class="dashboard-field-wrap">
-                                    <input type="number" id="lime-target-ph" min="7.5" max="8.5" step="0.05" value="8.00">
+                                    <input type="number" id="lime-target-ph" min="7.5" max="8.5" step="0.05" placeholder="e.g. 8.00">
                                     <span class="input-unit">pH</span>
                                 </span>
                             </label>
@@ -862,12 +862,12 @@
                         <div class="treatment-result-box">
                             <span class="res-card-label">RECOMMENDED DOSAGE</span>
                             <div class="res-value-row">
-                                <strong id="lime-dosage-kg" class="res-big-value">54.0</strong>
+                                <strong id="lime-dosage-kg" class="res-big-value">—</strong>
                                 <span class="res-unit">kg</span>
-                                <span class="res-secondary-val">(<span id="lime-dosage-ppm">45.0</span> ppm)</span>
+                                <span class="res-secondary-val">(<span id="lime-dosage-ppm">—</span> ppm)</span>
                             </div>
                             <p id="lime-instruction" class="treatment-instruction">
-                                Slurry 54.0 kg in pond water and distribute evenly across paddlewheel aerator wash in the early morning.
+                                Enter pond volume and pH targets to calculate required liming buffer.
                             </p>
                         </div>
                     </div>
@@ -895,7 +895,7 @@
                             <label class="tools-field-label" for="molasses-daily-feed">
                                 <span class="field-label-text">Daily Feed Input</span>
                                 <span class="dashboard-field-wrap">
-                                    <input type="number" id="molasses-daily-feed" min="1" max="1000" step="1" value="25.0">
+                                    <input type="number" id="molasses-daily-feed" min="1" max="1000" step="1" placeholder="e.g. 25.0">
                                     <span class="input-unit">kg/day</span>
                                 </span>
                             </label>
@@ -903,7 +903,7 @@
                             <label class="tools-field-label" for="molasses-protein-pct">
                                 <span class="field-label-text">Feed Crude Protein</span>
                                 <span class="dashboard-field-wrap">
-                                    <input type="number" id="molasses-protein-pct" min="20" max="50" step="1" value="35">
+                                    <input type="number" id="molasses-protein-pct" min="20" max="50" step="1" placeholder="e.g. 35">
                                     <span class="input-unit">% CP</span>
                                 </span>
                             </label>
@@ -931,11 +931,11 @@
                         <div class="treatment-result-box">
                             <span class="res-card-label">REQUIRED CARBON SOURCE</span>
                             <div class="res-value-row">
-                                <strong id="molasses-dosage-kg" class="res-big-value">18.4</strong>
+                                <strong id="molasses-dosage-kg" class="res-big-value">—</strong>
                                 <span class="res-unit">kg / day</span>
                             </div>
                             <p id="molasses-instruction" class="treatment-instruction">
-                                Dissolve 18.4 kg molasses in warm water with probiotic consortium, ferment 4 hours, and apply during morning aeration.
+                                Enter daily feed and crude protein to compute organic carbon requirement.
                             </p>
                         </div>
                     </div>
@@ -963,7 +963,7 @@
                             <label class="tools-field-label" for="aero-biomass-input">
                                 <span class="field-label-text">Shrimp Biomass</span>
                                 <span class="dashboard-field-wrap">
-                                    <input type="number" id="aero-biomass-input" min="50" max="50000" step="50" value="765">
+                                    <input type="number" id="aero-biomass-input" min="50" max="50000" step="50" placeholder="e.g. 765">
                                     <span class="input-unit">kg</span>
                                 </span>
                             </label>
@@ -971,7 +971,7 @@
                             <label class="tools-field-label" for="aero-temp-input">
                                 <span class="field-label-text">Water Temperature</span>
                                 <span class="dashboard-field-wrap">
-                                    <input type="number" id="aero-temp-input" min="20" max="38" step="0.5" value="29.5">
+                                    <input type="number" id="aero-temp-input" min="20" max="38" step="0.5" placeholder="e.g. 29.5">
                                     <span class="input-unit">°C</span>
                                 </span>
                             </label>
@@ -979,7 +979,7 @@
                             <label class="tools-field-label" for="aero-salinity-input">
                                 <span class="field-label-text">Salinity</span>
                                 <span class="dashboard-field-wrap">
-                                    <input type="number" id="aero-salinity-input" min="0" max="45" step="1" value="20">
+                                    <input type="number" id="aero-salinity-input" min="0" max="45" step="1" placeholder="e.g. 20">
                                     <span class="input-unit">ppt</span>
                                 </span>
                             </label>
@@ -987,7 +987,7 @@
                             <label class="tools-field-label" for="aero-target-do">
                                 <span class="field-label-text">Target Minimum DO</span>
                                 <span class="dashboard-field-wrap">
-                                    <input type="number" id="aero-target-do" min="3.0" max="8.0" step="0.5" value="5.0">
+                                    <input type="number" id="aero-target-do" min="3.0" max="8.0" step="0.5" placeholder="e.g. 5.0">
                                     <span class="input-unit">mg/L</span>
                                 </span>
                             </label>
@@ -997,12 +997,12 @@
                         <div class="treatment-result-box">
                             <span class="res-card-label">RECOMMENDED AERATOR POWER</span>
                             <div class="res-value-row">
-                                <strong id="aero-power-hp" class="res-big-value">2.0</strong>
+                                <strong id="aero-power-hp" class="res-big-value">—</strong>
                                 <span class="res-unit">HP</span>
-                                <span class="res-secondary-val">(<span id="aero-units">1 × 2-HP</span> unit)</span>
+                                <span class="res-secondary-val">(<span id="aero-units">—</span>)</span>
                             </div>
                             <p id="aero-instruction" class="treatment-instruction">
-                                Minimum 1 HP per 400 kg biomass for vannamei. Run continuously from 22:00 to 07:00 when algae respiration consumes DO.
+                                Enter shrimp biomass to calculate recommended paddlewheel aerator power.
                             </p>
                         </div>
                     </div>
@@ -1463,7 +1463,7 @@
                 <div class="growth-graph-mode-toggle">
                     <button type="button" class="graph-mode-pill active" id="btn-graph-mode-trajectory" data-mode="trajectory">
                         <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
-                        <span>Culture Cycle Trajectory (DOC 1–<span id="graph-doc-pill">90</span>)</span>
+                        <span>Culture Cycle Trajectory (<span id="graph-doc-pill">Awaiting Saved Data</span>)</span>
                     </button>
                     <button type="button" class="graph-mode-pill" id="btn-graph-mode-history" data-mode="history">
                         <svg class="ui-icon" aria-hidden="true"><use href="#icon-history"></use></svg>
