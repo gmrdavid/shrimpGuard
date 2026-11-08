@@ -2853,26 +2853,27 @@ def signup():
     return render_template("signup.html", error=error, signup_csrf_token=signup_csrf)
 
 
-@app.route("/logout", methods=["POST"])
+@app.route("/logout", methods=["GET", "POST"])
 def logout():
-    submitted_token = request.form.get("csrf_token", "")
-    if not validate_csrf(submitted_token, session_token_key="logout_csrf_token", purpose="logout", max_age=86400):
-        return "Invalid logout request.", 400
-
     user_email = session.get("user_id")
     user_role = session.get("user_role")
     user_name = session.get("user_name")
     if user_email:
-        log_activity(
-            action="LOGOUT",
-            details="User signed out of the system.",
-            user_email=user_email,
-            user_name=user_name,
-            role=user_role,
-        )
+        try:
+            log_activity(
+                action="LOGOUT",
+                details="User signed out of the system.",
+                user_email=user_email,
+                user_name=user_name,
+                role=user_role,
+            )
+        except Exception:
+            pass
 
     session.clear()
-    return redirect(url_for("login"))
+    resp = redirect(url_for("login"))
+    resp.delete_cookie("session")
+    return resp
 
 
 @app.route("/monitoring")

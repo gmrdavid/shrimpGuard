@@ -302,8 +302,8 @@
         }
 
         // Only render on authenticated dashboard/client app layouts
-        const layoutHeader = document.querySelector(".dashboard-header, .settings-header, .history-header, .analytics-header, .tools-header");
-        const mainEl = document.querySelector(".dashboard-layout > main, .settings-layout-page > main, main.main-content, main");
+        const layoutHeader = document.querySelector(".dashboard-header, .settings-header, .history-header, .analytics-header, .tools-header, .monitoring-header, .historical-header, .alerts-header, .devices-header");
+        const mainEl = document.querySelector(".dashboard-layout > main, .dashboard-main, .settings-layout-page > main, main.main-content, main");
         if (!layoutHeader || !mainEl) return;
 
         let bar = document.getElementById("adaptive-shortcuts-bar");

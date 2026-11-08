@@ -23672,3 +23672,526 @@ nav a {
     color: #059669;
 }
 
+
+/* =========================================================
+   SHRIMPGUARD — ADAPTIVE WEB SYSTEM (AWS) & FIELD INSPECTOR MODE
+   Smart contextual ribbons, persona styling, outdoor sunlight mode,
+   touch ergonomics, and mobile thumb navigation.
+   ========================================================= */
+
+/* Adaptive Shortcuts Bar (Smart Ribbon) */
+.adaptive-shortcuts-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: 10px 18px;
+    margin: 0 0 24px;
+    background: #ffffff;
+    border: 1px solid #dce8e1;
+    border-radius: 14px;
+    box-shadow: 0 4px 18px rgba(18, 107, 79, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+    position: relative;
+    z-index: 20;
+    animation: adaptiveSlideIn 220ms ease-out;
+}
+
+@keyframes adaptiveSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.adaptive-shortcuts-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.adaptive-shortcuts-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+    flex-wrap: wrap;
+}
+
+/* Persona Badge Pill */
+.adaptive-persona-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 13px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    background: #eef7f2;
+    color: #126b4f;
+    border: 1px solid #c2e5d3;
+    white-space: nowrap;
+}
+
+.adaptive-persona-pill .ui-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+/* Persona-specific Pill Colors */
+body.adaptive-persona-field_inspector .adaptive-persona-pill {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    color: #065f46;
+    border-color: #6ee7b7;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+}
+
+body.adaptive-persona-farm_planner .adaptive-persona-pill {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    color: #1e40af;
+    border-color: #93c5fd;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+body.adaptive-persona-data_analyst .adaptive-persona-pill {
+    background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+    color: #5b21b6;
+    border-color: #c4b5fd;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+}
+
+/* Shortcut Chips */
+.adaptive-chips-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.adaptive-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #334155;
+    font-size: 11.5px;
+    font-weight: 650;
+    text-decoration: none;
+    transition: all 160ms cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+}
+
+.adaptive-chip .ui-icon {
+    width: 13px;
+    height: 13px;
+    color: #64748b;
+    transition: color 160ms ease;
+}
+
+.adaptive-chip:hover {
+    background: #eef7f2;
+    border-color: #a7f3d0;
+    color: #126b4f;
+    transform: translateY(-1px);
+}
+
+.adaptive-chip:hover .ui-icon {
+    color: #126b4f;
+}
+
+.adaptive-chip.active {
+    background: #126b4f;
+    border-color: #126b4f;
+    color: #ffffff;
+    font-weight: 750;
+    box-shadow: 0 2px 8px rgba(18, 107, 79, 0.22);
+}
+
+.adaptive-chip.active .ui-icon {
+    color: #ffffff;
+}
+
+.adaptive-chip-badge {
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.08);
+    font-size: 9.5px;
+    font-weight: 800;
+}
+
+/* AI Recommendation Next-Action Pill */
+.adaptive-next-action-slot {
+    display: flex;
+    align-items: center;
+}
+
+.adaptive-next-action-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform 160ms ease, box-shadow 160ms ease;
+    white-space: nowrap;
+}
+
+.adaptive-next-action-pill:hover {
+    transform: translateY(-1px);
+}
+
+.adaptive-next-action-pill.pill-optimal {
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #86efac;
+    box-shadow: 0 1px 4px rgba(22, 163, 74, 0.08);
+}
+
+.adaptive-next-action-pill.pill-warning {
+    background: #fffbeb;
+    color: #b45309;
+    border: 1px solid #fde68a;
+    box-shadow: 0 1px 4px rgba(217, 119, 6, 0.08);
+}
+
+.adaptive-next-action-pill.pill-critical {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fca5a5;
+    box-shadow: 0 1px 4px rgba(220, 38, 38, 0.08);
+}
+
+.adaptive-pulse-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.pill-optimal .adaptive-pulse-dot {
+    background: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.25);
+    animation: adaptivePulse 2s infinite;
+}
+
+.pill-warning .adaptive-pulse-dot {
+    background: #d97706;
+    box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.25);
+    animation: adaptivePulse 1.4s infinite;
+}
+
+.pill-critical .adaptive-pulse-dot {
+    background: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.3);
+    animation: adaptivePulse 1s infinite;
+}
+
+@keyframes adaptivePulse {
+    0% {
+        transform: scale(0.95);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.15);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.95);
+        opacity: 0.8;
+    }
+}
+
+/* Sunlight / Outdoor Field Mode Toggle Button */
+.adaptive-sunlight-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #475569;
+    transition: all 160ms ease;
+    white-space: nowrap;
+}
+
+.adaptive-sunlight-toggle .ui-icon {
+    width: 14px;
+    height: 14px;
+    color: #f59e0b;
+}
+
+.adaptive-sunlight-toggle:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+}
+
+.adaptive-sunlight-toggle.active {
+    background: #fef3c7;
+    border-color: #f59e0b;
+    color: #78350f;
+    font-weight: 750;
+    box-shadow: 0 2px 6px rgba(245, 158, 11, 0.18);
+}
+
+/* =========================================================
+   FIELD INSPECTOR MODE — SPECIFIC PAGE DESIGNS
+   Prioritizes live sensor feeds, outdoor sunlight contrast,
+   telemetry health, and hands-on pond checks.
+   ========================================================= */
+
+/* 1. Dashboard in Field Inspector Mode */
+body.adaptive-persona-field_inspector .telemetry-stream-panel {
+    border: 2px solid #10b981;
+    box-shadow: 0 8px 28px rgba(16, 185, 129, 0.12);
+    position: relative;
+}
+
+body.adaptive-persona-field_inspector .telemetry-node-tag .chip-node {
+    background: #d1fae5;
+    color: #065f46;
+    font-weight: 800;
+    border: 1px solid #6ee7b7;
+}
+
+body.adaptive-persona-field_inspector .badge-active {
+    background: #ecfdf5;
+    border-color: #34d399;
+    color: #047857;
+    font-weight: 800;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+body.adaptive-persona-field_inspector .dashboard-metric-card {
+    border-width: 1.5px;
+    border-color: #cce7d8;
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+body.adaptive-persona-field_inspector .temperature-card {
+    border-top: 3.5px solid #059669;
+}
+
+body.adaptive-persona-field_inspector .ph-card {
+    border-top: 3.5px solid #0284c7;
+}
+
+body.adaptive-persona-field_inspector .metric-reading h2 {
+    font-size: clamp(34px, 3.8vw, 44px) !important;
+    font-weight: 850 !important;
+    color: #0f2e22;
+}
+
+body.adaptive-persona-field_inspector .metric-status {
+    font-size: 13px !important;
+    font-weight: 750 !important;
+}
+
+body.adaptive-persona-field_inspector .status-box {
+    border-width: 1.5px;
+    border-color: #cbe3d4;
+}
+
+/* 2. Devices & Hardware in Field Inspector Mode */
+body.adaptive-persona-field_inspector .device-stat-card {
+    border: 1.5px solid #c2e5d3;
+    box-shadow: 0 6px 20px rgba(18, 107, 79, 0.08);
+}
+
+body.adaptive-persona-field_inspector .device-stat-number {
+    font-size: 32px !important;
+    font-weight: 850 !important;
+    color: #0e382b;
+}
+
+body.adaptive-persona-field_inspector .devices-page .telemetry-test-btn {
+    background: #126b4f;
+    color: #ffffff;
+    border-color: #126b4f;
+    font-weight: 750;
+    box-shadow: 0 2px 8px rgba(18, 107, 79, 0.22);
+}
+
+body.adaptive-persona-field_inspector .devices-page .telemetry-test-btn:hover {
+    background: #0b4d39;
+    border-color: #0b4d39;
+}
+
+body.adaptive-persona-field_inspector .devices-page .telemetry-test-btn .ui-icon {
+    color: #ffffff;
+}
+
+/* 3. Analytics & Reports in Field Inspector Mode */
+body.adaptive-persona-field_inspector .analytics-page .analytics-metric-card {
+    border: 1.5px solid #cbd5e1;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+}
+
+body.adaptive-persona-field_inspector .analytics-page .analytics-metric-value {
+    font-size: 32px !important;
+    font-weight: 850 !important;
+}
+
+body.adaptive-persona-field_inspector .analytics-page .analytics-chart-panel {
+    border-color: #cbd5e1;
+}
+
+/* 4. Tools & Calculators in Field Inspector Mode */
+body.adaptive-persona-field_inspector .tools-sync-banner {
+    border: 2px solid #10b981;
+    box-shadow: 0 6px 24px rgba(16, 185, 129, 0.12);
+}
+
+body.adaptive-persona-field_inspector .tools-btn-secondary {
+    background: #126b4f !important;
+    color: #ffffff !important;
+    border-color: #126b4f !important;
+    font-weight: 750 !important;
+    box-shadow: 0 2px 8px rgba(18, 107, 79, 0.25);
+}
+
+body.adaptive-persona-field_inspector .tools-btn-secondary .ui-icon {
+    color: #ffffff !important;
+}
+
+/* 5. Settings in Field Inspector Mode */
+body.adaptive-persona-field_inspector #adaptive-persona-badge {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1.5px solid #34d399;
+    font-weight: 800;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+/* =========================================================
+   FIELD SUNLIGHT MODE (OUTDOOR HIGH-CONTRAST)
+   Glaring outdoor tropical sun readability for pond inspectors.
+   ========================================================= */
+body.adaptive-sunlight {
+    background: #fcfdfc !important;
+    color: #020c08 !important;
+}
+
+body.adaptive-sunlight .dashboard-header h1,
+body.adaptive-sunlight .analytics-heading h1,
+body.adaptive-sunlight .settings-heading h1,
+body.adaptive-sunlight .dashboard-heading h1,
+body.adaptive-sunlight h2,
+body.adaptive-sunlight h3 {
+    color: #000000 !important;
+    font-weight: 900 !important;
+}
+
+body.adaptive-sunlight p,
+body.adaptive-sunlight span,
+body.adaptive-sunlight small,
+body.adaptive-sunlight label {
+    color: #1e293b !important;
+    font-weight: 600 !important;
+}
+
+body.adaptive-sunlight .card,
+body.adaptive-sunlight .panel,
+body.adaptive-sunlight .dashboard-panel,
+body.adaptive-sunlight .telemetry-stream-panel,
+body.adaptive-sunlight .input-panel,
+body.adaptive-sunlight .adaptive-shortcuts-bar {
+    border-color: #475569 !important;
+    border-width: 2px !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12) !important;
+}
+
+body.adaptive-sunlight .metric-reading h2 {
+    color: #000000 !important;
+    font-weight: 900 !important;
+}
+
+/* =========================================================
+   MOBILE BOTTOM NAVIGATION BAR (THUMB ERGONOMICS)
+   Fixed thumb navigation on mobile phones and previewers.
+   ========================================================= */
+body.has-adaptive-bottom-nav {
+    padding-bottom: 72px !important;
+}
+
+.adaptive-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    z-index: 9998;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-around;
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid #cbd5e1;
+    box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08);
+    padding: 0 6px;
+    box-sizing: border-box;
+}
+
+.adaptive-bottom-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    flex: 1;
+    min-width: 0;
+    text-decoration: none;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 650;
+    padding: 4px 2px;
+    border-radius: 8px;
+    transition: color 150ms ease, transform 150ms ease;
+}
+
+.adaptive-bottom-item .ui-icon {
+    width: 19px;
+    height: 19px;
+    flex-shrink: 0;
+}
+
+.adaptive-bottom-item:hover,
+.adaptive-bottom-item.active {
+    color: #126b4f;
+    font-weight: 800;
+}
+
+.adaptive-bottom-item.active .ui-icon {
+    transform: translateY(-1px);
+    color: #126b4f;
+}
+
+@media (max-width: 760px) {
+    .adaptive-shortcuts-bar {
+        padding: 10px 12px;
+        gap: 10px;
+    }
+
+    .adaptive-shortcuts-right {
+        width: 100%;
+        justify-content: space-between;
+        margin-left: 0;
+    }
+}
