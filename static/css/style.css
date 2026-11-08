@@ -468,17 +468,7 @@ body {
 /* Legacy sidebar logout styles moved to unified logout component */
 
 .settings-page {
-    background: #f4f7f9;
     min-height: 100vh;
-}
-
-.settings-page .sidebar {
-    background: #183c43;
-}
-
-.settings-page nav .active,
-.settings-page nav a:hover {
-    background: #2f6f63;
 }
 
 .settings-grid {
@@ -23679,5 +23669,6 @@ nav a {
 
 .ai-modal-icon {
     background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-    color: #05
-... [truncated for diff preview]
+    color: #059669;
+}
+
