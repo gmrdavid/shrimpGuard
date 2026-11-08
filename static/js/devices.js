@@ -192,12 +192,9 @@ function renderDevices(data) {
             tr.className = `device-row device-row-${dev.status ? dev.status.toLowerCase() : "offline"}`;
             tr.innerHTML = `
                 <td>
-                    <div class="device-cell-meta">
-                        <div class="device-cell-title-row">
-                            <span class="device-id-badge device-id-${catSlug}">${dev.id || ""}</span>
-                            <span class="device-cell-name">${dev.name}</span>
-                        </div>
-                        <span class="device-cell-sub">${dev.details || ""}</span>
+                    <div class="device-cell-title-row">
+                        <span class="device-id-badge device-id-${catSlug}">${dev.id || ""}</span>
+                        <span class="device-cell-name">${dev.name}</span>
                     </div>
                 </td>
                 <td>
