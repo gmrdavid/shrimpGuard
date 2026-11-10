@@ -32,18 +32,41 @@ function timeAgo(dateOrStr) {
     return `${diffHours}h ago`;
 }
 
-function showNotice(message, isError = false) {
+function showNotice(message, state = false) {
     const banner = document.getElementById("devices-alert-banner");
     const msg = document.getElementById("devices-alert-msg");
     if (!banner || !msg) return;
 
+    let noticeType = "success";
+    if (state === true || state === "error") {
+        noticeType = "error";
+    } else if (state === "info" || state === "scanning") {
+        noticeType = "info";
+    } else {
+        noticeType = "success";
+    }
+
     msg.textContent = message;
     banner.style.display = "flex";
-    banner.className = isError ? "devices-banner-notice error" : "devices-banner-notice success";
+    banner.className = `devices-banner-notice ${noticeType}`;
 
-    setTimeout(() => {
+    const iconUse = banner.querySelector(".ui-icon use");
+    if (iconUse) {
+        if (noticeType === "error") {
+            iconUse.setAttribute("href", "#icon-alert");
+        } else if (noticeType === "info") {
+            iconUse.setAttribute("href", "#icon-settings");
+        } else {
+            iconUse.setAttribute("href", "#icon-check-circle");
+        }
+    }
+
+    if (window._devicesNoticeTimeout) {
+        clearTimeout(window._devicesNoticeTimeout);
+    }
+    window._devicesNoticeTimeout = setTimeout(() => {
         banner.style.display = "none";
-    }, 6000);
+    }, noticeType === "error" ? 8000 : 5000);
 }
 
 async function fetchDevicesInventory() {
@@ -222,9 +245,14 @@ function renderDevices(data) {
 
 async function reconnectGateway() {
     const btn = document.getElementById("btn-reconnect-gateway");
-    if (btn) btn.disabled = true;
+    const originalContent = btn ? btn.innerHTML : "";
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<svg class="ui-icon devices-spin" aria-hidden="true"><use href="#icon-settings"></use></svg><span>Probing Ports...</span>`;
+    }
 
-    showNotice("Scanning COM ports and verifying Node 2 LoRa receiver...", false);
+    // Probing COM ports - show neutral scanning notice (not green)
+    showNotice("Scanning COM ports and verifying Node 2 LoRa receiver...", "info");
 
     try {
         const res = await fetch("/api/hardware/reconnect", {
@@ -233,17 +261,23 @@ async function reconnectGateway() {
         });
         const result = await res.json();
 
-        if (result.success) {
-            showNotice(result.message || "Gateway reconnected successfully!", false);
+        if (result && result.success) {
+            // Active LoRa receiver detected -> GREEN background
+            showNotice(result.message || "LoRa Receiver Gateway detected and connected successfully!", "success");
         } else {
-            showNotice(result.message || "Could not detect active gateway.", true);
+            // No active LoRa receiver detected -> RED background
+            showNotice(result && result.message ? result.message : "No active LoRa receiver detected on scanned ports. Check USB cable or close serial monitors.", "error");
         }
 
         await fetchDevicesInventory();
     } catch (err) {
-        showNotice("Failed to reach reconnect endpoint. Please check system status.", true);
+        // Communication failure -> RED background
+        showNotice("Failed to reach reconnect endpoint. Please check system status.", "error");
     } finally {
-        if (btn) btn.disabled = false;
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+        }
     }
 }
 

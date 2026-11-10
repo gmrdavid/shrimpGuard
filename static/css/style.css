@@ -23874,6 +23874,7 @@ nav a {
     color: #065f46;
     font-size: 13px;
     font-weight: 600;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .devices-banner-notice .ui-icon {
@@ -23881,6 +23882,48 @@ nav a {
     height: 18px;
     color: #10b981;
     flex-shrink: 0;
+}
+
+/* Green state: Active LoRa receiver detected */
+.devices-banner-notice.success {
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+}
+
+.devices-banner-notice.success .ui-icon {
+    color: #10b981;
+}
+
+/* Red state: No active LoRa receiver detected */
+.devices-banner-notice.error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+}
+
+.devices-banner-notice.error .ui-icon {
+    color: #ef4444;
+}
+
+/* Info / Scanning state */
+.devices-banner-notice.info {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    color: #0369a1;
+}
+
+.devices-banner-notice.info .ui-icon {
+    color: #0284c7;
+}
+
+.devices-spin {
+    animation: devicesKeyframeSpin 1s linear infinite;
+}
+
+@keyframes devicesKeyframeSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 /* 2-Column Layout Grid for Devices & Hardware */
