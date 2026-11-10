@@ -25144,3 +25144,371 @@ body.modal-backdrop-open {
     height: 16px;
 }
 
+/* ==========================================================================
+   ADAPTIVE PRESENTATION SYSTEM - FIELD SUNLIGHT, DENSITY & DATA-SAVER MODES
+   ========================================================================== */
+
+/* 1. FIELD SUNLIGHT MODE (HIGH CONTRAST OUTDOOR GLARE RESISTANCE) */
+body.adaptive-sunlight,
+html.adaptive-sunlight body {
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+}
+
+body.adaptive-sunlight .sidebar,
+body.adaptive-sunlight .dashboard-sidebar {
+    background: #ffffff !important;
+    border-right: 2px solid #1e293b !important;
+}
+
+body.adaptive-sunlight .sidebar a {
+    color: #0f172a !important;
+    font-weight: 750 !important;
+}
+
+body.adaptive-sunlight .sidebar a:hover,
+body.adaptive-sunlight .sidebar a.active {
+    background: #0f172a !important;
+    color: #ffffff !important;
+}
+
+body.adaptive-sunlight .sidebar a:hover .ui-icon,
+body.adaptive-sunlight .sidebar a.active .ui-icon {
+    color: #ffffff !important;
+    fill: #ffffff !important;
+}
+
+body.adaptive-sunlight .dashboard-header {
+    background: #ffffff !important;
+    border-bottom: 2px solid #1e293b !important;
+}
+
+body.adaptive-sunlight .card,
+body.adaptive-sunlight .panel,
+body.adaptive-sunlight .dashboard-panel,
+body.adaptive-sunlight .dashboard-metric-card,
+body.adaptive-sunlight .devices-metric-card,
+body.adaptive-sunlight .settings-panel,
+body.adaptive-sunlight .settings-card,
+body.adaptive-sunlight .calculator-card,
+body.adaptive-sunlight .calc-panel {
+    background: #ffffff !important;
+    border: 2px solid #1e293b !important;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12) !important;
+}
+
+body.adaptive-sunlight h1,
+body.adaptive-sunlight h2,
+body.adaptive-sunlight h3,
+body.adaptive-sunlight h4,
+body.adaptive-sunlight strong,
+body.adaptive-sunlight .metric-value,
+body.adaptive-sunlight .metric-reading h2,
+body.adaptive-sunlight .status-ratio-number,
+body.adaptive-sunlight .adaptive-control-title {
+    color: #020617 !important;
+    font-weight: 850 !important;
+}
+
+body.adaptive-sunlight p,
+body.adaptive-sunlight span,
+body.adaptive-sunlight label,
+body.adaptive-sunlight .subtitle,
+body.adaptive-sunlight .metric-status,
+body.adaptive-sunlight .adaptive-control-desc,
+body.adaptive-sunlight .section-eyebrow,
+body.adaptive-sunlight .settings-section-subtitle,
+body.adaptive-sunlight .device-cell-seen,
+body.adaptive-sunlight .date-time-label,
+body.adaptive-sunlight .time-value {
+    color: #0f172a !important;
+    font-weight: 650 !important;
+}
+
+body.adaptive-sunlight input,
+body.adaptive-sunlight select,
+body.adaptive-sunlight textarea,
+body.adaptive-sunlight .settings-select-input,
+body.adaptive-sunlight .settings-input {
+    background: #ffffff !important;
+    border: 2px solid #1e293b !important;
+    color: #020617 !important;
+    font-weight: 700 !important;
+}
+
+body.adaptive-sunlight .dashboard-table,
+body.adaptive-sunlight .devices-table,
+body.adaptive-sunlight table {
+    border: 2px solid #1e293b !important;
+}
+
+body.adaptive-sunlight .dashboard-table th,
+body.adaptive-sunlight .devices-table th,
+body.adaptive-sunlight table th {
+    background: #0f172a !important;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    border-bottom: 2px solid #020617 !important;
+}
+
+body.adaptive-sunlight .dashboard-table td,
+body.adaptive-sunlight .devices-table td,
+body.adaptive-sunlight table td {
+    border-bottom: 1.5px solid #1e293b !important;
+    color: #020617 !important;
+    font-weight: 700 !important;
+}
+
+body.adaptive-sunlight .badge,
+body.adaptive-sunlight .table-status,
+body.adaptive-sunlight .device-cell-type {
+    border-width: 1.5px !important;
+    font-weight: 800 !important;
+}
+
+body.adaptive-sunlight .telemetry-test-btn,
+body.adaptive-sunlight .telemetry-sync-btn,
+body.adaptive-sunlight .admin-user-submit,
+body.adaptive-sunlight .btn-maint-primary {
+    background: #0f172a !important;
+    color: #ffffff !important;
+    border: 2px solid #000000 !important;
+    font-weight: 800 !important;
+}
+
+body.adaptive-sunlight .btn-maint-secondary,
+body.adaptive-sunlight .admin-user-cancel {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: 2px solid #1e293b !important;
+    font-weight: 800 !important;
+}
+
+body.adaptive-sunlight .adaptive-control-item,
+body.adaptive-sunlight .device-category-item {
+    background: #f8fafc !important;
+    border: 1.5px solid #1e293b !important;
+}
+
+
+/* 2. COMPACT DENSITY (DENSE DATA FOR DESKTOP ANALYSTS) */
+body.adaptive-compact .dashboard-main,
+body.adaptive-compact .settings-content,
+html.adaptive-compact body .dashboard-main,
+html.adaptive-compact body .settings-content {
+    padding: 16px 20px !important;
+}
+
+body.adaptive-compact .dashboard-section,
+body.adaptive-compact .settings-section {
+    margin-bottom: 16px !important;
+}
+
+body.adaptive-compact .dashboard-metric-cards,
+body.adaptive-compact .devices-metric-cards,
+body.adaptive-compact .cards {
+    gap: 12px !important;
+}
+
+body.adaptive-compact .card,
+body.adaptive-compact .panel,
+body.adaptive-compact .dashboard-panel,
+body.adaptive-compact .settings-panel,
+body.adaptive-compact .dashboard-metric-card,
+body.adaptive-compact .devices-metric-card {
+    padding: 12px 16px !important;
+    border-radius: 9px !important;
+}
+
+body.adaptive-compact .devices-main-grid {
+    gap: 14px !important;
+}
+
+body.adaptive-compact .dashboard-table th,
+body.adaptive-compact .devices-table th {
+    padding: 7px 12px !important;
+    font-size: 10px !important;
+}
+
+body.adaptive-compact .dashboard-table td,
+body.adaptive-compact .devices-table td {
+    padding: 7px 12px !important;
+    font-size: 11.5px !important;
+}
+
+body.adaptive-compact .metric-reading h2,
+body.adaptive-compact .status-ratio-number {
+    font-size: 26px !important;
+    margin-bottom: 2px !important;
+}
+
+body.adaptive-compact .metric-card-top {
+    margin-bottom: 8px !important;
+}
+
+body.adaptive-compact .adaptive-controls-list,
+body.adaptive-compact .device-category-list {
+    gap: 8px !important;
+}
+
+body.adaptive-compact .adaptive-control-item,
+body.adaptive-compact .device-category-item {
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+}
+
+body.adaptive-compact .control-icon-box,
+body.adaptive-compact .category-icon-box {
+    width: 32px !important;
+    height: 32px !important;
+}
+
+body.adaptive-compact .control-icon-box .ui-icon,
+body.adaptive-compact .category-icon-box .ui-icon {
+    width: 16px !important;
+    height: 16px !important;
+}
+
+
+/* 3. COMFORTABLE DENSITY (FIELD TOUCH TARGETS) */
+body.adaptive-comfort .dashboard-main,
+body.adaptive-comfort .settings-content,
+html.adaptive-comfort body .dashboard-main,
+html.adaptive-comfort body .settings-content {
+    padding: 28px 36px !important;
+}
+
+body.adaptive-comfort .dashboard-section,
+body.adaptive-comfort .settings-section {
+    margin-bottom: 32px !important;
+}
+
+body.adaptive-comfort .dashboard-metric-cards,
+body.adaptive-comfort .devices-metric-cards,
+body.adaptive-comfort .cards {
+    gap: 22px !important;
+}
+
+body.adaptive-comfort .card,
+body.adaptive-comfort .panel,
+body.adaptive-comfort .dashboard-panel,
+body.adaptive-comfort .settings-panel,
+body.adaptive-comfort .dashboard-metric-card,
+body.adaptive-comfort .devices-metric-card {
+    padding: 22px 26px !important;
+    border-radius: 14px !important;
+}
+
+body.adaptive-comfort .dashboard-table th,
+body.adaptive-comfort .devices-table th {
+    padding: 14px 18px !important;
+    font-size: 11.5px !important;
+}
+
+body.adaptive-comfort .dashboard-table td,
+body.adaptive-comfort .devices-table td {
+    padding: 16px 18px !important;
+    font-size: 13.5px !important;
+}
+
+body.adaptive-comfort .metric-reading h2 {
+    font-size: 38px !important;
+}
+
+body.adaptive-comfort .adaptive-control-item {
+    padding: 16px 20px !important;
+    border-radius: 12px !important;
+}
+
+body.adaptive-comfort .control-icon-box {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 10px !important;
+}
+
+body.adaptive-comfort .settings-select-input,
+body.adaptive-comfort select,
+body.adaptive-comfort button,
+body.adaptive-comfort .btn-unpair-node,
+body.adaptive-comfort .telemetry-test-btn,
+body.adaptive-comfort .telemetry-sync-btn {
+    min-height: 42px !important;
+    padding: 9px 16px !important;
+    font-size: 13.5px !important;
+}
+
+
+/* 4. NETWORK DATA-SAVER MODE */
+body.adaptive-data-saver *,
+body.adaptive-data-saver *::before,
+body.adaptive-data-saver *::after,
+html.adaptive-data-saver body *,
+html.adaptive-data-saver body *::before,
+html.adaptive-data-saver body *::after {
+    animation-duration: 0.001s !important;
+    transition-duration: 0.001s !important;
+}
+
+body.adaptive-data-saver,
+html.adaptive-data-saver body {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.adaptive-data-saver .maint-modal-backdrop,
+body.adaptive-data-saver dialog::backdrop {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(15, 23, 42, 0.85) !important;
+}
+
+body.adaptive-data-saver .status-pulse-dot,
+body.adaptive-data-saver .devices-spin {
+    animation: none !important;
+}
+
+
+/* 5. FLOATING ADAPTIVE STATUS INDICATOR BADGES */
+#adaptive-status-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 99998;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: auto !important;
+}
+
+.adaptive-status-indicator-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 750;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    cursor: pointer;
+    user-select: none;
+}
+
+.adaptive-status-indicator-badge:hover {
+    transform: translateY(-2px);
+}
+
+.adaptive-status-indicator-badge.sunlight {
+    background: #78350f !important;
+    color: #fef3c7 !important;
+    border: 1.5px solid #f59e0b !important;
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);
+}
+
+.adaptive-status-indicator-badge.data-saver {
+    background: #0f172a !important;
+    color: #38bdf8 !important;
+    border: 1.5px solid #0284c7 !important;
+    box-shadow: 0 4px 16px rgba(2, 132, 199, 0.3);
+}
+

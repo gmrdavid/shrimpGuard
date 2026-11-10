@@ -18,7 +18,7 @@
 
     function getStorageKey() {
         const email = getCurrentUserEmail();
-        return email ? `shrimpguard_adaptive_model_${email}` : "shrimpguard_adaptive_model";
+        return email ? `shrimpguard_adaptive_model_${email}` : "shrimpguard_adaptive_model_shared";
     }
 
     const PERSONA_CONFIGS = {
@@ -127,7 +127,10 @@
     function loadModel() {
         try {
             const key = getStorageKey();
-            const raw = localStorage.getItem(key);
+            let raw = localStorage.getItem(key);
+            if (!raw && key !== "shrimpguard_adaptive_model_shared") {
+                raw = localStorage.getItem("shrimpguard_adaptive_model_shared");
+            }
             if (!raw) return getDefaultModel();
             const parsed = JSON.parse(raw);
             return Object.assign(getDefaultModel(), parsed);
@@ -139,20 +142,15 @@
     function saveModel(modelToSave) {
         try {
             const key = getStorageKey();
-            localStorage.setItem(key, JSON.stringify(modelToSave));
+            const jsonStr = JSON.stringify(modelToSave);
+            localStorage.setItem(key, jsonStr);
+            localStorage.setItem("shrimpguard_adaptive_model_shared", jsonStr);
         } catch (e) {
             console.warn("Adaptive model could not be written to localStorage:", e);
         }
     }
 
     let model = loadModel();
-
-    // Clean up any stale un-scoped model from legacy sessions
-    try {
-        if (localStorage.getItem("shrimpguard_adaptive_model")) {
-            localStorage.removeItem("shrimpguard_adaptive_model");
-        }
-    } catch (e) {}
 
     // --- 2. DEVICE & ENVIRONMENT DETECTION ---
     function detectDevice() {
@@ -292,20 +290,23 @@
         if (!container) {
             container = document.createElement("div");
             container.id = "adaptive-status-container";
-            container.style.cssText = "position: fixed; bottom: 16px; right: 16px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none;";
             document.body.appendChild(container);
         }
         container.innerHTML = "";
         if (isSunlight) {
             const b = document.createElement("div");
             b.className = "adaptive-status-indicator-badge sunlight";
+            b.title = "Field Sunlight Mode is active (high contrast). Click to configure in Settings.";
             b.innerHTML = `<span>☀️ Field Sunlight Mode Active</span>`;
+            b.onclick = () => { window.location.href = "/settings"; };
             container.appendChild(b);
         }
         if (isDataSaver) {
             const b = document.createElement("div");
             b.className = "adaptive-status-indicator-badge data-saver";
-            b.innerHTML = `<span>📶 Data-Saver Active (Throttled Telemetry)</span>`;
+            b.title = "Network Data-Saver is active (telemetry polling throttled to 25s). Click to configure in Settings.";
+            b.innerHTML = `<span>📶 Data-Saver Active (25s Throttled)</span>`;
+            b.onclick = () => { window.location.href = "/settings"; };
             container.appendChild(b);
         }
     }
@@ -328,6 +329,10 @@
             "adaptive-sunlight", "adaptive-data-saver",
             "adaptive-persona-field_inspector", "adaptive-persona-farm_planner",
             "adaptive-persona-data_analyst", "adaptive-persona-balanced_operator"
+        );
+        root.classList.remove(
+            "adaptive-compact", "adaptive-comfort",
+            "adaptive-sunlight", "adaptive-data-saver"
         );
 
         root.classList.add("adaptive-ready");
@@ -355,8 +360,13 @@
         if (density === "auto") {
             density = device.is_touch ? "comfort" : "compact";
         }
-        if (density === "comfort") body.classList.add("adaptive-comfort");
-        else if (density === "compact") body.classList.add("adaptive-compact");
+        if (density === "comfort") {
+            body.classList.add("adaptive-comfort");
+            root.classList.add("adaptive-comfort");
+        } else if (density === "compact") {
+            body.classList.add("adaptive-compact");
+            root.classList.add("adaptive-compact");
+        }
 
         // 3. Sunlight / Outdoor mode adaptation
         let sunlight = false;
@@ -371,11 +381,17 @@
             const isDaytimeOutdoor = (device.is_mobile || device.is_touch) && (hour >= 7 && hour < 17);
             sunlight = Boolean(highContrastOS || isDaytimeOutdoor);
         }
-        if (sunlight) body.classList.add("adaptive-sunlight");
+        if (sunlight) {
+            body.classList.add("adaptive-sunlight");
+            root.classList.add("adaptive-sunlight");
+        }
 
         // 4. Data-Saver adaptation
         const dataSaver = isDataSaverActive();
-        if (dataSaver) body.classList.add("adaptive-data-saver");
+        if (dataSaver) {
+            body.classList.add("adaptive-data-saver");
+            root.classList.add("adaptive-data-saver");
+        }
 
         renderStatusBadges(sunlight, dataSaver);
     }

@@ -578,30 +578,42 @@ function updateDeviceTime() {
             if (!noticeBox) {
                 noticeBox = document.createElement("div");
                 noticeBox.id = "presentation-notice-toast";
-                noticeBox.style.cssText = "position: fixed; top: 24px; right: 24px; z-index: 10000; background: #065f46; color: #ffffff; padding: 12px 18px; border-radius: 8px; font-size: 13px; font-weight: 650; box-shadow: 0 8px 24px rgba(0,0,0,0.18); display: flex; align-items: center; gap: 8px; transition: opacity 300ms ease, transform 300ms ease;";
+                noticeBox.style.cssText = "position: fixed; top: 24px; right: 24px; z-index: 100000; background: #ecfdf5; color: #065f46; border: 1.5px solid #a7f3d0; border-left: 5px solid #10b981; padding: 13px 20px; border-radius: 10px; font-size: 13.5px; font-weight: 700; box-shadow: 0 8px 26px rgba(16, 185, 129, 0.18); display: flex; align-items: center; gap: 10px; transition: opacity 250ms ease, transform 250ms ease; opacity: 0; transform: translateY(-10px);";
                 document.body.appendChild(noticeBox);
             }
             noticeBox.innerHTML = `
-                <svg class="ui-icon" style="width:16px;height:16px;fill:currentColor;"><use href="#icon-check-circle"></use></svg>
+                <svg class="ui-icon" style="width:18px;height:18px;color:#059669;flex-shrink:0;"><use href="#icon-check-circle"></use></svg>
                 <span>${message}</span>
             `;
-            noticeBox.style.opacity = "1";
-            noticeBox.style.transform = "translateY(0)";
+            noticeBox.style.display = "flex";
+            requestAnimationFrame(() => {
+                noticeBox.style.opacity = "1";
+                noticeBox.style.transform = "translateY(0)";
+            });
 
             clearTimeout(noticeBox._timer);
             noticeBox._timer = setTimeout(() => {
                 noticeBox.style.opacity = "0";
                 noticeBox.style.transform = "translateY(-10px)";
+                setTimeout(() => {
+                    if (noticeBox.style.opacity === "0") {
+                        noticeBox.style.display = "none";
+                    }
+                }, 300);
             }, 3500);
         }
 
         function savePrefs() {
+            if (!window.ShrimpGuardAdaptive || typeof window.ShrimpGuardAdaptive.updatePreferences !== "function") return;
             window.ShrimpGuardAdaptive.updatePreferences({
                 auto_adapt: autoAdaptCheck ? autoAdaptCheck.checked : true,
                 sunlight_mode: sunlightSelect ? sunlightSelect.value : "auto",
                 density: densitySelect ? densitySelect.value : "auto",
                 data_saver: dataSaverSelect ? dataSaverSelect.value : "auto"
             });
+            if (typeof window.ShrimpGuardAdaptive.applyAdaptations === "function") {
+                window.ShrimpGuardAdaptive.applyAdaptations();
+            }
         }
 
         if (autoAdaptCheck) {
