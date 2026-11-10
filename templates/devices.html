@@ -283,7 +283,112 @@
 
         <!-- SUBMERGED PROBE BIOFILM & CALIBRATION LIFECYCLE (ANTI-DRIFT TRACKING) -->
         <section class="dashboard-section" aria-labelledby="probe-maintenance-heading" id="probe-maintenance-devices-section">
-            <div id="probe-maintenance-devices-card"></div>
+            <div id="probe-maintenance-devices-card">
+                {% if maintenance %}
+                {% set is_overdue = maintenance.status == 'Overdue' %}
+                {% set is_due_soon = maintenance.status == 'Due Soon' %}
+                {% set badge_class = 'badge-critical' if is_overdue else ('badge-warning' if is_due_soon else 'badge-optimal') %}
+                {% set badge_text = 'OVERDUE - BIOFILM DRIFT' if is_overdue else ('MAINTENANCE DUE SOON' if is_due_soon else 'CALIBRATED & HEALTHY') %}
+                {% set clean_pct = (maintenance.cleaning_progress_pct or 0)|round(0)|int %}
+                {% set cal_pct = (maintenance.calibration_progress_pct or 0)|round(0)|int %}
+                {% set clean_bar_color = '#dc2626' if clean_pct >= 100 else ('#d97706' if clean_pct >= 75 else '#126b4f') %}
+                {% set cal_bar_color = '#dc2626' if cal_pct >= 100 else ('#d97706' if cal_pct >= 75 else '#0284c7') %}
+                {% set risk_slug = maintenance.status|lower|replace(' ', '-') %}
+
+                <article class="panel dashboard-panel probe-lifecycle-card">
+                    <div class="panel-heading" style="justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 11px;">
+                            <div class="panel-heading-icon" style="background: #f0fdf4; color: #126b4f;">
+                                <svg class="ui-icon" aria-hidden="true"><use href="#icon-droplet"></use></svg>
+                            </div>
+                            <div>
+                                <h2 style="font-size: 16px; margin: 0; color: #1e293b;" id="probe-maintenance-heading">Submerged Probe Biofilm &amp; Calibration Lifecycle</h2>
+                                <p style="margin: 2px 0 0; font-size: 12px; color: #64748b;">
+                                    Anti-drift tracking for Node 1 submerged DFRobot pH probe &amp; DS18B20 temperature probe
+                                </p>
+                            </div>
+                        </div>
+                        <span class="badge {{ badge_class }}" style="font-size: 12px; font-weight: 700; padding: 5px 12px;">
+                            {{ badge_text }}
+                        </span>
+                    </div>
+
+                    <div class="probe-lifecycle-body" style="padding: 18px 20px;">
+                        <!-- Drift Risk Indicator Strip -->
+                        <div class="drift-risk-banner risk-{{ risk_slug }}" style="margin-bottom: 18px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <svg class="ui-icon" aria-hidden="true" style="width: 18px; height: 18px;"><use href="#icon-activity"></use></svg>
+                                <strong>Drift Risk Assessment:</strong>
+                                <span>{{ maintenance.drift_risk }}</span>
+                            </div>
+                            <span style="font-size: 12px; color: #475569;">Target Drift: &lt; &plusmn;0.10 pH</span>
+                        </div>
+
+                        <div class="probe-cycles-grid">
+                            <!-- 7-Day Routine Biofilm Cleaning Cycle -->
+                            <div class="probe-cycle-box">
+                                <div class="probe-cycle-header">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <svg class="ui-icon" style="width: 16px; height: 16px; fill: #126b4f;"><use href="#icon-droplet"></use></svg>
+                                        <strong style="font-size: 13px; color: #1e293b;">7-Day Biofilm Scrubbing Cycle</strong>
+                                    </div>
+                                    <span style="font-size: 12px; font-weight: 700; color: {{ clean_bar_color }};">{{ clean_pct }}%</span>
+                                </div>
+                                <div class="maint-progress-track">
+                                    <div class="maint-progress-fill" style="width: {{ clean_pct }}%; background-color: {{ clean_bar_color }};"></div>
+                                </div>
+                                <div class="probe-cycle-meta">
+                                    <span>Submerged: <strong>{{ maintenance.days_since_cleaning }} days</strong></span>
+                                    <span>Next Due: <strong>{{ (maintenance.days_until_cleaning ~ 'd') if maintenance.days_until_cleaning > 0 else 'NOW' }}</strong></span>
+                                </div>
+                                <p class="probe-cycle-hint">Prevents algal slime and bacterial biofilm barrier on the pH glass bulb.</p>
+                            </div>
+
+                            <!-- 14-Day 2-Point Buffer Recalibration Cycle -->
+                            <div class="probe-cycle-box">
+                                <div class="probe-cycle-header">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <svg class="ui-icon" style="width: 16px; height: 16px; fill: #0284c7;"><use href="#icon-settings"></use></svg>
+                                        <strong style="font-size: 13px; color: #1e293b;">14-Day 2-Point pH Calibration</strong>
+                                    </div>
+                                    <span style="font-size: 12px; font-weight: 700; color: {{ cal_bar_color }};">{{ cal_pct }}%</span>
+                                </div>
+                                <div class="maint-progress-track">
+                                    <div class="maint-progress-fill" style="width: {{ cal_pct }}%; background-color: {{ cal_bar_color }};"></div>
+                                </div>
+                                <div class="probe-cycle-meta">
+                                    <span>Elapsed: <strong>{{ maintenance.days_since_calibration }} days</strong></span>
+                                    <span>Next Due: <strong>{{ (maintenance.days_until_calibration ~ 'd') if maintenance.days_until_calibration > 0 else 'NOW' }}</strong></span>
+                                </div>
+                                <p class="probe-cycle-hint">Recalibrates slope and midpoint using standard pH 4.01 and 6.86 buffers.</p>
+                            </div>
+                        </div>
+
+                        <!-- Last Maintenance Log Info -->
+                        <div class="probe-maint-history-row" style="margin-top: 16px; padding-top: 14px; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                            <div style="font-size: 12px; color: #64748b;">
+                                <span>Last Recorded Action: <strong style="color: #334155;">{{ maintenance.maintenance_type or 'Routine Inspection' }}</strong> by <strong style="color: #334155;">{{ maintenance.performed_by or 'Technician' }}</strong></span>
+                                <span style="margin-left: 12px; color: #94a3b8;">({{ maintenance.last_cleaned_at.strftime('%Y-%m-%d %H:%M') if maintenance.last_cleaned_at else 'N/A' }})</span>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" class="btn-maint-secondary" id="btn-devices-open-sop" style="font-size: 12px; padding: 6px 12px;" title="View standard maintenance SOP guide">
+                                    <svg class="ui-icon" aria-hidden="true" style="width: 14px; height: 14px;"><use href="#icon-lightbulb"></use></svg>
+                                    <span>Standard SOP</span>
+                                </button>
+                                <button type="button" class="btn-maint-secondary" id="btn-devices-view-history" style="font-size: 12px; padding: 6px 12px;" title="Open Probe Maintenance &amp; Calibration Audit Log pop-up dialog">
+                                    <svg class="ui-icon" aria-hidden="true" style="width: 14px; height: 14px;"><use href="#icon-calendar"></use></svg>
+                                    <span>Audit Log Dialog</span>
+                                </button>
+                                <button type="button" class="btn-maint-primary" id="btn-devices-log-maint" style="font-size: 12px; padding: 6px 14px;" title="Log a new cleaning or buffer recalibration">
+                                    <svg class="ui-icon" aria-hidden="true" style="width: 14px; height: 14px;"><use href="#icon-plus"></use></svg>
+                                    <span>Log Maintenance</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+                {% endif %}
+            </div>
         </section>
 
         <!-- PAIRED POND TELEMETRY NODES (MULTI-ACCOUNT HARDWARE ROUTING) -->
@@ -328,19 +433,19 @@
                             {% for node in paired_nodes %}
                             <tr class="device-row" data-node-id="{{ node.device_id }}">
                                 <td>
-                                    <span class="device-id-badge" style="background: #e0f2fe; color: #0369a1; font-weight: 700;">{{ node.device_id }}</span>
+                                    <span class="device-id-badge">{{ node.device_id }}</span>
                                 </td>
                                 <td>
                                     <div class="device-cell-title-row">
                                         <strong class="device-cell-name">{{ node.device_name }}</strong>
-                                        <span style="font-size: 12px; color: #64748b; margin-left: 8px;">({{ node.pond_location or 'Pond Site' }})</span>
+                                        <span class="device-location-tag">({{ node.pond_location or 'Pond Site' }})</span>
                                     </div>
                                 </td>
                                 <td>
-                                    <span style="font-size: 12.5px; color: #475569;">{{ node.user_email }}</span>
+                                    <span class="device-owner-cell">{{ node.user_email }}</span>
                                 </td>
                                 <td>
-                                    <span class="table-status status-optimal">
+                                    <span class="table-status status-optimal status-online">
                                         <span class="status-indicator-dot dot-optimal"></span> Active
                                     </span>
                                 </td>
@@ -350,7 +455,7 @@
                                     </span>
                                 </td>
                                 <td style="text-align: center;">
-                                    <button type="button" class="btn-unpair-node" data-node-id="{{ node.device_id }}" style="background: none; border: 1px solid #fecaca; color: #dc2626; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">
+                                    <button type="button" class="btn-unpair-node" data-node-id="{{ node.device_id }}">
                                         Unpair
                                     </button>
                                 </td>
@@ -465,7 +570,7 @@
                             </p>
 
                             <div class="device-progress-track">
-                                <div id="side-progress-fill" class="device-progress-fill" style="width: 0%;" data-initial-width="{{ (online_devices / total_devices * 100)|round(1) if total_devices and total_devices > 0 else 0 }}%"></div>
+                                <div id="side-progress-fill" class="device-progress-fill" style="width: {{ (online_devices / total_devices * 100)|round(1) if total_devices and total_devices > 0 else 0 }}%;"></div>
                             </div>
 
                             <div class="status-ratio-pills">
@@ -506,7 +611,7 @@
                                         <p title="DS18B20 Temp, DFRobot pH">Temperature &amp; pH Probes</p>
                                     </div>
                                 </div>
-                                <span id="cat-sensors-badge" class="badge badge-optimal" style="font-size: 11px; font-weight: 700;">
+                                <span id="cat-sensors-badge" class="badge badge-optimal">
                                     {{ category_stats.sensors.online if category_stats and category_stats.sensors else 2 }}/{{ category_stats.sensors.total if category_stats and category_stats.sensors else 2 }} Online
                                 </span>
                             </div>
@@ -522,7 +627,7 @@
                                         <p title="Node 2 Gateway, Node 1 Pond Unit, SX1278 LoRa, 20x4 LCD">LoRa RF, Serial Gateway, LCD</p>
                                     </div>
                                 </div>
-                                <span id="cat-comm-badge" class="badge badge-optimal" style="font-size: 11px; font-weight: 700;">
+                                <span id="cat-comm-badge" class="badge badge-optimal">
                                     {{ category_stats.communication.online if category_stats and category_stats.communication else 3 }}/{{ category_stats.communication.total if category_stats and category_stats.communication else 4 }} Online
                                 </span>
                             </div>
@@ -538,7 +643,7 @@
                                         <p title="Active 5V Piezo Buzzer & Tricolor Status LEDs">Piezo Buzzer &amp; Status LEDs</p>
                                     </div>
                                 </div>
-                                <span id="cat-alerts-badge" class="badge badge-optimal" style="font-size: 11px; font-weight: 700;">
+                                <span id="cat-alerts-badge" class="badge badge-optimal">
                                     {{ category_stats.alerts.online if category_stats and category_stats.alerts else 2 }}/{{ category_stats.alerts.total if category_stats and category_stats.alerts else 2 }} Online
                                 </span>
                             </div>
@@ -554,7 +659,7 @@
                                         <p title="Pond Solar Boost Unit &amp; 3.7V Li-ion Battery">Solar Boost &amp; 3.7V Li-ion</p>
                                     </div>
                                 </div>
-                                <span id="cat-power-badge" class="badge badge-optimal" style="font-size: 11px; font-weight: 700;">
+                                <span id="cat-power-badge" class="badge badge-optimal">
                                     {{ category_stats.power.online if category_stats and category_stats.power else 2 }}/{{ category_stats.power.total if category_stats and category_stats.power else 2 }} Online
                                 </span>
                             </div>

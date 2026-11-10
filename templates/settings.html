@@ -462,8 +462,9 @@
                             <h2>Learned Behavioral Profile</h2>
                             <p>Telemetry usage model and engagement analytics</p>
                         </div>
-                        <button type="button" id="reset-adaptive-btn" class="sim-btn-cancel" style="padding: 6px 12px; font-size: 11.5px; cursor: pointer;" title="Reset interaction history and relearn preferences">
-                            Reset Model
+                        <button type="button" id="reset-adaptive-btn" class="btn-reset-adaptive" title="Reset interaction history and relearn preferences">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-history"></use></svg>
+                            <span>Reset Model</span>
                         </button>
                     </div>
 
@@ -485,7 +486,10 @@
                     <div class="adaptive-meter-group">
                         <div class="adaptive-meter-row">
                             <div class="adaptive-meter-label">
-                                <span>Real-time Monitoring</span>
+                                <span class="meter-title-wrap">
+                                    <span class="meter-color-dot dot-green"></span>
+                                    <span>Real-time Monitoring</span>
+                                </span>
                                 <strong id="meter-val-monitoring">0%</strong>
                             </div>
                             <div class="adaptive-meter-bar">
@@ -495,7 +499,10 @@
 
                         <div class="adaptive-meter-row">
                             <div class="adaptive-meter-label">
-                                <span>Aquaculture Calculators</span>
+                                <span class="meter-title-wrap">
+                                    <span class="meter-color-dot dot-blue"></span>
+                                    <span>Aquaculture Calculators</span>
+                                </span>
                                 <strong id="meter-val-calculators">0%</strong>
                             </div>
                             <div class="adaptive-meter-bar">
@@ -505,7 +512,10 @@
 
                         <div class="adaptive-meter-row">
                             <div class="adaptive-meter-label">
-                                <span>Analytics &amp; Historical Audits</span>
+                                <span class="meter-title-wrap">
+                                    <span class="meter-color-dot dot-purple"></span>
+                                    <span>Analytics &amp; Historical Audits</span>
+                                </span>
                                 <strong id="meter-val-analytics">0%</strong>
                             </div>
                             <div class="adaptive-meter-bar">
@@ -515,7 +525,10 @@
 
                         <div class="adaptive-meter-row">
                             <div class="adaptive-meter-label">
-                                <span>Alerts &amp; Notifications</span>
+                                <span class="meter-title-wrap">
+                                    <span class="meter-color-dot dot-amber"></span>
+                                    <span>Alerts &amp; Notifications</span>
+                                </span>
                                 <strong id="meter-val-alerts">0%</strong>
                             </div>
                             <div class="adaptive-meter-bar">
@@ -525,9 +538,14 @@
                     </div>
 
                     <div class="adaptive-device-info-bar">
-                        <span><strong>Device:</strong> <span id="adaptive-device-type">Detecting...</span></span>
-                        <span class="info-dot">&bull;</span>
-                        <span><strong>Modality:</strong> <span id="adaptive-input-modality">Detecting...</span></span>
+                        <div class="adaptive-device-pill">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-monitor"></use></svg>
+                            <span>Device: <strong id="adaptive-device-type">Detecting...</strong></span>
+                        </div>
+                        <div class="adaptive-device-pill">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
+                            <span>Modality: <strong id="adaptive-input-modality">Detecting...</strong></span>
+                        </div>
                     </div>
 
                 </article>
@@ -552,17 +570,27 @@
 
                     <div class="adaptive-controls-list">
                         <div class="adaptive-control-item">
-                            <div class="adaptive-control-meta">
-                                <label for="adaptive-pref-autoadapt" class="adaptive-control-title">Automatic UI Adaptation</label>
-                                <span class="adaptive-control-desc">Dynamically inject shortcuts, reorder priority cards, and adjust layouts</span>
+                            <div class="adaptive-control-left">
+                                <div class="control-icon-box" style="background: #ecfdf5; color: #126b4f;">
+                                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg>
+                                </div>
+                                <div class="adaptive-control-meta">
+                                    <label for="adaptive-pref-autoadapt" class="adaptive-control-title">Automatic UI Adaptation</label>
+                                    <span class="adaptive-control-desc">Dynamically inject shortcuts, reorder priority cards, and adjust layouts</span>
+                                </div>
                             </div>
                             <input type="checkbox" id="adaptive-pref-autoadapt" class="settings-toggle-checkbox" checked>
                         </div>
 
                         <div class="adaptive-control-item">
-                            <div class="adaptive-control-meta">
-                                <label for="adaptive-pref-sunlight" class="adaptive-control-title">Field Sunlight Mode</label>
-                                <span class="adaptive-control-desc">High-contrast, glare-resistant display for outdoor tropical sunlight</span>
+                            <div class="adaptive-control-left">
+                                <div class="control-icon-box" style="background: #fffbeb; color: #d97706;">
+                                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-lightbulb"></use></svg>
+                                </div>
+                                <div class="adaptive-control-meta">
+                                    <label for="adaptive-pref-sunlight" class="adaptive-control-title">Field Sunlight Mode</label>
+                                    <span class="adaptive-control-desc">High-contrast, glare-resistant display for outdoor tropical sunlight</span>
+                                </div>
                             </div>
                             <select id="adaptive-pref-sunlight" class="settings-select-input">
                                 <option value="auto">Auto (Detect)</option>
@@ -572,9 +600,14 @@
                         </div>
 
                         <div class="adaptive-control-item">
-                            <div class="adaptive-control-meta">
-                                <label for="adaptive-pref-density" class="adaptive-control-title">Layout Density</label>
-                                <span class="adaptive-control-desc">Comfortable touch targets vs high-density desktop data view</span>
+                            <div class="adaptive-control-left">
+                                <div class="control-icon-box" style="background: #eff6ff; color: #2563eb;">
+                                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-dashboard"></use></svg>
+                                </div>
+                                <div class="adaptive-control-meta">
+                                    <label for="adaptive-pref-density" class="adaptive-control-title">Layout Density</label>
+                                    <span class="adaptive-control-desc">Comfortable touch targets vs high-density desktop data view</span>
+                                </div>
                             </div>
                             <select id="adaptive-pref-density" class="settings-select-input">
                                 <option value="auto">Auto (Device Based)</option>
@@ -584,9 +617,14 @@
                         </div>
 
                         <div class="adaptive-control-item">
-                            <div class="adaptive-control-meta">
-                                <label for="adaptive-pref-datasaver" class="adaptive-control-title">Network Data-Saver Mode</label>
-                                <span class="adaptive-control-desc">Throttle background telemetry polling on low-bandwidth rural cellular</span>
+                            <div class="adaptive-control-left">
+                                <div class="control-icon-box" style="background: #faf5ff; color: #9333ea;">
+                                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
+                                </div>
+                                <div class="adaptive-control-meta">
+                                    <label for="adaptive-pref-datasaver" class="adaptive-control-title">Network Data-Saver Mode</label>
+                                    <span class="adaptive-control-desc">Throttle background telemetry polling on low-bandwidth rural cellular</span>
+                                </div>
                             </div>
                             <select id="adaptive-pref-datasaver" class="settings-select-input">
                                 <option value="auto">Auto (Detect)</option>

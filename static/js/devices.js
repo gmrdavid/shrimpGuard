@@ -526,22 +526,22 @@ function renderPairedNodes(nodes) {
         const isStreaming = Boolean(node.is_streaming);
         const lastSeenText = node.last_seen ? timeAgo(node.last_seen) : "Awaiting first packet";
         const linkBadge = isStreaming
-            ? `<span class="table-status status-optimal" style="background: #ecfdf5; color: #059669;"><span class="status-indicator-dot dot-optimal"></span> Streaming Live</span>`
-            : `<span class="table-status status-optimal"><span class="status-indicator-dot dot-optimal"></span> Active</span>`;
+            ? `<span class="table-status status-optimal status-online"><span class="status-indicator-dot dot-optimal"></span> Streaming Live</span>`
+            : `<span class="table-status status-optimal status-online"><span class="status-indicator-dot dot-optimal"></span> Active</span>`;
 
         return `
             <tr class="device-row" data-node-id="${escapeHtml(node.device_id)}">
                 <td>
-                    <span class="device-id-badge" style="background: #e0f2fe; color: #0369a1; font-weight: 700;">${escapeHtml(node.device_id)}</span>
+                    <span class="device-id-badge">${escapeHtml(node.device_id)}</span>
                 </td>
                 <td>
                     <div class="device-cell-title-row">
                         <strong class="device-cell-name">${escapeHtml(node.device_name)}</strong>
-                        <span style="font-size: 12px; color: #64748b; margin-left: 8px;">(${escapeHtml(node.pond_location || 'Pond Site')})</span>
+                        <span class="device-location-tag">(${escapeHtml(node.pond_location || 'Pond Site')})</span>
                     </div>
                 </td>
                 <td>
-                    <span style="font-size: 12.5px; color: #475569;">${escapeHtml(node.user_email)}</span>
+                    <span class="device-owner-cell">${escapeHtml(node.user_email)}</span>
                 </td>
                 <td>
                     ${linkBadge}
@@ -552,7 +552,7 @@ function renderPairedNodes(nodes) {
                     </span>
                 </td>
                 <td style="text-align: center;">
-                    <button type="button" class="btn-unpair-node" data-node-id="${escapeHtml(node.device_id)}" style="background: none; border: 1px solid #fecaca; color: #dc2626; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">
+                    <button type="button" class="btn-unpair-node" data-node-id="${escapeHtml(node.device_id)}">
                         Unpair
                     </button>
                 </td>

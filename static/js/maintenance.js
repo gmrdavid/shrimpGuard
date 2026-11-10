@@ -948,6 +948,13 @@
 
     // Auto-initialize on DOM ready
     document.addEventListener('DOMContentLoaded', () => {
+        const preLogBtn = document.getElementById('btn-devices-log-maint');
+        if (preLogBtn) preLogBtn.addEventListener('click', () => openMaintenanceModal('both'));
+        const preSopBtn = document.getElementById('btn-devices-open-sop');
+        if (preSopBtn) preSopBtn.addEventListener('click', () => openSOPModal());
+        const preHistBtn = document.getElementById('btn-devices-view-history');
+        if (preHistBtn) preHistBtn.addEventListener('click', () => openHistoryModal());
+
         fetchMaintenanceStatus();
         fetchMaintenanceHistory();
 
