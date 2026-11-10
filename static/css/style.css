@@ -24448,3 +24448,372 @@ nav a {
         gap: 20px !important;
     }
 }
+
+/* ==========================================================================
+   MAINTENANCE, SOP, AUDIT LOG & HARDWARE DIAGNOSTICS MODAL DIALOGS
+   ========================================================================== */
+
+.maint-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.maint-modal-backdrop.is-open,
+.maint-modal-backdrop[style*="display: flex"],
+.maint-modal-backdrop[style*="display:flex"] {
+    display: flex !important;
+}
+
+.maint-modal-backdrop[hidden],
+.maint-modal-backdrop[style*="display: none"],
+.maint-modal-backdrop[style*="display:none"] {
+    display: none !important;
+}
+
+.maint-modal-container {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 14px;
+    max-width: 820px;
+    width: 100%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 48px rgba(15, 23, 42, 0.25);
+    overflow: hidden;
+    animation: maintModalIn 180ms ease-out;
+}
+
+@keyframes maintModalIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.maint-modal-container.maint-modal-sm {
+    max-width: 520px;
+}
+
+.maint-modal-container.maint-modal-history-container {
+    max-width: 900px;
+}
+
+.maint-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.maint-modal-icon-badge {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: #ecfdf5;
+    color: #126b4f;
+}
+
+.maint-modal-icon-badge .ui-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.maint-modal-eyebrow {
+    display: block;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #126b4f;
+    margin-bottom: 2px;
+}
+
+.maint-modal-header h2 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 750;
+    color: #1e293b;
+}
+
+.maint-modal-close {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #64748b;
+    padding: 6px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.maint-modal-close:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.maint-modal-close .ui-icon {
+    width: 18px;
+    height: 18px;
+}
+
+.maint-modal-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    max-height: calc(90vh - 140px);
+}
+
+.maint-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 24px;
+    border-top: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+/* SOP Dialog Styles */
+.sop-intro-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+}
+
+.sop-intro-box p {
+    margin: 0;
+    font-size: 13px;
+    color: #166534;
+    line-height: 1.55;
+}
+
+.sop-steps-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.sop-step-card {
+    display: flex;
+    gap: 16px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 16px 18px;
+    transition: all 0.15s ease;
+}
+
+.sop-step-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.sop-step-num {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: #126b4f;
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sop-step-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.sop-step-content h3 {
+    margin: 0 0 6px;
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.sop-step-content p {
+    margin: 0 0 10px;
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.55;
+}
+
+.sop-step-tip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fffbeb;
+    border: 1px solid #fef3c7;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: #92400e;
+}
+
+.sop-step-tip .ui-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    color: #d97706;
+}
+
+/* History Audit Table in Modal */
+.maint-history-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #ffffff;
+}
+
+.maint-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    text-align: left;
+}
+
+.maint-history-table th {
+    padding: 12px 14px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #475569;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
+}
+
+.maint-history-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    vertical-align: middle;
+}
+
+.maint-history-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.maint-history-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.maint-badge-both {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.maint-badge-cleaning {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    background: #f0fdf4;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.maint-badge-calibration {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    background: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+}
+
+/* Quick Log Form in Modal */
+.maint-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.maint-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.maint-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.maint-input,
+.maint-select,
+.maint-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 12px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 13.5px;
+    color: #1e293b;
+    background: #ffffff;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.maint-input:focus,
+.maint-select:focus,
+.maint-textarea:focus {
+    border-color: #126b4f;
+    box-shadow: 0 0 0 3px rgba(18, 107, 79, 0.15);
+}
+
+.maint-hint {
+    font-size: 11.5px;
+    color: #64748b;
+    line-height: 1.4;
+}
+
+body.modal-backdrop-open {
+    overflow: hidden !important;
+}
+

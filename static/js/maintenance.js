@@ -946,8 +946,31 @@
         closeHistoryModal: closeHistoryModal
     };
 
-    // Auto-initialize on DOM ready
-    document.addEventListener('DOMContentLoaded', () => {
+    // Global delegated click handler for maintenance actions
+    document.addEventListener('click', (e) => {
+        const sopBtn = e.target.closest('#btn-devices-open-sop, #btn-open-sop-modal');
+        if (sopBtn) {
+            e.preventDefault();
+            openSOPModal();
+            return;
+        }
+
+        const histBtn = e.target.closest('#btn-devices-view-history, #btn-open-history-modal');
+        if (histBtn) {
+            e.preventDefault();
+            openHistoryModal();
+            return;
+        }
+
+        const logBtn = e.target.closest('#btn-devices-log-maint, #btn-open-log-modal');
+        if (logBtn) {
+            e.preventDefault();
+            openMaintenanceModal('both');
+            return;
+        }
+    });
+
+    function initMaintenanceEngine() {
         const preLogBtn = document.getElementById('btn-devices-log-maint');
         if (preLogBtn) preLogBtn.addEventListener('click', () => openMaintenanceModal('both'));
         const preSopBtn = document.getElementById('btn-devices-open-sop');
@@ -960,6 +983,12 @@
 
         // Periodic background poll every 60 seconds
         setInterval(fetchMaintenanceStatus, 60000);
-    });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initMaintenanceEngine);
+    } else {
+        initMaintenanceEngine();
+    }
 
 })();

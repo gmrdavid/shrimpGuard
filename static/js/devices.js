@@ -295,6 +295,7 @@ function openDiagnosticsModal() {
     if (panel) {
         panel.style.display = "flex";
         panel.removeAttribute("hidden");
+        panel.classList.add("is-open");
         document.body.classList.add("modal-backdrop-open");
     }
 }
@@ -304,6 +305,7 @@ function closeDiagnosticsModal() {
     if (panel) {
         panel.style.display = "none";
         panel.setAttribute("hidden", "");
+        panel.classList.remove("is-open");
         document.body.classList.remove("modal-backdrop-open");
     }
 }
@@ -444,6 +446,30 @@ document.addEventListener("DOMContentLoaded", () => {
         btnDiag.addEventListener("click", runDiagnostics);
     }
 
+    // Global delegated click handler for diagnostics controls
+    document.addEventListener("click", (e) => {
+        const diagBtn = e.target.closest("#btn-run-diagnostics");
+        if (diagBtn) {
+            e.preventDefault();
+            runDiagnostics();
+            return;
+        }
+
+        const closeDiagBtn = e.target.closest("#btn-close-diag, #btn-close-diag-footer");
+        if (closeDiagBtn) {
+            e.preventDefault();
+            closeDiagnosticsModal();
+            return;
+        }
+
+        const reRunBtn = e.target.closest("#btn-re-run-diag");
+        if (reRunBtn) {
+            e.preventDefault();
+            runDiagnostics();
+            return;
+        }
+    });
+
     const btnCloseDiag = document.getElementById("btn-close-diag");
     if (btnCloseDiag) {
         btnCloseDiag.addEventListener("click", closeDiagnosticsModal);
@@ -467,7 +493,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && diagPanel && diagPanel.style.display === "flex") {
+        if (e.key === "Escape" && diagPanel && (diagPanel.style.display === "flex" || diagPanel.classList.contains("is-open"))) {
             closeDiagnosticsModal();
         }
     });
