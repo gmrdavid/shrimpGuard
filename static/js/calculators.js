@@ -106,6 +106,11 @@ document.addEventListener("DOMContentLoaded", function () {
         if (co2LiveTemp) co2LiveTemp.textContent = liveSensor.temperature.toFixed(2);
         if (co2LivePh) co2LivePh.textContent = liveSensor.ph.toFixed(2);
 
+        const ammOverrideCbCheck = document.getElementById("tools-ammonia-override-cb");
+        if (!ammOverrideCbCheck || !ammOverrideCbCheck.checked) {
+            calculateAmmoniaTool();
+        }
+
         const co2OverrideCbCheck = document.getElementById("tools-co2-override-cb");
         if (!co2OverrideCbCheck || !co2OverrideCbCheck.checked) {
             calculateCo2Tool();
@@ -890,8 +895,6 @@ document.addEventListener("DOMContentLoaded", function () {
             if (ammotanInput) {
                 ammotanInput.value = chip.dataset.tan;
                 calculateAmmoniaTool();
-        calculateCo2Tool();
-        calculateMasterGrowth();
             }
         });
     });
@@ -902,7 +905,6 @@ document.addEventListener("DOMContentLoaded", function () {
         overrideCb.addEventListener("change", () => {
             overrideFields.hidden = !overrideCb.checked;
             calculateAmmoniaTool();
-        calculateMasterGrowth();
         });
     }
 
@@ -1029,7 +1031,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const badges = [
             "gm-res-sr-badge", "gm-res-fabw-badge", "gm-res-adwg-badge",
-            "gm-res-fcr-badge", "gm-res-k-badge"
+            "gm-res-sgr-badge", "gm-res-fcr-badge", "gm-res-k-badge"
         ];
         badges.forEach(id => {
             const el = document.getElementById(id);
@@ -1188,9 +1190,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // DOM Updates - Eq. 4: SGR (SEPARATE)
         const sgrValEl = document.getElementById("gm-res-sgr-val");
+        const sgrBadgeEl = document.getElementById("gm-res-sgr-badge");
         const weightMultEl = document.getElementById("gm-res-weight-mult");
         if (sgrValEl) sgrValEl.textContent = sgr.toFixed(3);
         if (weightMultEl) weightMultEl.textContent = `${Math.round(weightMult).toLocaleString()}×`;
+        if (sgrBadgeEl) {
+            if (sgr >= 4.0) {
+                sgrBadgeEl.textContent = "Fast Growth (≥4%/d)";
+                sgrBadgeEl.className = "wqi-metric-badge badge-optimal";
+            } else if (sgr >= 2.5) {
+                sgrBadgeEl.textContent = "Optimal (2.5–4%/d)";
+                sgrBadgeEl.className = "wqi-metric-badge badge-optimal";
+            } else if (sgr > 0) {
+                sgrBadgeEl.textContent = "Slow Growth (<2.5%/d)";
+                sgrBadgeEl.className = "wqi-metric-badge badge-warning";
+            } else {
+                sgrBadgeEl.textContent = "Awaiting Data";
+                sgrBadgeEl.className = "wqi-metric-badge badge-neutral";
+            }
+        }
 
         // DOM Updates - Eq. 5: Initial Biomass (SEPARATE)
         const ibKgEl = document.getElementById("gm-res-ib-kg");
@@ -1238,23 +1256,23 @@ document.addEventListener("DOMContentLoaded", function () {
         const kBadgeEl = document.getElementById("gm-res-k-badge");
         const kProfileEl = document.getElementById("gm-res-k-profile");
         if (kValEl) kValEl.textContent = kFactor > 0 ? kFactor.toFixed(4) : "—";
-        if (kBadgeEl && kProfileEl) {
+        if (kBadgeEl) {
             if (kFactor <= 0) {
                 kBadgeEl.textContent = "Awaiting Length";
                 kBadgeEl.className = "wqi-metric-badge badge-neutral";
-                kProfileEl.textContent = "Enter total length to calculate Fulton's K condition";
+                if (kProfileEl) kProfileEl.textContent = "Enter total length to calculate Fulton's K condition";
             } else if (kFactor >= 0.80 && kFactor <= 1.15) {
-                kBadgeEl.textContent = "Optimal Condition (0.80–1.15)";
+                kBadgeEl.textContent = "Optimal (0.80–1.15)";
                 kBadgeEl.className = "wqi-metric-badge badge-optimal";
-                kProfileEl.textContent = "Healthy, well-proportioned robust girth";
+                if (kProfileEl) kProfileEl.textContent = "Healthy, well-proportioned robust girth";
             } else if (kFactor < 0.80) {
                 kBadgeEl.textContent = "Slender / Lean (<0.80)";
                 kBadgeEl.className = "wqi-metric-badge badge-warning";
-                kProfileEl.textContent = "Slender body profile; check post-molt phase or dietary energy";
+                if (kProfileEl) kProfileEl.textContent = "Slender body profile; check post-molt phase or dietary energy";
             } else {
                 kBadgeEl.textContent = "Heavy / Plump (>1.15)";
                 kBadgeEl.className = "wqi-metric-badge badge-optimal";
-                kProfileEl.textContent = "High muscle density and heavy carapace girth";
+                if (kProfileEl) kProfileEl.textContent = "High muscle density and heavy carapace girth";
             }
         }
 
@@ -1426,6 +1444,36 @@ document.addEventListener("DOMContentLoaded", function () {
         const spec = EQUATION_SPECS[String(eqNumber)];
         if (!modal || !spec) return;
 
+        let state = currentGrowthState;
+        if (!state) {
+            calculateMasterGrowth();
+            state = currentGrowthState;
+        }
+        if (!state) {
+            // Standard P. vannamei reference cycle parameters (Peña et al., 2019)
+            const isCount = 100000, lhcCount = 85000, docDays = 90, ibwVal = 0.010, bwKg = 1700, bwGrams = 1700000, tfgKg = 2125, tlCm = 12.9;
+            const sr = (lhcCount / isCount) * 100;
+            const mortalityCount = isCount - lhcCount;
+            const mortalityPct = 100 - sr;
+            const fabw = bwGrams / lhcCount;
+            const countPerKg = 1000 / fabw;
+            const adwg = (fabw - ibwVal) / docDays;
+            const weeklyGain = adwg * 7;
+            const sgr = ((Math.log(fabw) - Math.log(ibwVal)) / docDays) * 100;
+            const weightMult = fabw / ibwVal;
+            const ibGrams = isCount * ibwVal, ibKg = ibGrams / 1000;
+            const fbGrams = lhcCount * fabw, fbKg = fbGrams / 1000;
+            const netGainKg = fbKg - ibKg;
+            const fcr = tfgKg / netGainKg;
+            const feedEfficiency = 100 / fcr;
+            const kFactor = (fabw / Math.pow(tlCm, 3)) * 100;
+            state = {
+                isCount, lhcCount, docDays, ibwVal, bwKg, bwGrams, tfgKg, tlCm,
+                sr, mortalityCount, mortalityPct, fabw, countPerKg, adwg, weeklyGain,
+                sgr, weightMult, ibGrams, ibKg, fbGrams, fbKg, netGainKg, fcr, feedEfficiency, kFactor
+            };
+        }
+
         const titleEl = document.getElementById("growth-modal-title");
         const subtitleEl = document.getElementById("growth-modal-subtitle");
         const formulaEl = document.getElementById("growth-modal-formula");
@@ -1444,10 +1492,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (subEl) {
-            subEl.innerHTML = spec.getSubstitution(currentGrowthState);
+            subEl.innerHTML = spec.getSubstitution(state);
         }
 
-        const evaluation = spec.getEval(currentGrowthState);
+        const evaluation = spec.getEval(state);
         if (badgeEl) {
             badgeEl.textContent = evaluation.badge;
             badgeEl.className = `wqi-metric-badge ${evaluation.badgeClass}`;
