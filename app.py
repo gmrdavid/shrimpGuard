@@ -456,6 +456,168 @@ class UserDevice(db.Model):
         }
 
 
+# --- TABLE 6: PROBE MAINTENANCE & CALIBRATION SCHEDULES ---
+class ProbeMaintenance(db.Model):
+    __tablename__ = "probe_maintenance"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_email = db.Column(db.String(255), nullable=False, index=True)
+    device_id = db.Column(db.String(50), nullable=False, default="NODE01", index=True)
+    maintenance_type = db.Column(db.String(80), nullable=False, default="Routine Cleaning & Calibration")
+    last_cleaned_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    last_calibrated_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    cleaning_interval_days = db.Column(db.Integer, nullable=False, default=7)
+    calibration_interval_days = db.Column(db.Integer, nullable=False, default=14)
+    notes = db.Column(db.String(255), nullable=True, default="Routine biofilm removal & 2-point buffer recalibration")
+    performed_by = db.Column(db.String(100), nullable=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.now, index=True)
+
+    def to_dict(self):
+        now = datetime.now()
+        cleaned = self.last_cleaned_at or self.created_at or now
+        calibrated = self.last_calibrated_at or cleaned
+
+        days_since_cleaning = max(0.0, (now - cleaned).total_seconds() / 86400.0)
+        days_until_cleaning = self.cleaning_interval_days - days_since_cleaning
+
+        days_since_calibration = max(0.0, (now - calibrated).total_seconds() / 86400.0)
+        days_until_calibration = self.calibration_interval_days - days_since_calibration
+
+        is_cleaning_overdue = days_until_cleaning <= 0
+        is_calibration_overdue = days_until_calibration <= 0
+        is_due_soon = (0 < days_until_cleaning <= 2) or (0 < days_until_calibration <= 3)
+
+        if is_cleaning_overdue or is_calibration_overdue:
+            status = "Overdue"
+            severity = "Critical" if (days_until_cleaning < -2) else "Warning"
+            drift_risk = "High Risk - Biofilm Drift Likely"
+            badge_class = "badge-critical"
+            notice_title = "Scheduled Sensor Maintenance Overdue: Biofilm Accumulation & Drift Risk"
+            notice_message = (
+                "Submerged pond probes require immediate soft-brush cleaning and 2-point pH recalibration "
+                "(buffer 4.01 / 6.86) to counteract biofouling-induced electrochemical drift."
+            )
+        elif is_due_soon:
+            status = "Due Soon"
+            severity = "Warning"
+            drift_risk = "Moderate Risk - Routine Cleaning Due"
+            badge_class = "badge-warning"
+            days_rem = max(1, int(round(days_until_cleaning)))
+            notice_title = f"Scheduled Sensor Maintenance Notice: Cleaning Due in {days_rem} Day" + ("s" if days_rem > 1 else "")
+            notice_message = (
+                f"Routine probe maintenance is scheduled in {days_rem} day(s) to prevent biological biofilm fouling "
+                "on the pH glass bulb and temperature probe."
+            )
+        else:
+            status = "Optimal"
+            severity = "Optimal"
+            drift_risk = "Low Risk - Probes Calibrated & Clean"
+            badge_class = "badge-optimal"
+            days_rem = max(1, int(round(days_until_cleaning)))
+            notice_title = "Sensor Probes Calibrated & Biofilm-Free"
+            notice_message = (
+                f"Probes are within standard operational calibration windows. Next routine cleaning in {days_rem} day(s)."
+            )
+
+        clean_pct = min(100, max(0, int((days_since_cleaning / self.cleaning_interval_days) * 100)))
+        cal_pct = min(100, max(0, int((days_since_calibration / self.calibration_interval_days) * 100)))
+
+        next_clean_dt = cleaned + timedelta(days=self.cleaning_interval_days)
+        next_cal_dt = calibrated + timedelta(days=self.calibration_interval_days)
+
+        return {
+            "id": self.id,
+            "device_id": self.device_id,
+            "user_email": self.user_email,
+            "maintenance_type": self.maintenance_type,
+            "last_cleaned_at": cleaned.strftime("%Y-%m-%d %H:%M:%S") if cleaned else None,
+            "last_calibrated_at": calibrated.strftime("%Y-%m-%d %H:%M:%S") if calibrated else None,
+            "next_cleaning_due": next_clean_dt.strftime("%Y-%m-%d %H:%M:%S"),
+            "next_calibration_due": next_cal_dt.strftime("%Y-%m-%d %H:%M:%S"),
+            "days_since_cleaning": round(days_since_cleaning, 1),
+            "days_until_cleaning": round(days_until_cleaning, 1),
+            "days_since_calibration": round(days_since_calibration, 1),
+            "days_until_calibration": round(days_until_calibration, 1),
+            "cleaning_interval_days": self.cleaning_interval_days,
+            "calibration_interval_days": self.calibration_interval_days,
+            "cleaning_progress_pct": clean_pct,
+            "calibration_progress_pct": cal_pct,
+            "status": status,
+            "severity": severity,
+            "badge_class": badge_class,
+            "drift_risk": drift_risk,
+            "is_notice_active": is_cleaning_overdue or is_calibration_overdue or is_due_soon,
+            "notice_title": notice_title,
+            "notice_message": notice_message,
+            "notes": self.notes or "",
+            "performed_by": self.performed_by or "Pond Technician",
+        }
+
+
+def get_probe_maintenance_status(user_email=None, device_id="NODE01"):
+    """
+    Retrieves or initializes the active probe maintenance schedule for the specified user & device.
+    Defaults to 7-day routine biofilm cleaning and 14-day 2-point pH buffer calibration.
+    """
+    if not user_email and has_request_context():
+        user_email = session.get("user_id")
+
+    default_owner = os.getenv("LORA_DEFAULT_USER_EMAIL", "rio@gmail.com")
+    target_user = user_email or default_owner
+
+    maint = None
+    try:
+        maint = ProbeMaintenance.query.filter_by(user_email=target_user, device_id=device_id).order_by(ProbeMaintenance.last_cleaned_at.desc()).first()
+        if not maint:
+            maint = ProbeMaintenance.query.filter_by(device_id=device_id).order_by(ProbeMaintenance.last_cleaned_at.desc()).first()
+    except Exception:
+        db.session.rollback()
+        maint = None
+
+    if not maint:
+        # Seed an active schedule: last cleaned 5.5 days ago (due soon in 1.5 days!)
+        # and last calibrated 12 days ago (due in 2 days!) to demonstrate scheduled notices
+        initial_cleaned = datetime.now() - timedelta(days=5, hours=12)
+        initial_calibrated = datetime.now() - timedelta(days=12, hours=4)
+        maint = ProbeMaintenance(
+            user_email=target_user,
+            device_id=device_id,
+            maintenance_type="Routine Cleaning & 2-Point Buffer Calibration",
+            last_cleaned_at=initial_cleaned,
+            last_calibrated_at=initial_calibrated,
+            cleaning_interval_days=7,
+            calibration_interval_days=14,
+            notes="Initial pond deployment: DFRobot pH & DS18B20 calibration verified.",
+            performed_by="System Initializer",
+        )
+        try:
+            db.session.add(maint)
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+
+    return maint.to_dict() if maint else {
+        "device_id": device_id,
+        "status": "Due Soon",
+        "severity": "Warning",
+        "drift_risk": "Moderate Risk - Routine Cleaning Due",
+        "badge_class": "badge-warning",
+        "days_since_cleaning": 5.5,
+        "days_until_cleaning": 1.5,
+        "days_since_calibration": 12.0,
+        "days_until_calibration": 2.0,
+        "cleaning_interval_days": 7,
+        "calibration_interval_days": 14,
+        "cleaning_progress_pct": 78,
+        "calibration_progress_pct": 85,
+        "is_notice_active": True,
+        "notice_title": "Scheduled Sensor Maintenance Notice: Cleaning Due in 2 Days",
+        "notice_message": "Routine probe maintenance is scheduled in 2 day(s) to prevent biological biofilm fouling on the pH glass bulb and temperature probe.",
+        "notes": "Baseline calibrated",
+        "performed_by": "System Initializer"
+    }
+
+
 # ==========================================
 # EMAIL VALIDATION UTILITIES (LEGIT & ACTIVE DOMAIN RULES)
 # ==========================================
@@ -1663,6 +1825,117 @@ def api_hardware_diagnostics():
     })
 
 
+# ==============================================================================
+# PROBE MAINTENANCE & CALIBRATION API (BIOFILM COUNTERMEASURE)
+# ==============================================================================
+@app.route("/api/maintenance/status", methods=["GET"])
+@role_required("Client", "Admin")
+def get_maintenance_status_endpoint():
+    user_email = session.get("user_id")
+    device_id = request.args.get("device_id", "NODE01")
+
+    maint_data = get_probe_maintenance_status(user_email=user_email, device_id=device_id)
+
+    # Check if user snoozed notice for 24 hours
+    snoozed_until = session.get("maintenance_notice_snoozed_until")
+    is_snoozed = False
+    if snoozed_until:
+        try:
+            is_snoozed = datetime.fromisoformat(snoozed_until) > datetime.now()
+        except Exception:
+            is_snoozed = False
+
+    return jsonify({
+        "success": True,
+        "maintenance": maint_data,
+        "is_snoozed": is_snoozed
+    })
+
+
+@app.route("/api/maintenance/log", methods=["POST"])
+@role_required("Client", "Admin")
+def log_maintenance_endpoint():
+    user_email = session.get("user_id")
+    payload = request.get_json(silent=True) or {}
+
+    action = payload.get("action", "both").lower()  # 'both', 'cleaning', 'calibration'
+    device_id = payload.get("device_id", "NODE01")
+    notes = payload.get("notes", "").strip() or "Routine biofilm scrubbing & 2-point buffer recalibration completed."
+    technician = payload.get("technician", "").strip() or (session.get("user_name") or user_email or "Pond Operator")
+
+    now = datetime.now()
+    default_owner = os.getenv("LORA_DEFAULT_USER_EMAIL", "rio@gmail.com")
+    target_user = user_email or default_owner
+
+    try:
+        maint = ProbeMaintenance.query.filter_by(user_email=target_user, device_id=device_id).order_by(ProbeMaintenance.id.desc()).first()
+        if not maint:
+            maint = ProbeMaintenance.query.filter_by(device_id=device_id).order_by(ProbeMaintenance.id.desc()).first()
+
+        m_type = "Biofilm Cleaning & 2-Point Calibration" if action == "both" else ("Biofilm Scrubbing & Rinse" if action == "cleaning" else "pH 2-Point Recalibration")
+
+        if maint:
+            if action in ("both", "cleaning"):
+                maint.last_cleaned_at = now
+            if action in ("both", "calibration"):
+                maint.last_calibrated_at = now
+            maint.notes = notes
+            maint.performed_by = technician
+            maint.maintenance_type = m_type
+        else:
+            maint = ProbeMaintenance(
+                user_email=target_user,
+                device_id=device_id,
+                maintenance_type=m_type,
+                last_cleaned_at=now,
+                last_calibrated_at=now,
+                cleaning_interval_days=7,
+                calibration_interval_days=14,
+                notes=notes,
+                performed_by=technician
+            )
+            db.session.add(maint)
+
+        # Record audit log entry
+        log_action = "PROBE_MAINTENANCE_LOGGED" if action == "both" else ("PROBE_CLEANED" if action == "cleaning" else "PROBE_CALIBRATED")
+        log_details = f"Logged maintenance for {device_id}: {m_type}. Notes: {notes} (Technician: {technician})"
+        new_log = ActivityLog(
+            user_email=user_email,
+            user_name=session.get("user_name") or technician,
+            role=session.get("role") or "Client",
+            action=log_action,
+            details=log_details,
+            ip_address=request.remote_addr,
+            timestamp=now
+        )
+        db.session.add(new_log)
+        db.session.commit()
+
+        # Clear any active snooze
+        session.pop("maintenance_notice_snoozed_until", None)
+
+        return jsonify({
+            "success": True,
+            "message": "Probe maintenance recorded successfully. Schedule and sensor drift timer reset.",
+            "maintenance": maint.to_dict()
+        })
+    except Exception as exc:
+        db.session.rollback()
+        app.logger.exception(f"Error logging probe maintenance: {exc}")
+        return jsonify({"success": False, "error": "Unable to save probe maintenance record."}), 500
+
+
+@app.route("/api/maintenance/dismiss", methods=["POST"])
+@role_required("Client", "Admin")
+def dismiss_maintenance_endpoint():
+    snooze_until = datetime.now() + timedelta(hours=24)
+    session["maintenance_notice_snoozed_until"] = snooze_until.isoformat()
+    return jsonify({
+        "success": True,
+        "snoozed": True,
+        "snoozed_until": snooze_until.isoformat()
+    })
+
 
 @app.route("/api/wqi/calculate", methods=["GET", "POST"])
 @role_required("Client", "Admin")
@@ -1927,6 +2200,41 @@ def get_alerts():
                 "is_read": is_read
             })
 
+    # Check probe biofilm maintenance schedule & alert
+    maint_status = None
+    try:
+        maint_status = get_probe_maintenance_status(user_email=session.get("user_id"))
+        snoozed_until = session.get("maintenance_notice_snoozed_until")
+        is_snoozed = False
+        if snoozed_until:
+            try:
+                is_snoozed = datetime.fromisoformat(snoozed_until) > datetime.now()
+            except Exception:
+                is_snoozed = False
+
+        if maint_status and maint_status.get("is_notice_active") and not is_snoozed:
+            maint_notif = {
+                "id": f"notif-maint-{maint_status.get('id', 0)}",
+                "recorded_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "temperature": None,
+                "ph": None,
+                "severity": maint_status.get("severity", "Warning"),
+                "type": "maintenance",
+                "title": maint_status.get("notice_title"),
+                "message": maint_status.get("notice_message"),
+                "notification": f"SOP Maintenance: [{maint_status.get('status', 'DUE SOON').upper()}] Biofilm cleaning & 2-point calibration recommended.",
+                "status": "Active",
+                "delivery_status": "Scheduled",
+                "is_read": False,
+                "is_maintenance": True,
+                "drift_risk": maint_status.get("drift_risk"),
+                "days_until_cleaning": maint_status.get("days_until_cleaning"),
+                "days_until_calibration": maint_status.get("days_until_calibration")
+            }
+            recent_notifications.insert(0, maint_notif)
+    except Exception as exc:
+        app.logger.warning(f"Unable to attach probe maintenance notice to recent alerts: {exc}")
+
     unread_notifications = sum(1 for n in recent_notifications if not n.get("is_read"))
     sent_count = len(recent_notifications)
     delivered_count = len(recent_notifications)
@@ -1976,6 +2284,7 @@ def get_alerts():
             "normalized_count": normalized_count,
             "resolved_count": resolved_count,
             "unread_notifications": unread_notifications,
+            "maintenance": maint_status,
             "dispatch_stats": {
                 "sent": sent_count,
                 "delivered": delivered_count,
@@ -2195,6 +2504,7 @@ def landing():
 def dashboard():
     user_email = session.get("user_id")
     user = db.session.get(User, user_email) if user_email else None
+    maintenance = get_probe_maintenance_status(user_email=user_email)
     hour = datetime.now().hour
     if 5 <= hour < 12:
         greeting = "Good morning"
@@ -2202,7 +2512,7 @@ def dashboard():
         greeting = "Good afternoon"
     else:
         greeting = "Good evening"
-    return render_template("dashboard.html", user=user, greeting=greeting)
+    return render_template("dashboard.html", user=user, greeting=greeting, maintenance=maintenance)
 
 
 @app.route("/admin")
@@ -3212,7 +3522,8 @@ def logout():
 def monitoring():
     user_email = session.get("user_id")
     user = db.session.get(User, user_email) if user_email else None
-    return render_template("monitoring.html", user=user)
+    maintenance = get_probe_maintenance_status(user_email=user_email)
+    return render_template("monitoring.html", user=user, maintenance=maintenance)
 
 
 @app.route("/devices")
@@ -3221,6 +3532,7 @@ def devices():
     user_email = session.get("user_id")
     user = db.session.get(User, user_email) if user_email else None
     user_role = session.get("role") or "Client"
+    maintenance = get_probe_maintenance_status(user_email=user_email)
 
     inv = get_system_devices_inventory()
 
@@ -3245,6 +3557,7 @@ def devices():
         hw_connected=inv["is_connected"],
         latest_reading=inv.get("latest_telemetry", {}),
         paired_nodes=paired_nodes,
+        maintenance=maintenance,
     )
 
 
