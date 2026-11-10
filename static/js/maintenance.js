@@ -7,6 +7,7 @@
     'use strict';
 
     let currentMaintenanceData = null;
+    let cachedHistoryRecords = [];
 
     /**
      * Format a date string into readable local datetime.
@@ -50,19 +51,97 @@
     }
 
     /**
+     * Fetch all historical maintenance log records from backend.
+     */
+    async function fetchMaintenanceHistory() {
+        try {
+            const res = await fetch('/api/maintenance/history');
+            if (!res.ok) return [];
+            const data = await res.json();
+            if (data && data.success && Array.isArray(data.history)) {
+                cachedHistoryRecords = data.history;
+                renderMaintenanceHistoryTable(cachedHistoryRecords);
+                return cachedHistoryRecords;
+            }
+        } catch (err) {
+            console.error('Error fetching probe maintenance history:', err);
+        }
+        return [];
+    }
+
+    /**
+     * Render the table of maintenance history entries on Devices page.
+     */
+    function renderMaintenanceHistoryTable(historyList) {
+        const tbody = document.getElementById('probe-maint-history-tbody');
+        const countBadge = document.getElementById('maint-history-count-badge');
+
+        if (countBadge) {
+            const count = historyList ? historyList.length : 0;
+            countBadge.textContent = `${count} Logged Session${count === 1 ? '' : 's'}`;
+        }
+
+        if (!tbody) return;
+
+        if (!historyList || historyList.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 24px; color: #64748b;">
+                        No maintenance sessions recorded yet. Use the "Log Maintenance" button to record probe cleanings and calibrations.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = historyList.map((item) => {
+            const badgeClass = item.action === 'both' ? 'badge-optimal' : (item.action === 'cleaning' ? 'badge-warning' : 'badge-active');
+            const dateStr = item.date_formatted || formatDateTime(item.performed_at);
+
+            return `
+                <tr>
+                    <td style="font-weight: 600; color: #1e293b; white-space: nowrap;">
+                        ${dateStr}
+                    </td>
+                    <td>
+                        <span class="telemetry-chip chip-node" style="font-size: 11px;">
+                            <svg class="ui-icon" aria-hidden="true" style="width: 12px; height: 12px;"><use href="#icon-droplet"></use></svg>
+                            ${item.device_id || 'NODE01'}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge ${badgeClass}" style="font-size: 11.5px; font-weight: 600;">
+                            ${item.maintenance_type || 'Routine Maintenance'}
+                        </span>
+                    </td>
+                    <td style="color: #334155; font-weight: 500;">
+                        ${item.performed_by || 'Pond Operator'}
+                    </td>
+                    <td style="font-size: 12.5px; color: #475569; max-width: 320px;">
+                        ${item.notes || 'Routine maintenance procedure completed.'}
+                    </td>
+                    <td style="text-align: center;">
+                        <span class="badge badge-optimal" style="font-size: 11px; padding: 3px 8px;">
+                            Drift Reset (0d)
+                        </span>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    /**
      * Render the scheduled maintenance notice banner on dashboard and monitoring pages.
      */
     function renderMaintenanceBanner(data) {
         const bannerContainer = document.getElementById('probe-maintenance-notice-container');
         if (!bannerContainer) return;
 
-        // If notice is inactive or currently snoozed (and not critical overdue), hide banner
         const isNoticeActive = data.is_notice_active;
         const isOverdue = data.status === 'Overdue';
         const isSnoozed = data.is_snoozed;
 
         if (!isNoticeActive || (isSnoozed && !isOverdue)) {
-            // Check if we should show a subtle optimal status or hide
             const showOptimalBar = bannerContainer.dataset.showOptimal === 'true';
             if (showOptimalBar) {
                 bannerContainer.innerHTML = `
@@ -83,6 +162,10 @@
                             </div>
                         </div>
                         <div class="maint-banner-actions">
+                            <button type="button" class="btn-maint-ghost" id="btn-view-maint-history" title="View historical maintenance audit log">
+                                <svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>
+                                <span>History Log</span>
+                            </button>
                             <button type="button" class="btn-maint-ghost" id="btn-open-sop-modal" title="View standard maintenance instructions">
                                 <svg class="ui-icon" aria-hidden="true"><use href="#icon-lightbulb"></use></svg>
                                 <span>View SOP</span>
@@ -154,10 +237,16 @@
                         <svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
                         <span>Mark Cleaned &amp; Calibrated</span>
                     </button>
-                    <button type="button" class="btn-maint-secondary" id="btn-open-sop-modal" title="View step-by-step cleaning and 2-point calibration protocol">
-                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-lightbulb"></use></svg>
-                        <span>View SOP Guide</span>
-                    </button>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" class="btn-maint-secondary" id="btn-view-maint-history" title="View historical maintenance audit log">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>
+                            <span>History Log</span>
+                        </button>
+                        <button type="button" class="btn-maint-secondary" id="btn-open-sop-modal" title="View step-by-step cleaning and 2-point calibration protocol">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-lightbulb"></use></svg>
+                            <span>SOP Guide</span>
+                        </button>
+                    </div>
                     <button type="button" class="btn-maint-dismiss" id="btn-dismiss-maint" title="Snooze maintenance notice for 24 hours">
                         <span>Snooze 24h</span>
                     </button>
@@ -299,6 +388,11 @@
             sopBtn.addEventListener('click', openSOPModal);
         }
 
+        const histBtn = container.querySelector('#btn-view-maint-history');
+        if (histBtn) {
+            histBtn.addEventListener('click', openHistoryModal);
+        }
+
         const dismissBtn = container.querySelector('#btn-dismiss-maint');
         if (dismissBtn) {
             dismissBtn.addEventListener('click', dismissMaintenanceNotice);
@@ -385,6 +479,65 @@
     }
 
     /**
+     * Open the Maintenance History Modal dialog.
+     */
+    async function openHistoryModal() {
+        let modal = document.getElementById('probe-maint-history-modal');
+        if (!modal) {
+            createHistoryModalElement();
+            modal = document.getElementById('probe-maint-history-modal');
+        }
+        if (modal) {
+            modal.removeAttribute('hidden');
+            modal.classList.add('is-open');
+            document.body.classList.add('modal-backdrop-open');
+            await loadModalHistoryContent();
+        }
+    }
+
+    /**
+     * Close the Maintenance History Modal dialog.
+     */
+    function closeHistoryModal() {
+        const modal = document.getElementById('probe-maint-history-modal');
+        if (modal) {
+            modal.classList.remove('is-open');
+            modal.setAttribute('hidden', '');
+            document.body.classList.remove('modal-backdrop-open');
+        }
+    }
+
+    /**
+     * Fetch and load history into the popup history modal.
+     */
+    async function loadModalHistoryContent() {
+        const container = document.getElementById('maint-modal-history-tbody');
+        if (!container) return;
+        container.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 24px; color: #64748b;">Loading maintenance audit log...</td></tr>';
+
+        const history = await fetchMaintenanceHistory();
+        if (!history || history.length === 0) {
+            container.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 24px; color: #64748b;">No maintenance logs recorded yet.</td></tr>';
+            return;
+        }
+
+        container.innerHTML = history.map((item) => {
+            const badgeClass = item.action === 'both' ? 'badge-optimal' : (item.action === 'cleaning' ? 'badge-warning' : 'badge-active');
+            const dateStr = item.date_formatted || formatDateTime(item.performed_at);
+
+            return `
+                <tr>
+                    <td style="font-weight: 600; color: #1e293b; white-space: nowrap;">${dateStr}</td>
+                    <td><span class="telemetry-chip chip-node" style="font-size: 11px;">${item.device_id || 'NODE01'}</span></td>
+                    <td><span class="badge ${badgeClass}" style="font-size: 11px;">${item.maintenance_type || 'Routine Maintenance'}</span></td>
+                    <td style="color: #334155; font-weight: 500;">${item.performed_by || 'Pond Operator'}</td>
+                    <td style="font-size: 12px; color: #475569;">${item.notes || 'Routine cleaning and buffer calibration completed.'}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    /**
      * Submit probe maintenance record to backend.
      */
     async function submitMaintenanceForm(e) {
@@ -420,6 +573,8 @@
                 closeMaintenanceModal();
                 showMaintenanceToast(result.message || 'Probe maintenance logged and drift schedule reset!');
                 await fetchMaintenanceStatus();
+                await fetchMaintenanceHistory();
+
                 // If notification system is active, refresh badge & list
                 if (typeof window.renderNotifications === 'function') {
                     window.renderNotifications();
@@ -487,7 +642,7 @@
                     <div class="sop-intro-box">
                         <p>
                             <strong>Scientific Context:</strong> In brackish <em>Penaeus vannamei</em> ponds, microalgae, bacteria, and organic detritus adhere to the glass sensing membrane of the DFRobot pH probe and DS18B20 sleeve within 5–7 days.
-                            This microbial biofilm impedes hydronium ion (\(H^+\)) exchange across the porous reference junction, causing <strong>electrochemical sensor drift</strong> (false pH readings and sluggish response). Routine scrubbing and buffer recalibration ensure accurate water quality monitoring and early stress detection.
+                            This microbial biofilm impedes hydronium ion (\\(H^+\\)) exchange across the porous reference junction, causing <strong>electrochemical sensor drift</strong> (false pH readings and sluggish response). Routine scrubbing and buffer recalibration ensure accurate water quality monitoring and early stress detection.
                         </p>
                     </div>
 
@@ -555,6 +710,10 @@
                 </div>
 
                 <div class="maint-modal-footer">
+                    <button type="button" class="btn-maint-secondary" id="btn-sop-view-history">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>
+                        <span>View History Log</span>
+                    </button>
                     <button type="button" class="btn-maint-secondary" id="btn-close-sop-footer">Close Guide</button>
                     <button type="button" class="btn-maint-primary" id="btn-sop-proceed-log">
                         <svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
@@ -566,9 +725,12 @@
 
         document.body.appendChild(modalDiv);
 
-        // Bind events
         modalDiv.querySelector('#btn-close-sop-modal').addEventListener('click', closeSOPModal);
         modalDiv.querySelector('#btn-close-sop-footer').addEventListener('click', closeSOPModal);
+        modalDiv.querySelector('#btn-sop-view-history').addEventListener('click', () => {
+            closeSOPModal();
+            openHistoryModal();
+        });
         modalDiv.querySelector('#btn-sop-proceed-log').addEventListener('click', () => {
             closeSOPModal();
             openMaintenanceModal('both');
@@ -650,18 +812,104 @@
         });
     }
 
+    /**
+     * Create the Full Maintenance History Modal DOM Element.
+     */
+    function createHistoryModalElement() {
+        const modalDiv = document.createElement('div');
+        modalDiv.id = 'probe-maint-history-modal';
+        modalDiv.className = 'maint-modal-backdrop';
+        modalDiv.setAttribute('hidden', '');
+
+        modalDiv.innerHTML = `
+            <div class="maint-modal-container" role="dialog" aria-labelledby="history-modal-title" style="max-width: 820px;">
+                <div class="maint-modal-header">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="maint-modal-icon-badge" style="background: #f0fdf4; color: #126b4f;">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>
+                        </div>
+                        <div>
+                            <span class="maint-modal-eyebrow">AUDIT &amp; QUALITY ASSURANCE LOG</span>
+                            <h2 id="history-modal-title">Submerged Probe Maintenance &amp; Calibration History</h2>
+                        </div>
+                    </div>
+                    <button type="button" class="maint-modal-close" id="btn-close-history-modal" aria-label="Close modal">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-x"></use></svg>
+                    </button>
+                </div>
+
+                <div class="maint-modal-body" style="padding: 16px 20px;">
+                    <div class="devices-table-wrap" style="max-height: 400px; overflow-y: auto;">
+                        <table class="devices-table">
+                            <thead>
+                                <tr>
+                                    <th>Date &amp; Time</th>
+                                    <th>Node</th>
+                                    <th>Procedure</th>
+                                    <th>Technician</th>
+                                    <th>Notes &amp; Buffer Offsets</th>
+                                </tr>
+                            </thead>
+                            <tbody id="maint-modal-history-tbody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 24px; color: #64748b;">
+                                        Loading probe maintenance audit log...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="maint-modal-footer" style="justify-content: space-between;">
+                    <span style="font-size: 12px; color: #64748b;">All maintenance events are permanently audited for quality assurance.</span>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" class="btn-maint-secondary" id="btn-close-history-footer">Close</button>
+                        <button type="button" class="btn-maint-primary" id="btn-history-log-new">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-plus"></use></svg>
+                            <span>Log New Maintenance</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modalDiv);
+
+        modalDiv.querySelector('#btn-close-history-modal').addEventListener('click', closeHistoryModal);
+        modalDiv.querySelector('#btn-close-history-footer').addEventListener('click', closeHistoryModal);
+        modalDiv.querySelector('#btn-history-log-new').addEventListener('click', () => {
+            closeHistoryModal();
+            openMaintenanceModal('both');
+        });
+        modalDiv.addEventListener('click', (e) => {
+            if (e.target === modalDiv) closeHistoryModal();
+        });
+    }
+
     // Expose helpers globally for cross-module integration
     window.ShrimpGuardMaintenance = {
         fetchStatus: fetchMaintenanceStatus,
+        fetchHistory: fetchMaintenanceHistory,
         openSOPModal: openSOPModal,
         openLogModal: openMaintenanceModal,
+        openHistoryModal: openHistoryModal,
         closeSOPModal: closeSOPModal,
-        closeLogModal: closeMaintenanceModal
+        closeLogModal: closeMaintenanceModal,
+        closeHistoryModal: closeHistoryModal
     };
 
     // Auto-initialize on DOM ready
     document.addEventListener('DOMContentLoaded', () => {
         fetchMaintenanceStatus();
+        fetchMaintenanceHistory();
+
+        // Bind devices header button if present
+        const devicesHeaderLogBtn = document.getElementById('btn-devices-log-maint-header');
+        if (devicesHeaderLogBtn) {
+            devicesHeaderLogBtn.addEventListener('click', () => openMaintenanceModal('both'));
+        }
+
         // Periodic background poll every 60 seconds
         setInterval(fetchMaintenanceStatus, 60000);
     });

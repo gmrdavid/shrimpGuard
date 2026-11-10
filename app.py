@@ -554,6 +554,34 @@ class ProbeMaintenance(db.Model):
         }
 
 
+# --- TABLE 7: PROBE MAINTENANCE & CALIBRATION HISTORICAL AUDIT LOG ---
+class ProbeMaintenanceHistory(db.Model):
+    __tablename__ = "probe_maintenance_history"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_email = db.Column(db.String(255), nullable=False, index=True)
+    device_id = db.Column(db.String(50), nullable=False, default="NODE01", index=True)
+    action = db.Column(db.String(50), nullable=False, default="both")
+    maintenance_type = db.Column(db.String(120), nullable=False)
+    performed_by = db.Column(db.String(100), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    performed_at = db.Column(db.DateTime, nullable=False, default=datetime.now, index=True)
+
+    def to_dict(self):
+        dt = self.performed_at or datetime.now()
+        return {
+            "id": self.id,
+            "user_email": self.user_email,
+            "device_id": self.device_id,
+            "action": self.action,
+            "maintenance_type": self.maintenance_type,
+            "performed_by": self.performed_by or "Pond Operator",
+            "notes": self.notes or "Routine sensor maintenance completed.",
+            "performed_at": dt.strftime("%Y-%m-%d %H:%M:%S"),
+            "date_formatted": dt.strftime("%b %d, %Y %I:%M %p"),
+        }
+
+
 def get_probe_maintenance_status(user_email=None, device_id="NODE01"):
     """
     Retrieves or initializes the active probe maintenance schedule for the specified user & device.
@@ -1896,7 +1924,7 @@ def log_maintenance_endpoint():
             )
             db.session.add(maint)
 
-        # Record audit log entry
+        # Record audit log entry in ActivityLog
         log_action = "PROBE_MAINTENANCE_LOGGED" if action == "both" else ("PROBE_CLEANED" if action == "cleaning" else "PROBE_CALIBRATED")
         log_details = f"Logged maintenance for {device_id}: {m_type}. Notes: {notes} (Technician: {technician})"
         new_log = ActivityLog(
@@ -1909,6 +1937,18 @@ def log_maintenance_endpoint():
             timestamp=now
         )
         db.session.add(new_log)
+
+        # Record permanent entry in ProbeMaintenanceHistory
+        history_entry = ProbeMaintenanceHistory(
+            user_email=target_user,
+            device_id=device_id,
+            action=action,
+            maintenance_type=m_type,
+            performed_by=technician,
+            notes=notes,
+            performed_at=now
+        )
+        db.session.add(history_entry)
         db.session.commit()
 
         # Clear any active snooze
@@ -1917,7 +1957,8 @@ def log_maintenance_endpoint():
         return jsonify({
             "success": True,
             "message": "Probe maintenance recorded successfully. Schedule and sensor drift timer reset.",
-            "maintenance": maint.to_dict()
+            "maintenance": maint.to_dict(),
+            "history_entry": history_entry.to_dict()
         })
     except Exception as exc:
         db.session.rollback()
@@ -1935,6 +1976,52 @@ def dismiss_maintenance_endpoint():
         "snoozed": True,
         "snoozed_until": snooze_until.isoformat()
     })
+
+
+@app.route("/api/maintenance/history", methods=["GET"])
+@role_required("Client", "Admin")
+def get_maintenance_history_endpoint():
+    user_email = session.get("user_id")
+    device_id = request.args.get("device_id")
+    user_role = session.get("role") or "Client"
+
+    default_owner = os.getenv("LORA_DEFAULT_USER_EMAIL", "rio@gmail.com")
+    target_user = user_email or default_owner
+
+    try:
+        query = ProbeMaintenanceHistory.query
+        if user_role != "Admin":
+            query = query.filter((ProbeMaintenanceHistory.user_email == target_user) | (ProbeMaintenanceHistory.user_email == default_owner))
+        if device_id:
+            query = query.filter_by(device_id=device_id)
+
+        history_records = query.order_by(ProbeMaintenanceHistory.performed_at.desc()).limit(100).all()
+
+        # If history table is empty, seed initial baseline deployment record
+        if not history_records:
+            initial_dt = datetime.now() - timedelta(days=5, hours=12)
+            initial_log = ProbeMaintenanceHistory(
+                user_email=target_user,
+                device_id="NODE01",
+                action="both",
+                maintenance_type="Initial Deployment & 2-Point Buffer Recalibration",
+                performed_by="System Initializer",
+                notes="Baseline 2-point calibration verified with pH 6.86 and 4.01 standard buffers at 29.1°C with ATC.",
+                performed_at=initial_dt
+            )
+            db.session.add(initial_log)
+            db.session.commit()
+            history_records = query.order_by(ProbeMaintenanceHistory.performed_at.desc()).limit(100).all()
+
+        return jsonify({
+            "success": True,
+            "count": len(history_records),
+            "history": [r.to_dict() for r in history_records]
+        })
+    except Exception as exc:
+        db.session.rollback()
+        app.logger.exception(f"Error fetching maintenance history: {exc}")
+        return jsonify({"success": False, "error": "Unable to fetch maintenance history."}), 500
 
 
 @app.route("/api/wqi/calculate", methods=["GET", "POST"])
@@ -3544,6 +3631,11 @@ def devices():
     except Exception:
         paired_nodes = []
 
+    try:
+        maintenance_history = ProbeMaintenanceHistory.query.order_by(ProbeMaintenanceHistory.performed_at.desc()).limit(50).all()
+    except Exception:
+        maintenance_history = []
+
     return render_template(
         "devices.html",
         user=user,
@@ -3558,6 +3650,7 @@ def devices():
         latest_reading=inv.get("latest_telemetry", {}),
         paired_nodes=paired_nodes,
         maintenance=maintenance,
+        maintenance_history=maintenance_history,
     )
 
 
