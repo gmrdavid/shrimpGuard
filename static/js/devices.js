@@ -247,16 +247,35 @@ async function reconnectGateway() {
     }
 }
 
-async function runDiagnostics() {
+function openDiagnosticsModal() {
     const panel = document.getElementById("diagnostics-panel");
+    if (panel) {
+        panel.style.display = "flex";
+        panel.removeAttribute("hidden");
+        document.body.classList.add("modal-backdrop-open");
+    }
+}
+
+function closeDiagnosticsModal() {
+    const panel = document.getElementById("diagnostics-panel");
+    if (panel) {
+        panel.style.display = "none";
+        panel.setAttribute("hidden", "");
+        document.body.classList.remove("modal-backdrop-open");
+    }
+}
+
+async function runDiagnostics() {
+    openDiagnosticsModal();
     const tbody = document.getElementById("diag-table-body");
     const summary = document.getElementById("diag-summary-text");
     const badge = document.getElementById("diag-overall-badge");
     const timestamp = document.getElementById("diag-timestamp");
     const btn = document.getElementById("btn-run-diagnostics");
+    const reRunBtn = document.getElementById("btn-re-run-diag");
 
-    if (panel) panel.style.display = "block";
     if (btn) btn.disabled = true;
+    if (reRunBtn) reRunBtn.disabled = true;
 
     if (tbody) {
         tbody.innerHTML = `
@@ -326,6 +345,8 @@ async function runDiagnostics() {
         }
     } finally {
         if (btn) btn.disabled = false;
+        const reRunBtn = document.getElementById("btn-re-run-diag");
+        if (reRunBtn) reRunBtn.disabled = false;
     }
 }
 
@@ -382,11 +403,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const btnCloseDiag = document.getElementById("btn-close-diag");
     if (btnCloseDiag) {
-        btnCloseDiag.addEventListener("click", () => {
-            const panel = document.getElementById("diagnostics-panel");
-            if (panel) panel.style.display = "none";
+        btnCloseDiag.addEventListener("click", closeDiagnosticsModal);
+    }
+
+    const btnCloseDiagFooter = document.getElementById("btn-close-diag-footer");
+    if (btnCloseDiagFooter) {
+        btnCloseDiagFooter.addEventListener("click", closeDiagnosticsModal);
+    }
+
+    const btnReRunDiag = document.getElementById("btn-re-run-diag");
+    if (btnReRunDiag) {
+        btnReRunDiag.addEventListener("click", runDiagnostics);
+    }
+
+    const diagPanel = document.getElementById("diagnostics-panel");
+    if (diagPanel) {
+        diagPanel.addEventListener("click", (e) => {
+            if (e.target === diagPanel) closeDiagnosticsModal();
         });
     }
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && diagPanel && diagPanel.style.display === "flex") {
+            closeDiagnosticsModal();
+        }
+    });
 });
 
 /* ==========================================================================

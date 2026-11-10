@@ -281,55 +281,6 @@
             </div>
         </section>
 
-        <!-- DIAGNOSTIC TEST RESULTS PANEL (DYNAMIC) -->
-        <section id="diagnostics-panel" class="dashboard-section" style="display: none;" aria-labelledby="diag-panel-heading">
-            <article class="panel dashboard-panel">
-                <div class="panel-heading" style="justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <div class="panel-heading-icon" style="background: #e0f2fe; color: #0284c7;">
-                            <svg class="ui-icon" aria-hidden="true">
-                                <use href="#icon-check-circle"></use>
-                            </svg>
-                        </div>
-                        <div>
-                            <h2 id="diag-panel-heading">Hardware Diagnostics Assessment Report</h2>
-                            <p id="diag-timestamp" style="font-size: 13px; color: #64748b; margin-top: 2px;">Automated inspection scan</p>
-                        </div>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span id="diag-overall-badge" class="badge badge-optimal" style="font-size: 13px; padding: 6px 14px; text-transform: uppercase;">HEALTHY</span>
-                        <button type="button" id="btn-close-diag" class="telemetry-test-btn" style="height: 32px; padding: 0 10px; font-size: 12px;" title="Dismiss report">Close</button>
-                    </div>
-                </div>
-
-                <div style="padding: 16px 20px;">
-                    <p id="diag-summary-text" style="font-size: 14px; color: #334155; margin-bottom: 16px; font-weight: 500;">
-                        Diagnostics running...
-                    </p>
-
-                    <div class="devices-table-wrap">
-                        <table class="devices-table">
-                            <thead>
-                                <tr>
-                                    <th>Hardware Component</th>
-                                    <th>Diagnostic Routine</th>
-                                    <th style="text-align: center;">Result</th>
-                                    <th>Engineering Details</th>
-                                </tr>
-                            </thead>
-                            <tbody id="diag-table-body">
-                                <tr>
-                                    <td colspan="4" style="text-align: center; padding: 20px; color: #64748b;">
-                                        Scanning hardware components and communication interfaces...
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </article>
-        </section>
-
         <!-- SUBMERGED PROBE BIOFILM & CALIBRATION LIFECYCLE (ANTI-DRIFT TRACKING) -->
         <section class="dashboard-section" aria-labelledby="probe-maintenance-heading" id="probe-maintenance-devices-section">
             <div id="probe-maintenance-devices-card"></div>
@@ -679,6 +630,71 @@
         </div>
     </form>
 </dialog>
+
+<!-- HARDWARE DIAGNOSTICS ASSESSMENT REPORT POP-UP DIALOG -->
+<div id="diagnostics-panel" class="maint-modal-backdrop" style="display: none;" role="dialog" aria-labelledby="diag-panel-heading">
+    <div class="maint-modal-container maint-modal-history-container" style="max-width: 880px;">
+        <div class="maint-modal-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="maint-modal-icon-badge" style="background: #e0f2fe; color: #0284c7;">
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-check-circle"></use>
+                    </svg>
+                </div>
+                <div>
+                    <span class="maint-modal-eyebrow">AUTOMATED SYSTEM INTEGRITY SCAN</span>
+                    <h2 id="diag-panel-heading">Hardware Diagnostics Assessment Report</h2>
+                    <p id="diag-timestamp" style="font-size: 12px; color: #64748b; margin: 2px 0 0 0;">Automated inspection scan</p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span id="diag-overall-badge" class="badge badge-optimal" style="font-size: 12px; padding: 5px 12px; text-transform: uppercase; font-weight: 700;">HEALTHY</span>
+                <button type="button" class="maint-modal-close" id="btn-close-diag" aria-label="Close modal">
+                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-x"></use></svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="maint-modal-body" style="padding: 18px 24px;">
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;">
+                <p id="diag-summary-text" style="font-size: 13.5px; color: #334155; margin: 0; font-weight: 500; line-height: 1.45;">
+                    Diagnostics running...
+                </p>
+            </div>
+
+            <div class="maint-history-table-wrapper" style="max-height: 400px; overflow-y: auto;">
+                <table class="maint-history-table" style="min-width: 740px;">
+                    <thead>
+                        <tr>
+                            <th style="width: 180px;">Hardware Component</th>
+                            <th style="width: 170px;">Diagnostic Routine</th>
+                            <th style="width: 110px; text-align: center;">Result</th>
+                            <th>Engineering Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="diag-table-body">
+                        <tr>
+                            <td colspan="4" style="text-align: center; padding: 25px; color: #64748b;">
+                                Scanning hardware components and communication interfaces...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="maint-modal-footer" style="justify-content: space-between;">
+            <span style="font-size: 12px; color: #64748b;">Automated hardware self-test routines verify buses and sensors.</span>
+            <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn-maint-secondary" id="btn-close-diag-footer">Close Report</button>
+                <button type="button" class="btn-maint-primary" id="btn-re-run-diag">
+                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
+                    <span>Re-scan Diagnostics</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="{{ url_for('static', filename='js/devices.js') }}"></script>
 <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
