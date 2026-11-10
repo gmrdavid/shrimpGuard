@@ -792,54 +792,97 @@
         const defaultTech = document.body.dataset.userEmail || 'Pond Operator';
 
         modalDiv.innerHTML = `
-            <div class="maint-modal-container maint-modal-sm" role="dialog" aria-labelledby="log-modal-title">
-                <div class="maint-modal-header">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <div class="maint-modal-icon-badge" style="background: #ecfdf5; color: #126b4f;">
-                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
-                        </div>
-                        <div>
-                            <span class="maint-modal-eyebrow">SENSOR HEALTH RECORD</span>
-                            <h2 id="log-modal-title">Log Probe Maintenance &amp; Reset Timer</h2>
-                        </div>
-                    </div>
-                    <button type="button" class="maint-modal-close" id="btn-close-log-modal" aria-label="Close modal">
-                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-x"></use></svg>
-                    </button>
-                </div>
-
-                <form id="probe-maint-form" class="maint-form">
+            <div class="maint-modal-container maint-modal-sm maint-log-dialog" role="dialog" aria-labelledby="log-modal-title" aria-modal="true">
+                <form id="probe-maint-form" class="maint-form-wrapper">
                     <input type="hidden" name="device_id" value="NODE01">
-                    
-                    <div class="maint-form-field">
-                        <label for="maint-action-select" class="maint-label">Maintenance Procedure Performed *</label>
-                        <select id="maint-action-select" name="action" class="maint-select" required>
-                            <option value="both" selected>Full Protocol: Biofilm Scrubbing &amp; 2-Point pH Recalibration</option>
-                            <option value="cleaning">Routine Biofilm Scrubbing &amp; DI Rinse Only (7-Day Cycle)</option>
-                            <option value="calibration">2-Point pH Buffer Recalibration Only (14-Day Cycle)</option>
-                        </select>
-                        <span class="maint-hint">Resetting will update the operational countdown and clear biofilm drift warnings.</span>
+
+                    <div class="maint-modal-header">
+                        <div class="maint-header-info-wrap">
+                            <div class="maint-modal-icon-badge">
+                                <svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
+                            </div>
+                            <div>
+                                <span class="maint-modal-eyebrow">SENSOR HEALTH &amp; ANTI-DRIFT RECORD</span>
+                                <h2 id="log-modal-title">Log Probe Maintenance &amp; Reset Timer</h2>
+                                <p class="maint-modal-subtitle">Record cleaning or calibration to clear drift alerts and reset telemetry countdowns</p>
+                            </div>
+                        </div>
+                        <button type="button" class="maint-modal-close" id="btn-close-log-modal" aria-label="Close dialog">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-x"></use></svg>
+                        </button>
                     </div>
 
-                    <div class="maint-form-field">
-                        <label for="maint-technician-input" class="maint-label">Technician / Operator Name *</label>
-                        <input type="text" id="maint-technician-input" name="technician" class="maint-input" value="${defaultTech}" required>
-                    </div>
+                    <div class="maint-modal-body">
+                        <!-- Target Hardware Node Summary Card -->
+                        <div class="maint-target-context-card">
+                            <div class="maint-target-context-icon">
+                                <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
+                            </div>
+                            <div class="maint-target-context-info">
+                                <div class="maint-target-context-title">
+                                    <strong>Node 1 Submerged Probes</strong>
+                                    <span class="maint-target-id-badge">NODE01</span>
+                                </div>
+                                <p class="maint-target-context-sub">DFRobot Industrial pH Sensor &amp; DS18B20 Digital Temperature</p>
+                            </div>
+                            <div class="maint-target-context-chip">
+                                <span class="status-pulse-dot" style="background: #10b981;"></span>
+                                <span>Active Probe</span>
+                            </div>
+                        </div>
 
-                    <div class="maint-form-field">
-                        <label for="maint-datetime-input" class="maint-label">Date &amp; Time of Maintenance *</label>
-                        <input type="datetime-local" id="maint-datetime-input" name="performed_at" class="maint-input" required>
-                        <span class="maint-hint">Pre-filled with your current system time. Adjust if recording a session performed earlier.</span>
-                    </div>
+                        <div class="maint-form-fields-grid">
+                            <!-- Maintenance Procedure -->
+                            <div class="maint-form-field">
+                                <label for="maint-action-select" class="maint-label">
+                                    <svg class="ui-icon label-icon" aria-hidden="true"><use href="#icon-settings"></use></svg>
+                                    <span>Maintenance Procedure Performed *</span>
+                                </label>
+                                <div class="maint-select-wrapper">
+                                    <select id="maint-action-select" name="action" class="maint-select" required>
+                                        <option value="both" selected>Full Protocol: Biofilm Scrubbing &amp; 2-Point pH Recalibration</option>
+                                        <option value="cleaning">Routine Biofilm Scrubbing &amp; DI Rinse Only (7-Day Cycle)</option>
+                                        <option value="calibration">2-Point pH Buffer Recalibration Only (14-Day Cycle)</option>
+                                    </select>
+                                    <svg class="ui-icon maint-select-chevron" aria-hidden="true"><use href="#icon-arrow"></use></svg>
+                                </div>
+                                <span class="maint-hint">Resetting will update the operational countdown and clear biofilm drift warnings.</span>
+                            </div>
 
-                    <div class="maint-form-field">
-                        <label for="maint-notes-input" class="maint-label">Calibration Notes &amp; Buffer Offsets (Optional)</label>
-                        <textarea id="maint-notes-input" name="notes" class="maint-textarea" rows="3" placeholder="e.g. Cleaned green algal biofilm; calibrated with pH 6.86 and 4.01 standard buffers at 29.4°C. Voltage offset verified."></textarea>
+                            <!-- Row for Technician and Date/Time -->
+                            <div class="maint-form-row">
+                                <div class="maint-form-field">
+                                    <label for="maint-technician-input" class="maint-label">
+                                        <svg class="ui-icon label-icon" aria-hidden="true"><use href="#icon-user"></use></svg>
+                                        <span>Technician / Operator *</span>
+                                    </label>
+                                    <input type="text" id="maint-technician-input" name="technician" class="maint-input" value="${defaultTech}" placeholder="e.g. Pond Operator" required>
+                                </div>
+
+                                <div class="maint-form-field">
+                                    <label for="maint-datetime-input" class="maint-label">
+                                        <svg class="ui-icon label-icon" aria-hidden="true"><use href="#icon-clock"></use></svg>
+                                        <span>Date &amp; Time *</span>
+                                    </label>
+                                    <input type="datetime-local" id="maint-datetime-input" name="performed_at" class="maint-input" required>
+                                </div>
+                            </div>
+
+                            <!-- Calibration Notes -->
+                            <div class="maint-form-field">
+                                <label for="maint-notes-input" class="maint-label">
+                                    <svg class="ui-icon label-icon" aria-hidden="true"><use href="#icon-message"></use></svg>
+                                    <span>Calibration Notes &amp; Buffer Offsets (Optional)</span>
+                                </label>
+                                <textarea id="maint-notes-input" name="notes" class="maint-textarea" rows="3" placeholder="e.g. Gently cleaned algal biofilm with soft camel-hair brush; 2-point verified with pH 6.86 and 4.01 standard buffers at 29.5°C. Voltage offset verified."></textarea>
+                                <span class="maint-hint">All entries are permanently logged in the maintenance audit trail for quality assurance.</span>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="maint-modal-footer">
                         <button type="button" class="btn-maint-secondary" id="btn-cancel-log-modal">Cancel</button>
-                        <button type="submit" class="btn-maint-primary">
+                        <button type="submit" class="btn-maint-primary" id="btn-submit-maint-form">
                             <svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
                             <span>Save &amp; Reset Maintenance Timers</span>
                         </button>
