@@ -368,7 +368,17 @@
                         <div class="probe-maint-history-row" style="margin-top: 16px; padding-top: 14px; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                             <div style="font-size: 12px; color: #64748b;">
                                 <span>Last Recorded Action: <strong style="color: #334155;">{{ maintenance.maintenance_type or 'Routine Inspection' }}</strong> by <strong style="color: #334155;">{{ maintenance.performed_by or 'Technician' }}</strong></span>
-                                <span style="margin-left: 12px; color: #94a3b8;">({{ maintenance.last_cleaned_at.strftime('%Y-%m-%d %H:%M') if maintenance.last_cleaned_at else 'N/A' }})</span>
+                                <span style="margin-left: 12px; color: #94a3b8;">
+                                    {% if maintenance.last_cleaned_at %}
+                                        {% if maintenance.last_cleaned_at.strftime is defined %}
+                                            ({{ maintenance.last_cleaned_at.strftime('%Y-%m-%d %H:%M') }})
+                                        {% else %}
+                                            ({{ maintenance.last_cleaned_at[:16] }})
+                                        {% endif %}
+                                    {% else %}
+                                        (N/A)
+                                    {% endif %}
+                                </span>
                             </div>
                             <div style="display: flex; gap: 8px;">
                                 <button type="button" class="btn-maint-secondary" id="btn-devices-open-sop" style="font-size: 12px; padding: 6px 12px;" title="View standard maintenance SOP guide">
@@ -451,7 +461,15 @@
                                 </td>
                                 <td>
                                     <span class="device-cell-seen node-last-seen-cell">
-                                        {{ node.last_seen.strftime('%Y-%m-%d %H:%M:%S') if node.last_seen else 'Awaiting first packet' }}
+                                        {% if node.last_seen %}
+                                            {% if node.last_seen.strftime is defined %}
+                                                {{ node.last_seen.strftime('%Y-%m-%d %H:%M:%S') }}
+                                            {% else %}
+                                                {{ node.last_seen }}
+                                            {% endif %}
+                                        {% else %}
+                                            Awaiting first packet
+                                        {% endif %}
                                     </span>
                                 </td>
                                 <td style="text-align: center;">
