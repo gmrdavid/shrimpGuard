@@ -501,7 +501,7 @@ function renderAlertHistory(history) {
     if (total === 0) {
         tableBody.innerHTML = `
             <tr>
-                <td colspan="6" class="table-empty" style="text-align: center; padding: 28px 14px; color: #8a998f;">
+                <td colspan="5" class="table-empty" style="text-align: center; padding: 28px 14px; color: #8a998f;">
                     No saved alert records match these filters.
                 </td>
             </tr>
@@ -519,17 +519,12 @@ function renderAlertHistory(history) {
                 ? '<span class="severity-badge severity-warning">Warning</span>'
                 : '<span class="severity-badge severity-none">Optimal</span>';
 
-            const statusPill = item.status === "Active"
-                ? '<span class="status-pill status-active">Active</span>'
-                : '<span class="status-pill status-resolved">Resolved</span>';
-
             return `
                 <tr>
                     <td>${dateStr}</td>
                     <td>${timeStr}</td>
                     <td><strong>${item.alert_count}</strong></td>
                     <td>${severityBadge}</td>
-                    <td>${statusPill}</td>
                     <td>${item.details || "-"}</td>
                 </tr>
             `;
