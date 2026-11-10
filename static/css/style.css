@@ -25012,3 +25012,135 @@ body.modal-backdrop-open {
     overflow: hidden !important;
 }
 
+/* ==========================================================================
+   UNPAIR TELEMETRY NODE MODAL & DIALOG POLISH
+   ========================================================================== */
+
+.devices-page dialog.admin-user-dialog,
+.devices-dialog {
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 14px !important;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25) !important;
+    background: #ffffff !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+.devices-page dialog::backdrop {
+    background: rgba(15, 23, 42, 0.65) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+}
+
+.unpair-modal-container {
+    max-width: 490px !important;
+    width: 92% !important;
+}
+
+.unpair-target-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 13px 16px;
+    margin: 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.unpair-target-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 9px;
+    background: #fee2e2;
+    color: #dc2626;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.unpair-target-icon .ui-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.unpair-target-meta {
+    min-width: 0;
+    flex: 1;
+}
+
+.unpair-target-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 2px;
+    flex-wrap: wrap;
+}
+
+.unpair-target-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.unpair-target-loc {
+    font-size: 12px;
+    color: #64748b;
+    display: block;
+}
+
+.unpair-warning-callout {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-left: 4px solid #f59e0b;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 12.5px;
+    color: #92400e;
+    line-height: 1.5;
+}
+
+.unpair-warning-callout strong {
+    color: #78350f;
+    font-weight: 700;
+}
+
+.btn-unpair-confirm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: #dc2626 !important;
+    color: #ffffff !important;
+    border: 1px solid #b91c1c !important;
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 650;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.2);
+}
+
+.btn-unpair-confirm:hover {
+    background: #b91c1c !important;
+    border-color: #991b1b !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
+}
+
+.btn-unpair-confirm:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-unpair-confirm .ui-icon {
+    width: 16px;
+    height: 16px;
+}
+

@@ -403,6 +403,7 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchDevicesInventory();
     fetchPairedNodes();
     setupPairNodeModal();
+    setupUnpairModal();
     attachUnpairHandlers();
 
     // Dynamic polling (throttled under Data-Saver)
@@ -494,6 +495,26 @@ document.addEventListener("DOMContentLoaded", () => {
         if (reRunBtn) {
             e.preventDefault();
             runDiagnostics();
+            return;
+        }
+
+        const unpairBtn = e.target.closest(".btn-unpair-node");
+        if (unpairBtn) {
+            e.preventDefault();
+            const nodeId = unpairBtn.getAttribute("data-node-id");
+            if (!nodeId) return;
+            let nodeName = unpairBtn.getAttribute("data-node-name") || "";
+            let nodeLocation = unpairBtn.getAttribute("data-node-location") || "";
+            if (!nodeName) {
+                const row = unpairBtn.closest("tr");
+                if (row) {
+                    const nameEl = row.querySelector(".device-cell-name");
+                    if (nameEl) nodeName = nameEl.textContent.trim();
+                    const locEl = row.querySelector(".device-location-tag");
+                    if (locEl) nodeLocation = locEl.textContent.replace(/[()]/g, "").trim();
+                }
+            }
+            openUnpairModal(nodeId, nodeName, nodeLocation);
             return;
         }
     });
@@ -606,7 +627,7 @@ function renderPairedNodes(nodes) {
                     </span>
                 </td>
                 <td style="text-align: center;">
-                    <button type="button" class="btn-unpair-node" data-node-id="${escapeHtml(node.device_id)}">
+                    <button type="button" class="btn-unpair-node" data-node-id="${escapeHtml(node.device_id)}" data-node-name="${escapeHtml(node.device_name || '')}" data-node-location="${escapeHtml(node.pond_location || 'Pond Site')}">
                         Unpair
                     </button>
                 </td>
@@ -617,35 +638,116 @@ function renderPairedNodes(nodes) {
     attachUnpairHandlers();
 }
 
-function attachUnpairHandlers() {
-    document.querySelectorAll(".btn-unpair-node").forEach(btn => {
-        btn.onclick = async () => {
-            const nodeId = btn.getAttribute("data-node-id");
-            if (!nodeId) return;
-            if (!confirm(`Are you sure you want to unpair Node '${nodeId}' from your account? Live telemetry from this node will no longer route to your dashboard.`)) {
-                return;
-            }
+let pendingUnpairNodeId = null;
+
+function openUnpairModal(nodeId, nodeName = "", nodeLocation = "") {
+    pendingUnpairNodeId = nodeId;
+    const modal = document.getElementById("unpair-node-modal");
+    if (!modal) return;
+
+    const idEl = document.getElementById("unpair-target-node-id");
+    const nameEl = document.getElementById("unpair-target-node-name");
+    const locEl = document.getElementById("unpair-target-node-location");
+
+    if (idEl) idEl.textContent = nodeId || "NODE";
+    if (nameEl) nameEl.textContent = nodeName || `Telemetry Node (${nodeId})`;
+    if (locEl) locEl.textContent = nodeLocation ? `Location: ${nodeLocation}` : "Pond Site";
+
+    modal.style.display = "flex";
+    modal.classList.add("is-open");
+    document.body.classList.add("modal-backdrop-open");
+}
+
+function closeUnpairModal() {
+    pendingUnpairNodeId = null;
+    const modal = document.getElementById("unpair-node-modal");
+    if (!modal) return;
+
+    modal.style.display = "none";
+    modal.classList.remove("is-open");
+    document.body.classList.remove("modal-backdrop-open");
+}
+
+function setupUnpairModal() {
+    const modal = document.getElementById("unpair-node-modal");
+    if (!modal) return;
+
+    const btnClose = document.getElementById("btn-close-unpair-modal");
+    const btnCancel = document.getElementById("btn-cancel-unpair");
+    const btnConfirm = document.getElementById("btn-confirm-unpair");
+
+    if (btnClose) btnClose.addEventListener("click", closeUnpairModal);
+    if (btnCancel) btnCancel.addEventListener("click", closeUnpairModal);
+
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+            closeUnpairModal();
+        }
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && modal.classList.contains("is-open")) {
+            closeUnpairModal();
+        }
+    });
+
+    if (btnConfirm) {
+        btnConfirm.addEventListener("click", async () => {
+            if (!pendingUnpairNodeId) return;
+            const nodeId = pendingUnpairNodeId;
+            const originalContent = btnConfirm.innerHTML;
+            btnConfirm.disabled = true;
+            btnConfirm.innerHTML = `<svg class="ui-icon devices-spin" aria-hidden="true"><use href="#icon-settings"></use></svg><span>Unpairing...</span>`;
 
             try {
-                btn.disabled = true;
                 const res = await fetch("/api/devices/unpair", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ device_id: nodeId }),
                 });
                 const data = await res.json();
+                closeUnpairModal();
+
                 if (res.ok && data.success) {
-                    showNotice(data.message || `Node '${nodeId}' successfully unpaired.`, false);
-                    fetchPairedNodes();
-                    fetchDevicesInventory();
+                    showNotice(data.message || `Node '${nodeId}' successfully unpaired.`, "success");
+                    await fetchPairedNodes();
+                    await fetchDevicesInventory();
                 } else {
-                    showNotice(data.error || "Failed to unpair node.", true);
+                    showNotice(data.error || "Failed to unpair node.", "error");
                 }
             } catch (err) {
-                showNotice("Network error while unpairing node.", true);
+                console.error("[Devices] Unpair error:", err);
+                closeUnpairModal();
+                showNotice("Network error while unpairing node. Please try again.", "error");
             } finally {
-                btn.disabled = false;
+                btnConfirm.disabled = false;
+                btnConfirm.innerHTML = originalContent;
             }
+        });
+    }
+}
+
+function attachUnpairHandlers() {
+    document.querySelectorAll(".btn-unpair-node").forEach(btn => {
+        btn.onclick = (e) => {
+            e.preventDefault();
+            const nodeId = btn.getAttribute("data-node-id");
+            if (!nodeId) return;
+
+            let nodeName = btn.getAttribute("data-node-name") || "";
+            let nodeLocation = btn.getAttribute("data-node-location") || "";
+
+            if (!nodeName) {
+                const row = btn.closest("tr");
+                if (row) {
+                    const nameEl = row.querySelector(".device-cell-name");
+                    if (nameEl) nodeName = nameEl.textContent.trim();
+                    const locEl = row.querySelector(".device-location-tag");
+                    if (locEl) nodeLocation = locEl.textContent.replace(/[()]/g, "").trim();
+                }
+            }
+
+            openUnpairModal(nodeId, nodeName, nodeLocation);
         };
     });
 }

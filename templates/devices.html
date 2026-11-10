@@ -478,7 +478,7 @@
                                     </span>
                                 </td>
                                 <td style="text-align: center;">
-                                    <button type="button" class="btn-unpair-node" data-node-id="{{ node.device_id }}">
+                                    <button type="button" class="btn-unpair-node" data-node-id="{{ node.device_id }}" data-node-name="{{ node.device_name }}" data-node-location="{{ node.pond_location or 'Pond Site' }}">
                                         Unpair
                                     </button>
                                 </td>
@@ -758,6 +758,61 @@
         </div>
     </form>
 </dialog>
+
+<!-- UNPAIR POND TELEMETRY NODE CONFIRMATION MODAL -->
+<div id="unpair-node-modal" class="maint-modal-backdrop" style="display: none;" role="dialog" aria-labelledby="unpair-modal-title" aria-modal="true">
+    <div class="maint-modal-container unpair-modal-container">
+        <div class="maint-modal-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="maint-modal-icon-badge" style="background: #fef2f2; color: #dc2626;">
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-alert"></use>
+                    </svg>
+                </div>
+                <div>
+                    <span class="maint-modal-eyebrow" style="color: #dc2626;">DEVICE DISCONNECTION</span>
+                    <h2 id="unpair-modal-title">Unpair Telemetry Node</h2>
+                </div>
+            </div>
+            <button type="button" class="maint-modal-close" id="btn-close-unpair-modal" aria-label="Close dialog">
+                <svg class="ui-icon" aria-hidden="true"><use href="#icon-x"></use></svg>
+            </button>
+        </div>
+
+        <div class="maint-modal-body">
+            <p style="margin: 0 0 16px; font-size: 13.5px; color: #334155; line-height: 1.5;">
+                Are you sure you want to unpair this pond telemetry node from your account?
+            </p>
+
+            <div class="unpair-target-card">
+                <div class="unpair-target-icon">
+                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-cpu"></use></svg>
+                </div>
+                <div class="unpair-target-meta">
+                    <div class="unpair-target-header">
+                        <span class="device-id-badge" id="unpair-target-node-id">NODE01</span>
+                        <strong class="unpair-target-name" id="unpair-target-node-name">Pond Transmitter Node</strong>
+                    </div>
+                    <span class="unpair-target-loc" id="unpair-target-node-location">Location: Pond Site</span>
+                </div>
+            </div>
+
+            <div class="unpair-warning-callout">
+                <strong>Warning:</strong> Live water quality telemetry (pH, Temperature, Battery, and RF packet feed) from this physical node will immediately cease routing to your dashboard. You can re-pair this hardware at any time using your Hardware Node ID.
+            </div>
+        </div>
+
+        <div class="maint-modal-footer">
+            <button type="button" class="btn-maint-secondary" id="btn-cancel-unpair">
+                Cancel
+            </button>
+            <button type="button" class="btn-unpair-confirm" id="btn-confirm-unpair">
+                <svg class="ui-icon" aria-hidden="true"><use href="#icon-alert"></use></svg>
+                <span>Confirm Unpair</span>
+            </button>
+        </div>
+    </div>
+</div>
 
 <!-- HARDWARE DIAGNOSTICS ASSESSMENT REPORT POP-UP DIALOG -->
 <div id="diagnostics-panel" class="maint-modal-backdrop" style="display: none;" role="dialog" aria-labelledby="diag-panel-heading">
