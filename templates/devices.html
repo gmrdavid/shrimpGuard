@@ -350,9 +350,15 @@
                             <p>LoRa transmitter hardware units linked to your account for live telemetry routing</p>
                         </div>
                     </div>
-                    <span id="paired-nodes-count-badge" class="badge badge-optimal" style="font-weight: 700; font-size: 12px; padding: 5px 12px;">
-                        {{ paired_nodes|length }} Paired {{ 'Unit' if paired_nodes|length == 1 else 'Units' }}
-                    </span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span id="paired-nodes-count-badge" class="badge badge-optimal" style="font-weight: 700; font-size: 12px; padding: 6px 12px;">
+                            {{ paired_nodes|length }} Paired {{ 'Unit' if paired_nodes|length == 1 else 'Units' }}
+                        </span>
+                        <button type="button" id="btn-open-pair-modal" class="telemetry-sync-btn" style="background: #126b4f; border-color: #126b4f; color: #ffffff; height: 34px; padding: 0 14px; font-size: 12.5px;" title="Pair a LoRa transmitter Node ID with this account">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-cpu"></use></svg>
+                            <span>Pair Pond Node</span>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="devices-table-wrap">
