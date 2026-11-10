@@ -3636,11 +3636,14 @@ def monitoring():
 
 
 @app.route("/devices")
+@app.route("/admin/devices")
 @role_required("Client", "Admin")
 def devices():
     user_email = session.get("user_id")
     user = db.session.get(User, user_email) if user_email else None
-    user_role = session.get("role") or "Client"
+    user_role = (session.get("role") or (user.role if user else "Client")).capitalize()
+    if request.path.startswith("/admin/") and user_role != "Admin":
+        return redirect(url_for("devices"))
     maintenance = get_probe_maintenance_status(user_email=user_email)
 
     inv = get_system_devices_inventory()
@@ -3661,6 +3664,7 @@ def devices():
     return render_template(
         "devices.html",
         user=user,
+        user_role=user_role,
         devices_list=inv["devices"],
         total_devices=inv["total_devices"],
         online_devices=inv["online_devices"],
