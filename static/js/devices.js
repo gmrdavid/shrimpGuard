@@ -59,7 +59,7 @@ function showNotice(message, state = false) {
     banner.style.display = "flex";
     banner.className = `devices-banner-notice ${noticeType}`;
 
-    const iconUse = banner.querySelector(".ui-icon use");
+    const iconUse = banner.querySelector(".banner-body .ui-icon use, .banner-icon use");
     if (iconUse) {
         if (noticeType === "error") {
             iconUse.setAttribute("href", "#icon-alert");
@@ -430,9 +430,37 @@ document.addEventListener("DOMContentLoaded", () => {
     // Event listeners
     const btnSync = document.getElementById("btn-sync-devices");
     if (btnSync) {
-        btnSync.addEventListener("click", () => {
-            fetchDevicesInventory();
-            showNotice("Synchronized live hardware telemetry.", false);
+        btnSync.addEventListener("click", async () => {
+            const originalContent = btnSync.innerHTML;
+            btnSync.disabled = true;
+            btnSync.innerHTML = `<svg class="ui-icon devices-spin" aria-hidden="true"><use href="#icon-monitor"></use></svg><span>Syncing...</span>`;
+
+            try {
+                const res = await fetch("/api/devices/inventory");
+                if (!res.ok) {
+                    throw new Error(`Inventory endpoint returned HTTP ${res.status}`);
+                }
+                const data = await res.json();
+                renderDevices(data);
+                if (typeof fetchPairedNodes === "function") {
+                    await fetchPairedNodes();
+                }
+                showNotice("Hardware inventory and live telemetry synchronized successfully.", "success");
+            } catch (err) {
+                console.error("[Devices] Sync failed:", err);
+                showNotice("Failed to synchronize hardware telemetry. Please check server connection.", "error");
+            } finally {
+                btnSync.disabled = false;
+                btnSync.innerHTML = originalContent;
+            }
+        });
+    }
+
+    const btnCloseAlert = document.getElementById("btn-close-devices-alert");
+    if (btnCloseAlert) {
+        btnCloseAlert.addEventListener("click", () => {
+            const banner = document.getElementById("devices-alert-banner");
+            if (banner) banner.style.display = "none";
         });
     }
 

@@ -157,9 +157,14 @@
         </header>
 
         <!-- FLASH NOTICES -->
-        <div id="devices-alert-banner" class="devices-banner-notice" style="display: none;" role="status">
-            <svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
-            <span id="devices-alert-msg"></span>
+        <div id="devices-alert-banner" class="devices-banner-notice" style="display: none;" role="status" aria-live="polite">
+            <div class="banner-body">
+                <svg class="ui-icon banner-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
+                <span id="devices-alert-msg"></span>
+            </div>
+            <button type="button" class="banner-close-btn" id="btn-close-devices-alert" aria-label="Dismiss notice">
+                <svg class="ui-icon" aria-hidden="true"><use href="#icon-x"></use></svg>
+            </button>
         </div>
 
         <!-- 4 TOP INDICATOR CARDS: Total Devices, Online, Offline, Connected Sensors -->
@@ -338,8 +343,8 @@
                                     <div class="maint-progress-fill" style="width: {{ clean_pct }}%; background-color: {{ clean_bar_color }};"></div>
                                 </div>
                                 <div class="probe-cycle-meta">
-                                    <span>Submerged: <strong>{{ maintenance.days_since_cleaning }} days</strong></span>
-                                    <span>Next Due: <strong>{{ (maintenance.days_until_cleaning ~ 'd') if maintenance.days_until_cleaning > 0 else 'NOW' }}</strong></span>
+                                    <span>Submerged: <strong>{{ maintenance.days_since_cleaning if maintenance.days_since_cleaning is defined else 0 }} days</strong></span>
+                                    <span>Next Due: <strong>{{ ((maintenance.days_until_cleaning or 0) ~ 'd') if (maintenance.days_until_cleaning is defined and maintenance.days_until_cleaning > 0) else 'NOW' }}</strong></span>
                                 </div>
                                 <p class="probe-cycle-hint">Prevents algal slime and bacterial biofilm barrier on the pH glass bulb.</p>
                             </div>
@@ -357,8 +362,8 @@
                                     <div class="maint-progress-fill" style="width: {{ cal_pct }}%; background-color: {{ cal_bar_color }};"></div>
                                 </div>
                                 <div class="probe-cycle-meta">
-                                    <span>Elapsed: <strong>{{ maintenance.days_since_calibration }} days</strong></span>
-                                    <span>Next Due: <strong>{{ (maintenance.days_until_calibration ~ 'd') if maintenance.days_until_calibration > 0 else 'NOW' }}</strong></span>
+                                    <span>Elapsed: <strong>{{ maintenance.days_since_calibration if maintenance.days_since_calibration is defined else 0 }} days</strong></span>
+                                    <span>Next Due: <strong>{{ ((maintenance.days_until_calibration or 0) ~ 'd') if (maintenance.days_until_calibration is defined and maintenance.days_until_calibration > 0) else 'NOW' }}</strong></span>
                                 </div>
                                 <p class="probe-cycle-hint">Recalibrates slope and midpoint using standard pH 4.01 and 6.86 buffers.</p>
                             </div>
