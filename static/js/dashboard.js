@@ -9,6 +9,27 @@ function parseSafeDate(val) {
     return null;
 }
 
+function formatTimeAgo(seconds) {
+    if (seconds < 5) return "Just now (streaming live)";
+    if (seconds < 60) return `${seconds}s ago`;
+
+    const totalMinutes = Math.floor(seconds / 60);
+    if (totalMinutes < 60) return `${totalMinutes}m ago`;
+
+    const totalHours = Math.floor(totalMinutes / 60);
+    const remMinutes = totalMinutes % 60;
+    if (totalHours < 24) {
+        return remMinutes > 0 ? `${totalHours}h ${remMinutes}m ago` : `${totalHours}h ago`;
+    }
+
+    const days = Math.floor(totalHours / 24);
+    const remHours = totalHours % 24;
+    const parts = [`${days}d`];
+    if (remHours > 0) parts.push(`${remHours}h`);
+    if (remMinutes > 0) parts.push(`${remMinutes}m`);
+    return `${parts.join(" ")} ago`;
+}
+
 function displayResults(data) {
     const tempNum = Number(data.temperature);
     const phNum = Number(data.ph);
@@ -56,6 +77,7 @@ function displayResults(data) {
 
     // Update telemetry header indicators
     const recDate = parseSafeDate(data.recorded_at);
+    window.latestTelemetryDate = recDate;
     const now = new Date();
     const secondsAgo = recDate ? Math.max(0, Math.floor((now - recDate) / 1000)) : 999;
 
@@ -85,9 +107,7 @@ function displayResults(data) {
 
     const secAgoEl = document.getElementById("telemetry-seconds-ago");
     if (secAgoEl) {
-        secAgoEl.textContent = secondsAgo < 5
-            ? "Just now (streaming live)"
-            : (secondsAgo < 60 ? `${secondsAgo}s ago` : `${Math.floor(secondsAgo / 60)}m ago`);
+        secAgoEl.textContent = formatTimeAgo(secondsAgo);
     }
 
     const nodeEl = document.getElementById("telemetry-node-id");
@@ -143,6 +163,14 @@ function updateDeviceTime() {
     if (timeEl) {
         timeEl.textContent =
             new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    }
+
+    if (window.latestTelemetryDate && !isNaN(window.latestTelemetryDate.getTime())) {
+        const secAgoEl = document.getElementById("telemetry-seconds-ago");
+        if (secAgoEl) {
+            const sec = Math.max(0, Math.floor((Date.now() - window.latestTelemetryDate.getTime()) / 1000));
+            secAgoEl.textContent = formatTimeAgo(sec);
+        }
     }
 }
 

@@ -29,7 +29,16 @@ function timeAgo(dateOrStr) {
     const diffMin = Math.floor(diffSec / 60);
     if (diffMin < 60) return `${diffMin}m ago`;
     const diffHours = Math.floor(diffMin / 60);
-    return `${diffHours}h ago`;
+    const remMin = diffMin % 60;
+    if (diffHours < 24) {
+        return remMin > 0 ? `${diffHours}h ${remMin}m ago` : `${diffHours}h ago`;
+    }
+    const days = Math.floor(diffHours / 24);
+    const remHours = diffHours % 24;
+    const parts = [`${days}d`];
+    if (remHours > 0) parts.push(`${remHours}h`);
+    if (remMin > 0) parts.push(`${remMin}m`);
+    return `${parts.join(" ")} ago`;
 }
 
 function showNotice(message, state = false) {
