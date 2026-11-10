@@ -520,26 +520,43 @@
     async function loadModalHistoryContent() {
         const container = document.getElementById('maint-modal-history-tbody');
         if (!container) return;
-        container.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 24px; color: #64748b;">Loading maintenance audit log...</td></tr>';
+        container.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 28px; color: #64748b;">Loading maintenance audit log...</td></tr>';
 
         const history = await fetchMaintenanceHistory();
         if (!history || history.length === 0) {
-            container.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 24px; color: #64748b;">No maintenance logs recorded yet. Use the "Log Maintenance" button to record probe cleanings and calibrations.</td></tr>';
+            container.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 28px; color: #64748b;">No maintenance logs recorded yet. Use the "Log Maintenance" button to record probe cleanings and calibrations.</td></tr>';
             return;
         }
 
         container.innerHTML = history.map((item) => {
-            const badgeClass = item.action === 'both' ? 'badge-optimal' : (item.action === 'cleaning' ? 'badge-warning' : 'badge-active');
+            const badgeClass = item.action === 'both' ? 'maint-badge-both' : (item.action === 'cleaning' ? 'maint-badge-cleaning' : 'maint-badge-calibration');
             const dateStr = item.date_formatted || formatDateTime(item.performed_at);
 
             return `
                 <tr>
-                    <td style="font-weight: 600; color: #1e293b; white-space: nowrap;">${dateStr}</td>
-                    <td><span class="telemetry-chip chip-node" style="font-size: 11px;"><svg class="ui-icon" aria-hidden="true" style="width: 12px; height: 12px;"><use href="#icon-droplet"></use></svg> ${item.device_id || 'NODE01'}</span></td>
-                    <td><span class="badge ${badgeClass}" style="font-size: 11px; font-weight: 600;">${item.maintenance_type || 'Routine Maintenance'}</span></td>
-                    <td style="color: #334155; font-weight: 500;">${item.performed_by || 'Pond Operator'}</td>
-                    <td style="font-size: 12px; color: #475569; max-width: 260px;">${item.notes || 'Routine cleaning and buffer calibration completed.'}</td>
-                    <td style="text-align: center;"><span class="badge badge-optimal" style="font-size: 10.5px; padding: 2px 7px;">Drift Reset (0d)</span></td>
+                    <td class="col-date">
+                        <strong class="date-text">${dateStr}</strong>
+                    </td>
+                    <td class="col-node">
+                        <span class="maint-chip-node">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-droplet"></use></svg>
+                            ${item.device_id || 'NODE01'}
+                        </span>
+                    </td>
+                    <td class="col-proc">
+                        <span class="maint-badge ${badgeClass}">
+                            ${item.maintenance_type || 'Routine Maintenance'}
+                        </span>
+                    </td>
+                    <td class="col-tech">
+                        <span class="tech-name">${item.performed_by || 'Pond Operator'}</span>
+                    </td>
+                    <td class="col-notes">
+                        <p class="notes-text">${item.notes || 'Routine cleaning and buffer calibration completed.'}</p>
+                    </td>
+                    <td class="col-status" style="text-align: center;">
+                        <span class="maint-drift-reset-chip">Drift Reset (0d)</span>
+                    </td>
                 </tr>
             `;
         }).join('');
@@ -830,9 +847,9 @@
         modalDiv.setAttribute('hidden', '');
 
         modalDiv.innerHTML = `
-            <div class="maint-modal-container" role="dialog" aria-labelledby="history-modal-title" style="max-width: 820px;">
+            <div class="maint-modal-container maint-modal-history-container" role="dialog" aria-labelledby="history-modal-title">
                 <div class="maint-modal-header">
-                    <div style="display: flex; align-items: center; gap: 12px;">
+                    <div class="maint-header-info-wrap">
                         <div class="maint-modal-icon-badge" style="background: #f0fdf4; color: #126b4f;">
                             <svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>
                         </div>
@@ -846,22 +863,22 @@
                     </button>
                 </div>
 
-                <div class="maint-modal-body" style="padding: 16px 20px;">
-                    <div class="devices-table-wrap" style="max-height: 420px; overflow-y: auto;">
-                        <table class="devices-table">
+                <div class="maint-modal-body" style="padding: 18px 24px;">
+                    <div class="maint-history-table-wrapper">
+                        <table class="maint-history-table">
                             <thead>
                                 <tr>
-                                    <th>Date &amp; Time</th>
-                                    <th>Node</th>
-                                    <th>Procedure</th>
-                                    <th>Technician</th>
-                                    <th>Notes &amp; Buffer Offsets</th>
-                                    <th style="text-align: center;">Drift Status</th>
+                                    <th style="width: 160px; min-width: 150px;">Date &amp; Time</th>
+                                    <th style="width: 90px; min-width: 85px;">Node</th>
+                                    <th style="width: 180px; min-width: 170px;">Procedure</th>
+                                    <th style="width: 120px; min-width: 110px;">Technician</th>
+                                    <th style="min-width: 240px;">Notes &amp; Buffer Offsets</th>
+                                    <th style="width: 110px; min-width: 100px; text-align: center;">Drift Status</th>
                                 </tr>
                             </thead>
                             <tbody id="maint-modal-history-tbody">
                                 <tr>
-                                    <td colspan="6" style="text-align: center; padding: 24px; color: #64748b;">
+                                    <td colspan="6" style="text-align: center; padding: 28px; color: #64748b;">
                                         Loading probe maintenance audit log...
                                     </td>
                                 </tr>
@@ -912,12 +929,6 @@
     document.addEventListener('DOMContentLoaded', () => {
         fetchMaintenanceStatus();
         fetchMaintenanceHistory();
-
-        // Bind top toolbar button on Devices page
-        const topHistoryBtn = document.getElementById('btn-show-maint-history');
-        if (topHistoryBtn) {
-            topHistoryBtn.addEventListener('click', openHistoryModal);
-        }
 
         // Periodic background poll every 60 seconds
         setInterval(fetchMaintenanceStatus, 60000);
