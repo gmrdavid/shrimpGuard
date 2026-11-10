@@ -353,11 +353,15 @@
                             <span style="margin-left: 12px; color: #94a3b8;">(${formatDateTime(data.last_cleaned_at)})</span>
                         </div>
                         <div style="display: flex; gap: 8px;">
-                            <button type="button" class="btn-maint-secondary" id="btn-devices-open-sop" style="font-size: 12px; padding: 6px 12px;">
+                            <button type="button" class="btn-maint-secondary" id="btn-devices-open-sop" style="font-size: 12px; padding: 6px 12px;" title="View standard maintenance SOP guide">
                                 <svg class="ui-icon" aria-hidden="true" style="width: 14px; height: 14px;"><use href="#icon-lightbulb"></use></svg>
                                 <span>Standard SOP</span>
                             </button>
-                            <button type="button" class="btn-maint-primary" id="btn-devices-log-maint" style="font-size: 12px; padding: 6px 14px;">
+                            <button type="button" class="btn-maint-secondary" id="btn-devices-view-history" style="font-size: 12px; padding: 6px 12px;" title="Open Probe Maintenance & Calibration Audit Log pop-up dialog">
+                                <svg class="ui-icon" aria-hidden="true" style="width: 14px; height: 14px;"><use href="#icon-calendar"></use></svg>
+                                <span>Audit Log Dialog</span>
+                            </button>
+                            <button type="button" class="btn-maint-primary" id="btn-devices-log-maint" style="font-size: 12px; padding: 6px 14px;" title="Log a new cleaning or buffer recalibration">
                                 <svg class="ui-icon" aria-hidden="true" style="width: 14px; height: 14px;"><use href="#icon-plus"></use></svg>
                                 <span>Log Maintenance</span>
                             </button>
@@ -372,6 +376,9 @@
 
         const sopBtn = cardContainer.querySelector('#btn-devices-open-sop');
         if (sopBtn) sopBtn.addEventListener('click', openSOPModal);
+
+        const histBtn = cardContainer.querySelector('#btn-devices-view-history');
+        if (histBtn) histBtn.addEventListener('click', openHistoryModal);
     }
 
     /**
@@ -513,11 +520,11 @@
     async function loadModalHistoryContent() {
         const container = document.getElementById('maint-modal-history-tbody');
         if (!container) return;
-        container.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 24px; color: #64748b;">Loading maintenance audit log...</td></tr>';
+        container.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 24px; color: #64748b;">Loading maintenance audit log...</td></tr>';
 
         const history = await fetchMaintenanceHistory();
         if (!history || history.length === 0) {
-            container.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 24px; color: #64748b;">No maintenance logs recorded yet.</td></tr>';
+            container.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 24px; color: #64748b;">No maintenance logs recorded yet. Use the "Log Maintenance" button to record probe cleanings and calibrations.</td></tr>';
             return;
         }
 
@@ -528,10 +535,11 @@
             return `
                 <tr>
                     <td style="font-weight: 600; color: #1e293b; white-space: nowrap;">${dateStr}</td>
-                    <td><span class="telemetry-chip chip-node" style="font-size: 11px;">${item.device_id || 'NODE01'}</span></td>
-                    <td><span class="badge ${badgeClass}" style="font-size: 11px;">${item.maintenance_type || 'Routine Maintenance'}</span></td>
+                    <td><span class="telemetry-chip chip-node" style="font-size: 11px;"><svg class="ui-icon" aria-hidden="true" style="width: 12px; height: 12px;"><use href="#icon-droplet"></use></svg> ${item.device_id || 'NODE01'}</span></td>
+                    <td><span class="badge ${badgeClass}" style="font-size: 11px; font-weight: 600;">${item.maintenance_type || 'Routine Maintenance'}</span></td>
                     <td style="color: #334155; font-weight: 500;">${item.performed_by || 'Pond Operator'}</td>
-                    <td style="font-size: 12px; color: #475569;">${item.notes || 'Routine cleaning and buffer calibration completed.'}</td>
+                    <td style="font-size: 12px; color: #475569; max-width: 260px;">${item.notes || 'Routine cleaning and buffer calibration completed.'}</td>
+                    <td style="text-align: center;"><span class="badge badge-optimal" style="font-size: 10.5px; padding: 2px 7px;">Drift Reset (0d)</span></td>
                 </tr>
             `;
         }).join('');
@@ -830,7 +838,7 @@
                         </div>
                         <div>
                             <span class="maint-modal-eyebrow">AUDIT &amp; QUALITY ASSURANCE LOG</span>
-                            <h2 id="history-modal-title">Submerged Probe Maintenance &amp; Calibration History</h2>
+                            <h2 id="history-modal-title">Probe Maintenance &amp; Calibration Audit Log</h2>
                         </div>
                     </div>
                     <button type="button" class="maint-modal-close" id="btn-close-history-modal" aria-label="Close modal">
@@ -839,7 +847,7 @@
                 </div>
 
                 <div class="maint-modal-body" style="padding: 16px 20px;">
-                    <div class="devices-table-wrap" style="max-height: 400px; overflow-y: auto;">
+                    <div class="devices-table-wrap" style="max-height: 420px; overflow-y: auto;">
                         <table class="devices-table">
                             <thead>
                                 <tr>
@@ -848,11 +856,12 @@
                                     <th>Procedure</th>
                                     <th>Technician</th>
                                     <th>Notes &amp; Buffer Offsets</th>
+                                    <th style="text-align: center;">Drift Status</th>
                                 </tr>
                             </thead>
                             <tbody id="maint-modal-history-tbody">
                                 <tr>
-                                    <td colspan="5" style="text-align: center; padding: 24px; color: #64748b;">
+                                    <td colspan="6" style="text-align: center; padding: 24px; color: #64748b;">
                                         Loading probe maintenance audit log...
                                     </td>
                                 </tr>
@@ -904,10 +913,10 @@
         fetchMaintenanceStatus();
         fetchMaintenanceHistory();
 
-        // Bind devices header button if present
-        const devicesHeaderLogBtn = document.getElementById('btn-devices-log-maint-header');
-        if (devicesHeaderLogBtn) {
-            devicesHeaderLogBtn.addEventListener('click', () => openMaintenanceModal('both'));
+        // Bind top toolbar button on Devices page
+        const topHistoryBtn = document.getElementById('btn-show-maint-history');
+        if (topHistoryBtn) {
+            topHistoryBtn.addEventListener('click', openHistoryModal);
         }
 
         // Periodic background poll every 60 seconds

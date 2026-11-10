@@ -190,6 +190,11 @@
                         <svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
                         <span>Run Diagnostics</span>
                     </button>
+
+                    <button type="button" id="btn-show-maint-history" class="telemetry-test-btn" title="View historical probe cleaning and calibration audit log dialog">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>
+                        <span>Maintenance Log</span>
+                    </button>
                 </div>
             </div>
 
@@ -338,86 +343,6 @@
         <!-- SUBMERGED PROBE BIOFILM & CALIBRATION LIFECYCLE (ANTI-DRIFT TRACKING) -->
         <section class="dashboard-section" aria-labelledby="probe-maintenance-heading" id="probe-maintenance-devices-section">
             <div id="probe-maintenance-devices-card"></div>
-
-            <!-- PROBE MAINTENANCE & CALIBRATION AUDIT HISTORY LOG TABLE -->
-            <article class="panel dashboard-panel probe-maint-history-panel" style="margin-top: 20px;">
-                <div class="panel-heading" style="justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <div style="display: flex; align-items: center; gap: 11px;">
-                        <div class="panel-heading-icon" style="background: #f0fdf4; color: #126b4f;">
-                            <svg class="ui-icon" aria-hidden="true">
-                                <use href="#icon-calendar"></use>
-                            </svg>
-                        </div>
-                        <div>
-                            <h2 id="probe-maintenance-history-heading">Probe Maintenance &amp; Calibration Audit Log</h2>
-                            <p>Chronological history of probe biofilm cleanings, 2-point buffer recalibrations, and drift resets</p>
-                        </div>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span id="maint-history-count-badge" class="badge badge-optimal" style="font-weight: 700; font-size: 12px; padding: 5px 12px;">
-                            {{ maintenance_history|length if maintenance_history else 1 }} Logged Session{{ 's' if not maintenance_history or maintenance_history|length != 1 else '' }}
-                        </span>
-                        <button type="button" class="btn-maint-primary" id="btn-devices-log-maint-header" style="font-size: 12px; padding: 6px 14px;">
-                            <svg class="ui-icon" aria-hidden="true" style="width: 14px; height: 14px;"><use href="#icon-plus"></use></svg>
-                            <span>Log Maintenance</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="devices-table-wrap">
-                    <table class="devices-table">
-                        <thead>
-                            <tr>
-                                <th>Date &amp; Time</th>
-                                <th>Hardware Node</th>
-                                <th>Maintenance Procedure</th>
-                                <th>Technician</th>
-                                <th>Calibration Notes &amp; Buffer Offsets</th>
-                                <th style="text-align: center;">Drift Timer Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="probe-maint-history-tbody">
-                            {% if maintenance_history and maintenance_history|length > 0 %}
-                                {% for item in maintenance_history %}
-                                <tr>
-                                    <td style="font-weight: 600; color: #1e293b; white-space: nowrap;">
-                                        {{ item.performed_at.strftime("%b %d, %Y %I:%M %p") if item.performed_at else "-" }}
-                                    </td>
-                                    <td>
-                                        <span class="telemetry-chip chip-node" style="font-size: 11px;">
-                                            <svg class="ui-icon" aria-hidden="true" style="width: 12px; height: 12px;"><use href="#icon-droplet"></use></svg>
-                                            {{ item.device_id }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="badge {{ 'badge-optimal' if item.action == 'both' else ('badge-warning' if item.action == 'cleaning' else 'badge-active') }}" style="font-size: 11.5px; font-weight: 600;">
-                                            {{ item.maintenance_type }}
-                                        </span>
-                                    </td>
-                                    <td style="color: #334155; font-weight: 500;">
-                                        {{ item.performed_by or 'Pond Operator' }}
-                                    </td>
-                                    <td style="font-size: 12.5px; color: #475569; max-width: 320px;">
-                                        {{ item.notes or 'Routine maintenance procedure completed.' }}
-                                    </td>
-                                    <td style="text-align: center;">
-                                        <span class="badge badge-optimal" style="font-size: 11px; padding: 3px 8px;">
-                                            Drift Reset (0d)
-                                        </span>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr>
-                                    <td colspan="6" style="text-align: center; padding: 24px; color: #64748b;">
-                                        Loading probe maintenance audit log...
-                                    </td>
-                                </tr>
-                            {% endif %}
-                        </tbody>
-                    </table>
-                </div>
-            </article>
         </section>
 
         <!-- PAIRED POND TELEMETRY NODES (MULTI-ACCOUNT HARDWARE ROUTING) -->
