@@ -882,11 +882,6 @@ document.addEventListener("DOMContentLoaded", function () {
         ammotanInput.addEventListener("change", calculateAmmoniaTool);
     }
 
-    const ammoCalcBtn = document.getElementById("tools-ammonia-calc-btn");
-    if (ammoCalcBtn) {
-        ammoCalcBtn.addEventListener("click", calculateAmmoniaTool);
-    }
-
     const presetChips = document.querySelectorAll("#tools-preset-chips .preset-chip");
     presetChips.forEach(chip => {
         chip.addEventListener("click", () => {
@@ -921,11 +916,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (co2AlkInput) {
         co2AlkInput.addEventListener("input", calculateCo2Tool);
         co2AlkInput.addEventListener("change", calculateCo2Tool);
-    }
-
-    const co2CalcBtn = document.getElementById("tools-co2-calc-btn");
-    if (co2CalcBtn) {
-        co2CalcBtn.addEventListener("click", calculateCo2Tool);
     }
 
     const co2PresetChips = document.querySelectorAll("#tools-co2-preset-chips .preset-chip");
