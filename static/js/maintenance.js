@@ -14,15 +14,20 @@
      */
     function formatDateTime(dtStr) {
         if (!dtStr) return 'Not recorded';
+        if (typeof dtStr === 'string' && dtStr.includes(',') && (dtStr.includes('AM') || dtStr.includes('PM'))) {
+            return dtStr;
+        }
         try {
-            const d = new Date(dtStr);
+            const normalized = dtStr.includes('T') ? dtStr : dtStr.replace(' ', 'T');
+            const d = new Date(normalized);
             if (isNaN(d.getTime())) return dtStr;
-            return d.toLocaleDateString(undefined, {
+            return d.toLocaleString(undefined, {
                 month: 'short',
                 day: 'numeric',
                 year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
             });
         } catch (e) {
             return dtStr;
@@ -467,6 +472,14 @@
         if (modal) {
             const selectEl = modal.querySelector('#maint-action-select');
             if (selectEl) selectEl.value = defaultAction;
+
+            const dateInput = modal.querySelector('#maint-datetime-input');
+            if (dateInput) {
+                const now = new Date();
+                const pad = (n) => String(n).padStart(2, '0');
+                dateInput.value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+            }
+
             modal.removeAttribute('hidden');
             modal.classList.add('is-open');
             document.body.classList.add('modal-backdrop-open');
@@ -575,6 +588,7 @@
         const notes = form.notes.value.trim();
         const technician = form.technician.value.trim();
         const deviceId = form.device_id.value || 'NODE01';
+        const performedAt = form.performed_at ? form.performed_at.value : '';
 
         try {
             if (submitBtn) {
@@ -589,7 +603,8 @@
                     action: action,
                     notes: notes,
                     technician: technician,
-                    device_id: deviceId
+                    device_id: deviceId,
+                    performed_at: performedAt
                 })
             });
 
@@ -809,6 +824,12 @@
                     <div class="maint-form-field">
                         <label for="maint-technician-input" class="maint-label">Technician / Operator Name *</label>
                         <input type="text" id="maint-technician-input" name="technician" class="maint-input" value="${defaultTech}" required>
+                    </div>
+
+                    <div class="maint-form-field">
+                        <label for="maint-datetime-input" class="maint-label">Date &amp; Time of Maintenance *</label>
+                        <input type="datetime-local" id="maint-datetime-input" name="performed_at" class="maint-input" required>
+                        <span class="maint-hint">Pre-filled with your current system time. Adjust if recording a session performed earlier.</span>
                     </div>
 
                     <div class="maint-form-field">

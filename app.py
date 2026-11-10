@@ -1890,8 +1890,18 @@ def log_maintenance_endpoint():
     device_id = payload.get("device_id", "NODE01")
     notes = payload.get("notes", "").strip() or "Routine biofilm scrubbing & 2-point buffer recalibration completed."
     technician = payload.get("technician", "").strip() or (session.get("user_name") or user_email or "Pond Operator")
+    performed_at_raw = payload.get("performed_at")
 
     now = datetime.now()
+    if performed_at_raw:
+        try:
+            clean_ts = str(performed_at_raw).replace("T", " ")
+            if len(clean_ts) == 16:
+                clean_ts += ":00"
+            now = datetime.fromisoformat(clean_ts)
+        except Exception:
+            now = datetime.now()
+
     default_owner = os.getenv("LORA_DEFAULT_USER_EMAIL", "rio@gmail.com")
     target_user = user_email or default_owner
 
@@ -1997,9 +2007,21 @@ def get_maintenance_history_endpoint():
 
         history_records = query.order_by(ProbeMaintenanceHistory.performed_at.desc()).limit(100).all()
 
-        # If history table is empty, seed initial baseline deployment record
+        now_dt = datetime.now()
+        # Synchronize any past initial deployment records to the accurate baseline deployment datetime
+        updated_any = False
+        for r in history_records:
+            if "Initial" in (r.maintenance_type or "") and r.performed_at and (now_dt - r.performed_at).total_seconds() > 86400 * 2:
+                r.performed_at = now_dt
+                updated_any = True
+        if updated_any:
+            try:
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+
+        # If history table is empty, seed initial baseline deployment record with current accurate datetime
         if not history_records:
-            initial_dt = datetime.now() - timedelta(days=5, hours=12)
             initial_log = ProbeMaintenanceHistory(
                 user_email=target_user,
                 device_id="NODE01",
@@ -2007,7 +2029,7 @@ def get_maintenance_history_endpoint():
                 maintenance_type="Initial Deployment & 2-Point Buffer Recalibration",
                 performed_by="System Initializer",
                 notes="Baseline 2-point calibration verified with pH 6.86 and 4.01 standard buffers at 29.1°C with ATC.",
-                performed_at=initial_dt
+                performed_at=now_dt
             )
             db.session.add(initial_log)
             db.session.commit()
