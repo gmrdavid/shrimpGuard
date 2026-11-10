@@ -9,8 +9,8 @@ from PIL import Image
 
 def build_simplified_architecture_diagram():
     # Aspect ratio similar to original: ~1:1.75
-    # Width: 10 inches, Height: 17.5 inches @ 200 DPI -> 2000 x 3500 px
-    fig, ax = plt.subplots(figsize=(10.0, 17.5), dpi=200)
+    # Width: 10 inches, Height: 17.5 inches @ 300 DPI -> 3000 x 5250 px (Publication-Grade)
+    fig, ax = plt.subplots(figsize=(10.0, 17.5), dpi=300)
     ax.set_xlim(0, 100)
     ax.set_ylim(0, 100)
     ax.axis("off")
@@ -348,8 +348,8 @@ def build_simplified_architecture_diagram():
     artifact_jpg = Path(r"C:\Users\gliam\.gemini\antigravity\brain\e8e228c4-35c3-4984-b02d-637653b89188\system_architecture_diagram.jpg")
 
     plt.tight_layout(pad=0.2)
-    fig.savefig(output_png, format="png", dpi=200, facecolor=fig.get_facecolor(), edgecolor="none")
-    fig.savefig(artifact_png, format="png", dpi=200, facecolor=fig.get_facecolor(), edgecolor="none")
+    fig.savefig(output_png, format="png", dpi=300, facecolor=fig.get_facecolor(), edgecolor="none")
+    fig.savefig(artifact_png, format="png", dpi=300, facecolor=fig.get_facecolor(), edgecolor="none")
     plt.close(fig)
 
     # Convert to JPEG as well
