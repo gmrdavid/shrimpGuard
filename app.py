@@ -3635,24 +3635,23 @@ def monitoring():
     return render_template("monitoring.html", user=user, maintenance=maintenance)
 
 
-@app.route("/devices")
 @app.route("/admin/devices")
-@role_required("Client", "Admin")
+@role_required("Admin")
+def admin_devices():
+    return redirect(url_for("admin_telemetry"))
+
+
+@app.route("/devices")
+@role_required("Client")
 def devices():
     user_email = session.get("user_id")
     user = db.session.get(User, user_email) if user_email else None
-    user_role = (session.get("role") or (user.role if user else "Client")).capitalize()
-    if request.path.startswith("/admin/") and user_role != "Admin":
-        return redirect(url_for("devices"))
     maintenance = get_probe_maintenance_status(user_email=user_email)
 
     inv = get_system_devices_inventory()
 
     try:
-        if user_role == "Admin":
-            paired_nodes = UserDevice.query.order_by(UserDevice.created_at.desc()).all()
-        else:
-            paired_nodes = UserDevice.query.filter_by(user_email=user_email).order_by(UserDevice.created_at.desc()).all()
+        paired_nodes = UserDevice.query.filter_by(user_email=user_email).order_by(UserDevice.created_at.desc()).all()
     except Exception:
         paired_nodes = []
 
@@ -3664,7 +3663,6 @@ def devices():
     return render_template(
         "devices.html",
         user=user,
-        user_role=user_role,
         devices_list=inv["devices"],
         total_devices=inv["total_devices"],
         online_devices=inv["online_devices"],

@@ -14,81 +14,13 @@
 
 <body class="dashboard-page devices-page" data-user-email="{{ current_user.email if current_user else '' }}">
 
-{% set is_admin = (user_role|default('')|lower == 'admin') or (session.get('role')|default('')|lower == 'admin') or (user and user.role|default('')|lower == 'admin') %}
-
 {% include "_icon_sprite.html" %}
 
 <div class="dashboard-layout">
 
     <!-- SIDEBAR -->
     <aside class="sidebar dashboard-sidebar">
-        {% if is_admin %}
-        <a href="/admin/dashboard" class="logo dashboard-logo" aria-label="ShrimpGuard administration">
-            <span class="dashboard-logo-mark">
-                <svg class="ui-icon brand-icon" aria-hidden="true">
-                    <use href="#icon-shrimp"></use>
-                </svg>
-            </span>
-            <span>ShrimpGuard</span>
-        </a>
 
-        <p class="subtitle">Administration</p>
-
-        <div class="sidebar-section-label">ADMIN MENU</div>
-
-        <nav class="dashboard-nav" aria-label="Admin navigation">
-            <a href="/admin/dashboard">
-                <svg class="ui-icon" aria-hidden="true">
-                    <use href="#icon-dashboard"></use>
-                </svg>
-                <span>Admin Dashboard</span>
-            </a>
-
-            <a href="/admin">
-                <svg class="ui-icon" aria-hidden="true">
-                    <use href="#icon-users"></use>
-                </svg>
-                <span>User Management</span>
-            </a>
-
-            <a href="/admin/telemetry">
-                <svg class="ui-icon" aria-hidden="true">
-                    <use href="#icon-monitor"></use>
-                </svg>
-                <span>IoT &amp; Telemetry Control</span>
-            </a>
-
-            <a href="/admin/devices" class="active" aria-current="page">
-                <svg class="ui-icon" aria-hidden="true">
-                    <use href="#icon-cpu"></use>
-                </svg>
-                <span>Hardware Devices</span>
-            </a>
-
-            <a href="/admin/logs">
-                <svg class="ui-icon" aria-hidden="true">
-                    <use href="#icon-history"></use>
-                </svg>
-                <span>Audit &amp; System Logs</span>
-            </a>
-        </nav>
-
-        <div class="sidebar-bottom">
-            <div class="sidebar-help">
-                <span class="sidebar-help-icon">
-                    <svg class="ui-icon" aria-hidden="true">
-                        <use href="#icon-cpu"></use>
-                    </svg>
-                </span>
-                <div>
-                    <strong>Hardware Fleet</strong>
-                    <p>Node 1 &amp; 2 IoT Telemetry</p>
-                </div>
-            </div>
-
-            {% include "adminlogout.html" %}
-        </div>
-        {% else %}
         <a href="/dashboard" class="logo dashboard-logo" aria-label="ShrimpGuard dashboard">
             <span class="dashboard-logo-mark">
                 <svg class="ui-icon brand-icon" aria-hidden="true">
@@ -177,7 +109,7 @@
 
             {% include "userlogout.html" %}
         </div>
-        {% endif %}
+
     </aside>
 
 
@@ -185,39 +117,22 @@
     <main class="main-content dashboard-main">
 
         <!-- TOP HEADER -->
-        <header class="dashboard-header{% if is_admin %} admin-header{% endif %}">
+        <header class="dashboard-header">
 
             <div class="dashboard-heading">
                 <div class="dashboard-eyebrow">
                     <span class="eyebrow-dot"></span>
-                    {% if is_admin %}
-                    ADMINISTRATION &bull; HARDWARE &amp; SENSORS
-                    {% else %}
                     HARDWARE &amp; SENSOR INFRASTRUCTURE
-                    {% endif %}
                 </div>
 
                 <h1>Devices &amp; Hardware Management</h1>
 
                 <p>
-                    {% if is_admin %}
-                    Monitor and administer system physical devices, connection status, sensors, probe calibration logs, and communication channels.
-                    {% else %}
                     Monitor and manage all system physical devices, connection status, sensors, and communication channels.
-                    {% endif %}
                 </p>
             </div>
 
             <div class="header-info dashboard-header-info">
-
-                {% if is_admin %}
-                <a href="/admin/telemetry" class="dashboard-submit-button" style="background: #ffffff; color: #374151; border: 1px solid #cbd5e1; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;" title="Back to IoT & Telemetry Control">
-                    <svg class="ui-icon" aria-hidden="true">
-                        <use href="#icon-monitor"></use>
-                    </svg>
-                    <span>IoT &amp; Telemetry</span>
-                </a>
-                {% endif %}
 
                 <button
                     id="notification-button"
