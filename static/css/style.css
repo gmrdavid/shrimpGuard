@@ -23572,6 +23572,667 @@ nav a {
 }
 
 /* ==========================================================================
+   TOOLS & CALCULATORS: GEMINI AI BIOLOGICAL DECISION SUPPORT DIALOG
+   ========================================================================== */
+
+/* 1. Header Action Trigger Button */
+.tools-btn-ai-analyze {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    background: linear-gradient(135deg, #059669 0%, #126b4f 55%, #047857 100%);
+    color: #ffffff;
+    border: 1px solid #10b981;
+    border-radius: 10px;
+    padding: 9px 18px;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(18, 107, 79, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.12) inset;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.tools-btn-ai-analyze::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(60deg, transparent 30%, rgba(255, 255, 255, 0.18) 50%, transparent 70%);
+    transform: rotate(25deg);
+    animation: aiBtnShimmer 4s infinite linear;
+    pointer-events: none;
+}
+
+.tools-btn-ai-analyze:hover {
+    background: linear-gradient(135deg, #10b981 0%, #059669 55%, #065f46 100%);
+    box-shadow: 0 6px 20px rgba(18, 107, 79, 0.42), 0 0 0 1px rgba(255, 255, 255, 0.25) inset;
+    transform: translateY(-1px);
+}
+
+.tools-btn-ai-analyze:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(18, 107, 79, 0.3);
+}
+
+.tools-btn-ai-analyze .ui-icon {
+    width: 17px;
+    height: 17px;
+    fill: currentColor;
+    flex-shrink: 0;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25));
+}
+
+.tools-btn-ai-analyze.is-loading {
+    opacity: 0.85;
+    cursor: wait;
+    pointer-events: none;
+}
+
+.tools-btn-ai-analyze.is-loading .ui-icon {
+    animation: aiSpin 0.9s linear infinite;
+}
+
+@keyframes aiBtnShimmer {
+    0% { transform: translateX(-100%) rotate(25deg); }
+    100% { transform: translateX(100%) rotate(25deg); }
+}
+
+/* 2. AI Decision Modal Dialog Container */
+.ai-decision-dialog {
+    max-width: 860px;
+    width: 94%;
+    max-height: 88vh;
+    border-radius: 16px;
+    border: 1px solid rgba(18, 107, 79, 0.25);
+    box-shadow: 0 24px 64px -12px rgba(10, 35, 30, 0.38), 0 8px 24px -4px rgba(10, 35, 30, 0.16);
+    background: #ffffff;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: aiModalZoomIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes aiModalZoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* 3. Header Customization */
+.ai-decision-dialog .modal-dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 26px;
+    border-bottom: 1px solid #e2e8f0;
+    background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+}
+
+.ai-modal-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    border: 1px solid #a7f3d0;
+    color: #059669;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.15);
+}
+
+.ai-modal-icon .ui-icon {
+    width: 22px;
+    height: 22px;
+    fill: currentColor;
+}
+
+.ai-decision-dialog .modal-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #059669;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    padding: 3px 9px;
+    border-radius: 6px;
+    margin-bottom: 5px;
+}
+
+.ai-decision-dialog #ai-modal-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+    margin: 0;
+    line-height: 1.25;
+}
+
+.ai-decision-dialog #ai-modal-subtitle {
+    font-size: 12.5px;
+    color: #64748b;
+    margin: 3px 0 0;
+    font-weight: 500;
+}
+
+/* Status Pill Badges */
+.ai-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 750;
+    padding: 5px 12px;
+    border-radius: 9999px;
+    letter-spacing: 0.02em;
+    transition: all 0.2s ease;
+}
+
+.ai-status-pill::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.ai-status-pill.badge-optimal {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.ai-status-pill.badge-optimal::before {
+    background: #10b981;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.7);
+}
+
+.ai-status-pill.badge-warning {
+    background: #fffbeb;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+.ai-status-pill.badge-warning::before {
+    background: #f59e0b;
+    box-shadow: 0 0 6px rgba(245, 158, 11, 0.7);
+}
+
+.ai-status-pill.badge-critical {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.ai-status-pill.badge-critical::before {
+    background: #ef4444;
+    box-shadow: 0 0 6px rgba(239, 68, 68, 0.7);
+}
+
+/* 4. Body Content Styling */
+.ai-modal-body {
+    padding: 22px 26px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* Scope Filter Tabs */
+.ai-modal-tabs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #f1f5f9;
+    padding: 5px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.ai-modal-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.ai-modal-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 14px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 650;
+    color: #64748b;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.16s ease;
+}
+
+.ai-modal-tab .ui-icon {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+    flex-shrink: 0;
+}
+
+.ai-modal-tab:hover {
+    background: rgba(255, 255, 255, 0.7);
+    color: #0f172a;
+}
+
+.ai-modal-tab.active {
+    background: #ffffff;
+    color: #059669;
+    font-weight: 750;
+    border-color: #cbd5e1;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+}
+
+.ai-modal-tab.active .ui-icon {
+    color: #059669;
+}
+
+/* Context Summary Bar */
+.ai-modal-context-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    background: linear-gradient(135deg, #f8fafc 0%, #f0fdf4 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 22px;
+}
+
+.context-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.context-item:not(:last-child) {
+    border-right: 1px solid #e2e8f0;
+    padding-right: 12px;
+}
+
+.context-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.context-item strong {
+    font-size: 13.5px;
+    font-weight: 750;
+    color: #0f172a;
+    line-height: 1.35;
+    word-break: break-word;
+}
+
+/* Loading Banner */
+.ai-modal-loading-banner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+    border: 1px solid #a7f3d0;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    animation: aiPulse 1.8s infinite ease-in-out;
+}
+
+.ai-modal-loading-banner[hidden] {
+    display: none !important;
+}
+
+@keyframes aiPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.88; transform: scale(0.995); }
+}
+
+.ai-loading-spinner {
+    width: 22px;
+    height: 22px;
+    border: 3px solid rgba(5, 150, 105, 0.2);
+    border-top-color: #059669;
+    border-radius: 50%;
+    animation: aiSpin 0.8s linear infinite;
+    flex-shrink: 0;
+}
+
+@keyframes aiSpin {
+    to { transform: rotate(360deg); }
+}
+
+.ai-loading-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ai-loading-text strong {
+    font-size: 13px;
+    font-weight: 750;
+    color: #065f46;
+}
+
+.ai-loading-text span {
+    font-size: 11.5px;
+    color: #047857;
+}
+
+/* Modal Content Cards */
+.ai-modal-cards-wrap {
+    transition: opacity 0.2s ease;
+}
+
+.ai-modal-cards-wrap.is-loading-data {
+    opacity: 0.55;
+    pointer-events: none;
+}
+
+.ai-modal-section {
+    margin-bottom: 20px;
+}
+
+.ai-modal-section:last-child {
+    margin-bottom: 0;
+}
+
+.ai-modal-section-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.ai-modal-section-title-row .ui-icon {
+    width: 15px;
+    height: 15px;
+    color: #059669;
+    flex-shrink: 0;
+}
+
+.ai-modal-section-title {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #475569;
+}
+
+/* Biological Diagnosis Card */
+.ai-modal-eval-card {
+    background: #fbfdfc;
+    border: 1px solid #ccebe0;
+    border-left: 4px solid #059669;
+    border-radius: 12px;
+    padding: 18px 20px;
+    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.04);
+}
+
+.ai-modal-eval-content {
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: #1e293b;
+    margin: 0;
+    font-weight: 500;
+}
+
+/* Executive Recommendation Card */
+.ai-modal-rec-card {
+    background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+    border: 1px solid #a7f3d0;
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.ai-modal-rec-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: #059669;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.ai-modal-rec-icon .ui-icon {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+}
+
+.ai-modal-rec-content {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.55;
+    color: #064e3b;
+    margin: 0;
+}
+
+/* Action Directives Card */
+.ai-modal-actions-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 18px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+}
+
+.ai-modal-actions-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    counter-reset: ai-directive-step;
+}
+
+.ai-modal-actions-list li {
+    counter-increment: ai-directive-step;
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #1e293b;
+    font-weight: 550;
+    transition: all 0.16s ease;
+}
+
+.ai-modal-actions-list li::before {
+    content: counter(ai-directive-step);
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+    font-size: 11px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+}
+
+.ai-modal-actions-list li:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    transform: translateX(3px);
+}
+
+/* 5. Modal Footer */
+.ai-modal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 26px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    flex-wrap: wrap;
+}
+
+.ai-source-stamp {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ai-source-stamp .ui-icon {
+    width: 14px;
+    height: 14px;
+    color: #059669;
+}
+
+.ai-modal-footer-btns {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-ai-reanalyze {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: linear-gradient(135deg, #059669 0%, #126b4f 100%);
+    color: #ffffff;
+    border: 1px solid #059669;
+    border-radius: 9px;
+    padding: 9px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);
+    transition: all 0.16s ease;
+}
+
+.btn-ai-reanalyze .ui-icon {
+    width: 15px;
+    height: 15px;
+    fill: currentColor;
+}
+
+.btn-ai-reanalyze:hover {
+    background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35);
+    transform: translateY(-1px);
+}
+
+.btn-ai-reanalyze:active {
+    transform: translateY(0);
+}
+
+.btn-ai-reanalyze.is-loading {
+    opacity: 0.85;
+    cursor: wait;
+    pointer-events: none;
+}
+
+.btn-ai-reanalyze.is-loading .ui-icon {
+    animation: aiSpin 0.8s linear infinite;
+}
+
+/* 6. Mobile & Tablet Responsive Adjustments */
+@media (max-width: 768px) {
+    .ai-decision-dialog {
+        width: 96%;
+        max-height: 94vh;
+        margin: 10px;
+    }
+    .ai-decision-dialog .modal-dialog-header {
+        padding: 16px 18px;
+    }
+    .ai-modal-body {
+        padding: 16px 18px;
+    }
+    .ai-modal-context-bar {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    .context-item:not(:last-child) {
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+        padding-right: 0;
+        padding-bottom: 10px;
+    }
+    .ai-modal-footer {
+        padding: 14px 18px;
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .ai-modal-footer-btns {
+        width: 100%;
+        justify-content: stretch;
+    }
+    .ai-modal-footer-btns button {
+        flex: 1;
+        justify-content: center;
+    }
+    .ai-source-stamp {
+        text-align: center;
+        justify-content: center;
+    }
+}
+
+/* 7. Adaptive Sunlight Mode Integration */
+.adaptive-sunlight .ai-decision-dialog {
+    border: 2px solid #000000 !important;
+}
+
+.adaptive-sunlight .ai-modal-tabs {
+    border: 2px solid #000000 !important;
+}
+
+.adaptive-sunlight .ai-modal-eval-card,
+.adaptive-sunlight .ai-modal-actions-card,
+.adaptive-sunlight .ai-modal-context-bar {
+    border: 2px solid #000000 !important;
+}
+
+.adaptive-sunlight .ai-modal-actions-list li {
+    border: 1px solid #000000 !important;
+    color: #000000 !important;
+}
+
+/* ==========================================================================
    ADAPTIVE EXPERIENCE & PRESENTATION CONTROLS (Settings Page)
    ========================================================================== */
 

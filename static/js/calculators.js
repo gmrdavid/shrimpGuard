@@ -3183,8 +3183,12 @@ document.addEventListener("DOMContentLoaded", function () {
     const aiModalTempVal = document.getElementById("ai-modal-temp-val");
     const aiModalKeyMetric = document.getElementById("ai-modal-key-metric");
     const aiModalEvalText = document.getElementById("ai-modal-eval-text");
+    const aiModalRecSection = document.getElementById("ai-modal-rec-section");
+    const aiModalRecText = document.getElementById("ai-modal-rec-text");
     const aiModalActionsList = document.getElementById("ai-modal-actions-list");
     const aiModalSourceStamp = document.getElementById("ai-modal-source-stamp");
+    const aiModalLoadingBanner = document.getElementById("ai-modal-loading-banner");
+    const aiModalCardsWrap = document.getElementById("ai-modal-cards-wrap");
 
     function openAiDecisionModal() {
         if (!aiDecisionModal) return;
@@ -3280,11 +3284,23 @@ document.addEventListener("DOMContentLoaded", function () {
             tab.setAttribute("aria-selected", isMatch ? "true" : "false");
         });
 
+        // Immediately populate context strip with real-time values
+        if (aiModalFocusName) aiModalFocusName.textContent = meta.focus;
+        if (aiModalTempVal) aiModalTempVal.textContent = meta.temp;
+        if (aiModalKeyMetric) aiModalKeyMetric.textContent = meta.metric;
+
+        // Open the dialog pop-up immediately so user gets instant visual confirmation
+        openAiDecisionModal();
+
+        // Show loading state inside the dialog
+        if (aiModalLoadingBanner) aiModalLoadingBanner.hidden = false;
+        if (aiModalCardsWrap) aiModalCardsWrap.classList.add("is-loading-data");
+
         if (triggerBtn) {
             triggerBtn.classList.add("is-loading");
             triggerBtn.disabled = true;
             const span = triggerBtn.querySelector("span");
-            if (span) span.textContent = "Analyzing with AI...";
+            if (span) span.textContent = triggerBtn === btnReanalyzeAi ? "Re-analyzing..." : "Analyzing with AI...";
         }
 
         try {
@@ -3310,31 +3326,47 @@ document.addEventListener("DOMContentLoaded", function () {
                 aiModalEvalText.textContent = result.evaluation;
             }
 
+            if (aiModalRecText && result.recommendation) {
+                aiModalRecText.textContent = result.recommendation;
+                if (aiModalRecSection) aiModalRecSection.hidden = false;
+            } else if (aiModalRecSection) {
+                aiModalRecSection.hidden = true;
+            }
+
             if (aiModalActionsList && Array.isArray(result.action_items)) {
                 aiModalActionsList.innerHTML = "";
                 result.action_items.forEach(action => {
                     const li = document.createElement("li");
-                    li.textContent = action;
+                    const span = document.createElement("span");
+                    span.textContent = action;
+                    li.appendChild(span);
                     aiModalActionsList.appendChild(li);
                 });
             }
 
             if (aiModalSourceStamp && result.source) {
-                aiModalSourceStamp.textContent = `Powered by ${result.source} • Penaeus vannamei Engine`;
+                aiModalSourceStamp.innerHTML = `
+                    <svg class="ui-icon" aria-hidden="true" style="width: 14px; height: 14px; fill: currentColor;"><use href="#icon-sparkles"></use></svg>
+                    <span>Powered by ${result.source} • Penaeus vannamei Engine</span>
+                `;
             }
-
-            // Open the Dialog Pop-up
-            openAiDecisionModal();
 
         } catch (err) {
             console.error("AI Decision Analysis failed:", err);
-            alert("Could not complete AI analysis at this moment. Please try again.");
+            if (aiModalEvalText) {
+                aiModalEvalText.textContent = "AI decision engine encountered a momentary communication delay. Please verify your internet connection or pond parameters and click Re-analyze.";
+            }
         } finally {
+            if (aiModalLoadingBanner) aiModalLoadingBanner.hidden = true;
+            if (aiModalCardsWrap) aiModalCardsWrap.classList.remove("is-loading-data");
+
             if (triggerBtn) {
                 triggerBtn.classList.remove("is-loading");
                 triggerBtn.disabled = false;
                 const span = triggerBtn.querySelector("span");
-                if (span) span.textContent = "Analyze with AI";
+                if (span) {
+                    span.textContent = triggerBtn === btnReanalyzeAi ? "Re-analyze" : "Analyze with AI";
+                }
             }
         }
     }

@@ -2138,7 +2138,10 @@
                     </svg>
                 </div>
                 <div>
-                    <span class="modal-eyebrow">GOOGLE GEMINI AI DECISION SUPPORT</span>
+                    <span class="modal-eyebrow">
+                        <svg class="ui-icon" aria-hidden="true" style="width: 12px; height: 12px; fill: currentColor;"><use href="#icon-sparkles"></use></svg>
+                        GOOGLE GEMINI AI DECISION SUPPORT
+                    </span>
                     <h3 id="ai-modal-title">Penaeus vannamei Biological Diagnosis</h3>
                     <p id="ai-modal-subtitle">Real-time physiological evaluation &amp; operational directives</p>
                 </div>
@@ -2196,35 +2199,64 @@
                 </div>
             </div>
 
-            <!-- Biological Diagnosis Card -->
-            <div class="ai-modal-section">
-                <div class="ai-modal-section-title-row">
-                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
-                    <span class="ai-modal-section-title">BIOLOGICAL DIAGNOSIS &amp; PHYSIOLOGICAL EVALUATION</span>
-                </div>
-                <div class="ai-modal-eval-card">
-                    <p id="ai-modal-eval-text" class="ai-modal-eval-content">
-                        <!-- Dynamic content from Gemini API -->
-                    </p>
+            <!-- Loading Banner -->
+            <div id="ai-modal-loading-banner" class="ai-modal-loading-banner" hidden>
+                <div class="ai-loading-spinner"></div>
+                <div class="ai-loading-text">
+                    <strong>Consulting Google Gemini AI Engine...</strong>
+                    <span>Synthesizing Penaeus vannamei physiological telemetry &amp; pond biometrics</span>
                 </div>
             </div>
 
-            <!-- Actionable Directives Card -->
-            <div class="ai-modal-section">
-                <div class="ai-modal-section-title-row">
-                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-lightbulb"></use></svg>
-                    <span class="ai-modal-section-title">ACTIONABLE OPERATIONAL DIRECTIVES</span>
+            <!-- Modal Content Cards Container -->
+            <div id="ai-modal-cards-wrap" class="ai-modal-cards-wrap">
+                <!-- Biological Diagnosis Card -->
+                <div class="ai-modal-section">
+                    <div class="ai-modal-section-title-row">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
+                        <span class="ai-modal-section-title">BIOLOGICAL DIAGNOSIS &amp; PHYSIOLOGICAL EVALUATION</span>
+                    </div>
+                    <div class="ai-modal-eval-card">
+                        <p id="ai-modal-eval-text" class="ai-modal-eval-content">
+                            <!-- Dynamic content from Gemini API -->
+                        </p>
+                    </div>
                 </div>
-                <div class="ai-modal-actions-card">
-                    <ul id="ai-modal-actions-list" class="ai-modal-actions-list">
-                        <!-- Action items list -->
-                    </ul>
+
+                <!-- Executive Recommendation Card -->
+                <div class="ai-modal-section" id="ai-modal-rec-section" hidden>
+                    <div class="ai-modal-section-title-row">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg>
+                        <span class="ai-modal-section-title">EXECUTIVE BIOLOGICAL RECOMMENDATION</span>
+                    </div>
+                    <div class="ai-modal-rec-card">
+                        <div class="ai-modal-rec-icon">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
+                        </div>
+                        <p id="ai-modal-rec-text" class="ai-modal-rec-content">
+                            <!-- Dynamic recommendation -->
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Actionable Directives Card -->
+                <div class="ai-modal-section">
+                    <div class="ai-modal-section-title-row">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-lightbulb"></use></svg>
+                        <span class="ai-modal-section-title">ACTIONABLE OPERATIONAL DIRECTIVES</span>
+                    </div>
+                    <div class="ai-modal-actions-card">
+                        <ul id="ai-modal-actions-list" class="ai-modal-actions-list">
+                            <!-- Action items list -->
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="modal-dialog-footer ai-modal-footer">
             <span id="ai-modal-source-stamp" class="ai-source-stamp">
+                <svg class="ui-icon" aria-hidden="true" style="width: 14px; height: 14px; fill: currentColor;"><use href="#icon-sparkles"></use></svg>
                 Powered by Google Gemini AI • Penaeus vannamei Engine
             </span>
             <div class="ai-modal-footer-btns">
