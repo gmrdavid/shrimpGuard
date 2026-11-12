@@ -356,10 +356,12 @@ def _run_listener_loop(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dis
                                         )
                                     )
                                     db.session.commit()
-                                    logger.info(
+                                    msg = (
                                         f"[LoRa SYNC] Ingested Live Sensor Data -> User: {target_user} | Node: {dev_id} | "
                                         f"Temp: {temp:.2f} \u00b0C | pH: {ph:.2f} | Status: {status} (Seq {seq})"
                                     )
+                                    logger.info(msg)
+                                    print(msg, flush=True)
 
                                     # Trigger ntfy alerts on Warning/Critical
                                     if status in ("Critical", "Warning") and ntfy_dispatch_fn:

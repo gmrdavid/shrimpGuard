@@ -1219,9 +1219,23 @@ def latest_reading():
     # Only fallback to live hardware serial stream if Admin or the designated hardware owner
     is_hw_authorized = (user_role == "Admin") or (user_id and user_id.lower() == hw_default_owner.lower())
 
-    if latest_reading_dict:
+    stream_temp = LATEST_HARDWARE_STREAM.get("temperature")
+    stream_last_time = LATEST_HARDWARE_STREAM.get("last_packet_time", 0)
+    has_live_stream = is_hw_authorized and stream_temp is not None and (time.time() - stream_last_time < 60)
+
+    # Prefer live streaming data if actively received within the last 60 seconds
+    if has_live_stream:
+        reading_dict = {
+            "temperature": LATEST_HARDWARE_STREAM["temperature"],
+            "ph_level": LATEST_HARDWARE_STREAM["ph"],
+            "date": LATEST_HARDWARE_STREAM.get("recorded_at") or datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "status": LATEST_HARDWARE_STREAM.get("status") or "Optimal",
+            "user_email": hw_default_owner,
+        }
+        res = serialize_sensor_reading(reading_dict)
+    elif latest_reading_dict:
         res = serialize_sensor_reading(latest_reading_dict)
-    elif is_hw_authorized and LATEST_HARDWARE_STREAM.get("temperature") is not None:
+    elif is_hw_authorized and stream_temp is not None:
         reading_dict = {
             "temperature": LATEST_HARDWARE_STREAM["temperature"],
             "ph_level": LATEST_HARDWARE_STREAM["ph"],
@@ -4779,8 +4793,18 @@ def update_adaptive_settings():
     return jsonify({"success": True, "preferences": prefs})
 
 
+_LORA_SERVICE_LOCK = threading.Lock()
+_LORA_SERVICE_STARTED = False
+
+
 def start_lora_hardware_service():
     """Automatically connects to Node 2 LoRa receiver and syncs live readings into database."""
+    global _LORA_SERVICE_STARTED
+    with _LORA_SERVICE_LOCK:
+        if _LORA_SERVICE_STARTED:
+            return
+        _LORA_SERVICE_STARTED = True
+
     try:
         from hardware_serial import start_hardware_listener
         start_hardware_listener(
@@ -4797,12 +4821,11 @@ def start_lora_hardware_service():
         app.logger.warning("Could not start LoRa hardware listener: %s", exc)
 
 
-# Start hardware listener when running under reloader worker or non-debug
-if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or os.environ.get("FLASK_RUN_FROM_CLI") == "true" or not app.debug:
+# Start hardware listener if running under flask CLI
+if os.environ.get("FLASK_RUN_FROM_CLI") == "true":
     start_lora_hardware_service()
 
 
 if __name__ == "__main__":
-    if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-        start_lora_hardware_service()
-    app.run(debug=True)
+    start_lora_hardware_service()
+    app.run(debug=True, use_reloader=False)
