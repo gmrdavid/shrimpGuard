@@ -336,8 +336,8 @@ bool initRadio() {
   Serial.print(F("[LoRa] Initializing SX1278... "));
 #if defined(RADIOLIB_VERSION_MAJOR) && (RADIOLIB_VERSION_MAJOR >= 7)
   ConfigLoRa_t config;
-  config.frequency       = LORA_FREQ_MHZ;
-  config.bandwidth       = LORA_BW_KHZ;
+  config.frequency       = (uint32_t)(LORA_FREQ_MHZ * 1000000.0f); // RadioLib v7 expects Hz (433500000 Hz)
+  config.bandwidth       = (uint32_t)(LORA_BW_KHZ * 1000.0f);      // RadioLib v7 expects Hz (125000 Hz)
   config.spreadingFactor = LORA_SF;
   config.codingRate      = LORA_CR;
   config.syncWord        = LORA_SYNC_WORD;
