@@ -141,8 +141,8 @@ const uint32_t RADIO_RETRY_MS     = 5000;  // RadioLib init retry interval
 // Node 2 is standalone & solar-powered near the farmer (not plugged into PC via USB).
 // It forwards received LoRa telemetry over local Wi-Fi directly to ShrimpGuard.
 #define ENABLE_WIFI_POST           true   // Enabled for standalone solar operation
-const char* WIFI_SSID             = "Your_WiFi_SSID";      // Enter your Wi-Fi Router or Phone Hotspot Name
-const char* WIFI_PASSWORD         = "Your_WiFi_Password";  // Enter your Wi-Fi Password
+const char* WIFI_SSID             = "mySLSUFreeWiFi";      // Enter your Wi-Fi Router or Phone Hotspot Name
+const char* WIFI_PASSWORD         = "";  // Enter your Wi-Fi Password
 const char* SHRIMPGUARD_API_URL   = "http://191.0.14.54:5000/api/readings"; // ShrimpGuard PC Local IP
 const char* SHRIMPGUARD_API_KEY   = "shrimpguard-secret-key-capstone2";
 // ============================================================================
