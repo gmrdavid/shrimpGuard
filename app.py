@@ -1115,13 +1115,26 @@ def create_reading():
 
     recorded_at_str = recorded_at.strftime("%Y-%m-%dT%H:%M:%S.%f")
 
-    # Associate reading with the authenticated client or specified user
+    dev_id = payload.get("device_id", "NODE01") if isinstance(payload, dict) else "NODE01"
+
+    # Associate reading with paired device owner, authenticated client, or specified user
     target_user_email = (
         session.get("user_id")
         or (payload.get("user_email") if isinstance(payload, dict) else None)
         or request.args.get("user_email")
-        or os.getenv("LORA_DEFAULT_USER_EMAIL", "rio@gmail.com")
     )
+
+    try:
+        paired = db.session.query(UserDevice).filter_by(device_id=dev_id, status="Active").first()
+        if paired:
+            paired.last_seen = now_dt
+            if not target_user_email:
+                target_user_email = paired.user_email
+    except Exception as pe:
+        app.logger.debug(f"UserDevice lookup error: {pe}")
+
+    if not target_user_email:
+        target_user_email = os.getenv("LORA_DEFAULT_USER_EMAIL", "rio@gmail.com")
 
     # ML-based classification & comprehensive analysis: solely determined by the DecisionTreeClassifier model
     try:
@@ -1136,6 +1149,7 @@ def create_reading():
         db.session.execute(
             insert(sensor_readings).values(
                 user_email=target_user_email,
+                device_id=dev_id,
                 ph_level=ph,
                 temperature=temperature,
                 date=recorded_at_str,
@@ -1143,6 +1157,27 @@ def create_reading():
             )
         )
         db.session.commit()
+
+        # Update in-memory live stream cache so dashboard reflects Wi-Fi gateway immediately
+        from hardware_serial import LATEST_HARDWARE_STREAM
+        LATEST_HARDWARE_STREAM.update({
+            "temperature": temperature,
+            "ph": ph,
+            "device_id": dev_id,
+            "seq": payload.get("seq") if isinstance(payload, dict) else None,
+            "status": status,
+            "recorded_at": recorded_at_str,
+            "last_packet_time": time.time(),
+            "is_connected": True,
+            "connected_port": "Wi-Fi (Node 2 Gateway)",
+        })
+
+        sync_msg = (
+            f"[WiFi IoT SYNC] Ingested Live Sensor Data -> User: {target_user_email} | Node: {dev_id} | "
+            f"Temp: {temperature:.2f} \u00b0C | pH: {ph:.2f} | Status: {status}"
+        )
+        app.logger.info(sync_msg)
+        print(sync_msg, flush=True)
 
         # Automatic Push Alert dispatch via ntfy.sh (100% Free & Safe, Non-blocking)
         if status in ("Critical", "Warning"):
@@ -4828,4 +4863,4 @@ if os.environ.get("FLASK_RUN_FROM_CLI") == "true":
 
 if __name__ == "__main__":
     start_lora_hardware_service()
-    app.run(debug=True, use_reloader=False)
+    app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=False)

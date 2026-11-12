@@ -138,16 +138,12 @@ const uint32_t RADIO_RETRY_MS     = 5000;  // RadioLib init retry interval
 #define LORA_POWER_DBM     10
 
 // --- ShrimpGuard Integration Settings ---
-// Mode 1: USB Serial Gateway (Default - Recommended)
-//         Plug Node 2 receiver into PC running ShrimpGuard via USB.
-//         The receiver automatically streams structured lines (LORA_JSON:...)
-//         which are forwarded to ShrimpGuard API by 'python lora_gateway.py'.
-// Mode 2: Direct WiFi HTTP POST (Optional - Standalone)
-//         Set ENABLE_WIFI_POST to true and enter your local WiFi details.
-#define ENABLE_WIFI_POST           false  // Set true if you want receiver to send via WiFi directly
-const char* WIFI_SSID             = "Your_WiFi_SSID";
-const char* WIFI_PASSWORD         = "Your_WiFi_Password";
-const char* SHRIMPGUARD_API_URL   = "http://192.168.1.100:5000/api/readings"; // Replace with ShrimpGuard PC IP
+// Node 2 is standalone & solar-powered near the farmer (not plugged into PC via USB).
+// It forwards received LoRa telemetry over local Wi-Fi directly to ShrimpGuard.
+#define ENABLE_WIFI_POST           true   // Enabled for standalone solar operation
+const char* WIFI_SSID             = "Your_WiFi_SSID";      // Enter your Wi-Fi Router or Phone Hotspot Name
+const char* WIFI_PASSWORD         = "Your_WiFi_Password";  // Enter your Wi-Fi Password
+const char* SHRIMPGUARD_API_URL   = "http://191.0.14.54:5000/api/readings"; // ShrimpGuard PC Local IP
 const char* SHRIMPGUARD_API_KEY   = "shrimpguard-secret-key-capstone2";
 // ============================================================================
 
@@ -554,7 +550,9 @@ void postReadingToShrimpGuard(float temp, float ph, const char* devId, uint32_t 
 #if (defined(ESP8266) || defined(ESP32))
   if (!ENABLE_WIFI_POST) return;
   if (WiFi.status() != WL_CONNECTED) {
-    Serial.println(F("[HTTP] WiFi not connected. Telemetry not dispatched via WiFi."));
+    Serial.println(F("[HTTP] WiFi not connected. Attempting reconnection..."));
+    WiFi.disconnect();
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     return;
   }
 
@@ -569,12 +567,13 @@ void postReadingToShrimpGuard(float temp, float ph, const char* devId, uint32_t 
     return;
   }
 
+  http.setTimeout(4000); // 4-second timeout to prevent blocking LoRa loop
   http.addHeader(F("Content-Type"), F("application/json"));
   http.addHeader(F("X-API-Key"), SHRIMPGUARD_API_KEY);
 
-  char jsonPayload[140];
+  char jsonPayload[180];
   snprintf(jsonPayload, sizeof(jsonPayload),
-           "{\"temperature\":%.2f,\"ph\":%.2f,\"device_id\":\"%s\",\"seq\":%lu}",
+           "{\"temperature\":%.2f,\"ph\":%.2f,\"device_id\":\"%s\",\"seq\":%lu,\"user_email\":\"rio@gmail.com\"}",
            temp, ph, devId, (unsigned long)seq);
 
   int httpCode = http.POST((uint8_t*)jsonPayload, strlen(jsonPayload));
