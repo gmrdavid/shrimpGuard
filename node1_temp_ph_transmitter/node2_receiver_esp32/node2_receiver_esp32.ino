@@ -334,8 +334,20 @@ bool initRadio() {
 #endif
 
   Serial.print(F("[LoRa] Initializing SX1278... "));
+#if defined(RADIOLIB_VERSION_MAJOR) && (RADIOLIB_VERSION_MAJOR >= 7)
+  ConfigLoRa_t config;
+  config.frequency       = LORA_FREQ_MHZ;
+  config.bandwidth       = LORA_BW_KHZ;
+  config.spreadingFactor = LORA_SF;
+  config.codingRate      = LORA_CR;
+  config.syncWord        = LORA_SYNC_WORD;
+  config.power           = LORA_POWER_DBM;
+  config.preambleLength  = LORA_PREAMBLE;
+  int16_t st = radio.begin(config);
+#else
   int16_t st = radio.begin(LORA_FREQ_MHZ, LORA_BW_KHZ, LORA_SF, LORA_CR,
                            LORA_SYNC_WORD, LORA_POWER_DBM, LORA_PREAMBLE);
+#endif
   if (st != RADIOLIB_ERR_NONE) {
     Serial.print(F("FAILED, code "));
     Serial.println(st);
@@ -350,7 +362,11 @@ bool initRadio() {
     return false;
   }
 
+#if defined(RADIOLIB_VERSION_MAJOR) && (RADIOLIB_VERSION_MAJOR >= 7)
+  radio.setDio0Action(onPacketReceived, RISING);
+#else
   radio.setPacketReceivedAction(onPacketReceived);
+#endif
   st = radio.startReceive();
   if (st != RADIOLIB_ERR_NONE) {
     Serial.print(F("FAILED to start receive, code "));
