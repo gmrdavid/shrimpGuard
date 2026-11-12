@@ -180,33 +180,39 @@ def open_win32_port(port_name, baud_rate=115200):
     return handle, 0
 
 
-def detect_receiver_port():
+def detect_receiver_port(check_busy=False):
     """
     Scans common COM ports to find which one is the Node 2 LoRa Receiver.
-    Tests COM8 first (known receiver port), then other candidates.
+    Tests configured LORA_PORT first, then COM5, COM8, COM3, COM4, COM6, COM7, COM9, COM10.
+    If check_busy=True, returns tuple: (available_port, busy_port)
     """
     configured_port = os.getenv("LORA_PORT")
     candidates = [configured_port] if configured_port else []
-    # COM8 is primary on current setup; also check COM5, COM3, COM4, COM6, COM7, COM9
-    candidates += ["COM8", "COM5", "COM3", "COM4", "COM6", "COM7", "COM9", "COM10"]
+    # Test COM5 first (user primary), then COM8, COM3, COM4, COM6, COM7, COM9, COM10
+    candidates += ["COM5", "COM8", "COM3", "COM4", "COM6", "COM7", "COM9", "COM10"]
 
     seen = set()
     ordered_candidates = [c for c in candidates if c and not (c in seen or seen.add(c))]
 
+    busy_port = None
     for p in ordered_candidates:
         handle, err = open_win32_port(p, 115200)
         if handle:
             kernel32.CloseHandle(handle)
-            return p
-    return None
+            return (p, None) if check_busy else p
+        elif err == 5:
+            if not busy_port:
+                busy_port = p
+
+    return (None, busy_port) if check_busy else None
 
 
 def scan_and_reconnect_port():
     """
     Scans available COM ports to locate the Node 2 LoRa receiver.
-    Returns status dictionary with detection outcome.
+    Returns status dictionary with detection outcome and specific guidance if a port is busy.
     """
-    configured_port = os.getenv("LORA_PORT", "COM8")
+    configured_port = os.getenv("LORA_PORT", "COM5")
 
     # If already connected, report current port
     if LATEST_HARDWARE_STREAM.get("is_connected"):
@@ -218,7 +224,7 @@ def scan_and_reconnect_port():
             "message": f"Hardware Gateway is currently active on {active_port} at 115200 baud.",
         }
 
-    port = detect_receiver_port()
+    port, busy_port = detect_receiver_port(check_busy=True)
     if port:
         LATEST_HARDWARE_STREAM["connected_port"] = port
         return {
@@ -228,11 +234,19 @@ def scan_and_reconnect_port():
             "message": f"Successfully detected available hardware gateway port on {port}.",
         }
 
+    if busy_port:
+        return {
+            "success": False,
+            "port": busy_port,
+            "is_connected": False,
+            "message": f"Port {busy_port} is busy (locked by another application, such as Arduino IDE or VS Code Serial Monitor). Please close the serial monitor tab and retry.",
+        }
+
     return {
         "success": False,
         "port": None,
         "is_connected": False,
-        "message": "No active LoRa receiver detected on scanned ports (COM8, COM5, COM3-10). Check USB cable or close serial monitors.",
+        "message": "No active LoRa receiver detected on scanned ports (COM5, COM8, COM3-10). Check USB cable or close serial monitors.",
     }
 
 
@@ -241,7 +255,7 @@ def _run_listener_loop(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dis
     logger.info("[HardwareSerial] Background LoRa listener thread started.")
 
     while True:
-        port = os.getenv("LORA_PORT", "COM8")
+        port = os.getenv("LORA_PORT", "COM5")
         handle, err = open_win32_port(port, 115200)
 
         # If primary port failed, try auto-detecting
@@ -250,11 +264,16 @@ def _run_listener_loop(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dis
                 # Port busy (e.g. Arduino IDE Serial Monitor open)
                 logger.warning(
                     f"[HardwareSerial] {port} is busy or locked (Win32 Error 5: Access Denied). "
-                    "Make sure the Arduino Serial Monitor is CLOSED so ShrimpGuard can access it!"
+                    "Make sure the Arduino Serial Monitor or VS Code Port Monitor is CLOSED so ShrimpGuard can access it!"
                 )
-            port = detect_receiver_port()
+            port, busy_port = detect_receiver_port(check_busy=True)
             if port:
                 handle, err = open_win32_port(port, 115200)
+            elif busy_port:
+                logger.warning(
+                    f"[HardwareSerial] Port {busy_port} is detected but locked (Win32 Error 5: Access Denied). "
+                    "Close Arduino IDE / VS Code Serial Monitor so ShrimpGuard can connect."
+                )
 
         if not handle:
             LATEST_HARDWARE_STREAM["is_connected"] = False
