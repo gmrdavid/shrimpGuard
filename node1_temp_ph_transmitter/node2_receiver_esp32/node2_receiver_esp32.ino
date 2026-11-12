@@ -739,14 +739,14 @@ void handlePacket() {
   Serial.print(snr, 1);
   Serial.println(F("}"));
 
-  // 2. Direct WiFi HTTP POST (if enabled)
+  // 1. Immediately update local hardware outputs (LCD & LEDs) FIRST
+  updateLeds(lastStatus, false);
+  updateLcdScreen(false);
+
+  // 2. Direct WiFi HTTP POST to ShrimpGuard System (after Node 2 displays the reading)
   if (ENABLE_WIFI_POST && lastTempValid && !isnan(phVal)) {
     postReadingToShrimpGuard(tempC, phVal, id, seq);
   }
-
-  // Refresh outputs
-  updateLeds(lastStatus, false);
-  updateLcdScreen(false);
 }
 
 // ============================================================================

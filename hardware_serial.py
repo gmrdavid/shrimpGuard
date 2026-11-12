@@ -132,8 +132,9 @@ def parse_telemetry_line(raw_line):
         except Exception:
             pass
 
-    # 3. Raw LoRa CSV format
-    if line.startswith("SG1,"):
+    # 3. Raw LoRa CSV format - only accept if explicitly marked as Gateway RX
+    # (Prevents accidentally reading Node 1 Transmitter if plugged into PC via USB)
+    if line.startswith("SG1,") and "[RX]" in line:
         parts = line.split(",")
         if len(parts) >= 5:
             try:
