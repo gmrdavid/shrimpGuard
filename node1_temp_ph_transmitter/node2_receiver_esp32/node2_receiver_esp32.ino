@@ -143,7 +143,7 @@ const uint32_t RADIO_RETRY_MS     = 5000;  // RadioLib init retry interval
 #define ENABLE_WIFI_POST           true   // Enabled for standalone solar operation
 const char* WIFI_SSID             = "Xiaomi 12X";      // Enter your Wi-Fi Router or Phone Hotspot Name
 const char* WIFI_PASSWORD         = "12345678K";  // Enter your Wi-Fi Password
-const char* SHRIMPGUARD_API_URL   = "http://191.0.14.54:5000/api/readings"; // ShrimpGuard PC Local IP
+const char* SHRIMPGUARD_API_URL   = "http://10.136.191.145:5000/api/readings"; // ShrimpGuard PC Local IP
 const char* SHRIMPGUARD_API_KEY   = "shrimpguard-secret-key-capstone2";
 // ============================================================================
 
