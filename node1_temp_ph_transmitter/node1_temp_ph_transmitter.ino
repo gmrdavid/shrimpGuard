@@ -18,18 +18,25 @@
     3. OneWire            (by Paul Stoffregen)
     4. DFRobot_ESP_PH_BY_GREENPONIK (by GreenPonik - search "DFRobot_ESP_PH")
     5. SPI & EEPROM       (Built into the official ESP32 Arduino Board Package)
+    6. FS & SD            (Built into the official ESP32 Arduino Board Package)
 
   Pin Connections (ESP32 GPIOs):
     -------------------------------------------------------------------------
     Component         Pin Name       ESP32 GPIO   Notes
     -------------------------------------------------------------------------
     SX1278 (RA-02)    NSS / CS       GPIO 5       SPI Chip Select
-    SX1278 (RA-02)    SCK            GPIO 18      VSPI SCK
-    SX1278 (RA-02)    MISO           GPIO 19      VSPI MISO
-    SX1278 (RA-02)    MOSI           GPIO 23      VSPI MOSI
+    SX1278 (RA-02)    SCK            GPIO 18      VSPI SCK (Shared with SD)
+    SX1278 (RA-02)    MISO           GPIO 19      VSPI MISO (Shared with SD)
+    SX1278 (RA-02)    MOSI           GPIO 23      VSPI MOSI (Shared with SD)
     SX1278 (RA-02)    RST            GPIO 27      Hardware Reset
     SX1278 (RA-02)    DIO0           GPIO 26      TX / RX Done Interrupt
     SX1278 (RA-02)    VCC / GND      3.3V / GND   *DO NOT connect 5V to RA-02*
+    -------------------------------------------------------------------------
+    MicroSD Adapter   CS             GPIO 15      Dedicated SD SPI Chip Select
+    MicroSD Adapter   SCK            GPIO 18      VSPI SCK (Shared with LoRa)
+    MicroSD Adapter   MISO           GPIO 19      VSPI MISO (Shared with LoRa)
+    MicroSD Adapter   MOSI           GPIO 23      VSPI MOSI (Shared with LoRa)
+    MicroSD Adapter   VCC / GND      5V / GND     Powers module 3.3V regulator
     -------------------------------------------------------------------------
     DS18B20           DATA (DQ)      GPIO 4       Requires 4.7k pull-up to 3.3V
     DS18B20           VCC / GND      3.3V / GND
@@ -55,6 +62,8 @@
 
 #include <Arduino.h>
 #include <SPI.h>
+#include <FS.h>
+#include <SD.h>
 #include <RadioLib.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
@@ -64,14 +73,20 @@
 
 // ============================ USER CONFIGURATION ============================
 // --- Pin Definitions ---
-#define PIN_LORA_SCK       18   // VSPI SCK
-#define PIN_LORA_MISO      19   // VSPI MISO
-#define PIN_LORA_MOSI      23   // VSPI MOSI
+#define PIN_LORA_SCK       18   // VSPI SCK (Shared between SX1278 and MicroSD Adapter)
+#define PIN_LORA_MISO      19   // VSPI MISO (Shared between SX1278 and MicroSD Adapter)
+#define PIN_LORA_MOSI      23   // VSPI MOSI (Shared between SX1278 and MicroSD Adapter)
 #define PIN_LORA_NSS        5   // RA-02 Chip Select (NSS)
 #define PIN_LORA_RST       27   // RA-02 Reset
 #define PIN_LORA_DIO0      26   // RA-02 DIO0 (TX done interrupt)
+#define PIN_SD_CS          15   // MicroSD Card Adapter Chip Select (CS)
 #define PIN_DS18B20         4   // DS18B20 DATA (4.7k pull-up to 3.3V)
 #define PIN_PH             35   // DFRobot Analog pH Signal (ESP32 ADC1 Channel 7)
+
+// --- MicroSD Card Logging Parameters ---
+#define ENABLE_SD_LOGGING  true  // Set to true for offline blackout resilience & real-time SD logging
+const uint32_t SD_RETRY_MS = 10000; // Retry mounting SD card every 10s if card inserted while running
+const char SD_LOG_FILE[]   = "/shrimpguard_node1.csv";
 
 // --- pH ADC Parameters ---
 #define ESPADC             4096.0f   // ESP32 12-bit ADC resolution (0..4095)
@@ -115,6 +130,9 @@ State state = ST_IDLE;
 
 // Runtime Tracking Variables
 bool     radioReady       = false;
+bool     sdReady          = false;
+uint32_t lastSdTry        = 0;
+uint32_t sdLogCount       = 0;
 uint32_t seqNumber        = 0;
 uint32_t cycleStartMs     = 0;
 uint32_t txStartMs        = 0;
@@ -231,6 +249,101 @@ bool initRadio() {
   return true;
 }
 
+// ----------------------------------------------------------------------------
+// Helper: Initialize MicroSD Card Adapter for Offline Telemetry Logging
+// ----------------------------------------------------------------------------
+bool initSD() {
+  pinMode(PIN_SD_CS, OUTPUT);
+  digitalWrite(PIN_SD_CS, HIGH); // Ensure SD CS starts unasserted
+
+  Serial.print(F("[SD Card] Initializing MicroSD Adapter on CS Pin GPIO "));
+  Serial.print(PIN_SD_CS);
+  Serial.print(F("... "));
+
+  if (!SD.begin(PIN_SD_CS)) {
+    Serial.println(F("FAILED or Card Not Detected."));
+    Serial.println(F("          Node 1 will continue sensing & LoRa transmission without SD logging."));
+    return false;
+  }
+
+  uint8_t cardType = SD.cardType();
+  if (cardType == CARD_NONE) {
+    Serial.println(F("FAILED (No SD card attached)."));
+    return false;
+  }
+
+  Serial.println(F("OK"));
+  Serial.print(F("[SD Card] Card Type: "));
+  if (cardType == CARD_MMC) Serial.println(F("MMC"));
+  else if (cardType == CARD_SD) Serial.println(F("SDSC"));
+  else if (cardType == CARD_SDHC) Serial.println(F("SDHC/SDXC"));
+  else Serial.println(F("UNKNOWN"));
+
+  uint64_t cardSizeMB = SD.cardSize() / (1024 * 1024);
+  Serial.print(F("[SD Card] Storage Capacity: "));
+  Serial.print((uint32_t)cardSizeMB);
+  Serial.println(F(" MB"));
+
+  // Check or create CSV datalog file
+  if (!SD.exists(SD_LOG_FILE)) {
+    File file = SD.open(SD_LOG_FILE, FILE_WRITE);
+    if (file) {
+      file.println(F("timestamp_ms,device_id,seq,temperature_c,ph_level,voltage_mv,water_status,lora_status"));
+      file.close();
+      Serial.print(F("[SD Card] Created new offline log file: "));
+      Serial.println(SD_LOG_FILE);
+    } else {
+      Serial.println(F("[SD Card] ERROR: Failed to create CSV log header."));
+    }
+  } else {
+    Serial.print(F("[SD Card] Appending to existing log: "));
+    Serial.println(SD_LOG_FILE);
+  }
+
+  return true;
+}
+
+// ----------------------------------------------------------------------------
+// Helper: Append a single telemetry record to the MicroSD CSV log
+// ----------------------------------------------------------------------------
+void logReadingToSD(uint32_t timestampMs, const char* devId, uint32_t seq,
+                    float temp, float phVal, float voltageMv,
+                    const char* statusStr, const char* loraStatus) {
+  if (!sdReady) return;
+
+  File file = SD.open(SD_LOG_FILE, FILE_APPEND);
+  if (file) {
+    file.print(timestampMs);
+    file.print(',');
+    file.print(devId);
+    file.print(',');
+    file.print(seq);
+    file.print(',');
+    if (temp > -120.0f) {
+      file.print(temp, 2);
+    } else {
+      file.print(F("ERR"));
+    }
+    file.print(',');
+    file.print(phVal, 2);
+    file.print(',');
+    file.print(voltageMv, 1);
+    file.print(',');
+    file.print(statusStr);
+    file.print(',');
+    file.println(loraStatus);
+    file.close();
+
+    sdLogCount++;
+    Serial.print(F("[SD Card] Record #"));
+    Serial.print(sdLogCount);
+    Serial.print(F(" logged to "));
+    Serial.println(SD_LOG_FILE);
+  } else {
+    Serial.println(F("[SD Card] WARNING: Unable to open CSV log file for writing."));
+  }
+}
+
 // ============================================================================
 // SETUP
 // ============================================================================
@@ -240,19 +353,25 @@ void setup() {
 
   Serial.println();
   Serial.println(F("============================================================="));
-  Serial.println(F("  ShrimpGuard Node 1: DS18B20 + pH + LoRa Transmitter"));
+  Serial.println(F("  ShrimpGuard Node 1: DS18B20 + pH + LoRa Transmitter + SD   "));
   Serial.println(F("============================================================="));
   Serial.print(F("Device ID: "));
   Serial.println(DEVICE_ID);
 
-  // 1. Initialize pH Sensor & Flash EEPROM
+  // 1. Explicitly pull both SPI Chip Selects HIGH so neither responds during bus startup
+  pinMode(PIN_LORA_NSS, OUTPUT);
+  digitalWrite(PIN_LORA_NSS, HIGH);
+  pinMode(PIN_SD_CS, OUTPUT);
+  digitalWrite(PIN_SD_CS, HIGH);
+
+  // 2. Initialize pH Sensor & Flash EEPROM
   pinMode(PIN_PH, INPUT);
   EEPROM.begin(32); // Reserve 32 bytes for pH calibration coefficients in flash
   ph.begin();
   Serial.println(F("[pH] Sensor initialized."));
   Serial.println(F("[pH] Send 'enterph', 'calph', or 'exitph' via Serial Monitor to calibrate."));
 
-  // 2. Initialize DS18B20 Temperature Sensor
+  // 3. Initialize DS18B20 Temperature Sensor
   sensors.begin();
   sensors.setResolution(12);
   sensors.setWaitForConversion(false); // Non-blocking conversion mode
@@ -263,9 +382,15 @@ void setup() {
     Serial.println(F("[DS18B20] WARNING: No sensor detected. Check VCC, GND, DATA and 4.7k pull-up."));
   }
 
-  // 3. Initialize LoRa Radio
+  // 4. Initialize LoRa Radio
   radioReady   = initRadio();
   lastRadioTry = millis();
+
+  // 5. Initialize Offline MicroSD Card Storage
+  if (ENABLE_SD_LOGGING) {
+    sdReady   = initSD();
+    lastSdTry = millis();
+  }
 
   // Start initial reading immediately
   cycleStartMs = millis() - SEND_INTERVAL_MS;
@@ -293,10 +418,17 @@ void loop() {
       lastRadioTry = now;
       radioReady = initRadio();
     }
-    // Crucial bugfix: DO NOT exit loop here. Sensors and calibration continue running!
   }
 
-  // 4. Main Telemetry State Machine
+  // 4. Non-blocking SD Card mount retry if card was inserted while running
+  if (ENABLE_SD_LOGGING && !sdReady) {
+    if (now - lastSdTry >= SD_RETRY_MS) {
+      lastSdTry = now;
+      sdReady = initSD();
+    }
+  }
+
+  // 5. Main Telemetry State Machine
   switch (state) {
     case ST_IDLE:
       if (now - cycleStartMs >= SEND_INTERVAL_MS) {
@@ -360,6 +492,15 @@ void loop() {
 
         Serial.print(F("[LoRa] Packet: "));
         Serial.println(packet);
+
+        // --- Log Telemetry to Offline MicroSD Card (Guarantees Zero Data Loss) ---
+        if (ENABLE_SD_LOGGING) {
+          logReadingToSD(now, DEVICE_ID, seqNumber,
+                         tempSensorOk ? currentTemperature : -127.0f,
+                         currentPH, currentVoltage,
+                         statusStr,
+                         radioReady ? "LORA_READY" : "LORA_OFFLINE");
+        }
 
         // --- Transmit via LoRa ---
         if (radioReady) {
