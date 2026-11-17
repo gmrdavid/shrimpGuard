@@ -4501,21 +4501,29 @@ nav a {
    ========================================= */
 
 .admin-page .add-user-dialog {
-    width: min(480px, calc(100% - 24px));
-    max-width: 480px;
+    width: min(490px, calc(100% - 24px));
+    max-width: 490px;
     margin: auto;
     padding: 0;
-    border: none;
+    border: 1px solid #dce7df;
     border-radius: 16px;
     background: #ffffff;
-    box-shadow: 0 24px 70px rgba(15, 45, 39, 0.22);
-    overflow: hidden;
+    box-shadow: 0 24px 70px -8px rgba(18, 54, 46, 0.28), 0 8px 24px -4px rgba(18, 54, 46, 0.12);
+    overflow: visible;
+}
+
+.admin-page .add-user-dialog .admin-modal-card {
+    display: flex;
+    flex-direction: column;
+    border-radius: 15px;
+    background: #ffffff;
+    overflow: visible;
 }
 
 .admin-page .add-user-dialog::backdrop {
-    background: rgba(15, 35, 34, 0.6);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
+    background: rgba(14, 30, 26, 0.65);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
 }
 
 .admin-page .add-user-dialog[open] {
@@ -4528,15 +4536,18 @@ nav a {
     align-items: center;
     justify-content: space-between;
     gap: 14px;
-    padding: 18px 22px;
+    padding: 18px 24px;
     background: #ffffff;
     border-bottom: 1px solid #edf2f0;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    border-top: 3.5px solid #1b5145;
 }
 
 .admin-page .add-user-dialog .admin-modal-title-group {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 13px;
     min-width: 0;
 }
 
@@ -4544,29 +4555,32 @@ nav a {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 11px;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
     background: #eaf6ef;
     color: #1b5145;
+    flex-shrink: 0;
+    border: 1px solid rgba(27, 81, 69, 0.12);
 }
 
 .admin-page .add-user-dialog .admin-modal-icon-badge .ui-icon {
-    width: 20px;
-    height: 20px;
+    width: 21px;
+    height: 21px;
 }
 
 .admin-page .add-user-dialog .admin-modal-heading-text h2 {
     margin: 0;
-    font-size: 17px;
+    font-size: 17.5px;
     font-weight: 750;
     color: #143d34;
     line-height: 1.3;
+    letter-spacing: -0.01em;
 }
 
 .admin-page .add-user-dialog .admin-modal-subtitle {
     margin: 3px 0 0;
-    font-size: 11.5px;
+    font-size: 12px;
     color: #61776a;
     line-height: 1.4;
 }
@@ -4584,12 +4598,13 @@ nav a {
     color: #61776a;
     cursor: pointer;
     transition: all 0.15s ease;
+    flex-shrink: 0;
 }
 
 .admin-page .add-user-dialog .admin-dialog-close:hover {
-    border-color: #24744d;
-    background: #f0f7f3;
-    color: #143d34;
+    border-color: #dc2626;
+    background: #fef2f2;
+    color: #dc2626;
 }
 
 .admin-page .add-user-dialog .admin-user-form {
@@ -4599,14 +4614,14 @@ nav a {
 .admin-page .add-user-dialog .admin-form-body {
     display: flex;
     flex-direction: column;
-    gap: 13px;
-    padding: 20px 22px;
+    gap: 14px;
+    padding: 22px 24px;
 }
 
 .admin-page .add-user-dialog .admin-form-field {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 6px;
     margin-bottom: 0;
 }
 
@@ -4614,6 +4629,7 @@ nav a {
     font-size: 12px;
     font-weight: 700;
     color: #263e36;
+    letter-spacing: 0.01em;
 }
 
 .admin-page .add-user-dialog .admin-form-field label span {
@@ -4628,84 +4644,106 @@ nav a {
 }
 
 .admin-page .add-user-dialog .admin-field-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     font-size: 11px;
+    font-weight: 550;
     color: #789083;
-    font-weight: 500;
+    transition: color 0.15s ease;
 }
 
-.admin-page .add-user-dialog .admin-form-field input,
-.admin-page .add-user-dialog .admin-form-field select {
+.admin-page .add-user-dialog .admin-field-hint .hint-icon {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+}
+
+.admin-page .add-user-dialog .admin-field-hint.valid {
+    color: #16a34a;
+    font-weight: 650;
+}
+
+.admin-page .add-user-dialog .admin-field-hint.valid .hint-icon {
+    stroke: #16a34a;
+}
+
+.admin-page .add-user-dialog .admin-input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.admin-page .add-user-dialog .admin-input-icon {
+    position: absolute;
+    left: 13px;
+    width: 16px;
+    height: 16px;
+    color: #647b6e;
+    pointer-events: none;
+    transition: color 0.15s ease;
+    flex-shrink: 0;
+    z-index: 2;
+}
+
+.admin-page .add-user-dialog .admin-input-group:focus-within .admin-input-icon {
+    color: #16a34a;
+}
+
+.admin-page .add-user-dialog .admin-form-field input {
     box-sizing: border-box;
     width: 100%;
-    height: 40px;
-    min-height: 40px;
-    padding: 0 12px;
+    height: 42px;
+    min-height: 42px;
+    padding: 0 14px 0 39px;
     border: 1px solid #dce7df;
-    border-radius: 9px;
+    border-radius: 10px;
     outline: none;
     background: #ffffff;
     color: #1a382d;
     font: inherit;
-    font-size: 12.5px;
+    font-size: 13px;
     font-weight: 550;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
 
 .admin-page .add-user-dialog .admin-form-field input::placeholder {
     color: #94a3b8;
-    font-weight: 450;
+    font-weight: 400;
 }
 
-.admin-page .add-user-dialog .admin-form-field input:focus,
-.admin-page .add-user-dialog .admin-form-field select:focus {
+.admin-page .add-user-dialog .admin-form-field input:focus {
     border-color: #16a34a;
     box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
+    background: #ffffff;
 }
 
-.admin-page .add-user-dialog .admin-select-wrap {
-    position: relative;
-    width: 100%;
-}
-
-.admin-page .add-user-dialog .admin-select-wrap select {
-    appearance: none;
-    -webkit-appearance: none;
-    background: #ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2361776a' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center;
-    padding-right: 32px;
-    cursor: pointer;
-}
-
-.admin-page .add-user-dialog .admin-password-wrap {
-    position: relative;
-    display: flex;
-    align-items: center;
-    width: 100%;
-}
-
-.admin-page .add-user-dialog .admin-password-wrap input {
-    padding-right: 40px;
+.admin-page .add-user-dialog .admin-password-group input {
+    padding-right: 42px;
 }
 
 .admin-page .add-user-dialog .admin-pw-toggle-btn {
     position: absolute;
-    right: 6px;
-    display: flex;
+    right: 7px;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
     padding: 0;
     border: none;
-    border-radius: 6px;
+    border-radius: 7px;
     background: transparent;
-    color: #64748b;
+    color: #647b6e;
     cursor: pointer;
-    transition: color 0.15s ease, background-color 0.15s ease;
+    transition: all 0.15s ease;
+    z-index: 2;
 }
 
 .admin-page .add-user-dialog .admin-pw-toggle-btn:hover {
+    background: #eaf6ef;
     color: #1b5145;
-    background-color: #f0f7f3;
 }
 
 .admin-page .add-user-dialog .admin-pw-toggle-btn .ui-icon {
@@ -4716,7 +4754,116 @@ nav a {
 .admin-page .add-user-dialog .admin-form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 14px;
+}
+
+.admin-page .add-user-dialog .modal-picker-anchor {
+    position: relative;
+    width: 100%;
+}
+
+.admin-page .add-user-dialog .modal-toolbar-btn {
+    width: 100%;
+    height: 42px;
+    min-height: 42px;
+    padding: 0 13px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid #dce7df;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #1a382d;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.admin-page .add-user-dialog .modal-toolbar-btn:hover {
+    border-color: #24744d;
+    background: #f8fbf9;
+    color: #143d34;
+    transform: none;
+}
+
+.admin-page .add-user-dialog .modal-toolbar-btn[aria-expanded="true"] {
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
+    background: #ffffff;
+}
+
+.admin-page .add-user-dialog .btn-label-with-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.admin-page .add-user-dialog .btn-label-with-icon .ui-icon {
+    width: 15px;
+    height: 15px;
+    color: #647b6e;
+    flex-shrink: 0;
+    transition: color 0.15s ease;
+}
+
+.admin-page .add-user-dialog .modal-toolbar-btn:hover .btn-label-with-icon .ui-icon,
+.admin-page .add-user-dialog .modal-toolbar-btn[aria-expanded="true"] .btn-label-with-icon .ui-icon {
+    color: #1b5145;
+}
+
+.admin-page .add-user-dialog .modal-dropdown-menu {
+    position: absolute;
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    left: 0;
+    right: 0;
+    top: calc(100% + 5px);
+    border-radius: 10px;
+    padding: 5px;
+    background: #ffffff;
+    border: 1px solid #dce7df;
+    box-shadow: 0 14px 35px -6px rgba(18, 54, 46, 0.22), 0 4px 12px -2px rgba(18, 54, 46, 0.08);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    box-sizing: border-box;
+    animation: histFadeDown 150ms ease-out;
+}
+
+.admin-page .add-user-dialog .modal-dropdown-menu .status-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    padding: 8px 11px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: #263e36;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    transition: all 120ms ease;
+    box-sizing: border-box;
+    white-space: nowrap;
+    font-family: inherit;
+}
+
+.admin-page .add-user-dialog .modal-dropdown-menu .status-menu-item:hover {
+    background: #f0f7f3;
+    color: #143d34;
+}
+
+.admin-page .add-user-dialog .modal-dropdown-menu .status-menu-item.active {
+    background: #eaf6ef;
+    color: #1b5145;
+    font-weight: 750;
 }
 
 .admin-page .add-user-dialog .admin-user-form-actions {
@@ -4726,9 +4873,11 @@ nav a {
     justify-content: flex-end;
     gap: 10px;
     margin: 0;
-    padding: 14px 22px 18px;
+    padding: 15px 24px 20px;
     border-top: 1px solid #edf2f0;
     background: #fbfdfc;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
 }
 
 .admin-page .add-user-dialog .admin-user-cancel,
@@ -4736,13 +4885,13 @@ nav a {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    height: 38px;
-    min-height: 38px;
-    padding: 0 16px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 700;
+    gap: 7px;
+    height: 40px;
+    min-height: 40px;
+    padding: 0 18px;
+    border-radius: 9px;
+    font-size: 12.5px;
+    font-weight: 650;
     cursor: pointer;
     transition: all 0.15s ease;
     font-family: inherit;
@@ -4763,16 +4912,21 @@ nav a {
 
 .admin-page .add-user-dialog .admin-user-submit {
     border: 1px solid #1b5145;
-    background: #1b5145;
+    background: linear-gradient(135deg, #1b5145 0%, #143d34 100%);
     color: #ffffff;
-    box-shadow: 0 2px 6px rgba(27, 81, 69, 0.18);
+    box-shadow: 0 3px 10px rgba(27, 81, 69, 0.22);
 }
 
 .admin-page .add-user-dialog .admin-user-submit:hover {
-    background: #143d34;
+    background: linear-gradient(135deg, #143d34 0%, #0d2923 100%);
     border-color: #143d34;
-    box-shadow: 0 4px 10px rgba(20, 61, 52, 0.25);
+    box-shadow: 0 5px 14px rgba(20, 61, 52, 0.32);
     transform: translateY(-1px);
+}
+
+.admin-page .add-user-dialog .admin-user-submit:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(20, 61, 52, 0.2);
 }
 
 .admin-page .add-user-dialog .admin-user-submit .ui-icon {
@@ -4793,6 +4947,7 @@ nav a {
 
     .admin-page .add-user-dialog .admin-form-body {
         padding: 16px;
+        gap: 13px;
     }
 
     .admin-page .add-user-dialog .admin-user-dialog-heading {
