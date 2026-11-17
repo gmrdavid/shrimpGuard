@@ -9,7 +9,7 @@
     <title>User Management | ShrimpGuard</title>
 
     <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}?v=3.3">
+          href="{{ url_for('static', filename='css/style.css') }}?v=3.4">
 </head>
 
 <body class="dashboard-page admin-page">
@@ -248,222 +248,32 @@
 
 
     <!-- ADD USER DIALOG -->
-    <dialog class="admin-user-dialog add-user-dialog"
+    <dialog class="admin-modal admin-user-dialog add-user-dialog"
             id="add-user-dialog"
-            aria-labelledby="add-user-title"
-            aria-describedby="add-user-description">
+            aria-labelledby="add-user-title">
 
-        <!-- Dialog Header -->
-        <div class="admin-user-dialog-heading">
-            <div class="admin-modal-title-group">
-                <span class="admin-modal-icon-badge edit" aria-hidden="true">
-                    <svg class="ui-icon"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1.8"
-                        stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path d="M12 5v14M5 12h14"/>
-                    </svg>
-                </span>
-
-                <div class="admin-modal-heading-text">
-                    <h2 id="add-user-title">Create User Account</h2>
-                    <p class="admin-modal-subtitle"
-                    id="add-user-description">
-                        Add a new member to your ShrimpGuard system.
-                    </p>
-                </div>
-            </div>
-
-            <button class="admin-dialog-close"
-                    type="button"
-                    data-close-dialog="add-user-dialog"
-                    aria-label="Close Add User dialog">
-                <svg class="ui-icon"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true">
-                    <path d="m18 6-12 12M6 6l12 12"/>
-                </svg>
-            </button>
-        </div>
-
-        <!-- Form -->
-        <form class="admin-user-form"
-            method="post"
-            action="{{ url_for('create_user') }}">
-
-            <input type="hidden"
-                name="csrf_token"
-                value="{{ admin_csrf_token }}">
-
-            <div class="admin-form-intro">
-                <span class="admin-required-indicator">*</span>
-                Required fields
-            </div>
-
-            <!-- Personal Information -->
-            <div class="admin-form-section">
-                <div class="admin-form-section-heading">
-                    <span class="admin-form-section-icon" aria-hidden="true">
-                        <svg class="ui-icon"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.8"
-                            stroke-linecap="round"
-                            stroke-linejoin="round">
-                            <circle cx="12" cy="8" r="4"/>
-                            <path d="M5 21v-2a7 7 0 0 1 14 0v2"/>
+        <div class="admin-modal-card">
+            <!-- Dialog Header -->
+            <header class="admin-user-dialog-heading">
+                <div class="admin-modal-title-group">
+                    <span class="admin-modal-icon-badge" aria-hidden="true">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-user"></use>
                         </svg>
                     </span>
-                    <div>
-                        <h3>Personal Information</h3>
-                        <p>Enter the account holder's details.</p>
+
+                    <div class="admin-modal-heading-text">
+                        <h2 id="add-user-title">Create User Account</h2>
+                        <p class="admin-modal-subtitle">
+                            Set up credentials and system access permissions.
+                        </p>
                     </div>
                 </div>
 
-                <div class="admin-form-field">
-                    <label for="new-user-name">
-                        Full Name <span aria-hidden="true">*</span>
-                    </label>
-                    <input id="new-user-name"
-                        name="name"
-                        type="text"
-                        placeholder="Enter full name"
-                        maxlength="80"
-                        autocomplete="name"
-                        required>
-                </div>
-
-                <div class="admin-form-field">
-                    <label for="new-user-email">
-                        Email Address <span aria-hidden="true">*</span>
-                    </label>
-                    <input id="new-user-email"
-                        name="email"
-                        type="email"
-                        placeholder="name@example.com"
-                        maxlength="255"
-                        autocomplete="email"
-                        required>
-                    <small>Use a valid email address for account identification.</small>
-                </div>
-            </div>
-
-            <!-- Account Settings -->
-            <div class="admin-form-section">
-                <div class="admin-form-section-heading">
-                    <span class="admin-form-section-icon" aria-hidden="true">
-                        <svg class="ui-icon"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.8"
-                            stroke-linecap="round"
-                            stroke-linejoin="round">
-                            <rect x="3" y="5" width="18" height="14" rx="2"/>
-                            <path d="M7 9h10M7 13h6"/>
-                        </svg>
-                    </span>
-                    <div>
-                        <h3>Account Settings</h3>
-                        <p>Configure access and account availability.</p>
-                    </div>
-                </div>
-
-                <div class="admin-form-grid">
-                    <div class="admin-form-field">
-                        <label for="new-user-role">
-                            Account Role <span aria-hidden="true">*</span>
-                        </label>
-                        <select id="new-user-role"
-                                name="role"
-                                required>
-                            <option value="Client" selected>Client</option>
-                            <option value="Admin">Administrator</option>
-                        </select>
-                        <small>Determines the user's access level.</small>
-                    </div>
-
-                    <div class="admin-form-field">
-                        <label for="new-user-status">
-                            Account Status <span aria-hidden="true">*</span>
-                        </label>
-                        <select id="new-user-status"
-                                name="status"
-                                required>
-                            <option value="Active" selected>Active</option>
-                            <option value="Inactive">Inactive</option>
-                        </select>
-                        <small>Inactive accounts should not have access.</small>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Security -->
-            <div class="admin-form-section">
-                <div class="admin-form-section-heading">
-                    <span class="admin-form-section-icon" aria-hidden="true">
-                        <svg class="ui-icon"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.8"
-                            stroke-linecap="round"
-                            stroke-linejoin="round">
-                            <rect x="4" y="10" width="16" height="11" rx="2"/>
-                            <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
-                            <path d="M12 14v3"/>
-                        </svg>
-                    </span>
-                    <div>
-                        <h3>Account Security</h3>
-                        <p>Set an initial password for the new account.</p>
-                    </div>
-                </div>
-
-                <div class="admin-form-field">
-                    <label for="new-user-password">
-                        Temporary Password <span aria-hidden="true">*</span>
-                    </label>
-                    <div style="position: relative; display: flex; align-items: center;">
-                        <input id="new-user-password"
-                            name="password"
-                            type="password"
-                            placeholder="Enter a temporary password"
-                            minlength="8"
-                            autocomplete="new-password"
-                            aria-describedby="new-user-password-help"
-                            style="width: 100%; padding-right: 42px;"
-                            required>
-                        <button type="button" class="admin-pw-toggle-btn" data-target-input="new-user-password" aria-label="Toggle password visibility" style="position: absolute; right: 8px; background: none; border: none; cursor: pointer; color: #6b7280; display: flex; align-items: center; padding: 4px;">
-                            <svg class="ui-icon" style="width: 18px; height: 18px;" aria-hidden="true">
-                                <use href="#icon-eye"></use>
-                            </svg>
-                        </button>
-                    </div>
-                    <small id="new-user-password-help">
-                        Use at least 8 characters. Share the password securely with the account holder.
-                    </small>
-                </div>
-            </div>
-
-            <!-- Footer Actions -->
-            <div class="admin-user-form-actions">
-                <button class="admin-user-cancel"
+                <button class="admin-dialog-close"
                         type="button"
-                        data-close-dialog="add-user-dialog">
-                    Cancel
-                </button>
-
-                <button class="admin-user-submit" type="submit">
+                        data-close-dialog="add-user-dialog"
+                        aria-label="Close dialog">
                     <svg class="ui-icon"
                         viewBox="0 0 24 24"
                         fill="none"
@@ -472,12 +282,126 @@
                         stroke-linecap="round"
                         stroke-linejoin="round"
                         aria-hidden="true">
-                        <path d="M12 5v14M5 12h14"/>
+                        <path d="m18 6-12 12M6 6l12 12"/>
                     </svg>
-                    Create Account
                 </button>
-            </div>
-        </form>
+            </header>
+
+            <!-- Form -->
+            <form class="admin-user-form"
+                  method="post"
+                  action="{{ url_for('create_user') }}">
+
+                <input type="hidden"
+                       name="csrf_token"
+                       value="{{ admin_csrf_token }}">
+
+                <div class="admin-form-body">
+                    <!-- Full Name -->
+                    <div class="admin-form-field">
+                        <label for="new-user-name">
+                            Full Name <span aria-hidden="true">*</span>
+                        </label>
+                        <input id="new-user-name"
+                               name="name"
+                               type="text"
+                               placeholder="e.g. Maria Santos"
+                               maxlength="80"
+                               autocomplete="name"
+                               required>
+                    </div>
+
+                    <!-- Email Address -->
+                    <div class="admin-form-field">
+                        <label for="new-user-email">
+                            Email Address <span aria-hidden="true">*</span>
+                        </label>
+                        <input id="new-user-email"
+                               name="email"
+                               type="email"
+                               placeholder="name@example.com"
+                               maxlength="255"
+                               autocomplete="email"
+                               required>
+                    </div>
+
+                    <!-- Role & Status Grid -->
+                    <div class="admin-form-grid">
+                        <div class="admin-form-field">
+                            <label for="new-user-role">
+                                Account Role <span aria-hidden="true">*</span>
+                            </label>
+                            <div class="admin-select-wrap">
+                                <select id="new-user-role"
+                                        name="role"
+                                        required>
+                                    <option value="Client" selected>Client</option>
+                                    <option value="Admin">Administrator</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="admin-form-field">
+                            <label for="new-user-status">
+                                Account Status <span aria-hidden="true">*</span>
+                            </label>
+                            <div class="admin-select-wrap">
+                                <select id="new-user-status"
+                                        name="status"
+                                        required>
+                                    <option value="Active" selected>Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Temporary Password -->
+                    <div class="admin-form-field">
+                        <div class="admin-field-header">
+                            <label for="new-user-password">
+                                Temporary Password <span aria-hidden="true">*</span>
+                            </label>
+                            <span class="admin-field-hint">Min. 8 characters</span>
+                        </div>
+                        <div class="admin-password-wrap">
+                            <input id="new-user-password"
+                                   name="password"
+                                   type="password"
+                                   placeholder="Create a temporary password"
+                                   minlength="8"
+                                   autocomplete="new-password"
+                                   required>
+                            <button type="button"
+                                    class="admin-pw-toggle-btn"
+                                    data-target-input="new-user-password"
+                                    aria-label="Toggle password visibility"
+                                    title="Show password">
+                                <svg class="ui-icon" aria-hidden="true">
+                                    <use href="#icon-eye"></use>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="admin-user-form-actions">
+                    <button class="admin-user-cancel"
+                            type="button"
+                            data-close-dialog="add-user-dialog">
+                        Cancel
+                    </button>
+
+                    <button class="admin-user-submit" type="submit">
+                        <svg class="ui-icon" aria-hidden="true">
+                            <use href="#icon-plus"></use>
+                        </svg>
+                        <span>Create Account</span>
+                    </button>
+                </div>
+            </form>
+        </div>
     </dialog>
 
 
