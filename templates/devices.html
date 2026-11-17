@@ -296,8 +296,8 @@
         <section class="dashboard-section" aria-labelledby="probe-maintenance-heading" id="probe-maintenance-devices-section">
             <div id="probe-maintenance-devices-card">
                 {% if maintenance %}
-                {% set is_overdue = maintenance.status == 'Overdue' %}
-                {% set is_due_soon = maintenance.status == 'Due Soon' %}
+                {% set is_overdue = (maintenance.status == 'Overdue') %}
+                {% set is_due_soon = (maintenance.status == 'Due Soon') %}
                 {% set badge_class = 'badge-critical' if is_overdue else ('badge-warning' if is_due_soon else 'badge-optimal') %}
                 {% set badge_text = 'OVERDUE - BIOFILM DRIFT' if is_overdue else ('MAINTENANCE DUE SOON' if is_due_soon else 'CALIBRATED & HEALTHY') %}
                 {% set clean_pct = (maintenance.cleaning_progress_pct or 0)|round(0)|int %}
@@ -305,6 +305,12 @@
                 {% set clean_bar_color = '#dc2626' if clean_pct >= 100 else ('#d97706' if clean_pct >= 75 else '#126b4f') %}
                 {% set cal_bar_color = '#dc2626' if cal_pct >= 100 else ('#d97706' if cal_pct >= 75 else '#0284c7') %}
                 {% set risk_slug = (maintenance.status or 'optimal')|lower|replace(' ', '-') %}
+                {% set clean_days_num = maintenance.days_since_cleaning or 0 %}
+                {% set clean_due_val = maintenance.days_until_cleaning %}
+                {% set clean_due_text = (clean_due_val ~ 'd') if (clean_due_val is not none and clean_due_val > 0) else 'NOW' %}
+                {% set cal_days_num = maintenance.days_since_calibration or 0 %}
+                {% set cal_due_val = maintenance.days_until_calibration %}
+                {% set cal_due_text = (cal_due_val ~ 'd') if (cal_due_val is not none and cal_due_val > 0) else 'NOW' %}
 
                 <article class="panel dashboard-panel probe-lifecycle-card">
                     <div class="panel-heading" style="justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
@@ -349,8 +355,8 @@
                                     <div class="maint-progress-fill" style="width: {{ clean_pct }}%; background-color: {{ clean_bar_color }};"></div>
                                 </div>
                                 <div class="probe-cycle-meta">
-                                    <span>Submerged: <strong>{{ maintenance.days_since_cleaning or 0 }} days</strong></span>
-                                    <span>Next Due: <strong>{{ ((maintenance.days_until_cleaning or 0) ~ 'd') if (maintenance.days_until_cleaning is not none and maintenance.days_until_cleaning > 0) else 'NOW' }}</strong></span>
+                                    <span>Submerged: <strong>{{ clean_days_num }} days</strong></span>
+                                    <span>Next Due: <strong>{{ clean_due_text }}</strong></span>
                                 </div>
                             </div>
 
@@ -367,8 +373,8 @@
                                     <div class="maint-progress-fill" style="width: {{ cal_pct }}%; background-color: {{ cal_bar_color }};"></div>
                                 </div>
                                 <div class="probe-cycle-meta">
-                                    <span>Elapsed: <strong>{{ maintenance.days_since_calibration or 0 }} days</strong></span>
-                                    <span>Next Due: <strong>{{ ((maintenance.days_until_calibration or 0) ~ 'd') if (maintenance.days_until_calibration is not none and maintenance.days_until_calibration > 0) else 'NOW' }}</strong></span>
+                                    <span>Elapsed: <strong>{{ cal_days_num }} days</strong></span>
+                                    <span>Next Due: <strong>{{ cal_due_text }}</strong></span>
                                 </div>
                             </div>
                         </div>
@@ -425,9 +431,11 @@
                             <p>LoRa transmitter hardware units linked to your account for live telemetry routing</p>
                         </div>
                     </div>
+                    {% set paired_count = (paired_nodes or [])|length %}
+                    {% set unit_label = 'Unit' if paired_count == 1 else 'Units' %}
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <span id="paired-nodes-count-badge" class="badge badge-optimal" style="font-weight: 700; font-size: 12px; padding: 6px 12px;">
-                            {{ (paired_nodes or [])|length }} Paired {{ 'Unit' if (paired_nodes or [])|length == 1 else 'Units' }}
+                            {{ paired_count }} Paired {{ unit_label }}
                         </span>
                         <button type="button" id="btn-open-pair-modal" class="telemetry-sync-btn" style="background: #126b4f; border-color: #126b4f; color: #ffffff; height: 34px; padding: 0 14px; font-size: 12.5px;" title="Pair a LoRa transmitter Node ID with this account">
                             <svg class="ui-icon" aria-hidden="true"><use href="#icon-cpu"></use></svg>
@@ -450,6 +458,7 @@
                         </thead>
                         <tbody id="paired-nodes-table-body">
                             {% for node in (paired_nodes or []) %}
+                            {% set node_loc = node.pond_location or 'Pond Site' %}
                             <tr class="device-row" data-node-id="{{ node.device_id }}">
                                 <td>
                                     <span class="device-id-badge">{{ node.device_id }}</span>
@@ -457,7 +466,7 @@
                                 <td>
                                     <div class="device-cell-title-row">
                                         <strong class="device-cell-name">{{ node.device_name }}</strong>
-                                        <span class="device-location-tag">({{ node.pond_location or 'Pond Site' }})</span>
+                                        <span class="device-location-tag">({{ node_loc }})</span>
                                     </div>
                                 </td>
                                 <td>
@@ -482,7 +491,7 @@
                                     </span>
                                 </td>
                                 <td style="text-align: center;">
-                                    <button type="button" class="btn-unpair-node" data-node-id="{{ node.device_id }}" data-node-name="{{ node.device_name }}" data-node-location="{{ node.pond_location or 'Pond Site' }}">
+                                    <button type="button" class="btn-unpair-node" data-node-id="{{ node.device_id }}" data-node-name="{{ node.device_name }}" data-node-location="{{ node_loc }}">
                                         Unpair
                                     </button>
                                 </td>
