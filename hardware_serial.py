@@ -251,7 +251,7 @@ def scan_and_reconnect_port():
     }
 
 
-def _run_listener_loop(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dispatch_fn, user_model, user_device_model=None):
+def _run_listener_loop(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dispatch_fn, user_model, user_device_model=None, maint_dispatch_fn=None):
     """Background worker thread that reads from Node 2 LoRa Receiver and writes to DB."""
     logger.info("[HardwareSerial] Background LoRa listener thread started.")
 
@@ -385,6 +385,13 @@ def _run_listener_loop(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dis
                                         except Exception as ne:
                                             logger.debug(f"ntfy alert dispatch error: {ne}")
 
+                                    # Trigger Scheduled Sensor Maintenance Notice push alert if due (throttled to 24h)
+                                    if maint_dispatch_fn:
+                                        try:
+                                            maint_dispatch_fn(user_email=target_user, device_id=dev_id)
+                                        except Exception as me:
+                                            logger.debug(f"Maintenance ntfy dispatch error: {me}")
+
                                 except Exception as dbe:
                                     db.session.rollback()
                                     logger.error(f"[LoRa SYNC] Database insert error: {dbe}")
@@ -415,11 +422,11 @@ def _run_listener_loop(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dis
             time.sleep(3)
 
 
-def start_hardware_listener(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dispatch_fn, user_model, user_device_model=None):
+def start_hardware_listener(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dispatch_fn, user_model, user_device_model=None, maint_dispatch_fn=None):
     """Spawns the background hardware serial reader daemon."""
     t = threading.Thread(
         target=_run_listener_loop,
-        args=(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dispatch_fn, user_model, user_device_model),
+        args=(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dispatch_fn, user_model, user_device_model, maint_dispatch_fn),
         daemon=True,
         name="LoRa-Hardware-Serial-Listener",
     )

@@ -280,3 +280,112 @@ def send_water_quality_alert_ntfy(
         tags=tags,
         click_url=click_url
     )
+
+
+def send_sensor_maintenance_alert_ntfy(
+    maintenance_data=None,
+    topic=None,
+    click_url=None,
+    is_test=False
+):
+    """
+    Formats and dispatches a comprehensive shrimp pond probe maintenance push alert via ntfy.sh containing:
+    1. Overall maintenance status and drift risk severity
+    2. 7-Day Routine Biofilm Scrubbing Cycle (pH glass bulb and temperature sleeve)
+    3. 14-Day 2-Point pH Calibration Cycle (standard pH 4.01 and 6.86 buffers)
+    4. Target electrochemical drift threshold (< ±0.10 pH tolerance)
+    5. Actionable Standard Operating Procedure (SOP) instructions
+    """
+    data = maintenance_data or {}
+    device_id = str(data.get("device_id") or "NODE01")
+    status = str(data.get("status") or "Due Soon")
+    drift_risk = str(data.get("drift_risk") or "Moderate Risk - Routine Cleaning Due")
+    timestamp = datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
+
+    try:
+        days_until_cleaning = float(data.get("days_until_cleaning", 1.0))
+    except (TypeError, ValueError):
+        days_until_cleaning = 1.0
+
+    try:
+        days_since_cleaning = float(data.get("days_since_cleaning", 6.0))
+    except (TypeError, ValueError):
+        days_since_cleaning = 6.0
+
+    try:
+        days_until_calibration = float(data.get("days_until_calibration", 2.0))
+    except (TypeError, ValueError):
+        days_until_calibration = 2.0
+
+    try:
+        days_since_calibration = float(data.get("days_since_calibration", 12.0))
+    except (TypeError, ValueError):
+        days_since_calibration = 12.0
+
+    last_cleaned_at = data.get("last_cleaned_at")
+    performed_by = data.get("performed_by") or "Pond Operator"
+
+    # Status formatting for 7-day biofilm scrub
+    if days_until_cleaning <= 0:
+        clean_status = f"🚨 {abs(days_until_cleaning):.1f} DAYS OVERDUE — Biofilm fouling active"
+    elif days_until_cleaning <= 1.2:
+        clean_status = "⚠️ DUE IN 1 DAY — Routine soft-brush scrub scheduled"
+    else:
+        clean_status = f"⏳ {days_until_cleaning:.1f} Days Remaining ({days_since_cleaning:.1f}d submerged / 7d limit)"
+
+    # Status formatting for 14-day 2-point pH calibration
+    if days_until_calibration <= 0:
+        cal_status = f"🚨 {abs(days_until_calibration):.1f} DAYS OVERDUE — Buffer recalibration required"
+    elif days_until_calibration <= 2:
+        cal_status = f"⚠️ DUE IN {max(1, round(days_until_calibration))} DAYS — Buffer recalibration scheduled"
+    else:
+        cal_status = f"⏳ {days_until_calibration:.1f} Days Remaining ({days_since_calibration:.1f}d elapsed / 14d limit)"
+
+    is_overdue = (status.lower() == "overdue") or (days_until_cleaning <= 0) or (days_until_calibration <= 0)
+
+    if is_test:
+        title = f"🧪 ShrimpGuard: Sensor Maintenance Test Alert [{device_id}]"
+        priority = 3
+        tags = ["wrench", "shrimp", "test"]
+    elif is_overdue:
+        title = f"🚨 ShrimpGuard OVERDUE: Probe Biofilm Scrub & Calibration [{device_id}]"
+        priority = 5  # Emergency
+        tags = ["rotating_light", "wrench", "biohazard", "shrimp"]
+    else:
+        days_rem = max(1, int(round(days_until_cleaning)))
+        day_str = "1 Day" if days_rem == 1 else f"{days_rem} Days"
+        title = f"⚠️ Sensor Maintenance Notice: Cleaning Due in {day_str} [{device_id}]"
+        priority = 4  # High
+        tags = ["warning", "wrench", "soap", "shrimp"]
+
+    body_message = (
+        f"🦐 ShrimpGuard Sensor Maintenance Alert\n"
+        f"📍 Pond Node: {device_id} (DFRobot pH & DS18B20 Temp)\n"
+        f"🎯 Reading Tolerance: Target Drift < ±0.10 pH\n"
+        f"⚠️ Drift Risk: {drift_risk}\n\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"1️⃣ 7-DAY ROUTINE BIOFILM SCRUBBING CYCLE:\n"
+        f"• Status: {clean_status}\n"
+        f"• Submerged: {days_since_cleaning:.1f} days (Threshold: 7 days)\n"
+        f"• SOP Action: Gently scrub pH glass bulb & temperature probe sleeve "
+        f"with a soft-bristle brush and distilled water to remove algal slime and bacterial biofilm barrier.\n\n"
+        f"2️⃣ 14-DAY 2-POINT pH BUFFER CALIBRATION:\n"
+        f"• Status: {cal_status}\n"
+        f"• Elapsed Since Cal: {days_since_calibration:.1f} days (Threshold: 14 days)\n"
+        f"• SOP Action: Submerge in standard buffer solutions (pH 4.01 & 6.86) "
+        f"to reset electrochemical slope & offset against measurement drift.\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"👤 Last Serviced: {last_cleaned_at or 'Not recorded'} by {performed_by}\n"
+        f"⏱️ Alert Issued: {timestamp}\n"
+        f"📱 Open ShrimpGuard dashboard to view SOP guide & log maintenance."
+    )
+
+    return send_ntfy_notification(
+        message=body_message,
+        title=title,
+        topic=topic,
+        priority=priority,
+        tags=tags,
+        click_url=click_url
+    )
+

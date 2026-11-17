@@ -840,7 +840,11 @@
                     </div>
                 </div>
 
-                <div class="maint-modal-footer">
+                <div class="maint-modal-footer" style="flex-wrap: wrap; gap: 8px;">
+                    <button type="button" class="btn-maint-secondary" id="btn-sop-push-ntfy" title="Send a real-time Scheduled Maintenance Notice to your phone via ntfy.sh">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-bell"></use></svg>
+                        <span>Send Push Alert</span>
+                    </button>
                     <button type="button" class="btn-maint-secondary" id="btn-sop-view-history">
                         <svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>
                         <span>View History Log</span>
@@ -866,6 +870,33 @@
             closeSOPModal();
             openMaintenanceModal('both');
         });
+
+        const pushNtfyBtn = modalDiv.querySelector('#btn-sop-push-ntfy');
+        if (pushNtfyBtn) {
+            pushNtfyBtn.addEventListener('click', async () => {
+                const origHtml = pushNtfyBtn.innerHTML;
+                pushNtfyBtn.disabled = true;
+                pushNtfyBtn.innerHTML = `<span>Pushing...</span>`;
+                try {
+                    const resp = await fetch('/api/ntfy/test-maintenance', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({})
+                    });
+                    const res = await resp.json();
+                    if (res && res.success) {
+                        showMaintenanceToast(`Maintenance notice pushed to topic "${res.topic || 'configured topic'}"!`);
+                    } else {
+                        showMaintenanceToast(`Notice: ${res.error || 'Failed to dispatch alert. Configure topic in Settings.'}`);
+                    }
+                } catch (e) {
+                    showMaintenanceToast('Unable to reach ntfy server.');
+                } finally {
+                    pushNtfyBtn.disabled = false;
+                    pushNtfyBtn.innerHTML = origHtml;
+                }
+            });
+        }
         modalDiv.addEventListener('click', (e) => {
             if (e.target === modalDiv) closeSOPModal();
         });

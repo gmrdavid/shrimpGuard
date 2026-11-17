@@ -33,6 +33,7 @@ from ntfy_service import (
     is_valid_topic,
     send_ntfy_notification,
     send_water_quality_alert_ntfy,
+    send_sensor_maintenance_alert_ntfy,
 )
 
 app = Flask(__name__)
@@ -1083,6 +1084,94 @@ def _async_dispatch_ntfy(status, temperature, ph, topics):
             app.logger.exception(f"Unable to dispatch ntfy push alert to topic {top}: {exc}")
 
 
+# Rate limiting tracker for sensor probe maintenance alerts via ntfy.sh
+# Key: f"{target_user}:{device_id}" -> {"sent_at": datetime, "status": str}
+MAINTENANCE_NTFY_THROTTLE = {}
+
+
+def dispatch_maintenance_ntfy_if_needed(user_email=None, device_id="NODE01", force=False, is_test=False):
+    """
+    Checks probe maintenance status for a user/device and dispatches ntfy push notifications
+    when maintenance is Due Soon (e.g. Due in 1-2 Days) or Overdue.
+    Alerts for BOTH:
+      1. 7-Day Routine Biofilm Scrubbing Cycle (pH glass bulb and DS18B20 sleeve)
+      2. 14-Day 2-Point pH Calibration Cycle (standard pH 4.01 and 6.86 buffers)
+    Throttled to at most once per 24 hours per user/device unless status escalates to Overdue or force=True.
+    """
+    try:
+        target_user = user_email
+        if not target_user and has_request_context():
+            target_user = session.get("user_id")
+        target_user = target_user or os.getenv("LORA_DEFAULT_USER_EMAIL", "rio@gmail.com")
+
+        maint_data = get_probe_maintenance_status(user_email=target_user, device_id=device_id)
+        if not maint_data:
+            return False
+
+        is_notice_active = maint_data.get("is_notice_active", False)
+        status = maint_data.get("status", "Optimal")
+
+        if not is_notice_active and not force and not is_test:
+            return False
+
+        cache_key = f"{target_user}:{device_id}"
+        now = datetime.now()
+
+        # Check throttling unless forced or testing
+        if not force and not is_test and cache_key in MAINTENANCE_NTFY_THROTTLE:
+            last_record = MAINTENANCE_NTFY_THROTTLE[cache_key]
+            last_time = last_record.get("sent_at")
+            last_status = last_record.get("status")
+            hours_since = (now - last_time).total_seconds() / 3600.0 if last_time else 999.0
+
+            # If status didn't escalate to Overdue, and sent within last 24h, skip
+            is_escalation = (last_status != "Overdue" and status == "Overdue")
+            if not is_escalation and hours_since < 24.0:
+                return False
+
+        topics = []
+        try:
+            users_with_topic = db.session.query(User).filter(
+                User.email == target_user,
+                User.ntfy_topic.isnot(None),
+                User.ntfy_topic != "",
+            ).all()
+            for u in users_with_topic:
+                if u.ntfy_topic and is_valid_topic(u.ntfy_topic) and u.ntfy_topic not in topics:
+                    topics.append(u.ntfy_topic)
+        except Exception as e:
+            app.logger.debug(f"User topic lookup failed: {e}")
+
+        default_topic = os.getenv("NTFY_DEFAULT_TOPIC")
+        if default_topic and is_valid_topic(default_topic) and default_topic not in topics:
+            topics.append(default_topic)
+
+        if not topics:
+            return False
+
+        def _send_maint():
+            for top in set(topics):
+                try:
+                    send_sensor_maintenance_alert_ntfy(
+                        maintenance_data=maint_data,
+                        topic=top,
+                        is_test=is_test
+                    )
+                except Exception as exc:
+                    app.logger.exception(f"Unable to dispatch maintenance ntfy push alert to topic {top}: {exc}")
+
+        threading.Thread(target=_send_maint, daemon=True).start()
+
+        MAINTENANCE_NTFY_THROTTLE[cache_key] = {
+            "sent_at": now,
+            "status": status
+        }
+        return True
+    except Exception as exc:
+        app.logger.exception(f"Error checking/dispatching maintenance ntfy: {exc}")
+        return False
+
+
 @app.route("/api/readings", methods=["POST"])
 @role_required("Client", "Admin")
 def create_reading():
@@ -1204,6 +1293,12 @@ def create_reading():
                     ).start()
             except Exception:
                 app.logger.exception("Unable to spawn ntfy push alert thread.")
+
+        # Check and dispatch Scheduled Sensor Maintenance push alert if due (throttled to 24h)
+        try:
+            dispatch_maintenance_ntfy_if_needed(user_email=target_user_email, device_id=dev_id)
+        except Exception:
+            pass
 
         resp_payload = {
             "temperature": temperature,
@@ -1923,6 +2018,13 @@ def get_maintenance_status_endpoint():
         except Exception:
             is_snoozed = False
 
+    # Proactively check and dispatch push alert if due soon or overdue (throttled to 24h)
+    if maint_data and maint_data.get("is_notice_active") and not is_snoozed:
+        try:
+            dispatch_maintenance_ntfy_if_needed(user_email=user_email, device_id=device_id)
+        except Exception:
+            pass
+
     return jsonify({
         "success": True,
         "maintenance": maint_data,
@@ -2011,8 +2113,10 @@ def log_maintenance_endpoint():
         db.session.add(history_entry)
         db.session.commit()
 
-        # Clear any active snooze
+        # Clear any active snooze and reset throttling cache so next cycle alerts properly
         session.pop("maintenance_notice_snoozed_until", None)
+        cache_key = f"{target_user}:{device_id}"
+        MAINTENANCE_NTFY_THROTTLE.pop(cache_key, None)
 
         return jsonify({
             "success": True,
@@ -4427,12 +4531,55 @@ def api_test_ntfy():
     if not is_valid_topic(topic):
         return jsonify({"error": "Invalid topic name. Use 3-64 characters: letters, numbers, hyphens, and underscores only."}), 400
 
+    alert_type = payload.get("alert_type", "water_quality")
+    if alert_type == "maintenance":
+        device_id = payload.get("device_id", "NODE01")
+        maint_data = get_probe_maintenance_status(user_email=user_email, device_id=device_id)
+        result = send_sensor_maintenance_alert_ntfy(
+            maintenance_data=maint_data,
+            topic=topic,
+            is_test=payload.get("is_test", True)
+        )
+        return jsonify(result)
+
     result = send_water_quality_alert_ntfy(
         severity="TEST",
         temp=29.0,
         ph=8.0,
         reason="Test notification verification from ShrimpGuard gateway via ntfy.sh",
         topic=topic
+    )
+    return jsonify(result)
+
+
+@app.route("/api/ntfy/test-maintenance", methods=["POST"])
+def api_test_ntfy_maintenance():
+    user_email = session.get("user_id")
+    if not user_email:
+        return jsonify({"error": "Authentication required."}), 401
+
+    payload = request.get_json(silent=True) or {}
+    topic = payload.get("ntfy_topic", "").strip()
+    device_id = payload.get("device_id", "NODE01")
+
+    if not topic:
+        user = db.session.get(User, user_email)
+        topic = user.ntfy_topic if user else None
+
+    if not topic:
+        topic = os.getenv("NTFY_DEFAULT_TOPIC", "").strip()
+
+    if not topic:
+        return jsonify({"error": "No ntfy topic provided. Please enter a topic in Settings or .env."}), 400
+
+    if not is_valid_topic(topic):
+        return jsonify({"error": "Invalid topic name. Use 3-64 characters: letters, numbers, hyphens, and underscores only."}), 400
+
+    maint_data = get_probe_maintenance_status(user_email=user_email, device_id=device_id)
+    result = send_sensor_maintenance_alert_ntfy(
+        maintenance_data=maint_data,
+        topic=topic,
+        is_test=False
     )
     return jsonify(result)
 
@@ -4851,6 +4998,7 @@ def start_lora_hardware_service():
             ntfy_dispatch_fn=_async_dispatch_ntfy,
             user_model=User,
             user_device_model=UserDevice,
+            maint_dispatch_fn=dispatch_maintenance_ntfy_if_needed,
         )
         app.logger.info("Automatic LoRa hardware listener daemon spawned successfully.")
     except Exception as exc:

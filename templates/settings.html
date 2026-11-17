@@ -258,7 +258,7 @@
                             pattern="[a-zA-Z0-9_-]{3,64}"
                             title="3-64 characters: letters, numbers, hyphens, and underscores only.">
                         <small>
-                            Receive 100% free real-time push alerts on mobile or desktop via <b>ntfy.sh</b>.<br>
+                            Receive 100% free real-time push alerts on mobile or desktop via <b>ntfy.sh</b> for water parameter warnings and <b>scheduled sensor maintenance (7-day biofilm scrub &amp; 14-day 2-point pH calibration)</b>.<br>
                             <b>Need help setting up?</b> Click <button type="button" id="open-ntfy-guide-link" class="inline-guide-btn">How to use ntfy.sh guide</button> to see where to get the free app and how to subscribe to your pond alerts.
                         </small>
                     </div>
@@ -293,7 +293,13 @@
                             <svg class="ui-icon" aria-hidden="true">
                                 <use href="#icon-bell"></use>
                             </svg>
-                            <span>Send Test Push Notification</span>
+                            <span>Test Water Quality Alert</span>
+                        </button>
+                        <button id="test-ntfy-maint-button" class="settings-submit" type="button" style="background: #d97706; border-color: #d97706;">
+                            <svg class="ui-icon" aria-hidden="true">
+                                <use href="#icon-clock"></use>
+                            </svg>
+                            <span>Test Maintenance Notice</span>
                         </button>
                     </div>
 

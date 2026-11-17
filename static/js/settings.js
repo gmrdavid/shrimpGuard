@@ -413,6 +413,109 @@ function updateDeviceTime() {
         });
     }
 
+    // Send Test Sensor Maintenance Notice via ntfy.sh
+    const testNtfyMaintButton = document.getElementById("test-ntfy-maint-button");
+    if (testNtfyMaintButton) {
+        testNtfyMaintButton.addEventListener("click", async () => {
+            const topicInput = document.getElementById("profile-ntfy-topic");
+            const topic = topicInput ? topicInput.value.trim() : "";
+            if (!topic) {
+                if (testNtfyWarnDialog && typeof testNtfyWarnDialog.showModal === "function") {
+                    testNtfyWarnDialog.showModal();
+                } else if (testNtfyWarnDialog) {
+                    testNtfyWarnDialog.setAttribute("open", "");
+                }
+                return;
+            }
+            const originalHtml = testNtfyMaintButton.innerHTML;
+            testNtfyMaintButton.disabled = true;
+            testNtfyMaintButton.textContent = "Sending Maintenance Alert...";
+            try {
+                const resp = await fetch("/api/ntfy/test-maintenance", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ ntfy_topic: topic })
+                });
+                const res = await resp.json();
+                if (res.success) {
+                    if (testNtfyResultTitle) testNtfyResultTitle.textContent = "Sensor Maintenance Notice Dispatched!";
+                    if (testNtfyResultSubtitle) testNtfyResultSubtitle.textContent = "Probe cleaning & calibration alert sent via ntfy.sh";
+                    if (testNtfyResultIcon) {
+                        testNtfyResultIcon.style.background = "#fef3c7";
+                        testNtfyResultIcon.style.color = "#d97706";
+                        testNtfyResultIcon.innerHTML = `<svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg>`;
+                    }
+                    if (testNtfyResultBody) {
+                        testNtfyResultBody.innerHTML = `
+                            <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 14px 16px; font-size: 13px; line-height: 1.6; color: #78350f;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                    <span style="color: #92400e;">Status:</span>
+                                    <strong style="color: #d97706;">Transmitted (200 OK)</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                    <span style="color: #92400e;">Target Topic:</span>
+                                    <code style="background: #fef3c7; padding: 2px 6px; border-radius: 4px; font-weight: 700; color: #78350f;">${escapeHtml(res.topic || topic)}</code>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="color: #92400e;">Cycles Alerted:</span>
+                                    <strong>7d Biofilm Scrub &bull; 14d 2-Pt pH Calibration</strong>
+                                </div>
+                            </div>
+                            <p style="margin: 12px 0 0; font-size: 12px; color: #64748b; line-height: 1.5;">
+                                A Scheduled Sensor Maintenance Notice has been pushed to your device. Check your ntfy app to view the complete anti-drift protocol and SOP guidance!
+                            </p>
+                        `;
+                    }
+                    if (testNtfyOpenLink) {
+                        testNtfyOpenLink.href = `https://ntfy.sh/${encodeURIComponent(res.topic || topic)}`;
+                        testNtfyOpenLink.style.display = "inline-flex";
+                    }
+                } else {
+                    if (testNtfyResultTitle) testNtfyResultTitle.textContent = "Delivery Notice";
+                    if (testNtfyResultSubtitle) testNtfyResultSubtitle.textContent = "Unable to dispatch maintenance alert";
+                    if (testNtfyResultIcon) {
+                        testNtfyResultIcon.style.background = "#fee2e2";
+                        testNtfyResultIcon.style.color = "#dc2626";
+                        testNtfyResultIcon.innerHTML = `<svg class="ui-icon" aria-hidden="true"><use href="#icon-alert"></use></svg>`;
+                    }
+                    if (testNtfyResultBody) {
+                        testNtfyResultBody.innerHTML = `<p style="color: #dc2626; font-size: 13px;">${escapeHtml(res.error || "Failed to publish maintenance push alert.")}</p>`;
+                    }
+                    if (testNtfyOpenLink) testNtfyOpenLink.style.display = "none";
+                }
+                if (testNtfyResultDialog && typeof testNtfyResultDialog.showModal === "function") {
+                    testNtfyResultDialog.showModal();
+                } else if (testNtfyResultDialog) {
+                    testNtfyResultDialog.setAttribute("open", "");
+                }
+            } catch (err) {
+                if (testNtfyResultTitle) testNtfyResultTitle.textContent = "Delivery Error";
+                if (testNtfyResultSubtitle) testNtfyResultSubtitle.textContent = "Network request failed";
+                if (testNtfyResultIcon) {
+                    testNtfyResultIcon.style.background = "#fee2e2";
+                    testNtfyResultIcon.style.color = "#dc2626";
+                    testNtfyResultIcon.innerHTML = `<svg class="ui-icon" aria-hidden="true"><use href="#icon-alert"></use></svg>`;
+                }
+                if (testNtfyResultBody) {
+                    testNtfyResultBody.innerHTML = `
+                        <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 14px 16px; font-size: 13px; color: #991b1b;">
+                            Error communicating with notification server: ${escapeHtml(err.message)}
+                        </div>
+                    `;
+                }
+                if (testNtfyOpenLink) testNtfyOpenLink.style.display = "none";
+                if (testNtfyResultDialog && typeof testNtfyResultDialog.showModal === "function") {
+                    testNtfyResultDialog.showModal();
+                } else if (testNtfyResultDialog) {
+                    testNtfyResultDialog.setAttribute("open", "");
+                }
+            } finally {
+                testNtfyMaintButton.disabled = false;
+                testNtfyMaintButton.innerHTML = originalHtml;
+            }
+        });
+    }
+
     confirmProfileButton.addEventListener("click", () => {
         if (!validateEmailInput(true)) {
             confirmationDialog.close();
