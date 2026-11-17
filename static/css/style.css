@@ -17874,7 +17874,8 @@ nav a {
 
 .historical-page .calendar-picker-anchor,
 .monitoring-page .calendar-picker-anchor,
-.historical-page .status-picker-anchor {
+.historical-page .status-picker-anchor,
+.historical-page .limit-picker-anchor {
     position: relative;
     display: inline-block;
 }
@@ -18147,6 +18148,11 @@ nav a {
 .historical-page .status-dropdown-menu[hidden],
 .historical-page .limit-dropdown-menu[hidden] {
     display: none !important;
+}
+
+.historical-page .limit-picker-anchor {
+    position: relative;
+    display: inline-block;
 }
 
 .historical-page .status-dropdown-menu,
