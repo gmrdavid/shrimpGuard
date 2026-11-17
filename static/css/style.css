@@ -26862,12 +26862,254 @@ body.modal-backdrop-open {
 
 .devices-page dialog.admin-user-dialog,
 .devices-dialog {
-    border: 1px solid #cbd5e1 !important;
-    border-radius: 14px !important;
-    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25) !important;
+    border: 1px solid #dce7df !important;
+    border-radius: 16px !important;
+    box-shadow: 0 24px 70px -8px rgba(18, 54, 46, 0.28), 0 8px 24px -4px rgba(18, 54, 46, 0.12) !important;
     background: #ffffff !important;
     padding: 0 !important;
-    overflow: hidden !important;
+    margin: auto !important;
+    overflow: visible !important;
+}
+
+.devices-page dialog.admin-user-dialog .admin-modal-card {
+    display: flex;
+    flex-direction: column;
+    border-radius: 15px;
+    background: #ffffff;
+    overflow: visible;
+}
+
+.devices-page dialog.admin-user-dialog::backdrop {
+    background: rgba(14, 30, 26, 0.65) !important;
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+}
+
+.devices-page dialog.admin-user-dialog[open] {
+    animation: adminDialogIn 0.2s ease-out;
+}
+
+.devices-page dialog.admin-user-dialog .admin-user-dialog-heading {
+    position: static;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 18px 24px;
+    background: #ffffff;
+    border-bottom: 1px solid #edf2f0;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    border-top: 3.5px solid #1b5145;
+}
+
+.devices-page dialog.admin-user-dialog .admin-modal-title-group {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    min-width: 0;
+}
+
+.devices-page dialog.admin-user-dialog .admin-modal-icon-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: #eaf6ef;
+    color: #1b5145;
+    flex-shrink: 0;
+    border: 1px solid rgba(27, 81, 69, 0.12);
+}
+
+.devices-page dialog.admin-user-dialog .admin-modal-icon-badge .ui-icon {
+    width: 21px;
+    height: 21px;
+}
+
+.devices-page dialog.admin-user-dialog .admin-modal-heading-text h2 {
+    margin: 0;
+    font-size: 17.5px;
+    font-weight: 750;
+    color: #143d34;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+}
+
+.devices-page dialog.admin-user-dialog .admin-modal-subtitle {
+    margin: 3px 0 0;
+    font-size: 12px;
+    color: #61776a;
+    line-height: 1.4;
+}
+
+.devices-page dialog.admin-user-dialog .admin-dialog-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid #dce7df;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #61776a;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.devices-page dialog.admin-user-dialog .admin-dialog-close:hover {
+    border-color: #dc2626;
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.devices-page dialog.admin-user-dialog .admin-user-form {
+    padding: 0;
+}
+
+.devices-page dialog.admin-user-dialog .admin-form-body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 22px 24px;
+}
+
+.devices-page dialog.admin-user-dialog .admin-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 0;
+}
+
+.devices-page dialog.admin-user-dialog .admin-form-field label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #263e36;
+    letter-spacing: 0.01em;
+}
+
+.devices-page dialog.admin-user-dialog .admin-form-field label span {
+    color: #dc2626;
+    margin-left: 2px;
+}
+
+.devices-page dialog.admin-user-dialog .admin-field-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 550;
+    color: #789083;
+}
+
+.devices-page dialog.admin-user-dialog .admin-input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.devices-page dialog.admin-user-dialog .admin-input-icon {
+    position: absolute;
+    left: 13px;
+    width: 16px;
+    height: 16px;
+    color: #647b6e;
+    pointer-events: none;
+    transition: color 0.15s ease;
+    flex-shrink: 0;
+    z-index: 2;
+}
+
+.devices-page dialog.admin-user-dialog .admin-input-group:focus-within .admin-input-icon {
+    color: #16a34a;
+}
+
+.devices-page dialog.admin-user-dialog .admin-form-field input {
+    box-sizing: border-box;
+    width: 100%;
+    height: 42px;
+    min-height: 42px;
+    padding: 0 14px 0 39px;
+    border: 1px solid #dce7df;
+    border-radius: 10px;
+    outline: none;
+    background: #ffffff;
+    color: #1a382d;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 550;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.devices-page dialog.admin-user-dialog .admin-form-field input:focus {
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
+    background: #ffffff;
+}
+
+.devices-page dialog.admin-user-dialog .admin-user-form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px 20px;
+    border-top: 1px solid #edf2f0;
+    background: #fbfdfc;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+}
+
+.devices-page dialog.admin-user-dialog .admin-user-cancel,
+.devices-page dialog.admin-user-dialog .admin-user-submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 40px;
+    min-height: 40px;
+    padding: 0 18px;
+    border-radius: 9px;
+    font-size: 12.5px;
+    font-weight: 650;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.devices-page dialog.admin-user-dialog .admin-user-cancel {
+    border: 1px solid #dce7df;
+    background: #ffffff;
+    color: #4b6255;
+}
+
+.devices-page dialog.admin-user-dialog .admin-user-cancel:hover {
+    background: #f0f7f3;
+    border-color: #24744d;
+    color: #143d34;
+}
+
+.devices-page dialog.admin-user-dialog .admin-user-submit {
+    border: 1px solid #1b5145;
+    background: linear-gradient(135deg, #1b5145 0%, #143d34 100%);
+    color: #ffffff;
+    box-shadow: 0 3px 10px rgba(27, 81, 69, 0.22);
+}
+
+.devices-page dialog.admin-user-dialog .admin-user-submit:hover {
+    background: linear-gradient(135deg, #143d34 0%, #0d2923 100%);
+    border-color: #143d34;
+    box-shadow: 0 5px 14px rgba(20, 61, 52, 0.32);
+    transform: translateY(-1px);
+}
+
+.devices-page dialog.admin-user-dialog .admin-user-submit:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(20, 61, 52, 0.2);
 }
 
 .devices-page dialog::backdrop {

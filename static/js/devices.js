@@ -756,11 +756,20 @@ function setupPairNodeModal() {
     const dialog = document.getElementById("pair-node-dialog");
     const openBtns = [document.getElementById("btn-open-pair-modal"), ...document.querySelectorAll(".btn-trigger-pair-modal")];
     const cancelBtn = document.getElementById("cancel-pair-node");
+    const closeBtn = document.getElementById("btn-close-pair-dialog");
     const form = document.getElementById("pair-node-form");
     const errBox = document.getElementById("pair-node-error");
     const submitBtn = document.getElementById("submit-pair-node");
 
     if (!dialog) return;
+
+    const closeDialog = () => {
+        if (typeof dialog.close === "function") {
+            dialog.close();
+        } else {
+            dialog.removeAttribute("open");
+        }
+    };
 
     openBtns.forEach(btn => {
         if (btn) {
@@ -776,15 +785,8 @@ function setupPairNodeModal() {
         }
     });
 
-    if (cancelBtn) {
-        cancelBtn.addEventListener("click", () => {
-            if (typeof dialog.close === "function") {
-                dialog.close();
-            } else {
-                dialog.removeAttribute("open");
-            }
-        });
-    }
+    if (cancelBtn) cancelBtn.addEventListener("click", closeDialog);
+    if (closeBtn) closeBtn.addEventListener("click", closeDialog);
 
     dialog.addEventListener("click", (e) => {
         if (e.target === dialog) {
