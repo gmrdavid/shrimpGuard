@@ -18143,9 +18143,25 @@ nav a {
     color: #ffffff;
 }
 
-/* Status Dropdown Menu */
-.historical-page .status-dropdown-menu[hidden] {
+/* Status & Limit Dropdown Menus */
+.historical-page .status-dropdown-menu[hidden],
+.historical-page .limit-dropdown-menu[hidden] {
     display: none !important;
+}
+
+.historical-page .limit-picker-anchor {
+    position: relative;
+    display: inline-block;
+}
+
+.historical-page .limit-dropdown-menu {
+    width: 140px;
+    left: 0;
+    right: auto;
+}
+
+.historical-page .limit-menu-item.active .status-menu-dot {
+    background: #1b5145;
 }
 
 .historical-page .status-dropdown-menu {
@@ -23549,25 +23565,6 @@ nav a {
 }
 
 .module-dropdown-item .active-check {
-    margin-left: auto;
-    font-size: 14px;
-    font-weight: 800;
-    color: #16a34a;
-    display: none;
-}
-
-.module-dropdown-item.active .active-check {
-    display: inline-block;
-}
-
-.module-dropdown-divider {
-    height: 1px;
-    background: #e2e8f0;
-    margin: 4px 6px;
-}
-
-.item-icon-box.all-tools-icon {
-    background: #f1f5f9;
     color: #475569;
     border: 1px solid #e2e8f0;
 }
@@ -25613,16 +25610,16 @@ body.adaptive-sunlight .maint-banner-actions .btn-maint-dismiss {
     border-color: #a7f3d0 !important;
 }
 
-/* Offline: Full solid clean background covering the entire 'Offline' word matching type pills */
+/* Offline: Red background and text for clear visibility */
 .devices-table .table-status.status-offline,
-.devices-table .table-status.status-warning,
+.devices-table .table-status.status-danger,
 .paired-nodes-table .table-status.status-offline,
-.paired-nodes-table .table-status.status-warning,
+.paired-nodes-table .table-status.status-danger,
 .devices-page .table-status.status-offline,
-.devices-page .table-status.status-warning {
-    background: #f1f5f9 !important;
-    color: #475569 !important;
-    border-color: #cbd5e1 !important;
+.devices-page .table-status.status-danger {
+    background: #fef2f2 !important;
+    color: #dc2626 !important;
+    border-color: #fecaca !important;
 }
 
 /* Status indicator dot inside table status badges */
@@ -25645,14 +25642,14 @@ body.adaptive-sunlight .maint-banner-actions .btn-maint-dismiss {
     box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25) !important;
 }
 
-.devices-table .status-indicator-dot.dot-warning,
 .devices-table .status-indicator-dot.dot-offline,
-.paired-nodes-table .status-indicator-dot.dot-warning,
+.devices-table .status-indicator-dot.dot-danger,
 .paired-nodes-table .status-indicator-dot.dot-offline,
-.devices-page .status-indicator-dot.dot-warning,
-.devices-page .status-indicator-dot.dot-offline {
-    background: #94a3b8 !important;
-    box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.25) !important;
+.paired-nodes-table .status-indicator-dot.dot-danger,
+.devices-page .status-indicator-dot.dot-offline,
+.devices-page .status-indicator-dot.dot-danger {
+    background: #ef4444 !important;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25) !important;
 }
 
 

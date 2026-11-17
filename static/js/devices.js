@@ -217,8 +217,8 @@ function renderDevices(data) {
             const tr = document.createElement("tr");
 
             const isDevOnline = dev.status === "Online";
-            const statusClass = isDevOnline ? "status-optimal status-online" : "status-warning status-offline";
-            const dotClass = isDevOnline ? "dot-optimal" : "dot-warning dot-offline";
+            const statusClass = isDevOnline ? "status-optimal status-online" : "status-danger status-offline";
+            const dotClass = isDevOnline ? "dot-optimal" : "dot-danger dot-offline";
             const catSlug = (dev.category || "communication").toLowerCase().replace(/ & /g, "-").replace(/\s+/g, "-");
 
             tr.className = `device-row device-row-${dev.status ? dev.status.toLowerCase() : "offline"}`;

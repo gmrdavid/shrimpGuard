@@ -716,7 +716,6 @@ function updateRecommendations(reading, recommendation) {
                     <span class="table-status ${badgeClass}">${classification} Status</span>
                     <span class="rec-species-chip">Target: <em>${species}</em></span>
                 </div>
-                <span class="rec-source-badge">${provider}</span>
             </div>
 
             <div class="rec-content-section">

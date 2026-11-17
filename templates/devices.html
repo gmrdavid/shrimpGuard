@@ -346,7 +346,6 @@
                                     <span>Submerged: <strong>{{ maintenance.days_since_cleaning if maintenance.days_since_cleaning is defined else 0 }} days</strong></span>
                                     <span>Next Due: <strong>{{ ((maintenance.days_until_cleaning or 0) ~ 'd') if (maintenance.days_until_cleaning is defined and maintenance.days_until_cleaning > 0) else 'NOW' }}</strong></span>
                                 </div>
-                                <p class="probe-cycle-hint">Prevents algal slime and bacterial biofilm barrier on the pH glass bulb.</p>
                             </div>
 
                             <!-- 14-Day 2-Point Buffer Recalibration Cycle -->
@@ -365,7 +364,6 @@
                                     <span>Elapsed: <strong>{{ maintenance.days_since_calibration if maintenance.days_since_calibration is defined else 0 }} days</strong></span>
                                     <span>Next Due: <strong>{{ ((maintenance.days_until_calibration or 0) ~ 'd') if (maintenance.days_until_calibration is defined and maintenance.days_until_calibration > 0) else 'NOW' }}</strong></span>
                                 </div>
-                                <p class="probe-cycle-hint">Recalibrates slope and midpoint using standard pH 4.01 and 6.86 buffers.</p>
                             </div>
                         </div>
 
@@ -546,8 +544,8 @@
                                             <span class="status-indicator-dot dot-optimal"></span> Online
                                         </span>
                                         {% else %}
-                                        <span class="table-status status-warning status-offline">
-                                            <span class="status-indicator-dot dot-warning dot-offline"></span> Offline
+                                        <span class="table-status status-danger status-offline">
+                                            <span class="status-indicator-dot dot-danger dot-offline"></span> Offline
                                         </span>
                                         {% endif %}
                                     </td>

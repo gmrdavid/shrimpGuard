@@ -455,11 +455,7 @@ def _get_dynamic_vannamei_fallback(temperature, ph, classification, reason=""):
     if classification == "Optimal" and len(actions) == 2:
         actions.append("Perform weekly shrimp sampling to inspect hepatopancreas coloration, gut fullness, and growth gain.")
 
-    source_label = (
-        "OpenAI Decision Support Engine (Penaeus vannamei)"
-        if not reason
-        else f"OpenAI Integration Engine ({reason})"
-    )
+    source_label = "Decision Support Engine (Penaeus vannamei)"
 
     return {
         "classification": classification,

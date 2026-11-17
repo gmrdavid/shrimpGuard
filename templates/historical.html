@@ -405,9 +405,34 @@
 
                 <div class="historical-table-toolbar">
 
-                    <div class="historical-limit-wrap">
-                        <label for="table-limit-select" class="historical-limit-label">Show:</label>
-                        <select id="table-limit-select" class="historical-limit-select" aria-label="Readings per page">
+                    <!-- SHOW ROWS DROPDOWN (MATCHING STATUS FILTER DESIGN) -->
+                    <div class="limit-picker-anchor status-picker-anchor">
+                        <button id="table-limit-btn" class="historical-toolbar-btn" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="Show rows" title="Show rows per page">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-menu"></use></svg>
+                            <span id="table-limit-text">Show: 10 rows</span>
+                            <span class="toolbar-arrow">▾</span>
+                        </button>
+
+                        <div id="limit-dropdown-menu" class="limit-dropdown-menu status-dropdown-menu" hidden style="display: none;" role="menu">
+                            <button type="button" class="limit-menu-item status-menu-item" data-limit="5" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> 5 rows
+                            </button>
+                            <button type="button" class="limit-menu-item status-menu-item active" data-limit="10" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> 10 rows
+                            </button>
+                            <button type="button" class="limit-menu-item status-menu-item" data-limit="25" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> 25 rows
+                            </button>
+                            <button type="button" class="limit-menu-item status-menu-item" data-limit="50" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> 50 rows
+                            </button>
+                            <button type="button" class="limit-menu-item status-menu-item" data-limit="all" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> All rows
+                            </button>
+                        </div>
+
+                        <!-- Backwards compatibility select -->
+                        <select id="table-limit-select" hidden style="display: none;" aria-hidden="true">
                             <option value="5">5 rows</option>
                             <option value="10" selected>10 rows</option>
                             <option value="25">25 rows</option>

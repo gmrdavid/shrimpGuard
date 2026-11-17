@@ -587,6 +587,32 @@ function selectStatusFilter(status) {
     updateTable();
 }
 
+function selectLimitFilter(limit) {
+    readingsPerPage = String(limit);
+    const textEl = document.getElementById("table-limit-text");
+    if (textEl) {
+        textEl.textContent = limit === "all" ? "Show: All rows" : `Show: ${limit} rows`;
+    }
+
+    const items = document.querySelectorAll(".limit-menu-item");
+    items.forEach((btn) => {
+        if (btn.getAttribute("data-limit") === String(limit)) {
+            btn.classList.add("active");
+        } else {
+            btn.classList.remove("active");
+        }
+    });
+
+    const selectEl = document.getElementById("table-limit-select");
+    if (selectEl) {
+        selectEl.value = limit;
+    }
+
+    closeLimitDropdown();
+    historyPage = 1;
+    updateTable();
+}
+
 function renderHistoryCalendar() {
     const titleEl = document.getElementById("history-cal-month-title");
     const gridEl = document.getElementById("history-calendar-days-grid");
@@ -706,6 +732,7 @@ function openHistoryCalendarPopup() {
     if (!popup) return;
     closeCalendarPopup();
     closeStatusDropdown();
+    closeLimitDropdown();
     popup.hidden = false;
     popup.style.display = "block";
     if (btn) btn.setAttribute("aria-expanded", "true");
@@ -736,6 +763,7 @@ function openCalendarPopup() {
     if (!popup) return;
     closeHistoryCalendarPopup();
     closeStatusDropdown();
+    closeLimitDropdown();
     popup.hidden = false;
     popup.style.display = "block";
     if (btn) btn.setAttribute("aria-expanded", "true");
@@ -766,6 +794,7 @@ function openStatusDropdown() {
     if (!menu) return;
     closeHistoryCalendarPopup();
     closeCalendarPopup();
+    closeLimitDropdown();
     menu.hidden = false;
     menu.style.display = "flex";
     if (btn) btn.setAttribute("aria-expanded", "true");
@@ -786,6 +815,36 @@ function toggleStatusDropdown() {
         closeStatusDropdown();
     } else {
         openStatusDropdown();
+    }
+}
+
+function openLimitDropdown() {
+    const menu = document.getElementById("limit-dropdown-menu");
+    const btn = document.getElementById("table-limit-btn");
+    if (!menu) return;
+    closeHistoryCalendarPopup();
+    closeCalendarPopup();
+    closeStatusDropdown();
+    menu.hidden = false;
+    menu.style.display = "flex";
+    if (btn) btn.setAttribute("aria-expanded", "true");
+}
+
+function closeLimitDropdown() {
+    const menu = document.getElementById("limit-dropdown-menu");
+    const btn = document.getElementById("table-limit-btn");
+    if (!menu) return;
+    menu.hidden = true;
+    menu.style.display = "none";
+    if (btn) btn.setAttribute("aria-expanded", "false");
+}
+
+function toggleLimitDropdown() {
+    const menu = document.getElementById("limit-dropdown-menu");
+    if (menu && (!menu.hidden && menu.style.display !== "none")) {
+        closeLimitDropdown();
+    } else {
+        openLimitDropdown();
     }
 }
 
@@ -1226,13 +1285,28 @@ exportFormatRadios.forEach((radio) => {
     radio.addEventListener("change", updateExportPreview);
 });
 
-// Bind Limit selector
+// Bind Limit selector & custom dropdown
+const tableLimitBtn = document.getElementById("table-limit-btn");
+if (tableLimitBtn) {
+    tableLimitBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleLimitDropdown();
+    });
+}
+
+const limitMenuItems = document.querySelectorAll(".limit-menu-item");
+limitMenuItems.forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const limit = btn.getAttribute("data-limit");
+        selectLimitFilter(limit);
+    });
+});
+
 const tableLimitSelect = document.getElementById("table-limit-select");
 if (tableLimitSelect) {
     tableLimitSelect.addEventListener("change", (e) => {
-        readingsPerPage = e.target.value;
-        historyPage = 1;
-        updateTable();
+        selectLimitFilter(e.target.value);
     });
 }
 
@@ -1338,9 +1412,20 @@ document.addEventListener("click", (e) => {
         }
     }
 
-    const statusAnchor = document.querySelector(".status-picker-anchor");
-    if (statusAnchor && !statusAnchor.contains(e.target)) {
-        closeStatusDropdown();
+    const limitMenu = document.getElementById("limit-dropdown-menu");
+    const limitBtn = document.getElementById("table-limit-btn");
+    if (limitMenu && !limitMenu.hidden && limitMenu.style.display !== "none") {
+        if (!limitMenu.contains(e.target) && !limitBtn?.contains(e.target)) {
+            closeLimitDropdown();
+        }
+    }
+
+    const statusMenu = document.getElementById("status-dropdown-menu");
+    const statusBtn = document.getElementById("filter-status-btn");
+    if (statusMenu && !statusMenu.hidden && statusMenu.style.display !== "none") {
+        if (!statusMenu.contains(e.target) && !statusBtn?.contains(e.target)) {
+            closeStatusDropdown();
+        }
     }
 });
 
@@ -1350,6 +1435,7 @@ document.addEventListener("keydown", (e) => {
         closeHistoryCalendarPopup();
         closeCalendarPopup();
         closeStatusDropdown();
+        closeLimitDropdown();
     }
 });
 
