@@ -544,14 +544,16 @@
                             </thead>
                             <tbody id="devices-table-body">
                                 {% for dev in (devices_list or []) %}
-                                <tr class="device-row device-row-{{ (dev.status or 'offline')|lower }}">
+                                {% set dev_status_slug = (dev.status or 'offline')|lower %}
+                                {% set dev_cat_slug = (dev.category or 'general')|lower|replace(' & ', '-')|replace(' ', '-') %}
+                                <tr class="device-row device-row-{{ dev_status_slug }}">
                                     <td>
                                         <div class="device-cell-title-row">
                                             <span class="device-cell-name">{{ dev.name }}</span>
                                         </div>
                                     </td>
                                     <td>
-                                        <span class="device-cell-type type-{{ (dev.category or 'general')|lower|replace(' & ', '-')|replace(' ', '-') }}">{{ dev.type }}</span>
+                                        <span class="device-cell-type type-{{ dev_cat_slug }}">{{ dev.type }}</span>
                                     </td>
                                     <td>
                                         {% if dev.status == 'Online' %}
@@ -597,26 +599,31 @@
                             </div>
                         </div>
 
+                        {% set ratio_online = online_devices if online_devices is not none else 0 %}
+                        {% set ratio_total = total_devices if total_devices is not none else 10 %}
+                        {% set ratio_offline = offline_devices if offline_devices is not none else 10 %}
+                        {% set ratio_pct = (((ratio_online / ratio_total * 100)|round(1)) if ratio_total > 0 else 0) %}
+
                         <div class="status-ratio-box">
                             <div class="status-ratio-number">
-                                <span id="side-ratio-online">{{ online_devices if online_devices is not none else 0 }}</span>/<span id="side-ratio-total">{{ total_devices if total_devices is not none else 10 }}</span>
+                                <span id="side-ratio-online">{{ ratio_online }}</span>/<span id="side-ratio-total">{{ ratio_total }}</span>
                             </div>
                             <p id="side-ratio-text" class="status-ratio-subtitle">
-                                {{ online_devices if online_devices is not none else 0 }} online and {{ offline_devices if offline_devices is not none else 10 }} offline
+                                {{ ratio_online }} online and {{ ratio_offline }} offline
                             </p>
 
                             <div class="device-progress-track">
-                                <div id="side-progress-fill" class="device-progress-fill" style="width: {{ (((online_devices or 0) / total_devices * 100)|round(1)) if (total_devices and total_devices > 0) else 0 }}%;"></div>
+                                <div id="side-progress-fill" class="device-progress-fill" style="width: {{ ratio_pct }}%;"></div>
                             </div>
 
                             <div class="status-ratio-pills">
                                 <span class="table-status status-optimal">
                                     <span class="status-indicator-dot dot-optimal"></span>
-                                    Online: <strong id="side-pill-online">{{ online_devices if online_devices is not none else 0 }}</strong>
+                                    Online: <strong id="side-pill-online">{{ ratio_online }}</strong>
                                 </span>
                                 <span class="table-status status-warning">
                                     <span class="status-indicator-dot dot-warning"></span>
-                                    Offline: <strong id="side-pill-offline">{{ offline_devices if offline_devices is not none else 10 }}</strong>
+                                    Offline: <strong id="side-pill-offline">{{ ratio_offline }}</strong>
                                 </span>
                             </div>
                         </div>
@@ -634,6 +641,15 @@
                             </div>
                         </div>
 
+                        {% set sensors_on = category_stats.sensors.online if (category_stats and category_stats.sensors) else 2 %}
+                        {% set sensors_tot = category_stats.sensors.total if (category_stats and category_stats.sensors) else 2 %}
+                        {% set comm_on = category_stats.communication.online if (category_stats and category_stats.communication) else 3 %}
+                        {% set comm_tot = category_stats.communication.total if (category_stats and category_stats.communication) else 4 %}
+                        {% set alerts_on = category_stats.alerts.online if (category_stats and category_stats.alerts) else 2 %}
+                        {% set alerts_tot = category_stats.alerts.total if (category_stats and category_stats.alerts) else 2 %}
+                        {% set power_on = category_stats.power.online if (category_stats and category_stats.power) else 2 %}
+                        {% set power_tot = category_stats.power.total if (category_stats and category_stats.power) else 2 %}
+
                         <div class="device-category-list">
 
                             <!-- SENSORS -->
@@ -648,7 +664,7 @@
                                     </div>
                                 </div>
                                 <span id="cat-sensors-badge" class="badge badge-optimal">
-                                    {{ category_stats.sensors.online if category_stats and category_stats.sensors else 2 }}/{{ category_stats.sensors.total if category_stats and category_stats.sensors else 2 }} Online
+                                    {{ sensors_on }}/{{ sensors_tot }} Online
                                 </span>
                             </div>
 
@@ -664,7 +680,7 @@
                                     </div>
                                 </div>
                                 <span id="cat-comm-badge" class="badge badge-optimal">
-                                    {{ category_stats.communication.online if category_stats and category_stats.communication else 3 }}/{{ category_stats.communication.total if category_stats and category_stats.communication else 4 }} Online
+                                    {{ comm_on }}/{{ comm_tot }} Online
                                 </span>
                             </div>
 
@@ -680,7 +696,7 @@
                                     </div>
                                 </div>
                                 <span id="cat-alerts-badge" class="badge badge-optimal">
-                                    {{ category_stats.alerts.online if category_stats and category_stats.alerts else 2 }}/{{ category_stats.alerts.total if category_stats and category_stats.alerts else 2 }} Online
+                                    {{ alerts_on }}/{{ alerts_tot }} Online
                                 </span>
                             </div>
 
@@ -696,7 +712,7 @@
                                     </div>
                                 </div>
                                 <span id="cat-power-badge" class="badge badge-optimal">
-                                    {{ category_stats.power.online if category_stats and category_stats.power else 2 }}/{{ category_stats.power.total if category_stats and category_stats.power else 2 }} Online
+                                    {{ power_on }}/{{ power_tot }} Online
                                 </span>
                             </div>
 
@@ -862,7 +878,7 @@
 </div>
 
 <!-- HARDWARE DIAGNOSTICS ASSESSMENT REPORT POP-UP DIALOG -->
-<div id="diagnostics-panel" class="maint-modal-backdrop" style="display: none;" role="dialog" aria-labelledby="diag-panel-heading">
+<div id="diagnostics-panel" class="maint-modal-backdrop" style="display: none;" role="dialog" aria-labelledby="diag-panel-heading" aria-modal="true">
     <div class="maint-modal-container maint-modal-history-container" style="max-width: 880px;">
         <div class="maint-modal-header">
             <div style="display: flex; align-items: center; gap: 12px;">
@@ -896,10 +912,10 @@
                 <table class="maint-history-table" style="min-width: 740px;">
                     <thead>
                         <tr>
-                            <th style="width: 180px;">Hardware Component</th>
-                            <th style="width: 170px;">Diagnostic Routine</th>
-                            <th style="width: 110px; text-align: center;">Result</th>
-                            <th>Engineering Details</th>
+                            <th scope="col" style="width: 180px;">Hardware Component</th>
+                            <th scope="col" style="width: 170px;">Diagnostic Routine</th>
+                            <th scope="col" style="width: 110px; text-align: center;">Result</th>
+                            <th scope="col">Engineering Details</th>
                         </tr>
                     </thead>
                     <tbody id="diag-table-body">
