@@ -12,7 +12,7 @@
           href="{{ url_for('static', filename='css/style.css', v='3.2') }}">
 </head>
 
-<body class="monitoring-page" data-user-email="{{ current_user.email if current_user else '' }}">
+<body class="monitoring-page" data-user-email="{{ current_user.email if current_user else '' }}" data-user-name="{{ current_user.name if current_user else '' }}">
 
 {% include "_icon_sprite.html" %}
 
@@ -566,7 +566,7 @@
 <script src="{{ url_for('static', filename='js/monitoring.js') }}?v=20261031_v2"></script>
 <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
 <script src="{{ url_for('static', filename='js/adaptive.js') }}"></script>
-<script src="{{ url_for('static', filename='js/maintenance.js') }}"></script>
+<script src="{{ url_for('static', filename='js/maintenance.js') }}?v=3.8"></script>
 
 </body>
 </html>\n

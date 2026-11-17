@@ -13,7 +13,8 @@
 </head>
 
 {% set current_email_attr = current_user.email if current_user else (user.email if user else '') %}
-<body class="dashboard-page devices-page" data-user-email="{{ current_email_attr }}">
+{% set current_name_attr = current_user.name if current_user else (user.name if user else '') %}
+<body class="dashboard-page devices-page" data-user-email="{{ current_email_attr }}" data-user-name="{{ current_name_attr }}">
 
 {% include "_icon_sprite.html" %}
 
@@ -958,10 +959,10 @@
     </div>
 </div>
 
-<script src="{{ url_for('static', filename='js/devices.js') }}"></script>
-<script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
-<script src="{{ url_for('static', filename='js/adaptive.js') }}"></script>
-<script src="{{ url_for('static', filename='js/maintenance.js') }}"></script>
+<script src="{{ url_for('static', filename='js/devices.js') }}?v=3.8"></script>
+<script src="{{ url_for('static', filename='js/notifications.js') }}?v=3.8"></script>
+<script src="{{ url_for('static', filename='js/adaptive.js') }}?v=3.8"></script>
+<script src="{{ url_for('static', filename='js/maintenance.js') }}?v=3.8"></script>
 
 </body>
 </html>

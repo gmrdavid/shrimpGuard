@@ -81,14 +81,23 @@
         const tbody = document.getElementById('probe-maint-history-tbody');
         const countBadge = document.getElementById('maint-history-count-badge');
 
+        const myEmail = (document.body.dataset.userEmail || (currentMaintenanceData && currentMaintenanceData.user_email) || '').trim().toLowerCase();
+        const userHistory = (historyList || []).filter((item) => {
+            if (!item) return false;
+            if (myEmail && item.user_email) {
+                return item.user_email.toLowerCase() === myEmail;
+            }
+            return true;
+        });
+
         if (countBadge) {
-            const count = historyList ? historyList.length : 0;
+            const count = userHistory ? userHistory.length : 0;
             countBadge.textContent = `${count} Logged Session${count === 1 ? '' : 's'}`;
         }
 
         if (!tbody) return;
 
-        if (!historyList || historyList.length === 0) {
+        if (!userHistory || userHistory.length === 0) {
             tbody.innerHTML = `
                 <tr>
                     <td colspan="6" style="text-align: center; padding: 24px; color: #64748b;">
@@ -99,9 +108,11 @@
             return;
         }
 
-        tbody.innerHTML = historyList.map((item) => {
+        tbody.innerHTML = userHistory.map((item) => {
             const badgeClass = item.action === 'both' ? 'badge-optimal' : (item.action === 'cleaning' ? 'badge-warning' : 'badge-active');
             const dateStr = item.date_formatted || formatDateTime(item.performed_at);
+            const devId = item.device_id || (currentMaintenanceData && currentMaintenanceData.device_id) || 'N/A';
+            const tech = item.performed_by || (document.body.dataset.userName || document.body.dataset.userEmail || 'Technician');
 
             return `
                 <tr>
@@ -111,7 +122,7 @@
                     <td>
                         <span class="telemetry-chip chip-node" style="font-size: 11px;">
                             <svg class="ui-icon" aria-hidden="true" style="width: 12px; height: 12px;"><use href="#icon-droplet"></use></svg>
-                            ${item.device_id || 'NODE01'}
+                            ${devId}
                         </span>
                     </td>
                     <td>
@@ -120,7 +131,7 @@
                         </span>
                     </td>
                     <td style="color: #334155; font-weight: 500;">
-                        ${item.performed_by || 'Pond Operator'}
+                        ${tech}
                     </td>
                     <td style="font-size: 12.5px; color: #475569; max-width: 320px;">
                         ${item.notes || 'Routine maintenance procedure completed.'}
@@ -578,10 +589,41 @@
     }
 
     /**
+     * Dynamically update modal fields to prevent stale or cross-account data leaks.
+     */
+    function updateLogModalDynamicFields(modal) {
+        if (!modal) return;
+        const activeNodeId = (currentMaintenanceData && currentMaintenanceData.has_paired_node && currentMaintenanceData.device_id)
+            ? currentMaintenanceData.device_id
+            : '';
+        const userEmail = (document.body.dataset.userEmail || (currentMaintenanceData && currentMaintenanceData.user_email) || '').trim();
+        const userName = (document.body.dataset.userName || '').trim();
+        const defaultTech = userName || userEmail || 'Pond Operator';
+
+        const devInput = modal.querySelector('input[name="device_id"]');
+        if (devInput) devInput.value = activeNodeId;
+
+        const badgeEl = modal.querySelector('.maint-target-id-badge');
+        if (badgeEl) badgeEl.textContent = activeNodeId || 'No Paired Node';
+
+        const techInput = modal.querySelector('#maint-technician-input');
+        if (techInput) {
+            techInput.value = defaultTech;
+        }
+
+        const dateInput = modal.querySelector('#maint-datetime-input');
+        if (dateInput) {
+            const now = new Date();
+            const pad = (n) => String(n).padStart(2, '0');
+            dateInput.value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+        }
+    }
+
+    /**
      * Open the Quick Maintenance Log modal dialog.
      */
     function openMaintenanceModal(defaultAction = 'both') {
-        if (currentMaintenanceData && currentMaintenanceData.has_paired_node === false) {
+        if (!currentMaintenanceData || currentMaintenanceData.has_paired_node === false || !currentMaintenanceData.device_id) {
             showMaintenanceToast('Please pair a pond telemetry node before logging probe maintenance.');
             const pairBtn = document.getElementById('btn-open-pair-modal');
             if (pairBtn) pairBtn.click();
@@ -594,20 +636,9 @@
             modal = document.getElementById('probe-maint-log-modal');
         }
         if (modal) {
+            updateLogModalDynamicFields(modal);
             const selectEl = modal.querySelector('#maint-action-select');
             if (selectEl) selectEl.value = defaultAction;
-
-            const devInput = modal.querySelector('input[name="device_id"]');
-            if (devInput && currentMaintenanceData && currentMaintenanceData.device_id) {
-                devInput.value = currentMaintenanceData.device_id;
-            }
-
-            const dateInput = modal.querySelector('#maint-datetime-input');
-            if (dateInput) {
-                const now = new Date();
-                const pad = (n) => String(n).padStart(2, '0');
-                dateInput.value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
-            }
 
             modal.removeAttribute('hidden');
             modal.classList.add('is-open');
@@ -665,14 +696,34 @@
         container.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 28px; color: #64748b;">Loading maintenance audit log...</td></tr>';
 
         const history = await fetchMaintenanceHistory();
-        if (!history || history.length === 0) {
-            container.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 28px; color: #64748b;">No maintenance logs recorded yet. Use the "Log Maintenance" button to record probe cleanings and calibrations.</td></tr>';
+        const myEmail = (document.body.dataset.userEmail || (currentMaintenanceData && currentMaintenanceData.user_email) || '').trim().toLowerCase();
+
+        // Strict per-account isolation filter: only show records belonging to the logged-in user
+        const userHistory = (history || []).filter((item) => {
+            if (!item) return false;
+            if (myEmail && item.user_email) {
+                return item.user_email.toLowerCase() === myEmail;
+            }
+            return true;
+        });
+
+        if (!userHistory || userHistory.length === 0) {
+            container.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 32px 20px; color: #64748b;">
+                        <div style="font-weight: 600; color: #334155; margin-bottom: 4px;">No Maintenance Logs Recorded Yet</div>
+                        <div style="font-size: 13px;">Use the "Log Maintenance" button to record probe cleanings and calibrations once a node is paired.</div>
+                    </td>
+                </tr>
+            `;
             return;
         }
 
-        container.innerHTML = history.map((item) => {
+        container.innerHTML = userHistory.map((item) => {
             const badgeClass = item.action === 'both' ? 'maint-badge-both' : (item.action === 'cleaning' ? 'maint-badge-cleaning' : 'maint-badge-calibration');
             const dateStr = item.date_formatted || formatDateTime(item.performed_at);
+            const devId = item.device_id || (currentMaintenanceData && currentMaintenanceData.device_id) || 'N/A';
+            const tech = item.performed_by || (document.body.dataset.userName || document.body.dataset.userEmail || 'Technician');
 
             return `
                 <tr>
@@ -682,7 +733,7 @@
                     <td class="col-node">
                         <span class="maint-chip-node">
                             <svg class="ui-icon" aria-hidden="true"><use href="#icon-droplet"></use></svg>
-                            ${item.device_id || 'NODE01'}
+                            ${devId}
                         </span>
                     </td>
                     <td class="col-proc">
@@ -691,7 +742,7 @@
                         </span>
                     </td>
                     <td class="col-tech">
-                        <span class="tech-name">${item.performed_by || 'Pond Operator'}</span>
+                        <span class="tech-name">${tech}</span>
                     </td>
                     <td class="col-notes">
                         <p class="notes-text">${item.notes || 'Routine cleaning and buffer calibration completed.'}</p>
@@ -716,8 +767,13 @@
         const action = form.action.value;
         const notes = form.notes.value.trim();
         const technician = form.technician.value.trim();
-        const deviceId = form.device_id.value || 'NODE01';
+        const deviceId = form.device_id.value || (currentMaintenanceData && currentMaintenanceData.device_id) || '';
         const performedAt = form.performed_at ? form.performed_at.value : '';
+
+        if (!deviceId) {
+            showMaintenanceToast('Please pair a pond telemetry node before logging maintenance.');
+            return;
+        }
 
         try {
             if (submitBtn) {
@@ -919,8 +975,13 @@
         modalDiv.className = 'maint-modal-backdrop';
         modalDiv.setAttribute('hidden', '');
 
-        const defaultTech = (currentMaintenanceData && currentMaintenanceData.user_email) || document.body.dataset.userEmail || 'Pond Operator';
-        const activeNodeId = (currentMaintenanceData && currentMaintenanceData.device_id) || 'NODE01';
+        const userEmail = (document.body.dataset.userEmail || (currentMaintenanceData && currentMaintenanceData.user_email) || '').trim();
+        const userName = (document.body.dataset.userName || '').trim();
+        const defaultTech = userName || userEmail || 'Pond Operator';
+        const activeNodeId = (currentMaintenanceData && currentMaintenanceData.has_paired_node && currentMaintenanceData.device_id)
+            ? currentMaintenanceData.device_id
+            : '';
+        const displayNodeBadge = activeNodeId || 'No Paired Node';
 
         modalDiv.innerHTML = `
             <div class="maint-modal-container maint-modal-sm maint-log-dialog" role="dialog" aria-labelledby="log-modal-title" aria-modal="true">
@@ -952,7 +1013,7 @@
                             <div class="maint-target-context-info">
                                 <div class="maint-target-context-title">
                                     <strong>Node Submerged Probes</strong>
-                                    <span class="maint-target-id-badge">${activeNodeId}</span>
+                                    <span class="maint-target-id-badge">${displayNodeBadge}</span>
                                 </div>
                                 <p class="maint-target-context-sub">DFRobot Industrial pH Sensor &amp; DS18B20 Digital Temperature</p>
                             </div>

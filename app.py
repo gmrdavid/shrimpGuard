@@ -585,7 +585,7 @@ class ProbeMaintenanceHistory(db.Model):
         }
 
 
-def _get_unpaired_maintenance_dict(device_id="NODE01", user_email=None):
+def _get_unpaired_maintenance_dict(device_id=None, user_email=None):
     """Returns a dormant/standby probe lifecycle structure when no pond node is paired."""
     return {
         "id": None,
@@ -628,7 +628,7 @@ def get_probe_maintenance_status(user_email=None, device_id=None):
         user_email = session.get("user_id")
 
     if not user_email:
-        return _get_unpaired_maintenance_dict(device_id=device_id or "NODE01")
+        return _get_unpaired_maintenance_dict(device_id=None)
 
     # 1. Verify if this user has any active paired pond telemetry nodes
     paired_nodes = []
@@ -642,7 +642,7 @@ def get_probe_maintenance_status(user_email=None, device_id=None):
 
     # If the user has NO paired pond telemetry nodes, the lifecycle timer is paused
     if not paired_nodes:
-        return _get_unpaired_maintenance_dict(device_id=device_id or "NODE01", user_email=user_email)
+        return _get_unpaired_maintenance_dict(device_id=None, user_email=user_email)
 
     # User HAS paired node(s). Determine target device ID
     user_node_ids = [n.device_id for n in paired_nodes]
@@ -2303,16 +2303,6 @@ def get_maintenance_history_endpoint():
             query = query.filter_by(device_id=device_id)
 
         history_records = query.order_by(ProbeMaintenanceHistory.performed_at.desc()).limit(100).all()
-
-        return jsonify({
-            "success": True,
-            "count": len(history_records),
-            "history": [r.to_dict() for r in history_records]
-        })
-    except Exception as exc:
-        db.session.rollback()
-        app.logger.exception(f"Error fetching maintenance history: {exc}")
-        return jsonify({"success": False, "error": "Unable to fetch maintenance history."}), 500
 
         return jsonify({
             "success": True,
