@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#126b4f">
     <title>IoT &amp; Telemetry Control | ShrimpGuard Admin</title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=3.3">
 </head>
 
 <body class="dashboard-page admin-page">
@@ -435,65 +435,122 @@
                 </div>
 
                 <div class="admin-toolbar-filters">
-                    <!-- Date Filter -->
-                    <div class="admin-filter-item">
-                        <span class="admin-filter-item-label">Date:</span>
-                        <div class="admin-input-with-icon">
-                            <svg class="ui-icon admin-control-icon" aria-hidden="true">
-                                <use href="#icon-calendar"></use>
-                            </svg>
-                            <select id="telemetry-date-preset" class="admin-filter-select" aria-label="Filter by date range">
-                                <option value="all" selected>All Dates</option>
-                                <option value="today">Today</option>
-                                <option value="yesterday">Yesterday</option>
-                                <option value="last7">Last 7 Days</option>
-                                <option value="last30">Last 30 Days</option>
-                                <option value="custom">Specific Date...</option>
-                            </select>
+                    <!-- Date Filter Dropdown (Matching Historical Readings Status Filter Design) -->
+                    <div class="status-picker-anchor" style="position: relative; display: inline-block;">
+                        <button id="telemetry-date-filter-btn" class="historical-toolbar-btn" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="Filter by date range" title="Filter by date range" data-prefix="Date: ">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>
+                            <span id="telemetry-date-filter-text">Date: All Dates</span>
+                            <span class="toolbar-arrow">▾</span>
+                        </button>
+                        <div id="telemetry-date-dropdown-menu" class="status-dropdown-menu" hidden style="display: none;" role="menu">
+                            <button type="button" class="status-menu-item active" data-value="all" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> All Dates
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="today" role="menuitem">
+                                <span class="status-menu-dot dot-optimal"></span> Today
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="yesterday" role="menuitem">
+                                <span class="status-menu-dot dot-warning"></span> Yesterday
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="last7" role="menuitem">
+                                <span class="status-menu-dot dot-client"></span> Last 7 Days
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="last30" role="menuitem">
+                                <span class="status-menu-dot dot-admin"></span> Last 30 Days
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="custom" role="menuitem">
+                                <span class="status-menu-dot dot-neutral"></span> Specific Date...
+                            </button>
                         </div>
-                        <input
-                            id="telemetry-date-picker"
-                            class="admin-date-input"
-                            type="date"
-                            aria-label="Pick specific date"
-                            title="Filter by specific date"
-                            style="display: none;">
+                        <select id="telemetry-date-preset" class="admin-filter-select" hidden style="display: none;" aria-hidden="true" tabindex="-1">
+                            <option value="all" selected>All Dates</option>
+                            <option value="today">Today</option>
+                            <option value="yesterday">Yesterday</option>
+                            <option value="last7">Last 7 Days</option>
+                            <option value="last30">Last 30 Days</option>
+                            <option value="custom">Specific Date...</option>
+                        </select>
+                    </div>
+                    <input
+                        id="telemetry-date-picker"
+                        class="admin-date-input"
+                        type="date"
+                        aria-label="Pick specific date"
+                        title="Filter by specific date"
+                        style="display: none;">
+
+                    <!-- ML Status Filter Dropdown (Exact match to Historical Readings Status Filter) -->
+                    <div class="status-picker-anchor" style="position: relative; display: inline-block;">
+                        <button id="telemetry-status-filter-btn" class="historical-toolbar-btn" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="Filter by ML status" title="Filter by ML status" data-prefix="Status: ">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
+                            <span id="telemetry-status-filter-text">Status: All</span>
+                            <span class="toolbar-arrow">▾</span>
+                        </button>
+                        <div id="telemetry-status-dropdown-menu" class="status-dropdown-menu" hidden style="display: none;" role="menu">
+                            <button type="button" class="status-menu-item active" data-value="all" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> All ML Statuses
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="optimal" role="menuitem">
+                                <span class="status-menu-dot dot-optimal"></span> Optimal
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="warning" role="menuitem">
+                                <span class="status-menu-dot dot-warning"></span> Warning
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="critical" role="menuitem">
+                                <span class="status-menu-dot dot-critical"></span> Critical
+                            </button>
+                        </div>
+                        <select id="telemetry-status-filter" class="admin-filter-select" hidden style="display: none;" aria-hidden="true" tabindex="-1">
+                            <option value="all" selected>All ML Statuses</option>
+                            <option value="optimal">Optimal</option>
+                            <option value="warning">Warning</option>
+                            <option value="critical">Critical</option>
+                        </select>
                     </div>
 
-                    <!-- ML Status Filter -->
-                    <div class="admin-filter-item">
-                        <span class="admin-filter-item-label">Status:</span>
-                        <div class="admin-input-with-icon">
-                            <svg class="ui-icon admin-control-icon" aria-hidden="true">
-                                <use href="#icon-filter"></use>
-                            </svg>
-                            <select id="telemetry-status-filter" class="admin-filter-select" aria-label="Filter by ML status">
-                                <option value="all" selected>All ML Statuses</option>
-                                <option value="optimal">Optimal</option>
-                                <option value="warning">Warning</option>
-                                <option value="critical">Critical</option>
-                            </select>
+                    <!-- Sort Dropdown (Matching Historical Readings Status Filter Design) -->
+                    <div class="status-picker-anchor" style="position: relative; display: inline-block;">
+                        <button id="telemetry-sort-btn" class="historical-toolbar-btn" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="Sort telemetry records" title="Sort telemetry records" data-prefix="Sort: ">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-sort"></use></svg>
+                            <span id="telemetry-sort-text">Sort: Newest First</span>
+                            <span class="toolbar-arrow">▾</span>
+                        </button>
+                        <div id="telemetry-sort-dropdown-menu" class="status-dropdown-menu" hidden style="display: none;" role="menu">
+                            <button type="button" class="status-menu-item active" data-value="date-desc" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> Date: Newest First
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="date-asc" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> Date: Oldest First
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="temp-desc" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> Temp: Highest First
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="temp-asc" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> Temp: Lowest First
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="ph-desc" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> pH: Highest First
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="ph-asc" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> pH: Lowest First
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="wqi-desc" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> WQI Score: Highest First
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="wqi-asc" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> WQI Score: Lowest First
+                            </button>
                         </div>
-                    </div>
-
-                    <!-- Sort -->
-                    <div class="admin-filter-item">
-                        <span class="admin-filter-item-label">Sort:</span>
-                        <div class="admin-input-with-icon">
-                            <svg class="ui-icon admin-control-icon" aria-hidden="true">
-                                <use href="#icon-sort"></use>
-                            </svg>
-                            <select id="telemetry-sort" class="admin-filter-select" aria-label="Sort telemetry records">
-                                <option value="date-desc" selected>Date: Newest First</option>
-                                <option value="date-asc">Date: Oldest First</option>
-                                <option value="temp-desc">Temp: Highest First</option>
-                                <option value="temp-asc">Temp: Lowest First</option>
-                                <option value="ph-desc">pH: Highest First</option>
-                                <option value="ph-asc">pH: Lowest First</option>
-                                <option value="wqi-desc">WQI Score: Highest First</option>
-                                <option value="wqi-asc">WQI Score: Lowest First</option>
-                            </select>
-                        </div>
+                        <select id="telemetry-sort" class="admin-filter-select" hidden style="display: none;" aria-hidden="true" tabindex="-1">
+                            <option value="date-desc" selected>Date: Newest First</option>
+                            <option value="date-asc">Date: Oldest First</option>
+                            <option value="temp-desc">Temp: Highest First</option>
+                            <option value="temp-asc">Temp: Lowest First</option>
+                            <option value="ph-desc">pH: Highest First</option>
+                            <option value="ph-asc">pH: Lowest First</option>
+                            <option value="wqi-desc">WQI Score: Highest First</option>
+                            <option value="wqi-asc">WQI Score: Lowest First</option>
+                        </select>
                     </div>
 
                     <!-- Reset Button -->
@@ -651,6 +708,7 @@
 <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
 <script src="{{ url_for('static', filename='js/adaptive.js') }}"></script>
 <script src="{{ url_for('static', filename='js/adminlogout.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admindropdowns.js') }}?v=3.3"></script>
 <script>
     function updateDeviceTime() {
         const timeEl = document.getElementById("time");

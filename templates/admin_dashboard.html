@@ -9,7 +9,7 @@
     <title>Admin Dashboard | ShrimpGuard</title>
 
     <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}">
+          href="{{ url_for('static', filename='css/style.css') }}?v=3.3">
 </head>
 
 <body class="dashboard-page admin-page">
@@ -604,11 +604,31 @@
                     </div>
 
                     {% if recent_activities %}
-                    <!-- ACTIVITY LIMIT / TOOLBAR -->
+                    <!-- ACTIVITY LIMIT / TOOLBAR (MATCHING HISTORICAL READINGS STATUS/LIMIT FILTER DESIGN) -->
                     <div class="activity-controls-row">
-                        <div class="activity-limit-select-wrap">
-                            <label for="activity-limit-select" class="activity-limit-label">Show:</label>
-                            <select id="activity-limit-select" class="activity-limit-select" aria-label="Activities per page">
+                        <div class="limit-picker-anchor" style="position: relative; display: inline-block;">
+                            <button id="activity-limit-btn" class="historical-toolbar-btn" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="Show items" title="Show events per page" data-prefix="Show: ">
+                                <svg class="ui-icon" aria-hidden="true"><use href="#icon-menu"></use></svg>
+                                <span id="activity-limit-text">Show: 5 items</span>
+                                <span class="toolbar-arrow">▾</span>
+                            </button>
+
+                            <div id="activity-limit-dropdown-menu" class="limit-dropdown-menu" hidden style="display: none;" role="menu">
+                                <button type="button" class="limit-menu-item active" data-value="5" role="menuitem">
+                                    <span class="limit-menu-dot"></span> 5 items
+                                </button>
+                                <button type="button" class="limit-menu-item" data-value="10" role="menuitem">
+                                    <span class="limit-menu-dot"></span> 10 items
+                                </button>
+                                <button type="button" class="limit-menu-item" data-value="20" role="menuitem">
+                                    <span class="limit-menu-dot"></span> 20 items
+                                </button>
+                                <button type="button" class="limit-menu-item" data-value="all" role="menuitem">
+                                    <span class="limit-menu-dot"></span> All items
+                                </button>
+                            </div>
+
+                            <select id="activity-limit-select" class="activity-limit-select" hidden style="display: none;" aria-hidden="true" tabindex="-1">
                                 <option value="5" selected>5 items</option>
                                 <option value="10">10 items</option>
                                 <option value="20">20 items</option>
@@ -715,8 +735,9 @@
     </div>
 
     <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
-<script src="{{ url_for('static', filename='js/adaptive.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/adaptive.js') }}"></script>
     <script src="{{ url_for('static', filename='js/adminlogout.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/admindropdowns.js') }}?v=3.3"></script>
     <script>
         function updateDeviceTime() {
             const timeEl = document.getElementById("time");

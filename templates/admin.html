@@ -9,7 +9,7 @@
     <title>User Management | ShrimpGuard</title>
 
     <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}">
+          href="{{ url_for('static', filename='css/style.css') }}?v=3.3">
 </head>
 
 <body class="dashboard-page admin-page">
@@ -1139,37 +1139,55 @@
                 </div>
 
                 <div class="admin-toolbar-filters">
-                    <!-- Role Filter -->
-                    <div class="admin-filter-item">
-                        <span class="admin-filter-item-label">Role:</span>
-                        <div class="admin-input-with-icon">
-                            <svg class="ui-icon admin-control-icon" aria-hidden="true">
-                                <use href="#icon-filter"></use>
-                            </svg>
-                            <select id="user-role-filter" class="admin-filter-select" aria-label="Filter by role">
-                                <option value="all" selected>All Roles</option>
-                                <option value="admin">Admin</option>
-                                <option value="client">Client</option>
-                            </select>
+                    <!-- Role Filter Dropdown (Matching Historical Readings Status Filter Design) -->
+                    <div class="status-picker-anchor" style="position: relative; display: inline-block;">
+                        <button id="user-role-filter-btn" class="historical-toolbar-btn" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="Filter by role" title="Filter by role" data-prefix="Role: ">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-filter"></use></svg>
+                            <span id="user-role-filter-text">Role: All Roles</span>
+                            <span class="toolbar-arrow">▾</span>
+                        </button>
+                        <div id="user-role-dropdown-menu" class="status-dropdown-menu" hidden style="display: none;" role="menu">
+                            <button type="button" class="status-menu-item active" data-value="all" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> All Roles
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="admin" role="menuitem">
+                                <span class="status-menu-dot dot-admin"></span> Admin
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="client" role="menuitem">
+                                <span class="status-menu-dot dot-client"></span> Client
+                            </button>
                         </div>
+                        <select id="user-role-filter" class="admin-filter-select" hidden style="display: none;" aria-hidden="true" tabindex="-1">
+                            <option value="all" selected>All Roles</option>
+                            <option value="admin">Admin</option>
+                            <option value="client">Client</option>
+                        </select>
                     </div>
 
-                    <!-- Status Filter -->
-                    <div class="admin-filter-item">
-                        <span class="admin-filter-item-label">Status:</span>
-                        <div class="admin-input-with-icon">
-                            <svg class="ui-icon admin-control-icon" aria-hidden="true">
-                                <use href="#icon-users"></use>
-                            </svg>
-                            <select id="user-status-filter" class="admin-filter-select" aria-label="Filter by status">
-                                <option value="all" selected>All Statuses</option>
-                                <option value="active">Active</option>
-                                <option value="inactive">Inactive</option>
-                            </select>
+                    <!-- Status Filter Dropdown (Matching Historical Readings Status Filter Design) -->
+                    <div class="status-picker-anchor" style="position: relative; display: inline-block;">
+                        <button id="user-status-filter-btn" class="historical-toolbar-btn" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="Filter by status" title="Filter by status" data-prefix="Status: ">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-users"></use></svg>
+                            <span id="user-status-filter-text">Status: All Statuses</span>
+                            <span class="toolbar-arrow">▾</span>
+                        </button>
+                        <div id="user-status-dropdown-menu" class="status-dropdown-menu" hidden style="display: none;" role="menu">
+                            <button type="button" class="status-menu-item active" data-value="all" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> All Statuses
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="active" role="menuitem">
+                                <span class="status-menu-dot dot-optimal"></span> Active
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="inactive" role="menuitem">
+                                <span class="status-menu-dot dot-critical"></span> Inactive
+                            </button>
                         </div>
+                        <select id="user-status-filter" class="admin-filter-select" hidden style="display: none;" aria-hidden="true" tabindex="-1">
+                            <option value="all" selected>All Statuses</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
                     </div>
-
-                    
 
                     <!-- Reset Button -->
                     <button id="user-reset-btn" class="admin-filter-reset-btn" type="button" title="Reset all filters">
@@ -1342,6 +1360,7 @@
 </div>
 
 <script src="{{ url_for('static', filename='js/admindashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admindropdowns.js') }}?v=3.3"></script>
 <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
 <script src="{{ url_for('static', filename='js/adaptive.js') }}"></script>
 <script src="{{ url_for('static', filename='js/adminlogout.js') }}"></script>

@@ -1,6 +1,8 @@
 import re
+import sys
 
-with open('static/css/style.css', 'r', encoding='utf-8') as f:
+target_file = sys.argv[1] if len(sys.argv) > 1 else 'static/css/style.css'
+with open(target_file, 'r', encoding='utf-8') as f:
     css_text = f.read()
 
 # Let's map character offset to line and column

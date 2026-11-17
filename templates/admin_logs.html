@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#126b4f">
     <title>Audit &amp; System Logs | ShrimpGuard Admin</title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=3.3">
 </head>
 
 <body class="dashboard-page admin-page">
@@ -296,84 +296,163 @@
                 </div>
 
                 <div class="admin-toolbar-filters">
-                    <!-- Date Filter -->
-                    <div class="admin-filter-item">
-                        <span class="admin-filter-item-label">Date:</span>
-                        <div class="admin-input-with-icon">
-                            <svg class="ui-icon admin-control-icon" aria-hidden="true">
-                                <use href="#icon-calendar"></use>
-                            </svg>
-                            <select id="log-date-preset" class="admin-filter-select" aria-label="Filter by date range">
-                                <option value="all" selected>All Dates</option>
-                                <option value="today">Today</option>
-                                <option value="yesterday">Yesterday</option>
-                                <option value="last7">Last 7 Days</option>
-                                <option value="last30">Last 30 Days</option>
-                                <option value="custom">Specific Date...</option>
-                            </select>
+                    <!-- Date Filter Dropdown (Matching Historical Readings Status Filter Design) -->
+                    <div class="status-picker-anchor" style="position: relative; display: inline-block;">
+                        <button id="log-date-filter-btn" class="historical-toolbar-btn" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="Filter by date range" title="Filter by date range" data-prefix="Date: ">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>
+                            <span id="log-date-filter-text">Date: All Dates</span>
+                            <span class="toolbar-arrow">▾</span>
+                        </button>
+                        <div id="log-date-dropdown-menu" class="status-dropdown-menu" hidden style="display: none;" role="menu">
+                            <button type="button" class="status-menu-item active" data-value="all" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> All Dates
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="today" role="menuitem">
+                                <span class="status-menu-dot dot-optimal"></span> Today
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="yesterday" role="menuitem">
+                                <span class="status-menu-dot dot-warning"></span> Yesterday
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="last7" role="menuitem">
+                                <span class="status-menu-dot dot-client"></span> Last 7 Days
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="last30" role="menuitem">
+                                <span class="status-menu-dot dot-admin"></span> Last 30 Days
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="custom" role="menuitem">
+                                <span class="status-menu-dot dot-neutral"></span> Specific Date...
+                            </button>
                         </div>
-                        <input
-                            id="log-date-picker"
-                            class="admin-date-input"
-                            type="date"
-                            aria-label="Pick specific date"
-                            title="Filter by specific date"
-                            style="display: none;">
+                        <select id="log-date-preset" class="admin-filter-select" hidden style="display: none;" aria-hidden="true" tabindex="-1">
+                            <option value="all" selected>All Dates</option>
+                            <option value="today">Today</option>
+                            <option value="yesterday">Yesterday</option>
+                            <option value="last7">Last 7 Days</option>
+                            <option value="last30">Last 30 Days</option>
+                            <option value="custom">Specific Date...</option>
+                        </select>
+                    </div>
+                    <input
+                        id="log-date-picker"
+                        class="admin-date-input"
+                        type="date"
+                        aria-label="Pick specific date"
+                        title="Filter by specific date"
+                        style="display: none;">
+
+                    <!-- Action Filter Dropdown (Matching Historical Readings Status Filter Design) -->
+                    <div class="status-picker-anchor" style="position: relative; display: inline-block;">
+                        <button id="log-action-filter-btn" class="historical-toolbar-btn" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="Filter by action" title="Filter by action" data-prefix="Action: ">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-filter"></use></svg>
+                            <span id="log-action-filter-text">Action: All Actions</span>
+                            <span class="toolbar-arrow">▾</span>
+                        </button>
+                        <div id="log-action-dropdown-menu" class="status-dropdown-menu" hidden style="display: none;" role="menu">
+                            <button type="button" class="status-menu-item active" data-value="all" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> All Actions
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="login" role="menuitem">
+                                <span class="status-menu-dot dot-optimal"></span> LOGIN
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="logout" role="menuitem">
+                                <span class="status-menu-dot dot-neutral"></span> LOGOUT
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="signup" role="menuitem">
+                                <span class="status-menu-dot dot-client"></span> SIGNUP
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="user_create" role="menuitem">
+                                <span class="status-menu-dot dot-optimal"></span> USER_CREATE
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="user_edit" role="menuitem">
+                                <span class="status-menu-dot dot-warning"></span> USER_EDIT
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="user_delete" role="menuitem">
+                                <span class="status-menu-dot dot-critical"></span> USER_DELETE
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="password_reset" role="menuitem">
+                                <span class="status-menu-dot dot-warning"></span> PASSWORD_RESET
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="telemetry_ingest" role="menuitem">
+                                <span class="status-menu-dot dot-admin"></span> TELEMETRY_INGEST
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="log_purge" role="menuitem">
+                                <span class="status-menu-dot dot-critical"></span> LOG_PURGE
+                            </button>
+                        </div>
+                        <select id="log-action-filter" class="admin-filter-select" hidden style="display: none;" aria-hidden="true" tabindex="-1">
+                            <option value="all" selected>All Actions</option>
+                            <option value="login">LOGIN</option>
+                            <option value="logout">LOGOUT</option>
+                            <option value="signup">SIGNUP</option>
+                            <option value="user_create">USER_CREATE</option>
+                            <option value="user_edit">USER_EDIT</option>
+                            <option value="user_delete">USER_DELETE</option>
+                            <option value="password_reset">PASSWORD_RESET</option>
+                            <option value="telemetry_ingest">TELEMETRY_INGEST</option>
+                            <option value="log_purge">LOG_PURGE</option>
+                        </select>
                     </div>
 
-                    <!-- Action Filter -->
-                    <div class="admin-filter-item">
-                        <span class="admin-filter-item-label">Action:</span>
-                        <div class="admin-input-with-icon">
-                            <svg class="ui-icon admin-control-icon" aria-hidden="true">
-                                <use href="#icon-filter"></use>
-                            </svg>
-                            <select id="log-action-filter" class="admin-filter-select" aria-label="Filter by action">
-                                <option value="all" selected>All Actions</option>
-                                <option value="login">LOGIN</option>
-                                <option value="logout">LOGOUT</option>
-                                <option value="signup">SIGNUP</option>
-                                <option value="user_create">USER_CREATE</option>
-                                <option value="user_edit">USER_EDIT</option>
-                                <option value="user_delete">USER_DELETE</option>
-                                <option value="password_reset">PASSWORD_RESET</option>
-                                <option value="telemetry_ingest">TELEMETRY_INGEST</option>
-                                <option value="log_purge">LOG_PURGE</option>
-                            </select>
+                    <!-- Role Filter Dropdown (Matching Historical Readings Status Filter Design) -->
+                    <div class="status-picker-anchor" style="position: relative; display: inline-block;">
+                        <button id="log-role-filter-btn" class="historical-toolbar-btn" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="Filter by role" title="Filter by role" data-prefix="Role: ">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-users"></use></svg>
+                            <span id="log-role-filter-text">Role: All Roles</span>
+                            <span class="toolbar-arrow">▾</span>
+                        </button>
+                        <div id="log-role-dropdown-menu" class="status-dropdown-menu" hidden style="display: none;" role="menu">
+                            <button type="button" class="status-menu-item active" data-value="all" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> All Roles
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="admin" role="menuitem">
+                                <span class="status-menu-dot dot-admin"></span> Admin
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="client" role="menuitem">
+                                <span class="status-menu-dot dot-client"></span> Client
+                            </button>
                         </div>
+                        <select id="log-role-filter" class="admin-filter-select" hidden style="display: none;" aria-hidden="true" tabindex="-1">
+                            <option value="all" selected>All Roles</option>
+                            <option value="admin">Admin</option>
+                            <option value="client">Client</option>
+                        </select>
                     </div>
 
-                    <!-- Role Filter -->
-                    <div class="admin-filter-item">
-                        <span class="admin-filter-item-label">Role:</span>
-                        <div class="admin-input-with-icon">
-                            <svg class="ui-icon admin-control-icon" aria-hidden="true">
-                                <use href="#icon-users"></use>
-                            </svg>
-                            <select id="log-role-filter" class="admin-filter-select" aria-label="Filter by role">
-                                <option value="all" selected>All Roles</option>
-                                <option value="admin">Admin</option>
-                                <option value="client">Client</option>
-                            </select>
+                    <!-- Sort Dropdown (Matching Historical Readings Status Filter Design) -->
+                    <div class="status-picker-anchor" style="position: relative; display: inline-block;">
+                        <button id="log-sort-btn" class="historical-toolbar-btn" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="Sort audit logs" title="Sort audit logs" data-prefix="Sort: ">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-sort"></use></svg>
+                            <span id="log-sort-text">Sort: Newest First</span>
+                            <span class="toolbar-arrow">▾</span>
+                        </button>
+                        <div id="log-sort-dropdown-menu" class="status-dropdown-menu" hidden style="display: none;" role="menu">
+                            <button type="button" class="status-menu-item active" data-value="date-desc" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> Newest First
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="date-asc" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> Oldest First
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="action-asc" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> Action: A to Z
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="action-desc" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> Action: Z to A
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="user-asc" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> User: A to Z
+                            </button>
+                            <button type="button" class="status-menu-item" data-value="user-desc" role="menuitem">
+                                <span class="status-menu-dot dot-all"></span> User: Z to A
+                            </button>
                         </div>
-                    </div>
-
-                    <!-- Sort -->
-                    <div class="admin-filter-item">
-                        <span class="admin-filter-item-label">Sort:</span>
-                        <div class="admin-input-with-icon">
-                            <svg class="ui-icon admin-control-icon" aria-hidden="true">
-                                <use href="#icon-sort"></use>
-                            </svg>
-                            <select id="log-sort" class="admin-filter-select" aria-label="Sort audit logs">
-                                <option value="date-desc" selected>Newest First</option>
-                                <option value="date-asc">Oldest First</option>
-                                <option value="action-asc">Action: A to Z</option>
-                                <option value="action-desc">Action: Z to A</option>
-                                <option value="user-asc">User: A to Z</option>
-                                <option value="user-desc">User: Z to A</option>
-                            </select>
-                        </div>
+                        <select id="log-sort" class="admin-filter-select" hidden style="display: none;" aria-hidden="true" tabindex="-1">
+                            <option value="date-desc" selected>Newest First</option>
+                            <option value="date-asc">Oldest First</option>
+                            <option value="action-asc">Action: A to Z</option>
+                            <option value="action-desc">Action: Z to A</option>
+                            <option value="user-asc">User: A to Z</option>
+                            <option value="user-desc">User: Z to A</option>
+                        </select>
                     </div>
 
                     <!-- Reset Button -->
@@ -746,6 +825,7 @@
 <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
 <script src="{{ url_for('static', filename='js/adaptive.js') }}"></script>
 <script src="{{ url_for('static', filename='js/adminlogout.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admindropdowns.js') }}?v=3.3"></script>
 <script>
     function updateDeviceTime() {
         const timeEl = document.getElementById("time");
