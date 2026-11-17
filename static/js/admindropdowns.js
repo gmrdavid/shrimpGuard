@@ -19,7 +19,9 @@
         var select = anchor.querySelector('select');
         var menu = anchor.querySelector('.status-dropdown-menu, .limit-dropdown-menu');
         var btn = anchor.querySelector('.historical-toolbar-btn');
-        var textSpan = anchor.querySelector("[id$='-text'], span:not(.toolbar-arrow):not(.status-menu-dot):not(.limit-menu-dot)");
+        var textSpan = anchor.querySelector("[id$='-text']") ||
+                       anchor.querySelector(".btn-label-with-icon span") ||
+                       anchor.querySelector("span:not(.toolbar-arrow):not(.status-menu-dot):not(.limit-menu-dot):not(.btn-label-with-icon)");
 
         if (!select || !menu) return;
 
@@ -63,7 +65,9 @@
             var btn = anchor.querySelector('.historical-toolbar-btn');
             var menu = anchor.querySelector('.status-dropdown-menu, .limit-dropdown-menu');
             var select = anchor.querySelector('select');
-            var textSpan = anchor.querySelector("[id$='-text'], span:not(.toolbar-arrow):not(.status-menu-dot):not(.limit-menu-dot)");
+            var textSpan = anchor.querySelector("[id$='-text']") ||
+                       anchor.querySelector(".btn-label-with-icon span") ||
+                       anchor.querySelector("span:not(.toolbar-arrow):not(.status-menu-dot):not(.limit-menu-dot):not(.btn-label-with-icon)");
 
             if (!btn || !menu) return;
 

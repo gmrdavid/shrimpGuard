@@ -43,9 +43,33 @@
 
     // ADD USER
     const openAddBtn = get("open-add-user");
+    const newPwInput = get("new-user-password");
+    const newPwHint = get("new-user-pw-hint");
+
     if (openAddBtn) {
         openAddBtn.addEventListener("click", () => {
             openDialog("add-user-dialog");
+            const nameInput = get("new-user-name");
+            if (nameInput) {
+                setTimeout(() => nameInput.focus(), 80);
+            }
+        });
+    }
+
+    if (newPwInput && newPwHint) {
+        const hintText = newPwHint.querySelector("span");
+        newPwInput.addEventListener("input", () => {
+            const len = newPwInput.value.length;
+            if (len >= 8) {
+                newPwHint.classList.add("valid");
+                if (hintText) hintText.textContent = `Valid (${len} chars)`;
+            } else if (len > 0) {
+                newPwHint.classList.remove("valid");
+                if (hintText) hintText.textContent = `${len}/8 chars (min. 8)`;
+            } else {
+                newPwHint.classList.remove("valid");
+                if (hintText) hintText.textContent = "Min. 8 characters";
+            }
         });
     }
 
