@@ -2365,21 +2365,140 @@ document.addEventListener("DOMContentLoaded", function () {
         return points;
     }
 
+    function escapeGrowthHtml(str) {
+        if (!str) return "";
+        return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function getMetricDomain(key, dataset) {
+        const vals = (dataset || [])
+            .map(d => Number(d[key]))
+            .filter(v => Number.isFinite(v) && v >= 0);
+        const maxVal = vals.length > 0 ? Math.max(...vals) : 1;
+
+        switch (key) {
+            case "sr": // Survival Rate %
+                return { min: 0, max: 100, unit: "%", stepDecimals: 0 };
+            case "fabw": // Final Avg Body Weight in g (typical vannamei target: 20-35g)
+                return { min: 0, max: Math.max(30, Math.ceil(maxVal * 1.15)), unit: "g", stepDecimals: 0 };
+            case "adwg": // Average Daily Weight Gain in g/d (typical: 0.15-0.40 g/d)
+                return { min: 0, max: Math.max(0.40, Math.ceil(maxVal * 1.25 * 20) / 20), unit: "g/d", stepDecimals: 2 };
+            case "sgr": // Specific Growth Rate in %/d (typical: 2.0-8.0 %/d)
+                return { min: 0, max: Math.max(8.0, Math.ceil(maxVal * 1.2)), unit: "%/d", stepDecimals: 1 };
+            case "fb": // Final Biomass in kg
+                return { min: 0, max: Math.max(500, Math.ceil(maxVal * 1.15 / 50) * 50), unit: "kg", stepDecimals: 0 };
+            case "fcr": // Feed Conversion Ratio (typical: 1.0-2.5)
+                return { min: 0, max: Math.max(2.5, Math.ceil(maxVal * 1.25 * 10) / 10), unit: "", stepDecimals: 1 };
+            case "k": // Fulton's Condition Factor (typical: 0.8-1.5)
+                return { min: 0, max: Math.max(1.6, Math.ceil(maxVal * 1.25 * 10) / 10), unit: "", stepDecimals: 2 };
+            default:
+                return { min: 0, max: maxVal > 0 ? maxVal * 1.2 : 100, unit: "", stepDecimals: 1 };
+        }
+    }
+
     function buildHistoryPoints(records) {
         if (!records || !records.length) return [];
-        // Sort oldest to newest chronologically
+        // Sort chronologically or by DOC
         const sorted = [...records].reverse();
-        return sorted.map((r, idx) => ({
-            label: r.notes ? (r.notes.length > 15 ? r.notes.substring(0, 13) + '...' : r.notes) : `Run #${r.id}`,
-            day: idx + 1,
-            sr: Number(r.eq1_sr_pct ?? 0),
-            fabw: Number(r.eq2_fabw_g ?? 0),
-            adwg: Number(r.eq3_adwg_g_day ?? 0),
-            sgr: Number(r.eq4_sgr_pct_day ?? 0),
-            fb: Number(r.eq6_fb_kg ?? 0),
-            fcr: Number(r.eq7_fcr ?? 0),
-            k: Number(r.eq8_fulton_k ?? 0),
-        }));
+        sorted.sort((a, b) => {
+            const docA = Number(a.doc_days) || 0;
+            const docB = Number(b.doc_days) || 0;
+            if (docA > 0 && docB > 0 && docA !== docB) {
+                return docA - docB;
+            }
+            const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+            const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+            if (timeA && timeB && timeA !== timeB) return timeA - timeB;
+            return (a.id || 0) - (b.id || 0);
+        });
+
+        return sorted.map((r, idx) => {
+            const doc = Number(r.doc_days) || 0;
+            const id = r.id || (idx + 1);
+
+            // Clean, readable X-axis label
+            let label = "";
+            if (doc > 0) {
+                label = `DOC ${doc}`;
+            } else if (r.notes && r.notes.length <= 14 && !r.notes.toLowerCase().includes("snapshot")) {
+                label = r.notes;
+            } else {
+                label = `Batch #${id}`;
+            }
+
+            // Format created_at date for tooltip
+            let dateStr = "";
+            if (r.created_at) {
+                try {
+                    const d = new Date(r.created_at);
+                    if (!isNaN(d.getTime())) {
+                        dateStr = d.toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+                    } else {
+                        dateStr = String(r.created_at).substring(0, 16);
+                    }
+                } catch (e) {
+                    dateStr = String(r.created_at).substring(0, 16);
+                }
+            }
+
+            // Extract or derive zootechnical metrics with full fallbacks
+            const isCount = Number(r.is_count) || 0;
+            const lhcCount = Number(r.lhc_count) || Number(r.active_shrimp_count) || 0;
+            const ibwVal = Math.max(0.0001, Number(r.ibw_g) || 0.010);
+            const bWeightKg = Number(r.bulk_weight_kg) || 0;
+            const feedGivenKg = Number(r.total_feed_given_kg) || 0;
+            const lengthCm = Number(r.total_length_cm) || 0;
+
+            let sr = Number(r.eq1_sr_pct ?? r.survival_rate_pct ?? 0);
+            if (sr <= 0 && isCount > 0 && lhcCount > 0) sr = (lhcCount / isCount) * 100.0;
+
+            let fabw = Number(r.eq2_fabw_g ?? r.abw_g ?? 0);
+            if (fabw <= 0 && bWeightKg > 0 && lhcCount > 0) fabw = (bWeightKg * 1000.0) / lhcCount;
+
+            let fb = Number(r.eq6_fb_kg ?? r.standing_biomass_kg ?? 0);
+            if (fb <= 0 && lhcCount > 0 && fabw > 0) fb = (lhcCount * fabw) / 1000.0;
+
+            let adwg = Number(r.eq3_adwg_g_day ?? 0);
+            if (adwg <= 0 && doc > 0 && fabw > 0) adwg = (fabw - ibwVal) / doc;
+
+            let sgr = Number(r.eq4_sgr_pct_day ?? 0);
+            if (sgr <= 0 && doc > 0 && fabw > 0 && ibwVal > 0) {
+                sgr = ((Math.log(fabw) - Math.log(ibwVal)) / doc) * 100.0;
+            }
+
+            let fcr = Number(r.eq7_fcr ?? 0);
+            if (fcr <= 0 && feedGivenKg > 0 && fb > 0) {
+                const ibKg = (isCount * ibwVal) / 1000.0;
+                const netGain = Math.max(0.1, fb - ibKg);
+                fcr = feedGivenKg / netGain;
+            }
+
+            let k = Number(r.eq8_fulton_k ?? 0);
+            if (k <= 0 && fabw > 0 && lengthCm > 0) {
+                k = (fabw / Math.pow(lengthCm, 3)) * 100.0;
+            }
+
+            return {
+                label,
+                day: doc > 0 ? doc : (idx + 1),
+                doc_days: doc,
+                batchId: id,
+                notes: r.notes || "",
+                timeStr: dateStr,
+                sr: Number(sr.toFixed(2)),
+                fabw: Number(fabw.toFixed(2)),
+                adwg: Number(adwg.toFixed(3)),
+                sgr: Number(sgr.toFixed(2)),
+                fb: Number(fb.toFixed(1)),
+                fcr: Number(fcr.toFixed(2)),
+                k: Number(k.toFixed(4)),
+            };
+        });
     }
 
     function renderGrowthChart() {
@@ -2399,7 +2518,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (emptyEl) {
                 emptyEl.hidden = false;
                 emptyEl.textContent = growthChartMode === "history"
-                    ? "No saved database records found yet. Click 'Save Snapshot' above to store your first run."
+                    ? "No saved database records found yet. Click 'Save Calculation' above to store your first batch."
                     : "No saved growth calculations found in the database. Perform and save a calculation snapshot below to generate your pond's growth performance trend.";
             }
             return;
@@ -2416,7 +2535,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (emptyEl) emptyEl.hidden = true;
 
-        const padding = { top: 28, right: 35, bottom: 38, left: 48 };
+        const dataCount = currentGrowthChartData.length;
+        const isSingleMetric = activeKeys.length === 1;
+        const singleKey = isSingleMetric ? activeKeys[0] : null;
+        const singleConf = singleKey ? GROWTH_METRICS_CONFIG[singleKey] : null;
+        const singleDomain = singleKey ? getMetricDomain(singleKey, currentGrowthChartData) : null;
+
+        // Update count badge in header
+        const countBadge = document.getElementById("growth-graph-count-badge");
+        if (countBadge) {
+            if (growthChartMode === "history") {
+                const batchWord = dataCount === 1 ? "Batch" : "Batches";
+                countBadge.textContent = `${dataCount} Saved ${batchWord} • ${activeKeys.length} Metric${activeKeys.length > 1 ? 's' : ''}`;
+            } else {
+                countBadge.textContent = `${activeKeys.length} Zootechnical Metric${activeKeys.length > 1 ? 's' : ''}`;
+            }
+        }
+
+        const padding = { top: 32, right: 35, bottom: 40, left: 54 };
         const chartW = width - padding.left - padding.right;
         const chartH = height - padding.top - padding.bottom;
 
@@ -2427,21 +2563,8 @@ document.addEventListener("DOMContentLoaded", function () {
         context.lineWidth = 1;
 
         const gridSteps = 5;
-        const isSingleMetric = activeKeys.length === 1;
-        let singleMin = 0, singleMax = 100, singleRange = 100;
 
-        if (isSingleMetric) {
-            const key = activeKeys[0];
-            const vals = currentGrowthChartData.map(d => Number(d[key]) || 0);
-            singleMin = Math.min(...vals);
-            singleMax = Math.max(...vals);
-            if (singleMin === singleMax) {
-                singleMin = 0;
-                singleMax = singleMax > 0 ? singleMax * 1.5 : 10;
-            }
-            singleRange = singleMax - singleMin || 1;
-        }
-
+        // Draw horizontal grid lines and Y-axis scale values
         for (let index = 0; index < gridSteps; index += 1) {
             const y = padding.top + (chartH / (gridSteps - 1)) * index;
             context.beginPath();
@@ -2450,9 +2573,14 @@ document.addEventListener("DOMContentLoaded", function () {
             context.stroke();
 
             let labelVal = "";
-            if (isSingleMetric) {
-                const rawVal = singleMax - (singleRange / (gridSteps - 1)) * index;
-                labelVal = rawVal >= 100 ? Math.round(rawVal).toString() : rawVal.toFixed(1);
+            if (isSingleMetric && singleDomain && singleConf) {
+                const range = singleDomain.max - singleDomain.min;
+                const rawVal = singleDomain.max - (range / (gridSteps - 1)) * index;
+                if (singleDomain.stepDecimals === 0) {
+                    labelVal = `${Math.round(rawVal)}${singleConf.unit}`;
+                } else {
+                    labelVal = `${rawVal.toFixed(singleDomain.stepDecimals)}${singleConf.unit ? ' ' + singleConf.unit : ''}`;
+                }
             } else {
                 const pct = Math.round(100 - (100 / (gridSteps - 1)) * index);
                 labelVal = `${pct}%`;
@@ -2460,20 +2588,32 @@ document.addEventListener("DOMContentLoaded", function () {
             context.fillText(labelVal, 8, y + 4);
         }
 
+        // Subtitle / scale header above Y-axis
+        context.save();
+        context.font = "600 10.5px Inter, sans-serif";
+        if (isSingleMetric && singleConf) {
+            context.fillStyle = singleConf.color;
+            context.fillText(`${singleConf.eq}: ${singleConf.label} (${singleConf.unit || 'Ratio'})`, padding.left, padding.top - 12);
+        } else {
+            context.fillStyle = "#64748b";
+            context.fillText("Relative Commercial Benchmark (% of Standard Target)", padding.left, padding.top - 12);
+        }
+        context.restore();
+
         // X-axis baseline
         context.beginPath();
         context.moveTo(padding.left, height - padding.bottom);
         context.lineTo(width - padding.right, height - padding.bottom);
+        context.strokeStyle = "#cbd5e1";
+        context.lineWidth = 1.5;
         context.stroke();
 
-        const dataCount = currentGrowthChartData.length;
+        // Compute coordinate points with stable, proportional domain-based coordinates
         currentGrowthChartPoints = {};
 
         activeKeys.forEach(key => {
-            const vals = currentGrowthChartData.map(d => Number(d[key]) || 0);
-            const minVal = Math.min(...vals);
-            const maxVal = Math.max(...vals);
-            const rVal = maxVal - minVal || (maxVal > 0 ? maxVal : 1);
+            const domain = getMetricDomain(key, currentGrowthChartData);
+            const range = domain.max - domain.min || 1;
 
             currentGrowthChartPoints[key] = currentGrowthChartData.map((d, index) => {
                 const val = Number(d[key]) || 0;
@@ -2481,7 +2621,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     ? padding.left + chartW / 2
                     : padding.left + (index / (dataCount - 1)) * chartW;
 
-                const norm = isSingleMetric ? (val - singleMin) / singleRange : (val - minVal) / rVal;
+                const norm = (val - domain.min) / range;
                 const y = padding.top + (1 - Math.max(0, Math.min(1, norm))) * chartH;
 
                 return { x, y, value: val, key, dataIndex: index, dataItem: d };
@@ -2496,35 +2636,47 @@ document.addEventListener("DOMContentLoaded", function () {
             const x = dataCount === 1
                 ? padding.left + chartW / 2
                 : padding.left + (index / (dataCount - 1)) * chartW;
-            context.fillText(d.label || `DOC ${d.day}`, x, height - padding.bottom + 18);
+            const xLabel = d.label || `DOC ${d.day}`;
+            context.fillText(xLabel, x, height - padding.bottom + 18);
         });
         context.textAlign = "left";
 
-        // Vertical dashed guide line on hover
+        // Vertical dashed guideline on hover (or for single-record batch)
         if (growthChartHoverIndex !== null && growthChartHoverIndex >= 0 && growthChartHoverIndex < dataCount) {
-            const firstKey = activeKeys[0];
-            if (currentGrowthChartPoints[firstKey] && currentGrowthChartPoints[firstKey][growthChartHoverIndex]) {
-                const hoverX = currentGrowthChartPoints[firstKey][growthChartHoverIndex].x;
-                context.save();
-                context.beginPath();
-                context.setLineDash([4, 4]);
-                context.strokeStyle = "rgba(18, 107, 79, 0.45)";
-                context.lineWidth = 1.5;
-                context.moveTo(hoverX, padding.top - 6);
-                context.lineTo(hoverX, height - padding.bottom + 4);
-                context.stroke();
-                context.restore();
-            }
+            const hoverX = dataCount === 1
+                ? padding.left + chartW / 2
+                : padding.left + (growthChartHoverIndex / (dataCount - 1)) * chartW;
+            context.save();
+            context.beginPath();
+            context.setLineDash([4, 4]);
+            context.strokeStyle = "rgba(18, 107, 79, 0.45)";
+            context.lineWidth = 1.5;
+            context.moveTo(hoverX, padding.top - 6);
+            context.lineTo(hoverX, height - padding.bottom + 4);
+            context.stroke();
+            context.restore();
+        } else if (dataCount === 1) {
+            // Anchor single batch with a soft vertical reference dashed line
+            const singleX = padding.left + chartW / 2;
+            context.save();
+            context.beginPath();
+            context.setLineDash([3, 3]);
+            context.strokeStyle = "rgba(100, 116, 139, 0.25)";
+            context.lineWidth = 1;
+            context.moveTo(singleX, padding.top - 4);
+            context.lineTo(singleX, height - padding.bottom + 4);
+            context.stroke();
+            context.restore();
         }
 
-        // Draw smooth lines, area gradients, and dots for each metric
+        // Draw curves, gradient areas, and points for each active metric
         activeKeys.forEach(key => {
             const conf = GROWTH_METRICS_CONFIG[key];
             const pts = currentGrowthChartPoints[key];
             if (!pts || !pts.length) return;
 
-            // Area Gradient beneath curve
-            if (pts.length > 1) {
+            // Area Gradient beneath curve - ONLY when a single metric is selected
+            if (isSingleMetric && pts.length > 1) {
                 const grad = context.createLinearGradient(0, padding.top, 0, height - padding.bottom);
                 grad.addColorStop(0, conf.glow);
                 grad.addColorStop(1, "rgba(255, 255, 255, 0.0)");
@@ -2538,34 +2690,37 @@ document.addEventListener("DOMContentLoaded", function () {
                 context.fill();
             }
 
-            // Line
-            context.beginPath();
-            pts.forEach((pt, idx) => {
-                if (idx === 0) context.moveTo(pt.x, pt.y);
-                else context.lineTo(pt.x, pt.y);
-            });
-            context.strokeStyle = conf.color;
-            context.lineWidth = 2.5;
-            context.lineCap = "round";
-            context.lineJoin = "round";
-            context.stroke();
+            // Draw line connecting points
+            if (pts.length > 1) {
+                context.beginPath();
+                pts.forEach((pt, idx) => {
+                    if (idx === 0) context.moveTo(pt.x, pt.y);
+                    else context.lineTo(pt.x, pt.y);
+                });
+                context.strokeStyle = conf.color;
+                context.lineWidth = 2.5;
+                context.lineCap = "round";
+                context.lineJoin = "round";
+                context.stroke();
+            }
 
             // Circular points with hover halo and focused item glow
             pts.forEach((pt, idx) => {
                 const isHovered = growthChartHoverIndex === idx;
                 const isFocused = isHovered && (growthChartHoveredParam === key || growthChartHoveredParam === null);
+                const ptRadius = pts.length === 1 ? (isHovered ? 6.5 : 5) : (isHovered ? (isFocused ? 5.5 : 4.5) : 3.5);
 
-                // Halo glow for hovered point
-                if (isHovered) {
+                // Halo glow for hovered point (or for single batch)
+                if (isHovered || pts.length === 1) {
                     context.beginPath();
-                    context.arc(pt.x, pt.y, isFocused ? 11 : 7, 0, Math.PI * 2);
+                    context.arc(pt.x, pt.y, isHovered ? (isFocused ? 12 : 8) : 7, 0, Math.PI * 2);
                     context.fillStyle = conf.glow;
                     context.fill();
                 }
 
                 // Outer point ring & dot
                 context.beginPath();
-                context.arc(pt.x, pt.y, isHovered ? (isFocused ? 5.5 : 4.5) : 3.5, 0, Math.PI * 2);
+                context.arc(pt.x, pt.y, ptRadius, 0, Math.PI * 2);
                 context.fillStyle = isHovered ? "#ffffff" : conf.color;
                 context.fill();
                 context.strokeStyle = conf.color;
@@ -2614,15 +2769,31 @@ document.addEventListener("DOMContentLoaded", function () {
             `;
         });
 
-        const timeBadge = dataItem.timeStr
-            ? `${dataItem.label} • ${dataItem.timeStr}`
-            : (dataItem.day ? `DOC ${dataItem.day} • Culture Day ${dataItem.day}` : dataItem.label);
+        let titleStr = "";
+        if (growthChartMode === "history") {
+            const batchNum = dataItem.batchId ? `Batch #${dataItem.batchId}` : `Run #${index + 1}`;
+            const docStr = dataItem.doc_days ? `DOC ${dataItem.doc_days}` : (dataItem.day ? `Day ${dataItem.day}` : "");
+            titleStr = docStr ? `${docStr} • ${batchNum}` : batchNum;
+            if (dataItem.timeStr) titleStr += ` (${dataItem.timeStr})`;
+        } else {
+            titleStr = dataItem.day ? `DOC ${dataItem.day} • Culture Day ${dataItem.day}` : (dataItem.label || "Trajectory Step");
+        }
+
+        let notesRow = "";
+        if (dataItem.notes && dataItem.notes.trim() && !dataItem.notes.toLowerCase().includes("snapshot")) {
+            notesRow = `
+                <div style="font-size: 11px; color: #475569; padding: 4px 8px; background: rgba(241, 245, 249, 0.85); border-radius: 4px; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px;">
+                    <strong>Note:</strong> ${escapeGrowthHtml(dataItem.notes)}
+                </div>
+            `;
+        }
 
         growthTooltip.innerHTML = `
             <div class="tooltip-header">
-                <span class="tooltip-time-badge">${timeBadge}</span>
+                <span class="tooltip-time-badge">${titleStr}</span>
                 <span class="tooltip-status-pill pill-optimal">P. vannamei</span>
             </div>
+            ${notesRow}
             <div class="tooltip-content">
                 ${itemsHtml}
             </div>
@@ -2657,16 +2828,14 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!growthGraphModal) return;
 
         // Ensure calculation history is loaded from database
-        if (!growthHistoryRecords || growthHistoryRecords.length === 0) {
-            try {
-                const res = await fetch("/api/calculators/history");
-                if (res.ok) {
-                    const data = await res.json();
-                    growthHistoryRecords = data.latest || [];
-                }
-            } catch (err) {
-                console.error("Failed to load calculation history:", err);
+        try {
+            const res = await fetch("/api/calculators/history");
+            if (res.ok) {
+                const data = await res.json();
+                growthHistoryRecords = data.latest || [];
             }
+        } catch (err) {
+            console.error("Failed to load calculation history:", err);
         }
 
         const saved = (growthHistoryRecords && growthHistoryRecords.length > 0) ? growthHistoryRecords[0] : null;
@@ -2735,16 +2904,14 @@ document.addEventListener("DOMContentLoaded", function () {
             btnGraphModeHistory.classList.add("active");
             if (btnGraphModeTrajectory) btnGraphModeTrajectory.classList.remove("active");
 
-            if (!growthHistoryRecords.length) {
-                try {
-                    const res = await fetch("/api/calculators/history");
-                    if (res.ok) {
-                        const data = await res.json();
-                        growthHistoryRecords = data.latest || [];
-                    }
-                } catch (e) {
-                    console.error("Error loading batches:", e);
+            try {
+                const res = await fetch("/api/calculators/history");
+                if (res.ok) {
+                    const data = await res.json();
+                    growthHistoryRecords = data.latest || [];
                 }
+            } catch (e) {
+                console.error("Error loading batches:", e);
             }
             currentGrowthChartData = buildHistoryPoints(growthHistoryRecords);
             renderGrowthChart();
