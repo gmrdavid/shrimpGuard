@@ -333,7 +333,11 @@ function updateDeviceTime() {
                 let res;
                 const contentType = resp.headers.get("content-type") || "";
                 if (contentType.includes("application/json")) {
-                    res = await resp.json();
+                    try {
+                        res = await resp.json();
+                    } catch (parseErr) {
+                        res = { success: false, error: "The notification gateway returned an invalid JSON response." };
+                    }
                 } else {
                     const text = await resp.text();
                     if (resp.status === 401) {
@@ -446,25 +450,30 @@ function updateDeviceTime() {
             testNtfyMaintButton.disabled = true;
             testNtfyMaintButton.textContent = "Sending Maintenance Alert...";
             try {
-                let resp = await fetch("/api/ntfy/test-maintenance", {
+                // Primary: call /api/ntfy/test with alert_type "maintenance"
+                let resp = await fetch("/api/ntfy/test", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ ntfy_topic: topic, alert_type: "maintenance" })
+                    body: JSON.stringify({ ntfy_topic: topic, alert_type: "maintenance", is_test: true })
                 });
 
-                // Robust fallback: if /api/ntfy/test-maintenance returned 404 (e.g. server hasn't reloaded new route), try /api/ntfy/test
+                // Fallback: if /api/ntfy/test returned 404, try /api/ntfy/test-maintenance
                 if (resp.status === 404) {
-                    resp = await fetch("/api/ntfy/test", {
+                    resp = await fetch("/api/ntfy/test-maintenance", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ ntfy_topic: topic, alert_type: "maintenance" })
+                        body: JSON.stringify({ ntfy_topic: topic, alert_type: "maintenance", is_test: true })
                     });
                 }
 
                 let res;
                 const contentType = resp.headers.get("content-type") || "";
                 if (contentType.includes("application/json")) {
-                    res = await resp.json();
+                    try {
+                        res = await resp.json();
+                    } catch (parseErr) {
+                        res = { success: false, error: "The notification gateway returned an invalid JSON response." };
+                    }
                 } else {
                     const text = await resp.text();
                     if (resp.status === 401) {

@@ -4543,7 +4543,7 @@ def api_test_ntfy():
             result = send_sensor_maintenance_alert_ntfy(
                 maintenance_data=maint_data,
                 topic=topic,
-                is_test=payload.get("is_test", False)
+                is_test=payload.get("is_test", True)
             )
         except Exception as exc:
             result = {
@@ -4606,7 +4606,7 @@ def api_test_ntfy_maintenance():
         result = send_sensor_maintenance_alert_ntfy(
             maintenance_data=maint_data,
             topic=topic,
-            is_test=False
+            is_test=payload.get("is_test", True)
         )
     except Exception as exc:
         result = {
