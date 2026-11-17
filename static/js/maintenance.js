@@ -266,7 +266,6 @@
                         </div>
 
                         <h3 class="maint-banner-title">${data.notice_title}</h3>
-                        <p class="maint-banner-desc">${data.notice_message}</p>
 
                         <div class="maint-stats-row">
                             <!-- 7-Day Biofilm Scrubbing Cycle Widget -->
