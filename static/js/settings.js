@@ -329,7 +329,22 @@ function updateDeviceTime() {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ ntfy_topic: topic })
                 });
-                const res = await resp.json();
+
+                let res;
+                const contentType = resp.headers.get("content-type") || "";
+                if (contentType.includes("application/json")) {
+                    res = await resp.json();
+                } else {
+                    const text = await resp.text();
+                    if (resp.status === 401) {
+                        res = { success: false, error: "Authentication required. Please refresh the page and log in." };
+                    } else if (resp.status === 404) {
+                        res = { success: false, error: "The notification endpoint was not found (404). Please ensure the Flask app is restarted." };
+                    } else {
+                        res = { success: false, error: `Notification gateway returned HTTP ${resp.status}. Please check server logs.` };
+                    }
+                }
+
                 if (res.success) {
                     if (testNtfyResultTitle) testNtfyResultTitle.textContent = "Test Notification Dispatched!";
                     if (testNtfyResultSubtitle) testNtfyResultSubtitle.textContent = "Alert successfully transmitted via ntfy.sh gateway";
@@ -431,12 +446,36 @@ function updateDeviceTime() {
             testNtfyMaintButton.disabled = true;
             testNtfyMaintButton.textContent = "Sending Maintenance Alert...";
             try {
-                const resp = await fetch("/api/ntfy/test-maintenance", {
+                let resp = await fetch("/api/ntfy/test-maintenance", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ ntfy_topic: topic })
+                    body: JSON.stringify({ ntfy_topic: topic, alert_type: "maintenance" })
                 });
-                const res = await resp.json();
+
+                // Robust fallback: if /api/ntfy/test-maintenance returned 404 (e.g. server hasn't reloaded new route), try /api/ntfy/test
+                if (resp.status === 404) {
+                    resp = await fetch("/api/ntfy/test", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ ntfy_topic: topic, alert_type: "maintenance" })
+                    });
+                }
+
+                let res;
+                const contentType = resp.headers.get("content-type") || "";
+                if (contentType.includes("application/json")) {
+                    res = await resp.json();
+                } else {
+                    const text = await resp.text();
+                    if (resp.status === 401) {
+                        res = { success: false, error: "Authentication required. Please refresh the page and log in." };
+                    } else if (resp.status === 404) {
+                        res = { success: false, error: "The notification endpoint was not found on the server (404). Please ensure the Flask app is restarted." };
+                    } else {
+                        res = { success: false, error: `Notification gateway returned HTTP ${resp.status}. Please check server logs.` };
+                    }
+                }
+
                 if (res.success) {
                     if (testNtfyResultTitle) testNtfyResultTitle.textContent = "Sensor Maintenance Notice Dispatched!";
                     if (testNtfyResultSubtitle) testNtfyResultSubtitle.textContent = "Probe cleaning & calibration alert sent via ntfy.sh";

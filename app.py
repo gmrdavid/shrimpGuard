@@ -4514,13 +4514,17 @@ def api_ntfy_generate_topic():
 def api_test_ntfy():
     user_email = session.get("user_id")
     if not user_email:
-        return jsonify({"error": "Authentication required."}), 401
+        return jsonify({"error": "Authentication required. Please log in."}), 401
 
     payload = request.get_json(silent=True) or {}
     topic = payload.get("ntfy_topic", "").strip()
     if not topic:
-        user = db.session.get(User, user_email)
-        topic = user.ntfy_topic if user else None
+        try:
+            user = db.session.get(User, user_email)
+            topic = user.ntfy_topic if user and user.ntfy_topic else None
+        except SQLAlchemyError:
+            db.session.rollback()
+            topic = None
 
     if not topic:
         topic = os.getenv("NTFY_DEFAULT_TOPIC", "").strip()
@@ -4534,21 +4538,39 @@ def api_test_ntfy():
     alert_type = payload.get("alert_type", "water_quality")
     if alert_type == "maintenance":
         device_id = payload.get("device_id", "NODE01")
-        maint_data = get_probe_maintenance_status(user_email=user_email, device_id=device_id)
-        result = send_sensor_maintenance_alert_ntfy(
-            maintenance_data=maint_data,
-            topic=topic,
-            is_test=payload.get("is_test", True)
-        )
+        try:
+            maint_data = get_probe_maintenance_status(user_email=user_email, device_id=device_id)
+            result = send_sensor_maintenance_alert_ntfy(
+                maintenance_data=maint_data,
+                topic=topic,
+                is_test=payload.get("is_test", False)
+            )
+        except Exception as exc:
+            result = {
+                "success": False,
+                "status": "Failed",
+                "provider": "ntfy.sh",
+                "topic": topic,
+                "error": str(exc)
+            }
         return jsonify(result)
 
-    result = send_water_quality_alert_ntfy(
-        severity="TEST",
-        temp=29.0,
-        ph=8.0,
-        reason="Test notification verification from ShrimpGuard gateway via ntfy.sh",
-        topic=topic
-    )
+    try:
+        result = send_water_quality_alert_ntfy(
+            severity="TEST",
+            temp=29.0,
+            ph=8.0,
+            reason="Test notification verification from ShrimpGuard gateway via ntfy.sh",
+            topic=topic
+        )
+    except Exception as exc:
+        result = {
+            "success": False,
+            "status": "Failed",
+            "provider": "ntfy.sh",
+            "topic": topic,
+            "error": str(exc)
+        }
     return jsonify(result)
 
 
@@ -4556,15 +4578,19 @@ def api_test_ntfy():
 def api_test_ntfy_maintenance():
     user_email = session.get("user_id")
     if not user_email:
-        return jsonify({"error": "Authentication required."}), 401
+        return jsonify({"error": "Authentication required. Please log in."}), 401
 
     payload = request.get_json(silent=True) or {}
     topic = payload.get("ntfy_topic", "").strip()
     device_id = payload.get("device_id", "NODE01")
 
     if not topic:
-        user = db.session.get(User, user_email)
-        topic = user.ntfy_topic if user else None
+        try:
+            user = db.session.get(User, user_email)
+            topic = user.ntfy_topic if user and user.ntfy_topic else None
+        except SQLAlchemyError:
+            db.session.rollback()
+            topic = None
 
     if not topic:
         topic = os.getenv("NTFY_DEFAULT_TOPIC", "").strip()
@@ -4575,12 +4601,21 @@ def api_test_ntfy_maintenance():
     if not is_valid_topic(topic):
         return jsonify({"error": "Invalid topic name. Use 3-64 characters: letters, numbers, hyphens, and underscores only."}), 400
 
-    maint_data = get_probe_maintenance_status(user_email=user_email, device_id=device_id)
-    result = send_sensor_maintenance_alert_ntfy(
-        maintenance_data=maint_data,
-        topic=topic,
-        is_test=False
-    )
+    try:
+        maint_data = get_probe_maintenance_status(user_email=user_email, device_id=device_id)
+        result = send_sensor_maintenance_alert_ntfy(
+            maintenance_data=maint_data,
+            topic=topic,
+            is_test=False
+        )
+    except Exception as exc:
+        result = {
+            "success": False,
+            "status": "Failed",
+            "provider": "ntfy.sh",
+            "topic": topic,
+            "error": str(exc)
+        }
     return jsonify(result)
 
 
