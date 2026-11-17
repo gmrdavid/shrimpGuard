@@ -12,7 +12,8 @@
           href="{{ url_for('static', filename='css/style.css') }}?v=3.6">
 </head>
 
-<body class="dashboard-page devices-page" data-user-email="{{ current_user.email if current_user else '' }}">
+{% set current_email_attr = current_user.email if current_user else (user.email if user else '') %}
+<body class="dashboard-page devices-page" data-user-email="{{ current_email_attr }}">
 
 {% include "_icon_sprite.html" %}
 
@@ -193,6 +194,11 @@
                 </div>
             </div>
 
+            {% set card_total = total_devices if total_devices is not none else 10 %}
+            {% set card_online = online_devices if online_devices is not none else 0 %}
+            {% set card_offline = offline_devices if offline_devices is not none else card_total %}
+            {% set card_sensors = connected_sensors if connected_sensors is not none else 0 %}
+
             <div class="cards dashboard-metric-cards devices-metric-cards">
 
                 <!-- 1. TOTAL DEVICES -->
@@ -206,7 +212,7 @@
                     <div class="metric-card-content">
                         <h3>Total Devices</h3>
                         <div class="metric-reading">
-                            <h2 id="top-total-devices">{{ total_devices if total_devices is not none else 10 }}</h2>
+                            <h2 id="top-total-devices">{{ card_total }}</h2>
                             <span class="metric-unit">Units</span>
                         </div>
                         <p class="metric-status">All Monitored Hardware Units</p>
@@ -228,7 +234,7 @@
                     <div class="metric-card-content">
                         <h3>Online Devices</h3>
                         <div class="metric-reading">
-                            <h2 id="top-online-devices" style="color: #059669;">{{ online_devices if online_devices is not none else 0 }}</h2>
+                            <h2 id="top-online-devices" style="color: #059669;">{{ card_online }}</h2>
                             <span class="metric-unit">Online</span>
                         </div>
                         <p class="metric-status">Operational &amp; Broadcasting</p>
@@ -250,7 +256,7 @@
                     <div class="metric-card-content">
                         <h3>Offline Devices</h3>
                         <div class="metric-reading">
-                            <h2 id="top-offline-devices" style="color: #475569;">{{ offline_devices if offline_devices is not none else (total_devices if total_devices is not none else 10) }}</h2>
+                            <h2 id="top-offline-devices" style="color: #475569;">{{ card_offline }}</h2>
                             <span class="metric-unit">Offline</span>
                         </div>
                         <p class="metric-status">Standby / Awaiting LoRa Link</p>
@@ -272,7 +278,7 @@
                     <div class="metric-card-content">
                         <h3>Connected Sensors</h3>
                         <div class="metric-reading">
-                            <h2 id="top-connected-sensors" style="color: #2563eb;">{{ connected_sensors if connected_sensors is not none else 0 }}</h2>
+                            <h2 id="top-connected-sensors" style="color: #2563eb;">{{ card_sensors }}</h2>
                             <span class="metric-unit">Probes</span>
                         </div>
                         <p class="metric-status">Water Quality Telemetry Active</p>
