@@ -156,29 +156,39 @@
                                 <svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
                             </span>
                             <div class="maint-banner-info">
-                                <div class="maint-banner-title">
-                                    <strong>Probes Calibrated &amp; Biofilm-Free</strong>
+                                <div class="maint-banner-eyebrow">
+                                    <span class="maint-banner-tag" style="color: #15803d;">
+                                        <svg class="ui-icon" aria-hidden="true" style="width: 13px; height: 13px; vertical-align: -2px;"><use href="#icon-check-circle"></use></svg>
+                                        SENSOR ACCURACY ASSURED
+                                    </span>
                                     <span class="maint-chip chip-optimal">Low Drift Risk</span>
+                                    <span class="maint-chip chip-subtle" title="Electrochemical drift tolerance threshold">
+                                        <svg class="ui-icon" aria-hidden="true" style="width: 12px; height: 12px; vertical-align: -2px;"><use href="#icon-activity"></use></svg>
+                                        Target Drift: &lt; &plusmn;0.10 pH
+                                    </span>
                                 </div>
+                                <h3 class="maint-banner-title">Sensor Probes Calibrated &amp; Biofilm-Free</h3>
                                 <p class="maint-banner-desc">
-                                    Submerged pond probes (pH &amp; temp) are within optimal operational accuracy.
+                                    Submerged pond probes (pH glass bulb &amp; temperature) are within optimal operational accuracy windows.
                                     Next routine soft-brush cleaning due in <strong>${Math.max(0, Math.ceil(data.days_until_cleaning))} day(s)</strong>.
                                 </p>
                             </div>
                         </div>
                         <div class="maint-banner-actions">
-                            <button type="button" class="btn-maint-ghost" id="btn-view-maint-history" title="View historical maintenance audit log">
-                                <svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>
-                                <span>History Log</span>
-                            </button>
-                            <button type="button" class="btn-maint-ghost" id="btn-open-sop-modal" title="View standard maintenance instructions">
-                                <svg class="ui-icon" aria-hidden="true"><use href="#icon-lightbulb"></use></svg>
-                                <span>View SOP</span>
-                            </button>
                             <button type="button" class="btn-maint-primary" id="btn-quick-log-maint" title="Log a probe cleaning or buffer recalibration">
                                 <svg class="ui-icon" aria-hidden="true"><use href="#icon-plus"></use></svg>
                                 <span>Log Maintenance</span>
                             </button>
+                            <div class="maint-action-group">
+                                <button type="button" class="btn-maint-secondary" id="btn-open-sop-modal" title="View standard maintenance instructions">
+                                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-lightbulb"></use></svg>
+                                    <span>Standard SOP</span>
+                                </button>
+                                <button type="button" class="btn-maint-secondary" id="btn-view-maint-history" title="View historical maintenance audit log">
+                                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>
+                                    <span>Audit Log</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -196,42 +206,122 @@
         const severityClass = isCritical ? 'maint-banner-critical' : 'maint-banner-warning';
         const iconName = isCritical ? '#icon-alert' : '#icon-clock';
         const chipClass = isCritical ? 'chip-critical' : 'chip-warning';
-        const riskLabel = isCritical ? 'High Risk - Biofilm Drift Likely' : 'Moderate Risk - Cleaning Due';
+        const pulseClass = isCritical ? 'chip-dot-pulse-critical' : 'chip-dot-pulse';
 
-        const cleanDaysRem = data.days_until_cleaning <= 0
-            ? `<span class="val-overdue">${Math.abs(data.days_until_cleaning).toFixed(1)} days overdue</span>`
-            : `${data.days_until_cleaning.toFixed(1)} days remaining`;
+        const cleanDaysVal = Number(data.days_until_cleaning);
+        let cleanDaysRemStr = '';
+        let cleanBarColor = '#d97706';
+        let riskLabel = isCritical ? 'High Risk - Biofilm Drift Likely' : 'Moderate Risk - Cleaning Due';
 
-        const calDaysRem = data.days_until_calibration <= 0
-            ? `<span class="val-overdue">${Math.abs(data.days_until_calibration).toFixed(1)} days overdue</span>`
-            : `${data.days_until_calibration.toFixed(1)} days remaining`;
+        if (cleanDaysVal <= 0) {
+            cleanDaysRemStr = `<span class="val-overdue">${Math.abs(cleanDaysVal).toFixed(1)}d Overdue</span>`;
+            cleanBarColor = '#dc2626';
+            riskLabel = 'Overdue - Drift Imminent';
+        } else if (cleanDaysVal <= 1.2) {
+            cleanDaysRemStr = `Due in 1 Day`;
+            cleanBarColor = '#d97706';
+            riskLabel = 'Cleaning Due in 1 Day';
+        } else {
+            cleanDaysRemStr = `${cleanDaysVal.toFixed(1)}d Remaining`;
+            cleanBarColor = cleanDaysVal <= 2 ? '#d97706' : '#126b4f';
+        }
+
+        const calDaysVal = Number(data.days_until_calibration);
+        let calDaysRemStr = '';
+        let calBarColor = '#0284c7';
+        if (calDaysVal <= 0) {
+            calDaysRemStr = `<span class="val-overdue">${Math.abs(calDaysVal).toFixed(1)}d Overdue</span>`;
+            calBarColor = '#dc2626';
+        } else if (calDaysVal <= 2) {
+            calDaysRemStr = `Due in ${Math.max(1, Math.round(calDaysVal))}d`;
+            calBarColor = '#d97706';
+        } else {
+            calDaysRemStr = `${calDaysVal.toFixed(1)}d Remaining`;
+            calBarColor = '#0284c7';
+        }
+
+        const cleanPct = Math.min(100, Math.max(0, data.cleaning_progress_pct || 0));
+        const calPct = Math.min(100, Math.max(0, data.calibration_progress_pct || 0));
 
         bannerContainer.innerHTML = `
             <div class="maint-banner ${severityClass}" role="alert">
                 <div class="maint-banner-left">
-                    <span class="maint-banner-icon">
-                        <svg class="ui-icon" aria-hidden="true"><use href="${iconName}"></use></svg>
+                    <span class="maint-banner-icon" aria-hidden="true">
+                        <svg class="ui-icon"><use href="${iconName}"></use></svg>
                     </span>
                     <div class="maint-banner-info">
                         <div class="maint-banner-eyebrow">
-                            <span>SCHEDULED PROBE MAINTENANCE &amp; CALIBRATION NOTICE</span>
-                            <span class="maint-chip ${chipClass}">${riskLabel}</span>
+                            <span class="maint-banner-tag">
+                                <svg class="ui-icon" aria-hidden="true" style="width: 13px; height: 13px; vertical-align: -2px;"><use href="#icon-clock"></use></svg>
+                                SCHEDULED PROBE MAINTENANCE
+                            </span>
+                            <span class="maint-chip ${chipClass}">
+                                <span class="${pulseClass}"></span>
+                                ${riskLabel}
+                            </span>
+                            <span class="maint-chip chip-subtle" title="Electrochemical drift tolerance threshold">
+                                <svg class="ui-icon" aria-hidden="true" style="width: 12px; height: 12px; vertical-align: -2px;"><use href="#icon-activity"></use></svg>
+                                Target Drift: &lt; &plusmn;0.10 pH
+                            </span>
                         </div>
+
                         <h3 class="maint-banner-title">${data.notice_title}</h3>
                         <p class="maint-banner-desc">${data.notice_message}</p>
-                        
+
                         <div class="maint-stats-row">
+                            <!-- 7-Day Biofilm Scrubbing Cycle Widget -->
                             <div class="maint-stat-pill">
-                                <span class="maint-stat-label">Routine Biofilm Scrub:</span>
-                                <strong class="maint-stat-value">${cleanDaysRem} (7-day cycle)</strong>
+                                <div class="maint-stat-pill-header">
+                                    <span class="maint-stat-label">
+                                        <svg class="ui-icon" aria-hidden="true" style="width: 12px; height: 12px; fill: currentColor;"><use href="#icon-droplet"></use></svg>
+                                        Biofilm Scrub (7d)
+                                    </span>
+                                    <strong class="maint-stat-value">${cleanDaysRemStr}</strong>
+                                </div>
+                                <div class="maint-mini-track">
+                                    <div class="maint-mini-fill" style="width: ${cleanPct}%; background-color: ${cleanBarColor};"></div>
+                                </div>
+                                <div class="maint-stat-sub">
+                                    <span>Submerged: ${data.days_since_cleaning != null ? data.days_since_cleaning + 'd' : '6d'}</span>
+                                    <span>${cleanPct}% of cycle</span>
+                                </div>
                             </div>
+
+                            <!-- 14-Day 2-Point Buffer Calibration Widget -->
                             <div class="maint-stat-pill">
-                                <span class="maint-stat-label">2-Point pH Recalibration:</span>
-                                <strong class="maint-stat-value">${calDaysRem} (14-day cycle)</strong>
+                                <div class="maint-stat-pill-header">
+                                    <span class="maint-stat-label">
+                                        <svg class="ui-icon" aria-hidden="true" style="width: 12px; height: 12px; fill: currentColor;"><use href="#icon-settings"></use></svg>
+                                        2-Pt pH Calibration (14d)
+                                    </span>
+                                    <strong class="maint-stat-value">${calDaysRemStr}</strong>
+                                </div>
+                                <div class="maint-mini-track">
+                                    <div class="maint-mini-fill" style="width: ${calPct}%; background-color: ${calBarColor};"></div>
+                                </div>
+                                <div class="maint-stat-sub">
+                                    <span>Elapsed: ${data.days_since_calibration != null ? data.days_since_calibration + 'd' : '12d'}</span>
+                                    <span>${calPct}% of cycle</span>
+                                </div>
                             </div>
-                            <div class="maint-stat-pill">
-                                <span class="maint-stat-label">Last Maintained:</span>
-                                <span class="maint-stat-value">${formatDateTime(data.last_cleaned_at)}</span>
+
+                            <!-- Last Maintained Meta Widget -->
+                            <div class="maint-stat-pill maint-stat-pill-meta">
+                                <div class="maint-stat-pill-header">
+                                    <span class="maint-stat-label">
+                                        <svg class="ui-icon" aria-hidden="true" style="width: 12px; height: 12px;"><use href="#icon-calendar"></use></svg>
+                                        Last Recorded Action
+                                    </span>
+                                    <span class="telemetry-chip chip-node" style="font-size: 10px; padding: 1px 6px;">
+                                        Node 1
+                                    </span>
+                                </div>
+                                <div class="maint-meta-content" style="margin-top: 4px; font-size: 11.5px; line-height: 1.35;">
+                                    <div style="font-weight: 600; color: #334155;">${data.maintenance_type || 'Biofilm Cleaning & 2-Pt Cal'}</div>
+                                    <div style="font-size: 10.5px; color: #64748b; margin-top: 2px;">
+                                        ${formatDateTime(data.last_cleaned_at)} &bull; ${data.performed_by || 'Pond Operator'}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -242,18 +332,19 @@
                         <svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
                         <span>Mark Cleaned &amp; Calibrated</span>
                     </button>
-                    <div style="display: flex; gap: 8px;">
-                        <button type="button" class="btn-maint-secondary" id="btn-view-maint-history" title="View historical maintenance audit log">
-                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>
-                            <span>History Log</span>
-                        </button>
+                    <div class="maint-action-group">
                         <button type="button" class="btn-maint-secondary" id="btn-open-sop-modal" title="View step-by-step cleaning and 2-point calibration protocol">
                             <svg class="ui-icon" aria-hidden="true"><use href="#icon-lightbulb"></use></svg>
-                            <span>SOP Guide</span>
+                            <span>Standard SOP</span>
+                        </button>
+                        <button type="button" class="btn-maint-secondary" id="btn-view-maint-history" title="View historical maintenance audit log">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>
+                            <span>Audit Log</span>
                         </button>
                     </div>
                     <button type="button" class="btn-maint-dismiss" id="btn-dismiss-maint" title="Snooze maintenance notice for 24 hours">
-                        <span>Snooze 24h</span>
+                        <svg class="ui-icon" aria-hidden="true" style="width: 12px; height: 12px; margin-right: 4px;"><use href="#icon-clock"></use></svg>
+                        <span>Snooze Notice for 24h</span>
                     </button>
                 </div>
             </div>

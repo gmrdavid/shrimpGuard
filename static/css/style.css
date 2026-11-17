@@ -24883,6 +24883,549 @@ nav a {
     color: #334155;
 }
 
+.btn-maint-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    background: transparent;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-maint-ghost:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #0f172a;
+    transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   SCHEDULED SENSOR MAINTENANCE NOTICE BANNER (DASHBOARD & MONITORING)
+   Proactive countermeasure against electrochemical drift from biofilm fouling
+   ========================================================================== */
+
+.probe-maintenance-notice-wrapper {
+    margin: 0 0 24px 0;
+    width: 100%;
+    box-sizing: border-box;
+    animation: maintBannerFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes maintBannerFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.maint-banner {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    gap: 22px;
+    border-radius: 14px;
+    padding: 20px 24px;
+    box-sizing: border-box;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    overflow: hidden;
+}
+
+/* 1. Warning State: Cleaning Due in 1-2 Days (Routine Biofilm Scrub Schedule) */
+.maint-banner.maint-banner-warning {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 40%, #fffdf5 100%);
+    border: 1px solid #fde68a;
+    border-left: 5px solid #d97706;
+    box-shadow: 0 6px 20px rgba(217, 119, 6, 0.08), 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.maint-banner.maint-banner-warning:hover {
+    box-shadow: 0 8px 26px rgba(217, 119, 6, 0.12), 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* 2. Critical State: Overdue Maintenance (Active Drift Biofouling Risk) */
+.maint-banner.maint-banner-critical {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 40%, #fff5f5 100%);
+    border: 1px solid #fecaca;
+    border-left: 5px solid #dc2626;
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.10), 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.maint-banner.maint-banner-critical:hover {
+    box-shadow: 0 8px 26px rgba(220, 38, 38, 0.14), 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* 3. Optimal State: Healthy & Within Tolerance */
+.maint-banner.maint-banner-optimal {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 40%, #f7fee7 100%);
+    border: 1px solid #bbf7d0;
+    border-left: 5px solid #16a34a;
+    box-shadow: 0 6px 20px rgba(22, 163, 74, 0.08), 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+/* Banner Left Content: Icon + Information */
+.maint-banner-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    flex: 1 1 540px;
+    min-width: 280px;
+}
+
+.maint-banner-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.maint-banner-warning .maint-banner-icon {
+    background: #fde68a;
+    color: #b45309;
+    border: 1px solid #fcd34d;
+    box-shadow: 0 2px 8px rgba(217, 119, 6, 0.16);
+}
+
+.maint-banner-critical .maint-banner-icon {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fca5a5;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.16);
+}
+
+.maint-banner-optimal .maint-banner-icon {
+    background: #dcfce7;
+    color: #16a34a;
+    border: 1px solid #86efac;
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.16);
+}
+
+.maint-banner-icon .ui-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.maint-banner-info {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    flex: 1;
+}
+
+/* Eyebrow Line */
+.maint-banner-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.maint-banner-tag {
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.maint-banner-warning .maint-banner-tag {
+    color: #b45309;
+}
+
+.maint-banner-critical .maint-banner-tag {
+    color: #b91c1c;
+}
+
+.maint-banner-optimal .maint-banner-tag {
+    color: #15803d;
+}
+
+/* Status Chips / Pills */
+.maint-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 750;
+    padding: 2.5px 9px;
+    border-radius: 9999px;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+}
+
+.maint-chip.chip-warning {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #f59e0b;
+}
+
+.maint-chip.chip-critical {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #ef4444;
+}
+
+.maint-chip.chip-optimal {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #22c55e;
+}
+
+.maint-chip.chip-subtle {
+    background: rgba(255, 255, 255, 0.85);
+    color: #475569;
+    border: 1px solid rgba(203, 213, 225, 0.8);
+    font-weight: 600;
+}
+
+/* Pulsing Status Dot */
+.chip-dot-pulse {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #d97706;
+    box-shadow: 0 0 0 rgba(217, 119, 6, 0.5);
+    animation: maintDotPulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.chip-dot-pulse-critical {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #dc2626;
+    box-shadow: 0 0 0 rgba(220, 38, 38, 0.6);
+    animation: maintDotPulseCritical 1.8s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+@keyframes maintDotPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.5);
+    }
+    70% {
+        box-shadow: 0 0 0 6px rgba(217, 119, 6, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(217, 119, 6, 0);
+    }
+}
+
+@keyframes maintDotPulseCritical {
+    0% {
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6);
+    }
+    70% {
+        box-shadow: 0 0 0 6px rgba(220, 38, 38, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+    }
+}
+
+/* Title and Description */
+.maint-banner-title {
+    font-size: 16.5px;
+    font-weight: 800;
+    margin: 0;
+    line-height: 1.35;
+    letter-spacing: -0.25px;
+}
+
+.maint-banner-warning .maint-banner-title {
+    color: #78350f;
+}
+
+.maint-banner-critical .maint-banner-title {
+    color: #7f1d1d;
+}
+
+.maint-banner-optimal .maint-banner-title {
+    color: #14532d;
+}
+
+.maint-banner-desc {
+    font-size: 12.5px;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.maint-banner-warning .maint-banner-desc {
+    color: #92400e;
+}
+
+.maint-banner-critical .maint-banner-desc {
+    color: #991b1b;
+}
+
+.maint-banner-optimal .maint-banner-desc {
+    color: #166534;
+}
+
+/* Micro-Metrics Row inside Notice Banner */
+.maint-stats-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 6px;
+    align-items: stretch;
+}
+
+.maint-stat-pill {
+    flex: 1 1 180px;
+    max-width: 260px;
+    min-width: 160px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(217, 119, 6, 0.28);
+    border-radius: 9px;
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    backdrop-filter: blur(2px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    box-sizing: border-box;
+}
+
+.maint-banner-critical .maint-stat-pill {
+    border-color: rgba(220, 38, 38, 0.28);
+}
+
+.maint-banner-optimal .maint-stat-pill {
+    border-color: rgba(22, 163, 74, 0.28);
+}
+
+.maint-stat-pill-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+}
+
+.maint-stat-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 750;
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.4px;
+    color: #64748b;
+}
+
+.maint-stat-value {
+    font-size: 11.5px;
+    font-weight: 750;
+    color: #92400e;
+}
+
+.maint-banner-critical .maint-stat-value {
+    color: #dc2626;
+}
+
+.maint-stat-pill .val-overdue {
+    color: #dc2626 !important;
+    font-weight: 800 !important;
+}
+
+/* Mini Progress Bar */
+.maint-mini-track {
+    width: 100%;
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 9999px;
+    overflow: hidden;
+    margin-top: 2px;
+}
+
+.maint-mini-fill {
+    height: 100%;
+    border-radius: 9999px;
+    transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.maint-stat-sub {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10.5px;
+    color: #64748b;
+    margin-top: 1px;
+}
+
+.maint-stat-pill-meta {
+    background: rgba(255, 255, 255, 0.75);
+}
+
+/* Actions Column (Right Side) */
+.maint-banner-actions {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    gap: 8px;
+    flex: 0 0 230px;
+    min-width: 200px;
+}
+
+.maint-action-group {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+
+.maint-action-group .btn-maint-secondary {
+    flex: 1;
+    justify-content: center;
+    font-size: 11.5px;
+    padding: 7px 10px;
+    text-align: center;
+}
+
+.maint-banner-actions .btn-maint-primary {
+    width: 100%;
+    justify-content: center;
+    padding: 9px 16px;
+    font-size: 12.5px;
+    font-weight: 700;
+}
+
+.maint-banner-actions .btn-maint-dismiss {
+    width: 100%;
+    justify-content: center;
+    padding: 6px 10px;
+    font-size: 11px;
+    color: #92400e;
+    background: transparent;
+    border: 1px solid rgba(217, 119, 6, 0.32);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.maint-banner-actions .btn-maint-dismiss:hover {
+    background: rgba(254, 243, 199, 0.9);
+    color: #78350f;
+    border-color: #d97706;
+}
+
+.maint-banner-critical .maint-banner-actions .btn-maint-dismiss {
+    color: #991b1b;
+    border-color: rgba(220, 38, 38, 0.35);
+}
+
+.maint-banner-critical .maint-banner-actions .btn-maint-dismiss:hover {
+    background: rgba(254, 226, 226, 0.9);
+    color: #7f1d1d;
+    border-color: #dc2626;
+}
+
+/* Mobile & Tablet Responsive Adjustments */
+@media (max-width: 960px) {
+    .maint-banner {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+        padding: 16px 18px;
+    }
+
+    .maint-banner-actions {
+        flex: 1 1 auto;
+        width: 100%;
+        margin-top: 6px;
+    }
+
+    .maint-stats-row {
+        width: 100%;
+    }
+
+    .maint-stat-pill {
+        max-width: none;
+    }
+}
+
+@media (max-width: 600px) {
+    .maint-banner-left {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .maint-banner-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .maint-banner-title {
+        font-size: 15px;
+    }
+
+    .maint-stats-row {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .maint-action-group {
+        flex-direction: column;
+        gap: 6px;
+    }
+}
+
+/* Adaptive Field Sunlight Mode Overrides */
+body.adaptive-sunlight .maint-banner,
+html.adaptive-sunlight body .maint-banner {
+    background: #ffffff !important;
+    border: 2px solid #000000 !important;
+    box-shadow: none !important;
+}
+
+body.adaptive-sunlight .maint-banner.maint-banner-warning,
+html.adaptive-sunlight body .maint-banner.maint-banner-warning {
+    border-left: 7px solid #b45309 !important;
+}
+
+body.adaptive-sunlight .maint-banner.maint-banner-critical,
+html.adaptive-sunlight body .maint-banner.maint-banner-critical {
+    border-left: 7px solid #b91c1c !important;
+}
+
+body.adaptive-sunlight .maint-banner-title,
+body.adaptive-sunlight .maint-banner-desc,
+body.adaptive-sunlight .maint-stat-value,
+body.adaptive-sunlight .maint-stat-label {
+    color: #000000 !important;
+    font-weight: 800 !important;
+}
+
+body.adaptive-sunlight .maint-stat-pill {
+    background: #ffffff !important;
+    border: 1.5px solid #000000 !important;
+}
+
+body.adaptive-sunlight .maint-chip {
+    border: 1.5px solid #000000 !important;
+    color: #000000 !important;
+    font-weight: 800 !important;
+}
+
+body.adaptive-sunlight .maint-banner-actions .btn-maint-dismiss {
+    border: 1.5px solid #000000 !important;
+    color: #000000 !important;
+    font-weight: 800 !important;
+}
+
 
 /* 2. Paired Pond Telemetry Nodes Card & Table */
 .devices-table-wrap {

@@ -503,10 +503,11 @@ class ProbeMaintenance(db.Model):
             drift_risk = "Moderate Risk - Routine Cleaning Due"
             badge_class = "badge-warning"
             days_rem = max(1, int(round(days_until_cleaning)))
+            day_label = "day" if days_rem == 1 else "days"
             notice_title = f"Scheduled Sensor Maintenance Notice: Cleaning Due in {days_rem} Day" + ("s" if days_rem > 1 else "")
             notice_message = (
-                f"Routine probe maintenance is scheduled in {days_rem} day(s) to prevent biological biofilm fouling "
-                "on the pH glass bulb and temperature probe."
+                f"Routine probe maintenance is scheduled in {days_rem} {day_label} to prevent biological biofilm fouling "
+                "on the pH glass bulb and temperature probe. Clean probes with distilled water to prevent measurement drift."
             )
         else:
             status = "Optimal"
