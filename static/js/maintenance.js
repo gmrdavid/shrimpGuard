@@ -142,6 +142,12 @@
         const bannerContainer = document.getElementById('probe-maintenance-notice-container');
         if (!bannerContainer) return;
 
+        // If user has no paired pond node, probe lifecycle timer is paused and banner is suppressed
+        if (!data || !data.has_paired_node) {
+            bannerContainer.style.display = 'none';
+            return;
+        }
+
         const isNoticeActive = data.is_notice_active;
         const isOverdue = data.status === 'Overdue';
         const isSnoozed = data.is_snoozed;
@@ -355,18 +361,45 @@
      */
     function renderDevicesMaintenanceCard(data) {
         const cardContainer = document.getElementById('probe-maintenance-devices-card');
-        if (!cardContainer) return;
+        if (!cardContainer || !data) return;
 
+        const hasNode = !!data.has_paired_node;
         const isOverdue = data.status === 'Overdue';
         const isDueSoon = data.status === 'Due Soon';
-        const badgeClass = isOverdue ? 'badge-critical' : (isDueSoon ? 'badge-warning' : 'badge-optimal');
-        const badgeText = isOverdue ? 'OVERDUE - BIOFILM DRIFT' : (isDueSoon ? 'MAINTENANCE DUE SOON' : 'CALIBRATED & HEALTHY');
+        const badgeClass = !hasNode ? 'badge-secondary' : (isOverdue ? 'badge-critical' : (isDueSoon ? 'badge-warning' : 'badge-optimal'));
+        const badgeText = !hasNode ? 'AWAITING PAIRED NODE' : (isOverdue ? 'OVERDUE - BIOFILM DRIFT' : (isDueSoon ? 'MAINTENANCE DUE SOON' : 'CALIBRATED & HEALTHY'));
 
-        const cleanPct = Math.min(100, Math.max(0, data.cleaning_progress_pct || 0));
-        const calPct = Math.min(100, Math.max(0, data.calibration_progress_pct || 0));
+        const cleanPct = !hasNode ? 0 : Math.min(100, Math.max(0, data.cleaning_progress_pct || 0));
+        const calPct = !hasNode ? 0 : Math.min(100, Math.max(0, data.calibration_progress_pct || 0));
 
-        const cleanBarColor = cleanPct >= 100 ? '#dc2626' : (cleanPct >= 75 ? '#d97706' : '#126b4f');
-        const calBarColor = calPct >= 100 ? '#dc2626' : (calPct >= 75 ? '#d97706' : '#0284c7');
+        const cleanBarColor = !hasNode ? '#94a3b8' : (cleanPct >= 100 ? '#dc2626' : (cleanPct >= 75 ? '#d97706' : '#126b4f'));
+        const calBarColor = !hasNode ? '#94a3b8' : (calPct >= 100 ? '#dc2626' : (calPct >= 75 ? '#d97706' : '#0284c7'));
+
+        const riskSlug = !hasNode ? 'standby' : (data.status || 'optimal').toLowerCase().replace(/\s+/g, '-');
+        const driftRiskText = data.drift_risk || (hasNode ? 'Low Risk - Probes Calibrated & Clean' : 'Timer Paused — Pair a pond telemetry node to activate anti-drift tracking');
+
+        const cleanSubmergedText = !hasNode ? 'Timer Paused' : `${data.days_since_cleaning != null ? data.days_since_cleaning : 0} days`;
+        const cleanDueText = !hasNode ? 'Awaiting Node' : ((data.days_until_cleaning != null && data.days_until_cleaning > 0) ? `${data.days_until_cleaning}d` : 'NOW');
+
+        const calElapsedText = !hasNode ? 'Timer Paused' : `${data.days_since_calibration != null ? data.days_since_calibration : 0} days`;
+        const calDueText = !hasNode ? 'Awaiting Node' : ((data.days_until_calibration != null && data.days_until_calibration > 0) ? `${data.days_until_calibration}d` : 'NOW');
+
+        const subtitleText = hasNode
+            ? `Anti-drift tracking for ${data.device_id || 'Node 1'} submerged DFRobot pH probe &amp; DS18B20 temperature probe`
+            : `Anti-drift tracking paused. Pair a pond telemetry node to start biofilm &amp; calibration lifecycle schedules.`;
+
+        let lastActionHtml = '';
+        if (!hasNode || !data.last_cleaned_at || data.performed_by === 'N/A') {
+            lastActionHtml = `
+                <span>Last Recorded Action: <strong style="color: #334155;">No maintenance recorded yet</strong> by <strong style="color: #334155;">N/A</strong></span>
+                <span style="margin-left: 12px; color: #94a3b8;">(Timer starts upon node pairing)</span>
+            `;
+        } else {
+            lastActionHtml = `
+                <span>Last Recorded Action: <strong style="color: #334155;">${data.maintenance_type || 'Routine Inspection'}</strong> by <strong style="color: #334155;">${data.performed_by || 'Technician'}</strong></span>
+                <span style="margin-left: 12px; color: #94a3b8;">(${formatDateTime(data.last_cleaned_at)})</span>
+            `;
+        }
 
         cardContainer.innerHTML = `
             <article class="panel dashboard-panel probe-lifecycle-card">
@@ -378,7 +411,7 @@
                         <div>
                             <h2 style="font-size: 16px; margin: 0; color: #1e293b;">Submerged Probe Biofilm &amp; Calibration Lifecycle</h2>
                             <p style="margin: 2px 0 0; font-size: 12px; color: #64748b;">
-                                Anti-drift tracking for Node 1 submerged DFRobot pH probe &amp; DS18B20 temperature probe
+                                ${subtitleText}
                             </p>
                         </div>
                     </div>
@@ -389,11 +422,11 @@
 
                 <div class="probe-lifecycle-body" style="padding: 18px 20px;">
                     <!-- Drift Risk Indicator Strip -->
-                    <div class="drift-risk-banner risk-${data.status.toLowerCase().replace(/\s+/g, '-')}" style="margin-bottom: 18px;">
+                    <div class="drift-risk-banner risk-${riskSlug}" style="margin-bottom: 18px;">
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <svg class="ui-icon" aria-hidden="true" style="width: 18px; height: 18px;"><use href="#icon-activity"></use></svg>
                             <strong>Drift Risk Assessment:</strong>
-                            <span>${data.drift_risk}</span>
+                            <span>${driftRiskText}</span>
                         </div>
                         <span style="font-size: 12px; color: #475569;">Target Drift: &lt; &plusmn;0.10 pH</span>
                     </div>
@@ -412,8 +445,8 @@
                                 <div class="maint-progress-fill" style="width: ${cleanPct}%; background-color: ${cleanBarColor};"></div>
                             </div>
                             <div class="probe-cycle-meta">
-                                <span>Submerged: <strong>${data.days_since_cleaning} days</strong></span>
-                                <span>Next Due: <strong>${data.days_until_cleaning > 0 ? data.days_until_cleaning + 'd' : 'NOW'}</strong></span>
+                                <span>Submerged: <strong>${cleanSubmergedText}</strong></span>
+                                <span>Next Due: <strong>${cleanDueText}</strong></span>
                             </div>
                         </div>
 
@@ -430,8 +463,8 @@
                                 <div class="maint-progress-fill" style="width: ${calPct}%; background-color: ${calBarColor};"></div>
                             </div>
                             <div class="probe-cycle-meta">
-                                <span>Elapsed: <strong>${data.days_since_calibration} days</strong></span>
-                                <span>Next Due: <strong>${data.days_until_calibration > 0 ? data.days_until_calibration + 'd' : 'NOW'}</strong></span>
+                                <span>Elapsed: <strong>${calElapsedText}</strong></span>
+                                <span>Next Due: <strong>${calDueText}</strong></span>
                             </div>
                         </div>
                     </div>
@@ -439,8 +472,7 @@
                     <!-- Last Maintenance Log Info -->
                     <div class="probe-maint-history-row" style="margin-top: 16px; padding-top: 14px; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                         <div style="font-size: 12px; color: #64748b;">
-                            <span>Last Recorded Action: <strong style="color: #334155;">${data.maintenance_type || 'Routine Inspection'}</strong> by <strong style="color: #334155;">${data.performed_by || 'Technician'}</strong></span>
-                            <span style="margin-left: 12px; color: #94a3b8;">(${formatDateTime(data.last_cleaned_at)})</span>
+                            ${lastActionHtml}
                         </div>
                         <div style="display: flex; gap: 8px;">
                             <button type="button" class="btn-maint-secondary" id="btn-devices-open-sop" style="font-size: 12px; padding: 6px 12px;" title="View standard maintenance SOP guide">
@@ -549,6 +581,13 @@
      * Open the Quick Maintenance Log modal dialog.
      */
     function openMaintenanceModal(defaultAction = 'both') {
+        if (currentMaintenanceData && currentMaintenanceData.has_paired_node === false) {
+            showMaintenanceToast('Please pair a pond telemetry node before logging probe maintenance.');
+            const pairBtn = document.getElementById('btn-open-pair-modal');
+            if (pairBtn) pairBtn.click();
+            return;
+        }
+
         let modal = document.getElementById('probe-maint-log-modal');
         if (!modal) {
             createLogModalElement();
@@ -557,6 +596,11 @@
         if (modal) {
             const selectEl = modal.querySelector('#maint-action-select');
             if (selectEl) selectEl.value = defaultAction;
+
+            const devInput = modal.querySelector('input[name="device_id"]');
+            if (devInput && currentMaintenanceData && currentMaintenanceData.device_id) {
+                devInput.value = currentMaintenanceData.device_id;
+            }
 
             const dateInput = modal.querySelector('#maint-datetime-input');
             if (dateInput) {
@@ -875,12 +919,13 @@
         modalDiv.className = 'maint-modal-backdrop';
         modalDiv.setAttribute('hidden', '');
 
-        const defaultTech = document.body.dataset.userEmail || 'Pond Operator';
+        const defaultTech = (currentMaintenanceData && currentMaintenanceData.user_email) || document.body.dataset.userEmail || 'Pond Operator';
+        const activeNodeId = (currentMaintenanceData && currentMaintenanceData.device_id) || 'NODE01';
 
         modalDiv.innerHTML = `
             <div class="maint-modal-container maint-modal-sm maint-log-dialog" role="dialog" aria-labelledby="log-modal-title" aria-modal="true">
                 <form id="probe-maint-form" class="maint-form-wrapper">
-                    <input type="hidden" name="device_id" value="NODE01">
+                    <input type="hidden" name="device_id" value="${activeNodeId}">
 
                     <div class="maint-modal-header">
                         <div class="maint-header-info-wrap">
@@ -906,8 +951,8 @@
                             </div>
                             <div class="maint-target-context-info">
                                 <div class="maint-target-context-title">
-                                    <strong>Node 1 Submerged Probes</strong>
-                                    <span class="maint-target-id-badge">NODE01</span>
+                                    <strong>Node Submerged Probes</strong>
+                                    <span class="maint-target-id-badge">${activeNodeId}</span>
                                 </div>
                                 <p class="maint-target-context-sub">DFRobot Industrial pH Sensor &amp; DS18B20 Digital Temperature</p>
                             </div>

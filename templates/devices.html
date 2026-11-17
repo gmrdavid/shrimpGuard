@@ -296,21 +296,22 @@
         <section class="dashboard-section" aria-labelledby="probe-maintenance-heading" id="probe-maintenance-devices-section">
             <div id="probe-maintenance-devices-card">
                 {% if maintenance %}
+                {% set has_node = maintenance.has_paired_node %}
                 {% set is_overdue = (maintenance.status == 'Overdue') %}
                 {% set is_due_soon = (maintenance.status == 'Due Soon') %}
-                {% set badge_class = 'badge-critical' if is_overdue else ('badge-warning' if is_due_soon else 'badge-optimal') %}
-                {% set badge_text = 'OVERDUE - BIOFILM DRIFT' if is_overdue else ('MAINTENANCE DUE SOON' if is_due_soon else 'CALIBRATED & HEALTHY') %}
-                {% set clean_pct = (maintenance.cleaning_progress_pct or 0)|round(0)|int %}
-                {% set cal_pct = (maintenance.calibration_progress_pct or 0)|round(0)|int %}
-                {% set clean_bar_color = '#dc2626' if clean_pct >= 100 else ('#d97706' if clean_pct >= 75 else '#126b4f') %}
-                {% set cal_bar_color = '#dc2626' if cal_pct >= 100 else ('#d97706' if cal_pct >= 75 else '#0284c7') %}
-                {% set risk_slug = (maintenance.status or 'optimal')|lower|replace(' ', '-') %}
-                {% set clean_days_num = maintenance.days_since_cleaning or 0 %}
+                {% set badge_class = 'badge-secondary' if not has_node else ('badge-critical' if is_overdue else ('badge-warning' if is_due_soon else 'badge-optimal')) %}
+                {% set badge_text = 'AWAITING PAIRED NODE' if not has_node else ('OVERDUE - BIOFILM DRIFT' if is_overdue else ('MAINTENANCE DUE SOON' if is_due_soon else 'CALIBRATED & HEALTHY')) %}
+                {% set clean_pct = 0 if not has_node else ((maintenance.cleaning_progress_pct or 0)|round(0)|int) %}
+                {% set cal_pct = 0 if not has_node else ((maintenance.calibration_progress_pct or 0)|round(0)|int) %}
+                {% set clean_bar_color = '#94a3b8' if not has_node else ('#dc2626' if clean_pct >= 100 else ('#d97706' if clean_pct >= 75 else '#126b4f')) %}
+                {% set cal_bar_color = '#94a3b8' if not has_node else ('#dc2626' if cal_pct >= 100 else ('#d97706' if cal_pct >= 75 else '#0284c7')) %}
+                {% set risk_slug = 'standby' if not has_node else ((maintenance.status or 'optimal')|lower|replace(' ', '-')) %}
+                {% set clean_days_num = 0 if not has_node else (maintenance.days_since_cleaning or 0) %}
                 {% set clean_due_val = maintenance.days_until_cleaning %}
-                {% set clean_due_text = (clean_due_val ~ 'd') if (clean_due_val is not none and clean_due_val > 0) else 'NOW' %}
-                {% set cal_days_num = maintenance.days_since_calibration or 0 %}
+                {% set clean_due_text = 'Awaiting Node' if not has_node else (((clean_due_val ~ 'd') if (clean_due_val is not none and clean_due_val > 0) else 'NOW')) %}
+                {% set cal_days_num = 0 if not has_node else (maintenance.days_since_calibration or 0) %}
                 {% set cal_due_val = maintenance.days_until_calibration %}
-                {% set cal_due_text = (cal_due_val ~ 'd') if (cal_due_val is not none and cal_due_val > 0) else 'NOW' %}
+                {% set cal_due_text = 'Awaiting Node' if not has_node else (((cal_due_val ~ 'd') if (cal_due_val is not none and cal_due_val > 0) else 'NOW')) %}
 
                 <article class="panel dashboard-panel probe-lifecycle-card">
                     <div class="panel-heading" style="justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
@@ -321,7 +322,11 @@
                             <div>
                                 <h2 style="font-size: 16px; margin: 0; color: #1e293b;" id="probe-maintenance-heading">Submerged Probe Biofilm &amp; Calibration Lifecycle</h2>
                                 <p style="margin: 2px 0 0; font-size: 12px; color: #64748b;">
-                                    Anti-drift tracking for Node 1 submerged DFRobot pH probe &amp; DS18B20 temperature probe
+                                    {% if has_node %}
+                                    Anti-drift tracking for {{ maintenance.device_id or 'Node 1' }} submerged DFRobot pH probe &amp; DS18B20 temperature probe
+                                    {% else %}
+                                    Anti-drift tracking paused. Pair a pond telemetry node to start biofilm &amp; calibration lifecycle schedules.
+                                    {% endif %}
                                 </p>
                             </div>
                         </div>
@@ -355,8 +360,13 @@
                                     <div class="maint-progress-fill" style="width: {{ clean_pct }}%; background-color: {{ clean_bar_color }};"></div>
                                 </div>
                                 <div class="probe-cycle-meta">
+                                    {% if has_node %}
                                     <span>Submerged: <strong>{{ clean_days_num }} days</strong></span>
                                     <span>Next Due: <strong>{{ clean_due_text }}</strong></span>
+                                    {% else %}
+                                    <span>Submerged: <strong>Timer Paused</strong></span>
+                                    <span>Next Due: <strong>Awaiting Node</strong></span>
+                                    {% endif %}
                                 </div>
                             </div>
 
@@ -373,8 +383,13 @@
                                     <div class="maint-progress-fill" style="width: {{ cal_pct }}%; background-color: {{ cal_bar_color }};"></div>
                                 </div>
                                 <div class="probe-cycle-meta">
+                                    {% if has_node %}
                                     <span>Elapsed: <strong>{{ cal_days_num }} days</strong></span>
                                     <span>Next Due: <strong>{{ cal_due_text }}</strong></span>
+                                    {% else %}
+                                    <span>Elapsed: <strong>Timer Paused</strong></span>
+                                    <span>Next Due: <strong>Awaiting Node</strong></span>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -382,18 +397,19 @@
                         <!-- Last Maintenance Log Info -->
                         <div class="probe-maint-history-row" style="margin-top: 16px; padding-top: 14px; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                             <div style="font-size: 12px; color: #64748b;">
+                                {% if not has_node or not maintenance.last_cleaned_at or maintenance.performed_by == 'N/A' %}
+                                <span>Last Recorded Action: <strong style="color: #334155;">No maintenance recorded yet</strong> by <strong style="color: #334155;">N/A</strong></span>
+                                <span style="margin-left: 12px; color: #94a3b8;">(Timer starts upon node pairing)</span>
+                                {% else %}
                                 <span>Last Recorded Action: <strong style="color: #334155;">{{ maintenance.maintenance_type or 'Routine Inspection' }}</strong> by <strong style="color: #334155;">{{ maintenance.performed_by or 'Technician' }}</strong></span>
                                 <span style="margin-left: 12px; color: #94a3b8;">
-                                    {% if maintenance.last_cleaned_at %}
-                                        {% if maintenance.last_cleaned_at.strftime is defined %}
-                                            ({{ maintenance.last_cleaned_at.strftime('%Y-%m-%d %H:%M') }})
-                                        {% else %}
-                                            ({{ maintenance.last_cleaned_at[:16] }})
-                                        {% endif %}
+                                    {% if maintenance.last_cleaned_at.strftime is defined %}
+                                        ({{ maintenance.last_cleaned_at.strftime('%Y-%m-%d %H:%M') }})
                                     {% else %}
-                                        (N/A)
+                                        ({{ maintenance.last_cleaned_at[:16] }})
                                     {% endif %}
                                 </span>
+                                {% endif %}
                             </div>
                             <div style="display: flex; gap: 8px;">
                                 <button type="button" class="btn-maint-secondary" id="btn-devices-open-sop" style="font-size: 12px; padding: 6px 12px;" title="View standard maintenance SOP guide">

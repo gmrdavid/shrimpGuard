@@ -25102,6 +25102,20 @@ nav a {
     color: #991b1b;
 }
 
+.drift-risk-banner.risk-standby,
+.drift-risk-banner.risk-awaiting-node-pairing {
+    border-left-color: #64748b;
+    background: #f8fafc;
+    color: #475569;
+}
+
+.badge.badge-secondary,
+.badge-secondary {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
 .probe-cycles-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));

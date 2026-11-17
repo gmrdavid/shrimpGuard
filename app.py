@@ -531,6 +531,7 @@ class ProbeMaintenance(db.Model):
             "id": self.id,
             "device_id": self.device_id,
             "user_email": self.user_email,
+            "has_paired_node": True,
             "maintenance_type": self.maintenance_type,
             "last_cleaned_at": cleaned.strftime("%Y-%m-%d %H:%M:%S") if cleaned else None,
             "last_calibrated_at": calibrated.strftime("%Y-%m-%d %H:%M:%S") if calibrated else None,
@@ -584,41 +585,109 @@ class ProbeMaintenanceHistory(db.Model):
         }
 
 
-def get_probe_maintenance_status(user_email=None, device_id="NODE01"):
+def _get_unpaired_maintenance_dict(device_id="NODE01", user_email=None):
+    """Returns a dormant/standby probe lifecycle structure when no pond node is paired."""
+    return {
+        "id": None,
+        "device_id": device_id,
+        "user_email": user_email,
+        "has_paired_node": False,
+        "status": "Awaiting Node Pairing",
+        "severity": "Info",
+        "badge_class": "badge-secondary",
+        "badge_text": "AWAITING PAIRED NODE",
+        "drift_risk": "Timer Paused — Pair a pond telemetry node to activate anti-drift tracking",
+        "days_since_cleaning": 0,
+        "days_until_cleaning": None,
+        "days_since_calibration": 0,
+        "days_until_calibration": None,
+        "cleaning_interval_days": 7,
+        "calibration_interval_days": 14,
+        "cleaning_progress_pct": 0,
+        "calibration_progress_pct": 0,
+        "is_notice_active": False,
+        "notice_title": None,
+        "notice_message": "Submerged probe lifecycle tracking starts automatically once a pond telemetry node is paired.",
+        "notes": "No pond telemetry node paired yet.",
+        "performed_by": "N/A",
+        "maintenance_type": "None Recorded",
+        "last_cleaned_at": None,
+        "last_calibrated_at": None,
+        "next_cleaning_due": None,
+        "next_calibration_due": None,
+    }
+
+
+def get_probe_maintenance_status(user_email=None, device_id=None):
     """
     Retrieves or initializes the active probe maintenance schedule for the specified user & device.
-    Defaults to 7-day routine biofilm cleaning and 14-day 2-point pH buffer calibration.
+    STRICT USER ISOLATION: Each account has its own isolated probe maintenance records.
+    The lifecycle schedule countdown starts only when there is a paired pond telemetry node.
     """
     if not user_email and has_request_context():
         user_email = session.get("user_id")
 
-    default_owner = os.getenv("LORA_DEFAULT_USER_EMAIL", "rio@gmail.com")
-    target_user = user_email or default_owner
+    if not user_email:
+        return _get_unpaired_maintenance_dict(device_id=device_id or "NODE01")
 
+    # 1. Verify if this user has any active paired pond telemetry nodes
+    paired_nodes = []
+    try:
+        paired_nodes = UserDevice.query.filter_by(user_email=user_email, status="Active").order_by(UserDevice.created_at.desc()).all()
+        if not paired_nodes:
+            paired_nodes = UserDevice.query.filter_by(user_email=user_email).order_by(UserDevice.created_at.desc()).all()
+    except Exception:
+        db.session.rollback()
+        paired_nodes = []
+
+    # If the user has NO paired pond telemetry nodes, the lifecycle timer is paused
+    if not paired_nodes:
+        return _get_unpaired_maintenance_dict(device_id=device_id or "NODE01", user_email=user_email)
+
+    # User HAS paired node(s). Determine target device ID
+    user_node_ids = [n.device_id for n in paired_nodes]
+    active_node = paired_nodes[0]
+    if device_id and device_id in user_node_ids:
+        target_device_id = device_id
+        for n in paired_nodes:
+            if n.device_id == device_id:
+                active_node = n
+                break
+    else:
+        target_device_id = paired_nodes[0].device_id
+
+    # 2. Strict user query for (user_email, target_device_id) — NEVER fall back to another user!
     maint = None
     try:
-        maint = ProbeMaintenance.query.filter_by(user_email=target_user, device_id=device_id).order_by(ProbeMaintenance.last_cleaned_at.desc()).first()
-        if not maint:
-            maint = ProbeMaintenance.query.filter_by(device_id=device_id).order_by(ProbeMaintenance.last_cleaned_at.desc()).first()
+        maint = ProbeMaintenance.query.filter_by(
+            user_email=user_email,
+            device_id=target_device_id
+        ).order_by(ProbeMaintenance.last_cleaned_at.desc()).first()
     except Exception:
         db.session.rollback()
         maint = None
 
+    # If no maintenance record exists yet for this user and this paired node,
+    # start the lifecycle countdown starting from when the node was paired
     if not maint:
-        # Seed an active schedule: last cleaned 5.5 days ago (due soon in 1.5 days!)
-        # and last calibrated 12 days ago (due in 2 days!) to demonstrate scheduled notices
-        initial_cleaned = datetime.now() - timedelta(days=5, hours=12)
-        initial_calibrated = datetime.now() - timedelta(days=12, hours=4)
+        node_paired_at = active_node.created_at or datetime.now()
+        if node_paired_at > datetime.now():
+            node_paired_at = datetime.now()
+
+        user_name = session.get("user_name") if has_request_context() else user_email
+        if not user_name:
+            user_name = user_email
+
         maint = ProbeMaintenance(
-            user_email=target_user,
-            device_id=device_id,
-            maintenance_type="Routine Cleaning & 2-Point Buffer Calibration",
-            last_cleaned_at=initial_cleaned,
-            last_calibrated_at=initial_calibrated,
+            user_email=user_email,
+            device_id=target_device_id,
+            maintenance_type="Baseline Sensor Deployment",
+            last_cleaned_at=node_paired_at,
+            last_calibrated_at=node_paired_at,
             cleaning_interval_days=7,
             calibration_interval_days=14,
-            notes="Initial pond deployment: DFRobot pH & DS18B20 calibration verified.",
-            performed_by="System Initializer",
+            notes=f"Hardware node {target_device_id} paired. Submerged sensor biofilm scrubbing and 2-point calibration timer initiated.",
+            performed_by=user_name,
         )
         try:
             db.session.add(maint)
@@ -626,26 +695,20 @@ def get_probe_maintenance_status(user_email=None, device_id="NODE01"):
         except Exception:
             db.session.rollback()
 
-    return maint.to_dict() if maint else {
-        "device_id": device_id,
-        "status": "Due Soon",
-        "severity": "Warning",
-        "drift_risk": "Moderate Risk - Routine Cleaning Due",
-        "badge_class": "badge-warning",
-        "days_since_cleaning": 5.5,
-        "days_until_cleaning": 1.5,
-        "days_since_calibration": 12.0,
-        "days_until_calibration": 2.0,
-        "cleaning_interval_days": 7,
-        "calibration_interval_days": 14,
-        "cleaning_progress_pct": 78,
-        "calibration_progress_pct": 85,
-        "is_notice_active": True,
-        "notice_title": "Scheduled Sensor Maintenance Notice: Cleaning Due in 2 Days",
-        "notice_message": "Routine probe maintenance is scheduled in 2 day(s) to prevent biological biofilm fouling on the pH glass bulb and temperature probe.",
-        "notes": "Baseline calibrated",
-        "performed_by": "System Initializer"
-    }
+    if maint:
+        # Prevent any cross-user contamination in legacy data
+        if maint.user_email == user_email and maint.performed_by in ("rio@gmail.com", "System Initializer") and user_email != "rio@gmail.com":
+            maint.performed_by = (session.get("user_name") if has_request_context() else None) or user_email
+            try:
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+
+        data = maint.to_dict()
+        data["has_paired_node"] = True
+        return data
+
+    return _get_unpaired_maintenance_dict(device_id=target_device_id, user_email=user_email)
 
 
 # ==========================================
@@ -1105,7 +1168,7 @@ def dispatch_maintenance_ntfy_if_needed(user_email=None, device_id="NODE01", for
         target_user = target_user or os.getenv("LORA_DEFAULT_USER_EMAIL", "rio@gmail.com")
 
         maint_data = get_probe_maintenance_status(user_email=target_user, device_id=device_id)
-        if not maint_data:
+        if not maint_data or not maint_data.get("has_paired_node"):
             return False
 
         is_notice_active = maint_data.get("is_notice_active", False)
@@ -1708,6 +1771,39 @@ def api_devices_pair():
             existing.pond_location = pond_location or existing.pond_location
             existing.status = "Active"
             db.session.commit()
+
+            # Ensure probe biofilm & calibration lifecycle schedule is initialized for this user
+            try:
+                pm = ProbeMaintenance.query.filter_by(user_email=user_email, device_id=raw_node_id).first()
+                if not pm:
+                    now_dt = datetime.now()
+                    user_display = session.get("user_name") or user_email
+                    pm = ProbeMaintenance(
+                        user_email=user_email,
+                        device_id=raw_node_id,
+                        maintenance_type="Baseline Sensor Deployment",
+                        last_cleaned_at=now_dt,
+                        last_calibrated_at=now_dt,
+                        cleaning_interval_days=7,
+                        calibration_interval_days=14,
+                        notes=f"Hardware node {raw_node_id} paired. Submerged sensor biofilm scrubbing and 2-point calibration timer initiated.",
+                        performed_by=user_display,
+                    )
+                    db.session.add(pm)
+                    hist = ProbeMaintenanceHistory(
+                        user_email=user_email,
+                        device_id=raw_node_id,
+                        action="both",
+                        maintenance_type="Baseline Sensor Deployment & 2-Point Verification",
+                        performed_by=user_display,
+                        notes=f"Hardware node {raw_node_id} paired. Submerged sensor probes verified at deployment.",
+                        performed_at=now_dt
+                    )
+                    db.session.add(hist)
+                    db.session.commit()
+            except Exception:
+                db.session.rollback()
+
             log_activity(user_email, "Pair Device", f"Updated pairing for node '{raw_node_id}' ({device_name})")
             return jsonify({
                 "success": True,
@@ -1724,6 +1820,38 @@ def api_devices_pair():
         )
         db.session.add(new_device)
         db.session.commit()
+
+        # Initialize probe biofilm & calibration lifecycle timer starting from this pairing moment
+        try:
+            pm = ProbeMaintenance.query.filter_by(user_email=user_email, device_id=raw_node_id).first()
+            if not pm:
+                now_dt = datetime.now()
+                user_display = session.get("user_name") or user_email
+                pm = ProbeMaintenance(
+                    user_email=user_email,
+                    device_id=raw_node_id,
+                    maintenance_type="Baseline Sensor Deployment",
+                    last_cleaned_at=now_dt,
+                    last_calibrated_at=now_dt,
+                    cleaning_interval_days=7,
+                    calibration_interval_days=14,
+                    notes=f"Hardware node {raw_node_id} paired. Submerged sensor biofilm scrubbing and 2-point calibration timer initiated.",
+                    performed_by=user_display,
+                )
+                db.session.add(pm)
+                hist = ProbeMaintenanceHistory(
+                    user_email=user_email,
+                    device_id=raw_node_id,
+                    action="both",
+                    maintenance_type="Baseline Sensor Deployment & 2-Point Verification",
+                    performed_by=user_display,
+                    notes=f"Hardware node {raw_node_id} paired. Submerged sensor probes verified at deployment.",
+                    performed_at=now_dt
+                )
+                db.session.add(hist)
+                db.session.commit()
+        except Exception:
+            db.session.rollback()
         log_activity(user_email, "Pair Device", f"Paired hardware node '{raw_node_id}' ({device_name})")
         return jsonify({
             "success": True,
@@ -2005,7 +2133,7 @@ def api_hardware_diagnostics():
 @role_required("Client", "Admin")
 def get_maintenance_status_endpoint():
     user_email = session.get("user_id")
-    device_id = request.args.get("device_id", "NODE01")
+    device_id = request.args.get("device_id")
 
     maint_data = get_probe_maintenance_status(user_email=user_email, device_id=device_id)
 
@@ -2019,7 +2147,7 @@ def get_maintenance_status_endpoint():
             is_snoozed = False
 
     # Proactively check and dispatch push alert if due soon or overdue (throttled to 24h)
-    if maint_data and maint_data.get("is_notice_active") and not is_snoozed:
+    if maint_data and maint_data.get("has_paired_node") and maint_data.get("is_notice_active") and not is_snoozed:
         try:
             dispatch_maintenance_ntfy_if_needed(user_email=user_email, device_id=device_id)
         except Exception:
@@ -2036,13 +2164,27 @@ def get_maintenance_status_endpoint():
 @role_required("Client", "Admin")
 def log_maintenance_endpoint():
     user_email = session.get("user_id")
+    if not user_email:
+        return jsonify({"success": False, "error": "Authentication required."}), 401
+
     payload = request.get_json(silent=True) or {}
 
     action = payload.get("action", "both").lower()  # 'both', 'cleaning', 'calibration'
-    device_id = payload.get("device_id", "NODE01")
+    device_id = payload.get("device_id")
     notes = payload.get("notes", "").strip() or "Routine biofilm scrubbing & 2-point buffer recalibration completed."
     technician = payload.get("technician", "").strip() or (session.get("user_name") or user_email or "Pond Operator")
     performed_at_raw = payload.get("performed_at")
+
+    # Strict check: verify user has paired node
+    user_nodes = UserDevice.query.filter_by(user_email=user_email).all()
+    if not user_nodes and session.get("role") != "Admin":
+        return jsonify({
+            "success": False,
+            "error": "No paired pond telemetry node found. Please pair a hardware node before logging probe maintenance."
+        }), 400
+
+    if not device_id:
+        device_id = user_nodes[0].device_id if user_nodes else "NODE01"
 
     now = datetime.now()
     if performed_at_raw:
@@ -2054,13 +2196,9 @@ def log_maintenance_endpoint():
         except Exception:
             now = datetime.now()
 
-    default_owner = os.getenv("LORA_DEFAULT_USER_EMAIL", "rio@gmail.com")
-    target_user = user_email or default_owner
-
     try:
-        maint = ProbeMaintenance.query.filter_by(user_email=target_user, device_id=device_id).order_by(ProbeMaintenance.id.desc()).first()
-        if not maint:
-            maint = ProbeMaintenance.query.filter_by(device_id=device_id).order_by(ProbeMaintenance.id.desc()).first()
+        # STRICT USER ISOLATION: Query ONLY for current user_email
+        maint = ProbeMaintenance.query.filter_by(user_email=user_email, device_id=device_id).order_by(ProbeMaintenance.id.desc()).first()
 
         m_type = "Biofilm Cleaning & 2-Point Calibration" if action == "both" else ("Biofilm Scrubbing & Rinse" if action == "cleaning" else "pH 2-Point Recalibration")
 
@@ -2074,7 +2212,7 @@ def log_maintenance_endpoint():
             maint.maintenance_type = m_type
         else:
             maint = ProbeMaintenance(
-                user_email=target_user,
+                user_email=user_email,
                 device_id=device_id,
                 maintenance_type=m_type,
                 last_cleaned_at=now,
@@ -2100,9 +2238,9 @@ def log_maintenance_endpoint():
         )
         db.session.add(new_log)
 
-        # Record permanent entry in ProbeMaintenanceHistory
+        # Record permanent entry in ProbeMaintenanceHistory (STRICT USER ISOLATION)
         history_entry = ProbeMaintenanceHistory(
-            user_email=target_user,
+            user_email=user_email,
             device_id=device_id,
             action=action,
             maintenance_type=m_type,
@@ -2115,13 +2253,16 @@ def log_maintenance_endpoint():
 
         # Clear any active snooze and reset throttling cache so next cycle alerts properly
         session.pop("maintenance_notice_snoozed_until", None)
-        cache_key = f"{target_user}:{device_id}"
+        cache_key = f"{user_email}:{device_id}"
         MAINTENANCE_NTFY_THROTTLE.pop(cache_key, None)
+
+        maint_dict = maint.to_dict()
+        maint_dict["has_paired_node"] = True
 
         return jsonify({
             "success": True,
             "message": "Probe maintenance recorded successfully. Schedule and sensor drift timer reset.",
-            "maintenance": maint.to_dict(),
+            "maintenance": maint_dict,
             "history_entry": history_entry.to_dict()
         })
     except Exception as exc:
@@ -2149,45 +2290,29 @@ def get_maintenance_history_endpoint():
     device_id = request.args.get("device_id")
     user_role = session.get("role") or "Client"
 
-    default_owner = os.getenv("LORA_DEFAULT_USER_EMAIL", "rio@gmail.com")
-    target_user = user_email or default_owner
-
     try:
         query = ProbeMaintenanceHistory.query
+        # STRICT USER ISOLATION:
         if user_role != "Admin":
-            query = query.filter((ProbeMaintenanceHistory.user_email == target_user) | (ProbeMaintenanceHistory.user_email == default_owner))
+            query = query.filter_by(user_email=user_email)
+        else:
+            if user_email and request.args.get("all_users") != "true":
+                query = query.filter_by(user_email=user_email)
+
         if device_id:
             query = query.filter_by(device_id=device_id)
 
         history_records = query.order_by(ProbeMaintenanceHistory.performed_at.desc()).limit(100).all()
 
-        now_dt = datetime.now()
-        # Synchronize any past initial deployment records to the accurate baseline deployment datetime
-        updated_any = False
-        for r in history_records:
-            if "Initial" in (r.maintenance_type or "") and r.performed_at and (now_dt - r.performed_at).total_seconds() > 86400 * 2:
-                r.performed_at = now_dt
-                updated_any = True
-        if updated_any:
-            try:
-                db.session.commit()
-            except Exception:
-                db.session.rollback()
-
-        # If history table is empty, seed initial baseline deployment record with current accurate datetime
-        if not history_records:
-            initial_log = ProbeMaintenanceHistory(
-                user_email=target_user,
-                device_id="NODE01",
-                action="both",
-                maintenance_type="Initial Deployment & 2-Point Buffer Recalibration",
-                performed_by="System Initializer",
-                notes="Baseline 2-point calibration verified with pH 6.86 and 4.01 standard buffers at 29.1°C with ATC.",
-                performed_at=now_dt
-            )
-            db.session.add(initial_log)
-            db.session.commit()
-            history_records = query.order_by(ProbeMaintenanceHistory.performed_at.desc()).limit(100).all()
+        return jsonify({
+            "success": True,
+            "count": len(history_records),
+            "history": [r.to_dict() for r in history_records]
+        })
+    except Exception as exc:
+        db.session.rollback()
+        app.logger.exception(f"Error fetching maintenance history: {exc}")
+        return jsonify({"success": False, "error": "Unable to fetch maintenance history."}), 500
 
         return jsonify({
             "success": True,
@@ -3810,7 +3935,7 @@ def devices():
         paired_nodes = []
 
     try:
-        maintenance_history = ProbeMaintenanceHistory.query.order_by(ProbeMaintenanceHistory.performed_at.desc()).limit(50).all()
+        maintenance_history = ProbeMaintenanceHistory.query.filter_by(user_email=user_email).order_by(ProbeMaintenanceHistory.performed_at.desc()).limit(50).all()
     except Exception:
         maintenance_history = []
 

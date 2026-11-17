@@ -712,6 +712,12 @@ function setupUnpairModal() {
                     showNotice(data.message || `Node '${nodeId}' successfully unpaired.`, "success");
                     await fetchPairedNodes();
                     await fetchDevicesInventory();
+                    if (window.ShrimpGuardMaintenance && typeof window.ShrimpGuardMaintenance.fetchStatus === "function") {
+                        window.ShrimpGuardMaintenance.fetchStatus();
+                    }
+                    if (window.ShrimpGuardMaintenance && typeof window.ShrimpGuardMaintenance.fetchHistory === "function") {
+                        window.ShrimpGuardMaintenance.fetchHistory();
+                    }
                 } else {
                     showNotice(data.error || "Failed to unpair node.", "error");
                 }
@@ -844,6 +850,12 @@ function setupPairNodeModal() {
                     showNotice(data.message || `Node '${nodeId}' paired successfully!`, false);
                     fetchPairedNodes();
                     fetchDevicesInventory();
+                    if (window.ShrimpGuardMaintenance && typeof window.ShrimpGuardMaintenance.fetchStatus === "function") {
+                        window.ShrimpGuardMaintenance.fetchStatus();
+                    }
+                    if (window.ShrimpGuardMaintenance && typeof window.ShrimpGuardMaintenance.fetchHistory === "function") {
+                        window.ShrimpGuardMaintenance.fetchHistory();
+                    }
                 } else {
                     if (errBox) {
                         errBox.textContent = data.error || "Failed to pair device.";
