@@ -13470,10 +13470,11 @@ nav a {
     border: 1px solid #fde68a;
 }
 
-.alerts-page .severity-badge.severity-none {
-    background: #f4f6f4;
-    color: #6a7b70;
-    border: 1px solid #e2e8e3;
+.alerts-page .severity-badge.severity-none,
+.alerts-page .severity-badge.severity-optimal {
+    background: #eaf6ef;
+    color: #126b4f;
+    border: 1px solid #cce8d7;
 }
 
 .alerts-page .status-pill {
@@ -18390,7 +18391,8 @@ nav a {
 }
 
 .alerts-page .calendar-picker-anchor,
-.alerts-page .status-picker-anchor {
+.alerts-page .status-picker-anchor,
+.alerts-page .limit-picker-anchor {
     position: relative;
     display: inline-block;
 }
@@ -18605,15 +18607,20 @@ nav a {
     color: #ffffff;
 }
 
-.alerts-page .status-dropdown-menu[hidden] {
+.alerts-page .status-dropdown-menu[hidden],
+.alerts-page .limit-dropdown-menu[hidden] {
     display: none !important;
 }
 
-.alerts-page .status-dropdown-menu {
+.alerts-page .limit-picker-anchor {
+    position: relative;
+    display: inline-block;
+}
+
+.alerts-page .status-dropdown-menu,
+.alerts-page .limit-dropdown-menu {
     position: absolute;
     top: calc(100% + 8px);
-    right: 0;
-    width: 165px;
     background: #ffffff;
     border: 1px solid #dce7df;
     border-radius: 12px;
@@ -18626,7 +18633,20 @@ nav a {
     animation: histFadeDown 150ms ease-out;
 }
 
-.alerts-page .status-menu-item {
+.alerts-page .status-dropdown-menu {
+    right: 0;
+    left: auto;
+    width: 165px;
+}
+
+.alerts-page .limit-dropdown-menu {
+    left: 0;
+    right: auto;
+    width: 135px;
+}
+
+.alerts-page .status-menu-item,
+.alerts-page .limit-menu-item {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -18641,24 +18661,38 @@ nav a {
     text-align: left;
     cursor: pointer;
     transition: all 120ms ease;
+    box-sizing: border-box;
 }
 
-.alerts-page .status-menu-item:hover {
+.alerts-page .status-menu-item:hover,
+.alerts-page .limit-menu-item:hover {
     background: #f0f7f3;
     color: #143d34;
 }
 
-.alerts-page .status-menu-item.active {
+.alerts-page .status-menu-item.active,
+.alerts-page .limit-menu-item.active {
     background: #eaf6ef;
     color: #1b5145;
     font-weight: 800;
 }
 
-.alerts-page .status-menu-dot {
+.alerts-page .status-menu-dot,
+.alerts-page .limit-menu-dot {
     width: 7px;
     height: 7px;
     border-radius: 50%;
     display: inline-block;
+    flex-shrink: 0;
+}
+
+.alerts-page .limit-menu-dot {
+    background: #94a3b8;
+    transition: background-color 120ms ease;
+}
+
+.alerts-page .limit-menu-item.active .limit-menu-dot {
+    background: #1b5145;
 }
 
 .alerts-page .status-menu-dot.dot-all {
@@ -23516,47 +23550,6 @@ nav a {
     to {
         opacity: 1;
         transform: translateY(0) scale(1);
-    }
-}
-
-.module-dropdown-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid transparent;
-    background: transparent;
-    border-radius: 8px;
-    cursor: pointer;
-    text-align: left;
-    color: #1e293b;
-    transition: all 0.15s ease;
-}
-
-.module-dropdown-item:hover {
-    background: #f1f5f9;
-}
-
-.module-dropdown-item.active {
-    background: #f0fdf4;
-    border-color: #bbf7d0;
-    color: #15803d;
-}
-
-.module-dropdown-item .item-icon-box {
-    width: 30px;
-    height: 30px;
-    border-radius: 7px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.module-dropdown-item .item-icon-box .ui-icon {
-    width: 15px;
-    height: 15px;
 }
 
 .module-dropdown-item .item-meta {
@@ -23777,6 +23770,50 @@ nav a {
 .ai-status-pill.badge-critical::before {
     background: #ef4444;
     box-shadow: 0 0 6px rgba(239, 68, 68, 0.7);
+}
+
+/* Header Actions & Close Button */
+.ai-decision-dialog .modal-header-actions-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.ai-decision-dialog .modal-close-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.16s ease;
+    box-sizing: border-box;
+}
+
+.ai-decision-dialog .modal-close-btn:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+    border-color: #cbd5e1;
+    transform: scale(1.05);
+}
+
+.ai-decision-dialog .modal-close-btn:active {
+    transform: scale(0.96);
+}
+
+.ai-decision-dialog .modal-close-btn .ui-icon {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    fill: none;
+    transition: color 0.16s ease;
 }
 
 /* 4. Body Content Styling */

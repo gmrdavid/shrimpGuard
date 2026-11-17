@@ -341,6 +341,7 @@ function openCalendarPopup() {
     const btn = document.getElementById("filter-date-btn");
     if (!popup) return;
     closeStatusDropdown();
+    closeLimitDropdown();
     popup.hidden = false;
     popup.style.display = "block";
     if (btn) btn.setAttribute("aria-expanded", "true");
@@ -366,10 +367,11 @@ function toggleCalendarPopup() {
 }
 
 // =========================================
-// STATUS DROPDOWN FILTER LOGIC
+// STATUS & LIMIT DROPDOWN FILTER LOGIC
 // =========================================
 
 function selectStatusFilter(status) {
+    if (!status) return;
     tableFilterStatus = String(status).toLowerCase();
     const textEl = document.getElementById("filter-status-text");
     if (textEl) {
@@ -382,7 +384,7 @@ function selectStatusFilter(status) {
         textEl.textContent = labels[tableFilterStatus] || "Status: All";
     }
 
-    const items = document.querySelectorAll(".status-menu-item");
+    const items = document.querySelectorAll("#status-dropdown-menu .status-menu-item");
     items.forEach((btn) => {
         if (btn.getAttribute("data-status") === tableFilterStatus) {
             btn.classList.add("active");
@@ -396,11 +398,39 @@ function selectStatusFilter(status) {
     renderAlertHistory(cachedHistory);
 }
 
+function selectLimitFilter(limit) {
+    if (!limit) return;
+    alertsPerPage = String(limit);
+    const textEl = document.getElementById("table-limit-text");
+    if (textEl) {
+        textEl.textContent = limit === "all" ? "Show: All rows" : `Show: ${limit} rows`;
+    }
+
+    const items = document.querySelectorAll("#limit-dropdown-menu .limit-menu-item");
+    items.forEach((btn) => {
+        if (btn.getAttribute("data-limit") === String(limit)) {
+            btn.classList.add("active");
+        } else {
+            btn.classList.remove("active");
+        }
+    });
+
+    const selectEl = document.getElementById("table-limit-select");
+    if (selectEl) {
+        selectEl.value = limit;
+    }
+
+    closeLimitDropdown();
+    historyPage = 1;
+    renderAlertHistory(cachedHistory);
+}
+
 function openStatusDropdown() {
     const menu = document.getElementById("status-dropdown-menu");
     const btn = document.getElementById("filter-status-btn");
     if (!menu) return;
     closeCalendarPopup();
+    closeLimitDropdown();
     menu.hidden = false;
     menu.style.display = "flex";
     if (btn) btn.setAttribute("aria-expanded", "true");
@@ -421,6 +451,35 @@ function toggleStatusDropdown() {
         closeStatusDropdown();
     } else {
         openStatusDropdown();
+    }
+}
+
+function openLimitDropdown() {
+    const menu = document.getElementById("limit-dropdown-menu");
+    const btn = document.getElementById("table-limit-btn");
+    if (!menu) return;
+    closeCalendarPopup();
+    closeStatusDropdown();
+    menu.hidden = false;
+    menu.style.display = "flex";
+    if (btn) btn.setAttribute("aria-expanded", "true");
+}
+
+function closeLimitDropdown() {
+    const menu = document.getElementById("limit-dropdown-menu");
+    const btn = document.getElementById("table-limit-btn");
+    if (!menu) return;
+    menu.hidden = true;
+    menu.style.display = "none";
+    if (btn) btn.setAttribute("aria-expanded", "false");
+}
+
+function toggleLimitDropdown() {
+    const menu = document.getElementById("limit-dropdown-menu");
+    if (menu && (!menu.hidden && menu.style.display !== "none")) {
+        closeLimitDropdown();
+    } else {
+        openLimitDropdown();
     }
 }
 
@@ -517,7 +576,7 @@ function renderAlertHistory(history) {
                 ? '<span class="severity-badge severity-critical">Critical</span>'
                 : overall === "Warning"
                 ? '<span class="severity-badge severity-warning">Warning</span>'
-                : '<span class="severity-badge severity-none">Optimal</span>';
+                : '<span class="severity-badge severity-optimal severity-none">Optimal</span>';
 
             return `
                 <tr>
@@ -591,13 +650,28 @@ function renderAlertHistory(history) {
 function initAlertHistoryControls() {
     if (alertControlsInitialized) return;
 
-    // Limit selector
+    // Limit selector & custom dropdown
+    const tableLimitBtn = document.getElementById("table-limit-btn");
+    if (tableLimitBtn) {
+        tableLimitBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            toggleLimitDropdown();
+        });
+    }
+
+    const limitMenuItems = document.querySelectorAll("#limit-dropdown-menu .limit-menu-item");
+    limitMenuItems.forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const limit = btn.getAttribute("data-limit");
+            selectLimitFilter(limit);
+        });
+    });
+
     const tableLimitSelect = document.getElementById("table-limit-select");
     if (tableLimitSelect) {
         tableLimitSelect.addEventListener("change", (e) => {
-            alertsPerPage = e.target.value;
-            historyPage = 1;
-            renderAlertHistory(cachedHistory);
+            selectLimitFilter(e.target.value);
         });
     }
 
@@ -643,7 +717,7 @@ function initAlertHistoryControls() {
         });
     }
 
-    const statusMenuItems = document.querySelectorAll(".status-menu-item");
+    const statusMenuItems = document.querySelectorAll("#status-dropdown-menu .status-menu-item");
     statusMenuItems.forEach((btn) => {
         btn.addEventListener("click", (e) => {
             e.stopPropagation();
@@ -662,6 +736,10 @@ function initAlertHistoryControls() {
         if (statusAnchor && !statusAnchor.contains(e.target)) {
             closeStatusDropdown();
         }
+        const limitAnchor = document.querySelector(".limit-picker-anchor");
+        if (limitAnchor && !limitAnchor.contains(e.target)) {
+            closeLimitDropdown();
+        }
     });
 
     // Close on Escape key
@@ -669,6 +747,7 @@ function initAlertHistoryControls() {
         if (e.key === "Escape") {
             closeCalendarPopup();
             closeStatusDropdown();
+            closeLimitDropdown();
         }
     });
 
@@ -758,6 +837,7 @@ async function loadAlertsData() {
 
 closeCalendarPopup();
 closeStatusDropdown();
+closeLimitDropdown();
 updateDeviceTime();
 setInterval(updateDeviceTime, 1000);
 loadAlertsData();
