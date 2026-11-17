@@ -119,6 +119,26 @@
 
     // EDIT USER
     const editDialog = get("edit-user-dialog");
+    const editPwInput = get("edit-user-new-password");
+    const editPwHint = get("edit-user-pw-hint");
+
+    if (editPwInput && editPwHint) {
+        const editHintText = editPwHint.querySelector("span");
+        editPwInput.addEventListener("input", () => {
+            const len = editPwInput.value.length;
+            if (len >= 8) {
+                editPwHint.classList.add("valid");
+                if (editHintText) editHintText.textContent = `Valid (${len} chars)`;
+            } else if (len > 0) {
+                editPwHint.classList.remove("valid");
+                if (editHintText) editHintText.textContent = `${len}/8 chars (min. 8)`;
+            } else {
+                editPwHint.classList.remove("valid");
+                if (editHintText) editHintText.textContent = "Leave blank to keep unchanged";
+            }
+        });
+    }
+
     document.querySelectorAll(".admin-edit-user").forEach((button) => {
         button.addEventListener("click", () => {
             if (!editDialog) return;
@@ -132,15 +152,26 @@
             if (emailEl) emailEl.value = button.dataset.email || "";
 
             const roleEl = get("edit-user-role");
-            if (roleEl) roleEl.value = button.dataset.role || "Client";
+            if (roleEl) {
+                roleEl.value = button.dataset.role || "Client";
+                roleEl.dispatchEvent(new Event("change", { bubbles: true }));
+            }
 
             const statusEl = get("edit-user-status");
-            if (statusEl) statusEl.value = button.dataset.status || "Active";
+            if (statusEl) {
+                statusEl.value = button.dataset.status || "Active";
+                statusEl.dispatchEvent(new Event("change", { bubbles: true }));
+            }
 
-            const newPassEl = get("edit-user-new-password");
-            if (newPassEl) newPassEl.value = "";
+            if (editPwInput) {
+                editPwInput.value = "";
+                editPwInput.dispatchEvent(new Event("input", { bubbles: true }));
+            }
 
             editDialog.showModal();
+            if (nameEl) {
+                setTimeout(() => nameEl.focus(), 80);
+            }
         });
     });
 

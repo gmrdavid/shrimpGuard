@@ -4497,10 +4497,10 @@ nav a {
 }
 
 /* =========================================
-   REFINED CREATE USER DIALOG (COMPACT & MODERN)
+   REFINED ADMIN USER MODALS (CREATE & EDIT)
    ========================================= */
 
-.admin-page .add-user-dialog {
+.admin-page .admin-user-dialog {
     width: min(490px, calc(100% - 24px));
     max-width: 490px;
     margin: auto;
@@ -4512,7 +4512,7 @@ nav a {
     overflow: visible;
 }
 
-.admin-page .add-user-dialog .admin-modal-card {
+.admin-page .admin-user-dialog .admin-modal-card {
     display: flex;
     flex-direction: column;
     border-radius: 15px;
@@ -4520,17 +4520,17 @@ nav a {
     overflow: visible;
 }
 
-.admin-page .add-user-dialog::backdrop {
+.admin-page .admin-user-dialog::backdrop {
     background: rgba(14, 30, 26, 0.65);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
 }
 
-.admin-page .add-user-dialog[open] {
+.admin-page .admin-user-dialog[open] {
     animation: adminDialogIn 0.2s ease-out;
 }
 
-.admin-page .add-user-dialog .admin-user-dialog-heading {
+.admin-page .admin-user-dialog .admin-user-dialog-heading {
     position: static;
     display: flex;
     align-items: center;
@@ -4544,14 +4544,14 @@ nav a {
     border-top: 3.5px solid #1b5145;
 }
 
-.admin-page .add-user-dialog .admin-modal-title-group {
+.admin-page .admin-user-dialog .admin-modal-title-group {
     display: flex;
     align-items: center;
     gap: 13px;
     min-width: 0;
 }
 
-.admin-page .add-user-dialog .admin-modal-icon-badge {
+.admin-page .admin-user-dialog .admin-modal-icon-badge {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -4564,12 +4564,12 @@ nav a {
     border: 1px solid rgba(27, 81, 69, 0.12);
 }
 
-.admin-page .add-user-dialog .admin-modal-icon-badge .ui-icon {
+.admin-page .admin-user-dialog .admin-modal-icon-badge .ui-icon {
     width: 21px;
     height: 21px;
 }
 
-.admin-page .add-user-dialog .admin-modal-heading-text h2 {
+.admin-page .admin-user-dialog .admin-modal-heading-text h2 {
     margin: 0;
     font-size: 17.5px;
     font-weight: 750;
@@ -4578,14 +4578,14 @@ nav a {
     letter-spacing: -0.01em;
 }
 
-.admin-page .add-user-dialog .admin-modal-subtitle {
+.admin-page .admin-user-dialog .admin-modal-subtitle {
     margin: 3px 0 0;
     font-size: 12px;
     color: #61776a;
     line-height: 1.4;
 }
 
-.admin-page .add-user-dialog .admin-dialog-close {
+.admin-page .admin-user-dialog .admin-dialog-close {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -4601,49 +4601,49 @@ nav a {
     flex-shrink: 0;
 }
 
-.admin-page .add-user-dialog .admin-dialog-close:hover {
+.admin-page .admin-user-dialog .admin-dialog-close:hover {
     border-color: #dc2626;
     background: #fef2f2;
     color: #dc2626;
 }
 
-.admin-page .add-user-dialog .admin-user-form {
+.admin-page .admin-user-dialog .admin-user-form {
     padding: 0;
 }
 
-.admin-page .add-user-dialog .admin-form-body {
+.admin-page .admin-user-dialog .admin-form-body {
     display: flex;
     flex-direction: column;
     gap: 14px;
     padding: 22px 24px;
 }
 
-.admin-page .add-user-dialog .admin-form-field {
+.admin-page .admin-user-dialog .admin-form-field {
     display: flex;
     flex-direction: column;
     gap: 6px;
     margin-bottom: 0;
 }
 
-.admin-page .add-user-dialog .admin-form-field label {
+.admin-page .admin-user-dialog .admin-form-field label {
     font-size: 12px;
     font-weight: 700;
     color: #263e36;
     letter-spacing: 0.01em;
 }
 
-.admin-page .add-user-dialog .admin-form-field label span {
+.admin-page .admin-user-dialog .admin-form-field label span {
     color: #dc2626;
     margin-left: 2px;
 }
 
-.admin-page .add-user-dialog .admin-field-header {
+.admin-page .admin-user-dialog .admin-field-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
-.admin-page .add-user-dialog .admin-field-hint {
+.admin-page .admin-user-dialog .admin-field-hint {
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -4653,29 +4653,29 @@ nav a {
     transition: color 0.15s ease;
 }
 
-.admin-page .add-user-dialog .admin-field-hint .hint-icon {
+.admin-page .admin-user-dialog .admin-field-hint .hint-icon {
     width: 12px;
     height: 12px;
     flex-shrink: 0;
 }
 
-.admin-page .add-user-dialog .admin-field-hint.valid {
+.admin-page .admin-user-dialog .admin-field-hint.valid {
     color: #16a34a;
     font-weight: 650;
 }
 
-.admin-page .add-user-dialog .admin-field-hint.valid .hint-icon {
+.admin-page .admin-user-dialog .admin-field-hint.valid .hint-icon {
     stroke: #16a34a;
 }
 
-.admin-page .add-user-dialog .admin-input-group {
+.admin-page .admin-user-dialog .admin-input-group {
     position: relative;
     display: flex;
     align-items: center;
     width: 100%;
 }
 
-.admin-page .add-user-dialog .admin-input-icon {
+.admin-page .admin-user-dialog .admin-input-icon {
     position: absolute;
     left: 13px;
     width: 16px;
@@ -4687,11 +4687,11 @@ nav a {
     z-index: 2;
 }
 
-.admin-page .add-user-dialog .admin-input-group:focus-within .admin-input-icon {
+.admin-page .admin-user-dialog .admin-input-group:focus-within .admin-input-icon {
     color: #16a34a;
 }
 
-.admin-page .add-user-dialog .admin-form-field input {
+.admin-page .admin-user-dialog .admin-form-field input {
     box-sizing: border-box;
     width: 100%;
     height: 42px;
@@ -4708,22 +4708,22 @@ nav a {
     transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
 
-.admin-page .add-user-dialog .admin-form-field input::placeholder {
+.admin-page .admin-user-dialog .admin-form-field input::placeholder {
     color: #94a3b8;
     font-weight: 400;
 }
 
-.admin-page .add-user-dialog .admin-form-field input:focus {
+.admin-page .admin-user-dialog .admin-form-field input:focus {
     border-color: #16a34a;
     box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
     background: #ffffff;
 }
 
-.admin-page .add-user-dialog .admin-password-group input {
+.admin-page .admin-user-dialog .admin-password-group input {
     padding-right: 42px;
 }
 
-.admin-page .add-user-dialog .admin-pw-toggle-btn {
+.admin-page .admin-user-dialog .admin-pw-toggle-btn {
     position: absolute;
     right: 7px;
     display: inline-flex;
@@ -4741,28 +4741,28 @@ nav a {
     z-index: 2;
 }
 
-.admin-page .add-user-dialog .admin-pw-toggle-btn:hover {
+.admin-page .admin-user-dialog .admin-pw-toggle-btn:hover {
     background: #eaf6ef;
     color: #1b5145;
 }
 
-.admin-page .add-user-dialog .admin-pw-toggle-btn .ui-icon {
+.admin-page .admin-user-dialog .admin-pw-toggle-btn .ui-icon {
     width: 16px;
     height: 16px;
 }
 
-.admin-page .add-user-dialog .admin-form-grid {
+.admin-page .admin-user-dialog .admin-form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 14px;
 }
 
-.admin-page .add-user-dialog .modal-picker-anchor {
+.admin-page .admin-user-dialog .modal-picker-anchor {
     position: relative;
     width: 100%;
 }
 
-.admin-page .add-user-dialog .modal-toolbar-btn {
+.admin-page .admin-user-dialog .modal-toolbar-btn {
     width: 100%;
     height: 42px;
     min-height: 42px;
@@ -4781,27 +4781,27 @@ nav a {
     transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
 
-.admin-page .add-user-dialog .modal-toolbar-btn:hover {
+.admin-page .admin-user-dialog .modal-toolbar-btn:hover {
     border-color: #24744d;
     background: #f8fbf9;
     color: #143d34;
     transform: none;
 }
 
-.admin-page .add-user-dialog .modal-toolbar-btn[aria-expanded="true"] {
+.admin-page .admin-user-dialog .modal-toolbar-btn[aria-expanded="true"] {
     border-color: #16a34a;
     box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
     background: #ffffff;
 }
 
-.admin-page .add-user-dialog .btn-label-with-icon {
+.admin-page .admin-user-dialog .btn-label-with-icon {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     min-width: 0;
 }
 
-.admin-page .add-user-dialog .btn-label-with-icon .ui-icon {
+.admin-page .admin-user-dialog .btn-label-with-icon .ui-icon {
     width: 15px;
     height: 15px;
     color: #647b6e;
@@ -4809,12 +4809,12 @@ nav a {
     transition: color 0.15s ease;
 }
 
-.admin-page .add-user-dialog .modal-toolbar-btn:hover .btn-label-with-icon .ui-icon,
-.admin-page .add-user-dialog .modal-toolbar-btn[aria-expanded="true"] .btn-label-with-icon .ui-icon {
+.admin-page .admin-user-dialog .modal-toolbar-btn:hover .btn-label-with-icon .ui-icon,
+.admin-page .admin-user-dialog .modal-toolbar-btn[aria-expanded="true"] .btn-label-with-icon .ui-icon {
     color: #1b5145;
 }
 
-.admin-page .add-user-dialog .modal-dropdown-menu {
+.admin-page .admin-user-dialog .modal-dropdown-menu {
     position: absolute;
     width: 100%;
     min-width: 100%;
@@ -4835,7 +4835,7 @@ nav a {
     animation: histFadeDown 150ms ease-out;
 }
 
-.admin-page .add-user-dialog .modal-dropdown-menu .status-menu-item {
+.admin-page .admin-user-dialog .modal-dropdown-menu .status-menu-item {
     display: flex;
     align-items: center;
     gap: 9px;
@@ -4855,18 +4855,18 @@ nav a {
     font-family: inherit;
 }
 
-.admin-page .add-user-dialog .modal-dropdown-menu .status-menu-item:hover {
+.admin-page .admin-user-dialog .modal-dropdown-menu .status-menu-item:hover {
     background: #f0f7f3;
     color: #143d34;
 }
 
-.admin-page .add-user-dialog .modal-dropdown-menu .status-menu-item.active {
+.admin-page .admin-user-dialog .modal-dropdown-menu .status-menu-item.active {
     background: #eaf6ef;
     color: #1b5145;
     font-weight: 750;
 }
 
-.admin-page .add-user-dialog .admin-user-form-actions {
+.admin-page .admin-user-dialog .admin-user-form-actions {
     position: static;
     display: flex;
     align-items: center;
@@ -4880,8 +4880,8 @@ nav a {
     border-bottom-right-radius: 15px;
 }
 
-.admin-page .add-user-dialog .admin-user-cancel,
-.admin-page .add-user-dialog .admin-user-submit {
+.admin-page .admin-user-dialog .admin-user-cancel,
+.admin-page .admin-user-dialog .admin-user-submit {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -4898,846 +4898,310 @@ nav a {
     box-sizing: border-box;
 }
 
-.admin-page .add-user-dialog .admin-user-cancel {
+.admin-page .admin-user-dialog .admin-user-cancel {
     border: 1px solid #dce7df;
     background: #ffffff;
     color: #4b6255;
 }
 
-.admin-page .add-user-dialog .admin-user-cancel:hover {
+.admin-page .admin-user-dialog .admin-user-cancel:hover {
     background: #f0f7f3;
     border-color: #24744d;
     color: #143d34;
 }
 
-.admin-page .add-user-dialog .admin-user-submit {
+.admin-page .admin-user-dialog .admin-user-submit {
     border: 1px solid #1b5145;
     background: linear-gradient(135deg, #1b5145 0%, #143d34 100%);
     color: #ffffff;
     box-shadow: 0 3px 10px rgba(27, 81, 69, 0.22);
 }
 
-.admin-page .add-user-dialog .admin-user-submit:hover {
+.admin-page .admin-user-dialog .admin-user-submit:hover {
     background: linear-gradient(135deg, #143d34 0%, #0d2923 100%);
     border-color: #143d34;
     box-shadow: 0 5px 14px rgba(20, 61, 52, 0.32);
     transform: translateY(-1px);
 }
 
-.admin-page .add-user-dialog .admin-user-submit:active {
+.admin-page .admin-user-dialog .admin-user-submit:active {
     transform: translateY(0);
     box-shadow: 0 2px 6px rgba(20, 61, 52, 0.2);
 }
 
-.admin-page .add-user-dialog .admin-user-submit .ui-icon {
+.admin-page .admin-user-dialog .admin-user-submit .ui-icon {
     width: 15px;
     height: 15px;
 }
 
 @media (max-width: 520px) {
-    .admin-page .add-user-dialog {
+    .admin-page .admin-user-dialog {
         width: calc(100% - 20px);
         border-radius: 14px;
     }
 
-    .admin-page .add-user-dialog .admin-form-grid {
+    .admin-page .admin-user-dialog .admin-form-grid {
         grid-template-columns: 1fr;
         gap: 13px;
     }
 
-    .admin-page .add-user-dialog .admin-form-body {
+    .admin-page .admin-user-dialog .admin-form-body {
         padding: 16px;
         gap: 13px;
     }
 
-    .admin-page .add-user-dialog .admin-user-dialog-heading {
+    .admin-page .admin-user-dialog .admin-user-dialog-heading {
         padding: 16px;
     }
 
-    .admin-page .add-user-dialog .admin-user-form-actions {
+    .admin-page .admin-user-dialog .admin-user-form-actions {
         padding: 12px 16px 16px;
     }
 
-    .admin-page .add-user-dialog .admin-user-cancel,
-    .admin-page .add-user-dialog .admin-user-submit {
+    .admin-page .admin-user-dialog .admin-user-cancel,
+    .admin-page .admin-user-dialog .admin-user-submit {
         flex: 1;
     }
 }
 
 
-/* ========================================
-   SHRIMPGUARD — VIEW USER DIALOG
-======================================== */
+/* =========================================
+   SHRIMPGUARD — VIEW USER PROFILE DIALOG
+   ========================================= */
 
-.admin-view-dialog {
-    width: min(560px, calc(100% - 32px));
-    max-width: 560px;
-    max-height: 90vh;
+.admin-page .admin-view-dialog {
+    width: min(490px, calc(100% - 24px));
+    max-width: 490px;
+    margin: auto;
     padding: 0;
-    border: 1px solid #e2e8f0;
-    border-radius: 18px;
+    border: 1px solid #dce7df;
+    border-radius: 16px;
     background: #ffffff;
-    color: #1e293b;
-    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
-    overflow-x: hidden;
-    overflow-y: auto;
+    box-shadow: 0 24px 70px -8px rgba(18, 54, 46, 0.28), 0 8px 24px -4px rgba(18, 54, 46, 0.12);
+    overflow: hidden;
 }
 
-.admin-view-dialog::backdrop {
-    background: rgba(15, 23, 42, 0.58);
-    backdrop-filter: blur(3px);
+.admin-page .admin-view-dialog::backdrop {
+    background: rgba(14, 30, 26, 0.65);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
 }
 
-.admin-view-dialog .admin-modal-card {
-    width: 100%;
+.admin-page .admin-view-dialog[open] {
+    animation: adminDialogIn 0.2s ease-out;
+}
+
+.admin-page .admin-view-dialog .admin-modal-card {
+    display: flex;
+    flex-direction: column;
+    border-radius: 15px;
     background: #ffffff;
 }
 
-.admin-view-dialog .admin-modal-header {
-    position: sticky;
-    top: 0;
-    z-index: 2;
+.admin-page .admin-view-dialog .admin-user-dialog-heading {
+    position: static;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    padding: 22px 24px;
-    border-bottom: 1px solid #edf0f4;
-    background: #ffffff;
-}
-
-.admin-view-dialog .admin-modal-title-group {
-    display: flex;
-    align-items: center;
     gap: 14px;
-    min-width: 0;
-}
-
-.admin-view-dialog .admin-modal-icon-badge.view {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 46px;
-    height: 46px;
-    flex-shrink: 0;
-    border-radius: 13px;
-    color: #087f8c;
-    background: #e4f7f6;
-}
-
-.admin-view-dialog .admin-modal-icon-badge .ui-icon {
-    width: 23px;
-    height: 23px;
-}
-
-.admin-view-dialog .admin-modal-heading-text h2 {
-    margin: 0;
-    color: #0f172a;
-    font-size: 20px;
-    font-weight: 750;
-    line-height: 1.35;
-}
-
-.admin-view-dialog .admin-modal-subtitle {
-    margin: 5px 0 0;
-    color: #64748b;
-    font-size: 13px;
-    line-height: 1.5;
-}
-
-.admin-view-dialog .admin-modal-close {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    flex-shrink: 0;
-    padding: 0;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
+    padding: 18px 24px;
     background: #ffffff;
-    color: #64748b;
-    cursor: pointer;
-    transition: 0.2s ease;
+    border-bottom: 1px solid #edf2f0;
+    border-top: 3.5px solid #1b5145;
 }
 
-.admin-view-dialog .admin-modal-close:hover {
-    background: #f1f5f9;
-    color: #0f172a;
-}
-
-.admin-view-dialog .admin-modal-close .ui-icon {
-    width: 18px;
-    height: 18px;
-}
-
-/* Body */
-.admin-view-dialog .admin-modal-body {
-    padding: 24px;
-}
-
-/* Profile hero */
-.admin-view-dialog .user-hero-card {
+/* User Identity Hero Card */
+.admin-page .admin-view-dialog .user-hero-card {
     display: flex;
     align-items: center;
-    gap: 17px;
-    padding: 22px;
-    border: 1px solid #d9eeec;
-    border-radius: 15px;
-    background: linear-gradient(135deg, #f0fdfa 0%, #f8fafc 100%);
-}
-
-.admin-view-dialog .user-avatar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 66px;
-    height: 66px;
-    flex-shrink: 0;
-    border: 3px solid #ffffff;
-    border-radius: 20px;
-    background: #087f8c;
-    color: #ffffff;
-    font-size: 25px;
-    font-weight: 750;
-    box-shadow: 0 3px 12px rgba(8, 127, 140, 0.18);
-}
-
-.admin-view-dialog .user-hero-meta {
-    min-width: 0;
-}
-
-.admin-view-dialog .user-profile-eyebrow {
-    display: block;
-    margin-bottom: 5px;
-    color: #087f8c;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 1px;
-}
-
-.admin-view-dialog .user-hero-meta h3 {
-    margin: 0;
-    overflow-wrap: anywhere;
-    color: #0f172a;
-    font-size: 18px;
-    font-weight: 750;
-    line-height: 1.4;
-}
-
-.admin-view-dialog .user-profile-email {
-    display: flex;
-    align-items: flex-start;
-    gap: 7px;
-    margin: 6px 0 0;
-    color: #64748b;
-    font-size: 12px;
-    line-height: 1.5;
-    overflow-wrap: anywhere;
-}
-
-.admin-view-dialog .user-profile-email .ui-icon {
-    width: 15px;
-    height: 15px;
-    flex-shrink: 0;
-    margin-top: 1px;
-}
-
-/* Details section */
-.admin-view-dialog .user-details-section {
-    margin-top: 25px;
-}
-
-.admin-view-dialog .user-details-heading {
-    margin-bottom: 15px;
-}
-
-.admin-view-dialog .user-details-heading h3 {
-    margin: 0;
-    color: #1e293b;
-    font-size: 14px;
-    font-weight: 750;
-}
-
-.admin-view-dialog .user-details-heading p {
-    margin: 4px 0 0;
-    color: #94a3b8;
-    font-size: 12px;
-    line-height: 1.5;
-}
-
-.admin-view-dialog .user-detail-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-}
-
-.admin-view-dialog .user-detail-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    min-width: 0;
-    padding: 16px;
-    border: 1px solid #e8edf3;
+    gap: 16px;
+    padding: 18px 20px;
+    border: 1px solid #dce7df;
     border-radius: 12px;
-    background: #ffffff;
+    background: linear-gradient(135deg, #f0f7f3 0%, #eaf4ee 100%);
+    box-shadow: 0 1px 3px rgba(20, 61, 52, 0.04);
 }
 
-.admin-view-dialog .user-detail-item.full-width {
+.admin-page .admin-view-dialog .user-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #1b5145 0%, #143d34 100%);
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 750;
+    border: 2px solid #ffffff;
+    box-shadow: 0 3px 10px rgba(20, 61, 52, 0.18);
+}
+
+.admin-page .admin-view-dialog .user-hero-meta {
+    min-width: 0;
+    flex: 1;
+}
+
+.admin-page .admin-view-dialog .user-hero-meta h3 {
+    margin: 0;
+    color: #143d34;
+    font-size: 17px;
+    font-weight: 750;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+
+.admin-page .admin-view-dialog .user-profile-email {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 4px 0 0;
+    color: #556f61;
+    font-size: 12.5px;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+}
+
+.admin-page .admin-view-dialog .user-profile-email .ui-icon {
+    width: 14px;
+    height: 14px;
+    color: #647b6e;
+    flex-shrink: 0;
+}
+
+/* View Details Grid */
+.admin-page .admin-view-dialog .view-modal-body {
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.admin-page .admin-view-dialog .view-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.admin-page .admin-view-dialog .view-detail-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 13px 15px;
+    border: 1px solid #e2ece5;
+    border-radius: 11px;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(20, 61, 52, 0.03);
+}
+
+.admin-page .admin-view-dialog .view-detail-card.full-width {
     grid-column: 1 / -1;
 }
 
-.admin-view-dialog .user-detail-icon {
+.admin-page .admin-view-dialog .view-card-header {
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    flex-shrink: 0;
-    border-radius: 10px;
-}
-
-.admin-view-dialog .user-detail-icon .ui-icon {
-    width: 18px;
-    height: 18px;
-}
-
-.admin-view-dialog .role-icon {
-    background: #eff6ff;
-    color: #2563eb;
-}
-
-.admin-view-dialog .status-icon {
-    background: #ecfdf5;
-    color: #059669;
-}
-
-.admin-view-dialog .login-icon {
-    background: #fff7ed;
-    color: #c2410c;
-}
-
-.admin-view-dialog .user-detail-content {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 7px;
-    min-width: 0;
-}
-
-.admin-view-dialog .detail-label {
-    color: #64748b;
+    gap: 6px;
+    color: #61776a;
     font-size: 11px;
-    font-weight: 650;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
 }
 
-.admin-view-dialog .detail-badge {
+.admin-page .admin-view-dialog .view-card-header .ui-icon {
+    width: 13px;
+    height: 13px;
+    color: #647b6e;
+    flex-shrink: 0;
+}
+
+.admin-page .admin-view-dialog .detail-value {
+    color: #143d34;
+    font-size: 13px;
+    font-weight: 650;
+    overflow-wrap: anywhere;
+}
+
+/* Detail badges inside view dialog */
+.admin-page .admin-view-dialog .detail-badge {
     display: inline-flex;
     align-items: center;
-    max-width: 100%;
-    padding: 5px 9px;
-    border-radius: 7px;
-    background: #f1f5f9;
-    color: #475569;
-    font-size: 11px;
-    font-weight: 750;
-    overflow-wrap: anywhere;
+    align-self: flex-start;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    white-space: nowrap;
 }
 
-.admin-view-dialog .detail-value {
-    color: #1e293b;
-    font-size: 13px;
-    font-weight: 650;
-    overflow-wrap: anywhere;
+.admin-page .admin-view-dialog .detail-badge.admin {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
 }
 
-.admin-view-dialog .user-detail-hint {
-    color: #94a3b8;
-    font-size: 11px;
-    line-height: 1.5;
+.admin-page .admin-view-dialog .detail-badge.client {
+    background: #eaf6ef;
+    color: #1b5145;
+    border: 1px solid #bbf0d0;
 }
 
-/* Information note */
-.admin-view-dialog .user-profile-note {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    margin-top: 20px;
-    padding: 12px 14px;
-    border: 1px solid #dbeafe;
-    border-radius: 10px;
-    background: #f8fbff;
-    color: #64748b;
+.admin-page .admin-view-dialog .detail-badge.active {
+    background: #eafaf1;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
 }
 
-.admin-view-dialog .user-profile-note .ui-icon {
-    width: 17px;
-    height: 17px;
-    flex-shrink: 0;
-    color: #3b82f6;
+.admin-page .admin-view-dialog .detail-badge.inactive {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
 }
 
-.admin-view-dialog .user-profile-note p {
-    margin: 0;
-    font-size: 11px;
-    line-height: 1.6;
-}
-
-/* Footer */
-.admin-view-dialog .admin-modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    padding: 16px 24px 22px;
-    border-top: 1px solid #edf0f4;
-    background: #ffffff;
-}
-
-.admin-view-dialog .admin-view-close-btn {
-    min-width: 100px;
-    min-height: 40px;
-    border-radius: 9px;
-    font-size: 13px;
-    font-weight: 650;
-    cursor: pointer;
-}
-
-.admin-view-dialog .admin-modal-close:focus-visible,
-.admin-view-dialog .admin-view-close-btn:focus-visible {
-    outline: 2px solid #0d9488;
-    outline-offset: 3px;
-}
-
-/* Responsive */
-@media (max-width: 520px) {
-    .admin-view-dialog {
-        width: calc(100% - 20px);
-        max-height: 92vh;
-        border-radius: 14px;
-    }
-
-    .admin-view-dialog .admin-modal-header {
-        padding: 17px;
-        gap: 10px;
-    }
-
-    .admin-view-dialog .admin-modal-icon-badge.view {
-        width: 40px;
-        height: 40px;
-    }
-
-    .admin-view-dialog .admin-modal-heading-text h2 {
-        font-size: 17px;
-    }
-
-    .admin-view-dialog .admin-modal-body {
-        padding: 18px 17px;
-    }
-
-    .admin-view-dialog .user-hero-card {
-        gap: 13px;
-        padding: 16px;
-    }
-
-    .admin-view-dialog .user-avatar {
-        width: 54px;
-        height: 54px;
-        border-radius: 16px;
-        font-size: 21px;
-    }
-
-    .admin-view-dialog .user-hero-meta h3 {
-        font-size: 16px;
-    }
-
-    .admin-view-dialog .user-detail-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .admin-view-dialog .user-detail-item.full-width {
-        grid-column: auto;
-    }
-
-    .admin-view-dialog .admin-modal-footer {
-        padding: 14px 17px 17px;
-    }
-}
-
-/* ========================================
-   SHRIMPGUARD — EDIT USER DIALOG
-======================================== */
-
-.admin-edit-dialog {
-    width: min(600px, calc(100% - 32px));
-    max-width: 600px;
-    max-height: 90vh;
-    padding: 0;
-    border: 1px solid #e2e8f0;
-    border-radius: 18px;
-    background: #ffffff;
-    color: #1e293b;
-    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
-    overflow-x: hidden;
-    overflow-y: auto;
-}
-
-.admin-edit-dialog::backdrop {
-    background: rgba(15, 23, 42, 0.58);
-    backdrop-filter: blur(3px);
-}
-
-.admin-edit-dialog .admin-modal-card {
-    width: 100%;
-    background: #ffffff;
-}
-
-/* Header */
-.admin-edit-dialog .admin-modal-header {
-    position: sticky;
-    top: 0;
-    z-index: 2;
+/* Footer & Export button */
+.admin-page .admin-view-dialog .view-modal-actions {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    padding: 22px 24px;
-    border-bottom: 1px solid #edf0f4;
-    background: #ffffff;
-}
-
-.admin-edit-dialog .admin-modal-title-group {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    min-width: 0;
-}
-
-.admin-edit-dialog .admin-modal-icon-badge.edit {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 46px;
-    height: 46px;
-    flex-shrink: 0;
-    border-radius: 13px;
-    background: #fff4d6;
-    color: #b7791f;
-}
-
-.admin-edit-dialog .admin-modal-icon-badge .ui-icon {
-    width: 23px;
-    height: 23px;
-}
-
-.admin-edit-dialog .admin-modal-heading-text h2 {
-    margin: 0;
-    color: #0f172a;
-    font-size: 20px;
-    font-weight: 750;
-    line-height: 1.35;
-}
-
-.admin-edit-dialog .admin-modal-subtitle {
-    margin: 5px 0 0;
-    color: #64748b;
-    font-size: 13px;
-    line-height: 1.5;
-}
-
-.admin-edit-dialog .admin-modal-close {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    flex-shrink: 0;
-    padding: 0;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    background: #ffffff;
-    color: #64748b;
-    cursor: pointer;
-    transition: 0.2s ease;
-}
-
-.admin-edit-dialog .admin-modal-close:hover {
-    background: #f1f5f9;
-    color: #0f172a;
-}
-
-.admin-edit-dialog .admin-modal-close .ui-icon {
-    width: 18px;
-    height: 18px;
-}
-
-/* Form body */
-.admin-edit-dialog .admin-modal-form {
-    display: flex;
-    flex-direction: column;
-}
-
-.admin-edit-dialog .admin-modal-body {
-    padding: 22px 24px;
-}
-
-.admin-edit-dialog .admin-edit-intro {
-    margin: 0 0 18px;
-    color: #64748b;
-    font-size: 12px;
-    line-height: 1.6;
-}
-
-.admin-edit-dialog .admin-edit-intro span,
-.admin-edit-dialog .admin-edit-field label span {
-    color: #dc3545;
-    font-weight: 750;
-}
-
-/* Sections */
-.admin-edit-dialog .admin-edit-section {
-    padding: 19px 0;
-    border-bottom: 1px solid #edf0f4;
-}
-
-.admin-edit-dialog .admin-edit-section:first-of-type {
-    padding-top: 0;
-}
-
-.admin-edit-dialog .admin-edit-section:last-of-type {
-    border-bottom: none;
-    padding-bottom: 10px;
-}
-
-.admin-edit-dialog .admin-edit-section-heading {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-    margin-bottom: 18px;
-}
-
-.admin-edit-dialog .admin-edit-section-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    flex-shrink: 0;
-    border-radius: 10px;
-    background: #f0fdfa;
-    color: #0f8b83;
-}
-
-.admin-edit-dialog .admin-edit-section-icon .ui-icon {
-    width: 19px;
-    height: 19px;
-}
-
-.admin-edit-dialog .admin-edit-section-heading h3 {
-    margin: 0;
-    color: #1e293b;
-    font-size: 14px;
-    font-weight: 750;
-}
-
-.admin-edit-dialog .admin-edit-section-heading p {
-    margin: 4px 0 0;
-    color: #94a3b8;
-    font-size: 12px;
-    line-height: 1.5;
-}
-
-/* Input fields */
-.admin-edit-dialog .admin-edit-field {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    min-width: 0;
-    margin-bottom: 17px;
-}
-
-.admin-edit-dialog .admin-edit-field:last-child {
-    margin-bottom: 0;
-}
-
-.admin-edit-dialog .admin-edit-field label {
-    color: #334155;
-    font-size: 13px;
-    font-weight: 650;
-}
-
-.admin-edit-dialog .admin-edit-field input,
-.admin-edit-dialog .admin-edit-field select {
-    box-sizing: border-box;
-    width: 100%;
-    min-height: 44px;
-    padding: 10px 12px;
-    border: 1px solid #dbe2ea;
-    border-radius: 10px;
-    outline: none;
-    background: #ffffff;
-    color: #1e293b;
-    font: inherit;
-    font-size: 13px;
-    transition: border-color 0.2s ease,
-                box-shadow 0.2s ease;
-}
-
-.admin-edit-dialog .admin-edit-field input::placeholder {
-    color: #a0acba;
-}
-
-.admin-edit-dialog .admin-edit-field input:focus,
-.admin-edit-dialog .admin-edit-field select:focus {
-    border-color: #0d9488;
-    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
-}
-
-.admin-edit-dialog .admin-edit-field small {
-    color: #94a3b8;
-    font-size: 11px;
-    line-height: 1.5;
-}
-
-/* Two-column role/status layout */
-.admin-edit-dialog .admin-edit-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-}
-
-/* Security note */
-.admin-edit-dialog .admin-edit-notice {
-    display: flex;
-    align-items: flex-start;
     gap: 10px;
-    margin-top: 8px;
-    padding: 13px 14px;
-    border: 1px solid #dbeafe;
-    border-radius: 10px;
-    background: #f8fbff;
-    color: #64748b;
+    padding: 14px 24px 18px;
+    border-top: 1px solid #edf2f0;
+    background: #fbfdfc;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
 }
 
-.admin-edit-dialog .admin-edit-notice .ui-icon {
-    width: 17px;
-    height: 17px;
-    flex-shrink: 0;
-    margin-top: 1px;
-    color: #3b82f6;
-}
-
-.admin-edit-dialog .admin-edit-notice p {
-    margin: 0;
-    font-size: 11px;
-    line-height: 1.6;
-}
-
-/* Footer */
-.admin-edit-dialog .admin-modal-footer {
-    position: sticky;
-    bottom: 0;
-    z-index: 2;
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    padding: 16px 24px 22px;
-    border-top: 1px solid #edf0f4;
-    background: #ffffff;
-}
-
-.admin-edit-dialog .admin-edit-cancel,
-.admin-edit-dialog .admin-edit-save {
+.admin-page .admin-view-dialog .admin-view-export-btn {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: 8px;
-    min-width: 110px;
-    min-height: 42px;
-    padding: 0 16px;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 650;
-    cursor: pointer;
-    transition: 0.2s ease;
-}
-
-.admin-edit-dialog .admin-edit-cancel {
-    border: 1px solid #dbe2ea;
+    gap: 6px;
+    height: 38px;
+    min-height: 38px;
+    padding: 0 14px;
+    border: 1px solid #dce7df;
+    border-radius: 9px;
     background: #ffffff;
-    color: #475569;
+    color: #263e36;
+    font-size: 12px;
+    font-weight: 650;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
 }
 
-.admin-edit-dialog .admin-edit-cancel:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
+.admin-page .admin-view-dialog .admin-view-export-btn:hover {
+    background: #f0f7f3;
+    border-color: #24744d;
+    color: #143d34;
 }
 
-.admin-edit-dialog .admin-edit-save {
-    border: 1px solid #087f8c;
-    background: #087f8c;
-    color: #ffffff;
-    box-shadow: 0 3px 8px rgba(8, 127, 140, 0.16);
-}
-
-.admin-edit-dialog .admin-edit-save:hover {
-    transform: translateY(-1px);
-    border-color: #066b76;
-    background: #066b76;
-}
-
-.admin-edit-dialog .admin-edit-save .ui-icon {
-    width: 17px;
-    height: 17px;
+.admin-page .admin-view-dialog .admin-view-export-btn .ui-icon {
+    width: 14px;
+    height: 14px;
+    color: #4b6255;
     flex-shrink: 0;
-}
-
-.admin-edit-dialog .admin-modal-close:focus-visible,
-.admin-edit-dialog .admin-edit-cancel:focus-visible,
-.admin-edit-dialog .admin-edit-save:focus-visible {
-    outline: 2px solid #0d9488;
-    outline-offset: 3px;
-}
-
-/* Responsive */
-@media (max-width: 520px) {
-    .admin-edit-dialog {
-        width: calc(100% - 20px);
-        max-height: 92vh;
-        border-radius: 14px;
-    }
-
-    .admin-edit-dialog .admin-modal-header {
-        padding: 17px;
-        gap: 10px;
-    }
-
-    .admin-edit-dialog .admin-modal-icon-badge.edit {
-        width: 40px;
-        height: 40px;
-    }
-
-    .admin-edit-dialog .admin-modal-heading-text h2 {
-        font-size: 17px;
-    }
-
-    .admin-edit-dialog .admin-modal-body {
-        padding: 18px 17px;
-    }
-
-    .admin-edit-dialog .admin-edit-grid {
-        grid-template-columns: 1fr;
-        gap: 0;
-    }
-
-    .admin-edit-dialog .admin-modal-footer {
-        padding: 14px 17px 17px;
-    }
-
-    .admin-edit-dialog .admin-edit-cancel,
-    .admin-edit-dialog .admin-edit-save {
-        flex: 1;
-        min-width: 0;
-        padding: 0 10px;
-    }
 }
 
 
