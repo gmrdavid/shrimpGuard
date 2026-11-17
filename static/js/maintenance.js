@@ -253,7 +253,7 @@
                         <div class="maint-banner-eyebrow">
                             <span class="maint-banner-tag">
                                 <svg class="ui-icon" aria-hidden="true" style="width: 13px; height: 13px; vertical-align: -2px;"><use href="#icon-clock"></use></svg>
-                                SCHEDULED PROBE MAINTENANCE
+                                PROBE ACCURACY ALERT
                             </span>
                             <span class="maint-chip ${chipClass}">
                                 <span class="${pulseClass}"></span>
@@ -272,7 +272,7 @@
                             <div class="maint-stat-pill">
                                 <div class="maint-stat-pill-header">
                                     <span class="maint-stat-label">
-                                        <svg class="ui-icon" aria-hidden="true" style="width: 12px; height: 12px; fill: currentColor;"><use href="#icon-droplet"></use></svg>
+                                        <svg class="ui-icon icon-droplet" aria-hidden="true"><use href="#icon-droplet"></use></svg>
                                         Biofilm Scrub (7d)
                                     </span>
                                     <strong class="maint-stat-value">${cleanDaysRemStr}</strong>
@@ -281,7 +281,7 @@
                                     <div class="maint-mini-fill" style="width: ${cleanPct}%; background-color: ${cleanBarColor};"></div>
                                 </div>
                                 <div class="maint-stat-sub">
-                                    <span>Submerged: ${data.days_since_cleaning != null ? data.days_since_cleaning + 'd' : '6d'}</span>
+                                    <span>Submerged: <strong>${data.days_since_cleaning != null ? data.days_since_cleaning + 'd' : '6d'}</strong></span>
                                     <span>${cleanPct}% of cycle</span>
                                 </div>
                             </div>
@@ -290,16 +290,16 @@
                             <div class="maint-stat-pill">
                                 <div class="maint-stat-pill-header">
                                     <span class="maint-stat-label">
-                                        <svg class="ui-icon" aria-hidden="true" style="width: 12px; height: 12px; fill: currentColor;"><use href="#icon-settings"></use></svg>
+                                        <svg class="ui-icon icon-settings" aria-hidden="true"><use href="#icon-settings"></use></svg>
                                         2-Pt pH Calibration (14d)
                                     </span>
-                                    <strong class="maint-stat-value">${calDaysRemStr}</strong>
+                                    <strong class="maint-stat-value val-blue">${calDaysRemStr}</strong>
                                 </div>
                                 <div class="maint-mini-track">
-                                    <div class="maint-mini-fill" style="width: ${calPct}%; background-color: ${calBarColor};"></div>
+                                    <div class="maint-mini-fill fill-blue" style="width: ${calPct}%; background-color: ${calBarColor};"></div>
                                 </div>
                                 <div class="maint-stat-sub">
-                                    <span>Elapsed: ${data.days_since_calibration != null ? data.days_since_calibration + 'd' : '12d'}</span>
+                                    <span>Elapsed: <strong>${data.days_since_calibration != null ? data.days_since_calibration + 'd' : '12d'}</strong></span>
                                     <span>${calPct}% of cycle</span>
                                 </div>
                             </div>
@@ -308,18 +308,15 @@
                             <div class="maint-stat-pill maint-stat-pill-meta">
                                 <div class="maint-stat-pill-header">
                                     <span class="maint-stat-label">
-                                        <svg class="ui-icon" aria-hidden="true" style="width: 12px; height: 12px;"><use href="#icon-calendar"></use></svg>
+                                        <svg class="ui-icon icon-calendar" aria-hidden="true"><use href="#icon-calendar"></use></svg>
                                         Last Recorded Action
                                     </span>
-                                    <span class="telemetry-chip chip-node" style="font-size: 10px; padding: 1px 6px;">
-                                        Node 1
-                                    </span>
+                                    <span class="maint-meta-node-badge">Node 1</span>
                                 </div>
-                                <div class="maint-meta-content" style="margin-top: 4px; font-size: 11.5px; line-height: 1.35;">
-                                    <div style="font-weight: 600; color: #334155;">${data.maintenance_type || 'Biofilm Cleaning & 2-Pt Cal'}</div>
-                                    <div style="font-size: 10.5px; color: #64748b; margin-top: 2px;">
-                                        ${formatDateTime(data.last_cleaned_at)} &bull; ${data.performed_by || 'Pond Operator'}
-                                    </div>
+                                <div class="maint-meta-action-name">${data.maintenance_type || 'Biofilm Cleaning & 2-Pt Cal'}</div>
+                                <div class="maint-stat-sub">
+                                    <span>${formatDateTime(data.last_cleaned_at)}</span>
+                                    <strong>${data.performed_by || 'Pond Operator'}</strong>
                                 </div>
                             </div>
                         </div>
