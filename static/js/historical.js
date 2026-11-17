@@ -561,6 +561,7 @@ function nextMonth() {
 }
 
 function selectStatusFilter(status) {
+    if (!status) return;
     tableFilterStatus = String(status).toLowerCase();
     const textEl = document.getElementById("filter-status-text");
     if (textEl) {
@@ -573,7 +574,7 @@ function selectStatusFilter(status) {
         textEl.textContent = labels[tableFilterStatus] || "Status: All";
     }
 
-    const items = document.querySelectorAll(".status-menu-item");
+    const items = document.querySelectorAll("#status-dropdown-menu .status-menu-item");
     items.forEach((btn) => {
         if (btn.getAttribute("data-status") === tableFilterStatus) {
             btn.classList.add("active");
@@ -588,13 +589,14 @@ function selectStatusFilter(status) {
 }
 
 function selectLimitFilter(limit) {
+    if (!limit) return;
     readingsPerPage = String(limit);
     const textEl = document.getElementById("table-limit-text");
     if (textEl) {
         textEl.textContent = limit === "all" ? "Show: All rows" : `Show: ${limit} rows`;
     }
 
-    const items = document.querySelectorAll(".limit-menu-item");
+    const items = document.querySelectorAll("#limit-dropdown-menu .limit-menu-item");
     items.forEach((btn) => {
         if (btn.getAttribute("data-limit") === String(limit)) {
             btn.classList.add("active");
@@ -1294,7 +1296,7 @@ if (tableLimitBtn) {
     });
 }
 
-const limitMenuItems = document.querySelectorAll(".limit-menu-item");
+const limitMenuItems = document.querySelectorAll("#limit-dropdown-menu .limit-menu-item");
 limitMenuItems.forEach((btn) => {
     btn.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -1385,7 +1387,7 @@ if (filterStatusBtn) {
     });
 }
 
-const statusMenuItems = document.querySelectorAll(".status-menu-item");
+const statusMenuItems = document.querySelectorAll("#status-dropdown-menu .status-menu-item");
 statusMenuItems.forEach((btn) => {
     btn.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -1412,20 +1414,14 @@ document.addEventListener("click", (e) => {
         }
     }
 
-    const limitMenu = document.getElementById("limit-dropdown-menu");
-    const limitBtn = document.getElementById("table-limit-btn");
-    if (limitMenu && !limitMenu.hidden && limitMenu.style.display !== "none") {
-        if (!limitMenu.contains(e.target) && !limitBtn?.contains(e.target)) {
-            closeLimitDropdown();
-        }
+    const limitAnchor = document.querySelector(".limit-picker-anchor");
+    if (limitAnchor && !limitAnchor.contains(e.target)) {
+        closeLimitDropdown();
     }
 
-    const statusMenu = document.getElementById("status-dropdown-menu");
-    const statusBtn = document.getElementById("filter-status-btn");
-    if (statusMenu && !statusMenu.hidden && statusMenu.style.display !== "none") {
-        if (!statusMenu.contains(e.target) && !statusBtn?.contains(e.target)) {
-            closeStatusDropdown();
-        }
+    const statusAnchor = document.querySelector(".status-picker-anchor");
+    if (statusAnchor && !statusAnchor.contains(e.target)) {
+        closeStatusDropdown();
     }
 });
 
@@ -1505,6 +1501,7 @@ async function loadHistory() {
 closeHistoryCalendarPopup();
 closeCalendarPopup();
 closeStatusDropdown();
+closeLimitDropdown();
 updateDeviceTime();
 setInterval(updateDeviceTime, 1000);
 loadHistory();

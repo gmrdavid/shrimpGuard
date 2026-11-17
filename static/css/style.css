@@ -18149,26 +18149,10 @@ nav a {
     display: none !important;
 }
 
-.historical-page .limit-picker-anchor {
-    position: relative;
-    display: inline-block;
-}
-
+.historical-page .status-dropdown-menu,
 .historical-page .limit-dropdown-menu {
-    width: 140px;
-    left: 0;
-    right: auto;
-}
-
-.historical-page .limit-menu-item.active .status-menu-dot {
-    background: #1b5145;
-}
-
-.historical-page .status-dropdown-menu {
     position: absolute;
     top: calc(100% + 8px);
-    right: 0;
-    width: 165px;
     background: #ffffff;
     border: 1px solid #dce7df;
     border-radius: 12px;
@@ -18181,7 +18165,20 @@ nav a {
     animation: histFadeDown 150ms ease-out;
 }
 
-.historical-page .status-menu-item {
+.historical-page .status-dropdown-menu {
+    right: 0;
+    left: auto;
+    width: 165px;
+}
+
+.historical-page .limit-dropdown-menu {
+    left: 0;
+    right: auto;
+    width: 135px;
+}
+
+.historical-page .status-menu-item,
+.historical-page .limit-menu-item {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -18196,24 +18193,38 @@ nav a {
     text-align: left;
     cursor: pointer;
     transition: all 120ms ease;
+    box-sizing: border-box;
 }
 
-.historical-page .status-menu-item:hover {
+.historical-page .status-menu-item:hover,
+.historical-page .limit-menu-item:hover {
     background: #f0f7f3;
     color: #143d34;
 }
 
-.historical-page .status-menu-item.active {
+.historical-page .status-menu-item.active,
+.historical-page .limit-menu-item.active {
     background: #eaf6ef;
     color: #1b5145;
     font-weight: 800;
 }
 
-.historical-page .status-menu-dot {
+.historical-page .status-menu-dot,
+.historical-page .limit-menu-dot {
     width: 7px;
     height: 7px;
     border-radius: 50%;
     display: inline-block;
+    flex-shrink: 0;
+}
+
+.historical-page .limit-menu-dot {
+    background: #94a3b8;
+    transition: background-color 120ms ease;
+}
+
+.historical-page .limit-menu-item.active .limit-menu-dot {
+    background: #1b5145;
 }
 
 .historical-page .status-menu-dot.dot-all {
