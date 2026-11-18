@@ -26241,7 +26241,8 @@ body.adaptive-sunlight .maint-banner-actions .btn-maint-dismiss {
 }
 
 .status-ratio-pills .status-indicator-dot.dot-danger,
-.status-ratio-pills .status-indicator-dot.dot-offline {
+.status-ratio-pills .status-indicator-dot.dot-offline,
+.status-ratio-pills .status-indicator-dot.dot-warning {
     background: #ef4444 !important;
     box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25) !important;
 }
