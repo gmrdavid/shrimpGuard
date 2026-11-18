@@ -257,11 +257,11 @@ async function reconnectGateway() {
     const originalContent = btn ? btn.innerHTML : "";
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = `<svg class="ui-icon devices-spin" aria-hidden="true"><use href="#icon-settings"></use></svg><span>Probing Ports...</span>`;
+        btn.innerHTML = `<svg class="ui-icon devices-spin" aria-hidden="true"><use href="#icon-settings"></use></svg><span>Connecting Gateway...</span>`;
     }
 
-    // Probing COM ports - show neutral scanning notice (not green)
-    showNotice("Scanning COM ports and verifying Node 2 LoRa receiver...", "info");
+    // Show neutral checking notice
+    showNotice("Checking gateway connectivity (Wi-Fi telemetry stream & hardware link)...", "info");
 
     try {
         const res = await fetch("/api/hardware/reconnect", {
@@ -271,17 +271,20 @@ async function reconnectGateway() {
         const result = await res.json();
 
         if (result && result.success) {
-            // Active LoRa receiver detected -> GREEN background
-            showNotice(result.message || "LoRa Receiver Gateway detected and connected successfully!", "success");
+            // Active Gateway detected -> GREEN background
+            showNotice(result.message || "Gateway connected successfully!", "success");
         } else {
-            // No active LoRa receiver detected -> RED background
-            showNotice(result && result.message ? result.message : "No active LoRa receiver detected on scanned ports. Check USB cable or close serial monitors.", "error");
+            // Standby or disconnected -> Warning notice with field deployment explanation
+            const msg = result && result.message
+                ? result.message
+                : "Gateway is currently in Standby. In wireless deployment, Node 2 forwards data via Wi-Fi (POST /api/readings) — no USB cable required. Awaiting packet broadcast.";
+            showNotice(msg, "warning");
         }
 
         await fetchDevicesInventory();
     } catch (err) {
         // Communication failure -> RED background
-        showNotice("Failed to reach reconnect endpoint. Please check system status.", "error");
+        showNotice("Failed to reach gateway reconnect endpoint. Please check system status.", "error");
     } finally {
         if (btn) {
             btn.disabled = false;
