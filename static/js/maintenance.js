@@ -494,10 +494,16 @@
                                 <svg class="ui-icon" aria-hidden="true" style="width: 14px; height: 14px;"><use href="#icon-calendar"></use></svg>
                                 <span>Audit Log Dialog</span>
                             </button>
-                            <button type="button" class="btn-maint-primary" id="btn-devices-log-maint" style="font-size: 12px; padding: 6px 14px;" title="Log a new cleaning or buffer recalibration">
-                                <svg class="ui-icon" aria-hidden="true" style="width: 14px; height: 14px;"><use href="#icon-plus"></use></svg>
-                                <span>Log Maintenance</span>
-                            </button>
+                            ${!hasNode
+                                ? `<button type="button" class="btn-maint-primary btn-maint-disabled" id="btn-devices-log-maint" style="font-size: 12px; padding: 6px 14px; opacity: 0.55; cursor: not-allowed;" title="Pair a pond telemetry node to enable probe maintenance (biofilm scrubbing &amp; 2-point pH calibration)" disabled>
+                                    <svg class="ui-icon" aria-hidden="true" style="width: 14px; height: 14px;"><use href="#icon-lock"></use></svg>
+                                    <span>Log Maintenance</span>
+                                   </button>`
+                                : `<button type="button" class="btn-maint-primary" id="btn-devices-log-maint" style="font-size: 12px; padding: 6px 14px;" title="Log probe biofilm scrubbing or 2-point pH buffer calibration">
+                                    <svg class="ui-icon" aria-hidden="true" style="width: 14px; height: 14px;"><use href="#icon-plus"></use></svg>
+                                    <span>Log Maintenance</span>
+                                   </button>`
+                            }
                         </div>
                     </div>
                 </div>
@@ -505,7 +511,18 @@
         `;
 
         const logBtn = cardContainer.querySelector('#btn-devices-log-maint');
-        if (logBtn) logBtn.addEventListener('click', () => openMaintenanceModal('both'));
+        if (logBtn) {
+            logBtn.addEventListener('click', (e) => {
+                if (!currentMaintenanceData || !currentMaintenanceData.has_paired_node) {
+                    e.preventDefault();
+                    showMaintenanceToast('Cannot log maintenance: Probe maintenance (biofilm scrubbing cycle & 2-point pH calibration) requires an active paired pond telemetry node. Please pair a node first.');
+                    const pairBtn = document.getElementById('btn-open-pair-modal');
+                    if (pairBtn) pairBtn.click();
+                    return;
+                }
+                openMaintenanceModal('both');
+            });
+        }
 
         const sopBtn = cardContainer.querySelector('#btn-devices-open-sop');
         if (sopBtn) sopBtn.addEventListener('click', openSOPModal);
@@ -570,6 +587,23 @@
             modal = document.getElementById('probe-maint-sop-modal');
         }
         if (modal) {
+            const hasNode = !!(currentMaintenanceData && currentMaintenanceData.has_paired_node);
+            const proceedBtn = modal.querySelector('#btn-sop-proceed-log');
+            if (proceedBtn) {
+                if (!hasNode) {
+                    proceedBtn.disabled = true;
+                    proceedBtn.classList.add('btn-maint-disabled');
+                    proceedBtn.style.opacity = '0.55';
+                    proceedBtn.style.cursor = 'not-allowed';
+                    proceedBtn.title = 'Pair a pond telemetry node to enable probe maintenance (biofilm scrubbing & 2-point pH calibration)';
+                } else {
+                    proceedBtn.disabled = false;
+                    proceedBtn.classList.remove('btn-maint-disabled');
+                    proceedBtn.style.opacity = '1';
+                    proceedBtn.style.cursor = 'pointer';
+                    proceedBtn.title = 'Proceed to log probe biofilm scrubbing or buffer recalibration';
+                }
+            }
             modal.removeAttribute('hidden');
             modal.classList.add('is-open');
             document.body.classList.add('modal-backdrop-open');
@@ -624,7 +658,7 @@
      */
     function openMaintenanceModal(defaultAction = 'both') {
         if (!currentMaintenanceData || currentMaintenanceData.has_paired_node === false || !currentMaintenanceData.device_id) {
-            showMaintenanceToast('Please pair a pond telemetry node before logging probe maintenance.');
+            showMaintenanceToast('Cannot log maintenance: Probe maintenance (biofilm scrubbing cycle & 2-point pH calibration) requires an active paired pond telemetry node. Please pair a node first.');
             const pairBtn = document.getElementById('btn-open-pair-modal');
             if (pairBtn) pairBtn.click();
             return;
@@ -668,6 +702,23 @@
             modal = document.getElementById('probe-maint-history-modal');
         }
         if (modal) {
+            const hasNode = !!(currentMaintenanceData && currentMaintenanceData.has_paired_node);
+            const logNewBtn = modal.querySelector('#btn-history-log-new');
+            if (logNewBtn) {
+                if (!hasNode) {
+                    logNewBtn.disabled = true;
+                    logNewBtn.classList.add('btn-maint-disabled');
+                    logNewBtn.style.opacity = '0.55';
+                    logNewBtn.style.cursor = 'not-allowed';
+                    logNewBtn.title = 'Pair a pond telemetry node to enable probe maintenance (biofilm scrubbing & 2-point pH calibration)';
+                } else {
+                    logNewBtn.disabled = false;
+                    logNewBtn.classList.remove('btn-maint-disabled');
+                    logNewBtn.style.opacity = '1';
+                    logNewBtn.style.cursor = 'pointer';
+                    logNewBtn.title = 'Log new probe biofilm cleaning or buffer calibration';
+                }
+            }
             modal.removeAttribute('hidden');
             modal.classList.add('is-open');
             document.body.classList.add('modal-backdrop-open');
@@ -770,8 +821,8 @@
         const deviceId = form.device_id.value || (currentMaintenanceData && currentMaintenanceData.device_id) || '';
         const performedAt = form.performed_at ? form.performed_at.value : '';
 
-        if (!deviceId) {
-            showMaintenanceToast('Please pair a pond telemetry node before logging maintenance.');
+        if (!deviceId || !currentMaintenanceData || !currentMaintenanceData.has_paired_node) {
+            showMaintenanceToast('Cannot log maintenance: Probe maintenance (biofilm scrubbing cycle & 2-point pH calibration) requires an active paired pond telemetry node. Please pair a node first.');
             return;
         }
 
@@ -878,7 +929,7 @@
                             <div class="sop-step-content">
                                 <h3>Safe Pond Extraction &amp; Inspection</h3>
                                 <p>
-                                    Safely retrieve Node 1 from the pond mounting bracket. Inspect the pH probe glass bulb and reference junction under good lighting. Note visible green algae, brown biofilm slime, or white mineral scaling.
+                                    Safely retrieve the paired telemetry node from the pond mounting bracket. Inspect the pH probe glass bulb and reference junction under good lighting. Note visible green algae, brown biofilm slime, or white mineral scaling.
                                 </p>
                                 <div class="sop-step-tip">
                                     <svg class="ui-icon"><use href="#icon-lightbulb"></use></svg>
@@ -956,7 +1007,15 @@
             closeSOPModal();
             openHistoryModal();
         });
-        modalDiv.querySelector('#btn-sop-proceed-log').addEventListener('click', () => {
+        modalDiv.querySelector('#btn-sop-proceed-log').addEventListener('click', (e) => {
+            if (!currentMaintenanceData || !currentMaintenanceData.has_paired_node) {
+                e.preventDefault();
+                showMaintenanceToast('Cannot log maintenance: Probe maintenance (biofilm scrubbing cycle & 2-point pH calibration) requires an active paired pond telemetry node. Please pair a node first.');
+                closeSOPModal();
+                const pairBtn = document.getElementById('btn-open-pair-modal');
+                if (pairBtn) pairBtn.click();
+                return;
+            }
             closeSOPModal();
             openMaintenanceModal('both');
         });
@@ -1160,7 +1219,15 @@
 
         modalDiv.querySelector('#btn-close-history-modal').addEventListener('click', closeHistoryModal);
         modalDiv.querySelector('#btn-close-history-footer').addEventListener('click', closeHistoryModal);
-        modalDiv.querySelector('#btn-history-log-new').addEventListener('click', () => {
+        modalDiv.querySelector('#btn-history-log-new').addEventListener('click', (e) => {
+            if (!currentMaintenanceData || !currentMaintenanceData.has_paired_node) {
+                e.preventDefault();
+                showMaintenanceToast('Cannot log maintenance: Probe maintenance (biofilm scrubbing cycle & 2-point pH calibration) requires an active paired pond telemetry node. Please pair a node first.');
+                closeHistoryModal();
+                const pairBtn = document.getElementById('btn-open-pair-modal');
+                if (pairBtn) pairBtn.click();
+                return;
+            }
             closeHistoryModal();
             openMaintenanceModal('both');
         });
@@ -1200,6 +1267,12 @@
         const logBtn = e.target.closest('#btn-devices-log-maint, #btn-open-log-modal');
         if (logBtn) {
             e.preventDefault();
+            if (!currentMaintenanceData || !currentMaintenanceData.has_paired_node) {
+                showMaintenanceToast('Cannot log maintenance: Probe maintenance (biofilm scrubbing cycle & 2-point pH calibration) requires an active paired pond telemetry node. Please pair a node first.');
+                const pairBtn = document.getElementById('btn-open-pair-modal');
+                if (pairBtn) pairBtn.click();
+                return;
+            }
             openMaintenanceModal('both');
             return;
         }
@@ -1207,7 +1280,18 @@
 
     function initMaintenanceEngine() {
         const preLogBtn = document.getElementById('btn-devices-log-maint');
-        if (preLogBtn) preLogBtn.addEventListener('click', () => openMaintenanceModal('both'));
+        if (preLogBtn) {
+            preLogBtn.addEventListener('click', (e) => {
+                if (!currentMaintenanceData || !currentMaintenanceData.has_paired_node) {
+                    e.preventDefault();
+                    showMaintenanceToast('Cannot log maintenance: Probe maintenance (biofilm scrubbing cycle & 2-point pH calibration) requires an active paired pond telemetry node. Please pair a node first.');
+                    const pairBtn = document.getElementById('btn-open-pair-modal');
+                    if (pairBtn) pairBtn.click();
+                    return;
+                }
+                openMaintenanceModal('both');
+            });
+        }
         const preSopBtn = document.getElementById('btn-devices-open-sop');
         if (preSopBtn) preSopBtn.addEventListener('click', () => openSOPModal());
         const preHistBtn = document.getElementById('btn-devices-view-history');

@@ -421,10 +421,17 @@
                                     <svg class="ui-icon" aria-hidden="true" style="width: 14px; height: 14px;"><use href="#icon-calendar"></use></svg>
                                     <span>Audit Log Dialog</span>
                                 </button>
-                                <button type="button" class="btn-maint-primary" id="btn-devices-log-maint" style="font-size: 12px; padding: 6px 14px;" title="Log a new cleaning or buffer recalibration">
+                                {% if not has_node %}
+                                <button type="button" class="btn-maint-primary btn-maint-disabled" id="btn-devices-log-maint" style="font-size: 12px; padding: 6px 14px; opacity: 0.55; cursor: not-allowed;" title="Pair a pond telemetry node to enable probe maintenance (biofilm scrubbing &amp; 2-point pH calibration)" disabled>
+                                    <svg class="ui-icon" aria-hidden="true" style="width: 14px; height: 14px;"><use href="#icon-lock"></use></svg>
+                                    <span>Log Maintenance</span>
+                                </button>
+                                {% else %}
+                                <button type="button" class="btn-maint-primary" id="btn-devices-log-maint" style="font-size: 12px; padding: 6px 14px;" title="Log probe biofilm scrubbing or 2-point pH buffer calibration">
                                     <svg class="ui-icon" aria-hidden="true" style="width: 14px; height: 14px;"><use href="#icon-plus"></use></svg>
                                     <span>Log Maintenance</span>
                                 </button>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -959,10 +966,10 @@
     </div>
 </div>
 
-<script src="{{ url_for('static', filename='js/devices.js') }}?v=3.8"></script>
-<script src="{{ url_for('static', filename='js/notifications.js') }}?v=3.8"></script>
-<script src="{{ url_for('static', filename='js/adaptive.js') }}?v=3.8"></script>
-<script src="{{ url_for('static', filename='js/maintenance.js') }}?v=3.8"></script>
+<script src="{{ url_for('static', filename='js/devices.js') }}?v=3.9"></script>
+<script src="{{ url_for('static', filename='js/notifications.js') }}?v=3.9"></script>
+<script src="{{ url_for('static', filename='js/adaptive.js') }}?v=3.9"></script>
+<script src="{{ url_for('static', filename='js/maintenance.js') }}?v=3.9"></script>
 
 </body>
 </html>

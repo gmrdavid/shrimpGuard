@@ -2177,14 +2177,14 @@ def log_maintenance_endpoint():
 
     # Strict check: verify user has paired node
     user_nodes = UserDevice.query.filter_by(user_email=user_email).all()
-    if not user_nodes and session.get("role") != "Admin":
+    if not user_nodes:
         return jsonify({
             "success": False,
-            "error": "No paired pond telemetry node found. Please pair a hardware node before logging probe maintenance."
+            "error": "Cannot log maintenance: No paired pond telemetry node found. Probe maintenance (biofilm scrubbing cycle & 2-point pH calibration) requires an active paired pond node."
         }), 400
 
-    if not device_id:
-        device_id = user_nodes[0].device_id if user_nodes else "NODE01"
+    if not device_id or device_id not in [n.device_id for n in user_nodes]:
+        device_id = user_nodes[0].device_id
 
     now = datetime.now()
     if performed_at_raw:
