@@ -210,19 +210,21 @@ def detect_receiver_port(check_busy=False):
 
 def scan_and_reconnect_port():
     """
-    Scans available COM ports to locate the Node 2 LoRa receiver.
-    Returns status dictionary with detection outcome and specific guidance if a port is busy.
+    Scans available COM ports or checks active Wi-Fi telemetry stream for the Node 2 gateway.
+    Supports dual deployment modes:
+      1. Field Wireless Mode: Node 2 sends telemetry over Wi-Fi via POST /api/readings (No USB cable needed).
+      2. Lab/Bench Testing Mode: Node 2 is connected to the host computer via USB serial (COM ports).
     """
     configured_port = os.getenv("LORA_PORT", "COM5")
 
-    # If already connected, report current port
+    # If already connected via Wi-Fi or USB serial, report current link
     if LATEST_HARDWARE_STREAM.get("is_connected"):
         active_port = LATEST_HARDWARE_STREAM.get("connected_port") or configured_port
         return {
             "success": True,
             "port": active_port,
             "is_connected": True,
-            "message": f"Hardware Gateway is currently active on {active_port} at 115200 baud.",
+            "message": f"Hardware Gateway is currently active and receiving telemetry via {active_port}.",
         }
 
     port, busy_port = detect_receiver_port(check_busy=True)
@@ -232,7 +234,7 @@ def scan_and_reconnect_port():
             "success": True,
             "port": port,
             "is_connected": LATEST_HARDWARE_STREAM.get("is_connected", False),
-            "message": f"Successfully detected available hardware gateway port on {port}.",
+            "message": f"Successfully detected hardware gateway on USB serial {port}.",
         }
 
     if busy_port:
@@ -240,14 +242,14 @@ def scan_and_reconnect_port():
             "success": False,
             "port": busy_port,
             "is_connected": False,
-            "message": f"Port {busy_port} is busy (locked by another application, such as Arduino IDE or VS Code Serial Monitor). Please close the serial monitor tab and retry.",
+            "message": f"USB Port {busy_port} is busy (locked by another application, such as Arduino IDE or VS Code Serial Monitor). Please close the serial monitor tab and retry.",
         }
 
     return {
         "success": False,
         "port": None,
         "is_connected": False,
-        "message": "No active LoRa receiver detected on scanned ports (COM5, COM8, COM3-10). Check USB cable or close serial monitors.",
+        "message": "Gateway is currently in Standby. In wireless solar/battery deployment, Node 2 transmits telemetry wirelessly over Wi-Fi (POST /api/readings) — no USB cable required. Awaiting next periodic packet broadcast.",
     }
 
 

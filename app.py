@@ -1974,13 +1974,12 @@ def api_hardware_diagnostics():
                 "details": f"Receiver detected on {detected}. Ingestion worker will attach automatically."
             })
         else:
-            issues_found += 1
             tests.append({
                 "component": "Base Station Gateway (Node 2)",
-                "test": "Win32 UART Serial Port Communication",
+                "test": "Gateway Ingestion Stream (Wi-Fi or USB)",
                 "result": "STANDBY",
                 "status_class": "status-warning",
-                "details": f"No active USB serial lock on {port}. Ensure USB cable is seated and Arduino Serial Monitor is closed."
+                "details": "Gateway is awaiting packet telemetry. In wireless field deployment, Node 2 forwards data via Wi-Fi (POST /api/readings); in lab bench testing, USB serial is used."
             })
 
     # 2. DS18B20 1-Wire Probe Fault Test
