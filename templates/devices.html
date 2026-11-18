@@ -9,7 +9,7 @@
     <title>Devices &amp; Hardware Management | ShrimpGuard</title>
 
     <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}?v=3.6">
+          href="{{ url_for('static', filename='css/style.css') }}?v=3.7">
 </head>
 
 {% set current_email_attr = current_user.email if current_user else (user.email if user else '') %}
@@ -645,8 +645,8 @@
                                     <span class="status-indicator-dot dot-optimal"></span>
                                     Online: <strong id="side-pill-online">{{ ratio_online }}</strong>
                                 </span>
-                                <span class="table-status status-warning">
-                                    <span class="status-indicator-dot dot-warning"></span>
+                                <span class="table-status status-danger status-offline">
+                                    <span class="status-indicator-dot dot-danger dot-offline"></span>
                                     Offline: <strong id="side-pill-offline">{{ ratio_offline }}</strong>
                                 </span>
                             </div>

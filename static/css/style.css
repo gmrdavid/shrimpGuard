@@ -26227,10 +26227,23 @@ body.adaptive-sunlight .maint-banner-actions .btn-maint-dismiss {
     border: 1px solid #a7f3d0;
 }
 
+.status-ratio-pills .table-status.status-danger,
+.status-ratio-pills .table-status.status-offline {
+    background: #fef2f2 !important;
+    color: #dc2626 !important;
+    border: 1px solid #fecaca !important;
+}
+
 .status-ratio-pills .table-status.status-warning {
-    background: #f8fafc;
-    color: #475569;
-    border: 1px solid #e2e8f0;
+    background: #fef2f2 !important;
+    color: #dc2626 !important;
+    border: 1px solid #fecaca !important;
+}
+
+.status-ratio-pills .status-indicator-dot.dot-danger,
+.status-ratio-pills .status-indicator-dot.dot-offline {
+    background: #ef4444 !important;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25) !important;
 }
 
 
