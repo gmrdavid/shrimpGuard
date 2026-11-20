@@ -1,10 +1,16 @@
-import sys
-sys.path.insert(0, '.')
-from app import app, db, ActivityLog
+import pymysql
+import os
+from dotenv import load_dotenv
 
-with app.app_context():
-    logs = ActivityLog.query.order_by(ActivityLog.timestamp.desc()).limit(20).all()
-    print(f"Total logs: {len(logs)}")
-    for l in logs:
-        print(f"[{l.timestamp}] {l.role} | {l.user_email} | {l.action} | {l.details}")
-
+load_dotenv()
+conn = pymysql.connect(
+    host=os.getenv('DB_HOST', '127.0.0.1'),
+    port=int(os.getenv('DB_PORT', 3306)),
+    user=os.getenv('DB_USER', 'root'),
+    password=os.getenv('DB_PASSWORD') or '',
+    db=os.getenv('DB_NAME', 'aeris_v')
+)
+cur = conn.cursor()
+cur.execute("SELECT timestamp, action, user_email, user_name, details FROM activity_logs WHERE action IN ('SIGNUP', 'USER_CREATE', 'PASSWORD_RESET', 'LOGIN') ORDER BY timestamp DESC LIMIT 20")
+for r in cur.fetchall():
+    print(r)
