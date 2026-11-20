@@ -525,9 +525,10 @@ def _generate_dynamic_vannamei_recommendations(
         )
 
     best_practices = [
-        {"icon": "icon-ph", "text": "Maintain diurnal pH variation within ≤ 0.5 units between pre-dawn (06:00) and mid-afternoon (15:00)."},
-        {"icon": "icon-thermometer", "text": "Maintain water temperature within the ML optimal window (28.0–32.0 °C) using 1.2–1.5 m water depth."},
-        {"icon": "icon-ph", "text": "Ensure total pond alkalinity remains above 120 mg/L as CaCO3 to buffer against abrupt pH crashes."},
+        {"icon": "icon-ph", "text": "Maintain diurnal pH delta ≤ 0.5 units between pre-dawn (06:00) and mid-afternoon (15:00) to protect cuticle calcification."},
+        {"icon": "icon-thermometer", "text": "Keep pond water temperature strictly within 28.0–32.0 °C; maintain 1.2–1.5 m pond depth to provide thermal insulation."},
+        {"icon": "icon-ph", "text": "Ensure total pond alkalinity remains above 120 mg/L as CaCO3 using agricultural limestone to prevent sudden pH crashes."},
+        {"icon": "icon-thermometer", "text": "Destratify water columns during calm sunny afternoons to prevent surface overheating and cold bottom shock."},
         {"icon": "icon-monitor-check", "text": "Calibrate the physical DS18B20 temperature probe and DFRobot pH sensor regularly using standard buffers."}
     ]
 
@@ -901,6 +902,15 @@ def get_comprehensive_ai_recommendations(
     else:
         pred_subtext = f"There is a {pred_conf}% confidence that water quality will maintain optimal conditions."
 
+    # Enforce that Best Practices Tips strictly and exclusively focus on pH and Temperature
+    pure_best_practices = [
+        {"icon": "icon-ph", "text": "Maintain diurnal pH delta ≤ 0.5 units between pre-dawn (06:00) and mid-afternoon (15:00) to protect cuticle calcification."},
+        {"icon": "icon-thermometer", "text": "Keep pond water temperature strictly within 28.0–32.0 °C; maintain 1.2–1.5 m pond depth to provide thermal insulation."},
+        {"icon": "icon-ph", "text": "Ensure total pond alkalinity remains above 120 mg/L as CaCO3 using agricultural limestone to prevent sudden pH crashes."},
+        {"icon": "icon-thermometer", "text": "Destratify water columns during calm sunny afternoons to prevent surface overheating and cold bottom shock."},
+        {"icon": "icon-monitor-check", "text": "Calibrate the physical DS18B20 temperature probe and DFRobot pH sensor regularly using standard buffers."}
+    ]
+
     result = {
         "current_status": {
             "heading": status_heading,
@@ -923,7 +933,7 @@ def get_comprehensive_ai_recommendations(
         "all_recommendations": ai_content.get("all_recommendations", ai_content.get("recommendations", [])),
         "parameters": parameters,
         "influential_factors": influential_factors,
-        "best_practices": ai_content.get("best_practices", []),
+        "best_practices": pure_best_practices,
         "model_metadata": {
             "name": "DecisionTreeClassifier",
             "last_trained": "May 20, 2025",
