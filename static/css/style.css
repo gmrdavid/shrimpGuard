@@ -2688,15 +2688,15 @@ header h1,
 
 .brand-img {
     display: block;
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
     object-fit: contain;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.16));
 }
 
 .dashboard-logo-mark .brand-img {
-    width: 31px;
-    height: 31px;
+    width: 34px;
+    height: 34px;
 }
 
 nav a {
