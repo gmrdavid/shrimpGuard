@@ -2686,6 +2686,14 @@ header h1,
     width: 1.35em;
 }
 
+.brand-img {
+    display: block;
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.12));
+}
+
 nav a {
     align-items: center;
     display: flex;

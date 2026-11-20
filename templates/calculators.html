@@ -2,6 +2,9 @@
 <html lang="en">
 
 <head>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/aeris_v_icon_64.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/aeris_v_icon_512.png') }}">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#126b4f">
@@ -23,9 +26,7 @@
 
         <a href="/dashboard" class="logo dashboard-logo" aria-label="AERIS-V dashboard">
             <span class="dashboard-logo-mark">
-                <svg class="ui-icon brand-icon" aria-hidden="true">
-                    <use href="#icon-shrimp"></use>
-                </svg>
+                <img src="{{ url_for('static', filename='images/aeris_v_icon_64.png') }}" alt="AERIS-V" class="brand-img" width="28" height="28">
             </span>
             <span>AERIS-V</span>
         </a>
@@ -1425,10 +1426,7 @@
         <!-- FOOTER -->
         <footer class="dashboard-footer">
             <span>
-                <svg class="ui-icon" aria-hidden="true">
-                    <use href="#icon-shrimp"></use>
-                </svg>
-                AERIS-V
+                <img src="{{ url_for('static', filename='images/aeris_v_icon_64.png') }}" alt="AERIS-V" width="18" height="18" style="display:inline-block; vertical-align:middle; margin-right:6px;">AERIS-V
             </span>
             <span>Aquaculture Environmental Real-Time Intelligence System – Vannamei</span>
         </footer>
