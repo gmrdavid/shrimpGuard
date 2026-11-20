@@ -27685,35 +27685,224 @@ body.recommendations-page {
     background-color: #f5f8f6 !important;
 }
 
-/* Sync Telemetry Banner (Uniform across Dashboard and Calculators) */
-.recs-telemetry-banner-section {
-    margin-bottom: 24px;
+/* ==========================================================================
+   AI RECOMMENDATIONS MODEL & TELEMETRY SYNC STRIP
+   ========================================================================== */
+.recs-banner-section {
+    margin-bottom: 26px;
 }
 
-.recs-refresh-btn {
-    margin-left: 8px;
+.recs-sync-banner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 20px 26px;
+    background: #ffffff;
+    border: 1px solid #dce8e0;
+    border-top: 3.5px solid #126b4f;
+    border-radius: 17px;
+    box-shadow: 0 4px 22px rgba(18, 107, 79, 0.05);
+}
+
+.recs-sync-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: 280px;
+}
+
+.recs-sync-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 13px;
+    background: linear-gradient(135deg, #126b4f 0%, #0d523c 100%);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(18, 107, 79, 0.28);
+}
+
+.recs-sync-icon .ui-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.recs-sync-title-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.recs-sync-eyebrow {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    border-radius: 8px;
-    font-size: 12px;
+    gap: 7px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.1px;
+    color: #126b4f;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.recs-live-pulse {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.35);
+    display: inline-block;
+}
+
+.recs-sync-title {
+    font-size: 18px;
+    font-weight: 850;
+    color: #163c36;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.recs-sync-desc {
+    font-size: 12.5px;
+    color: #68796f;
+    margin: 3px 0 0;
+}
+
+.recs-sync-desc em {
+    font-style: italic;
+    color: #126b4f;
+}
+
+.recs-sync-right {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+
+.recs-sync-badge {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 10px 16px;
+    background: #f7faf8;
+    border: 1px solid #dce8e0;
+    border-radius: 12px;
+    min-width: 140px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.recs-sync-badge:hover {
+    border-color: #a3cfbe;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(18, 107, 79, 0.08);
+}
+
+.recs-badge-label {
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    color: #75847b;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.recs-badge-value {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 15.5px;
+    font-weight: 850;
+    color: #163c36;
+    line-height: 1.25;
+}
+
+.badge-val-temp,
+.badge-val-ph {
+    font-size: 15px;
+    font-weight: 850;
+    color: #163c36;
+}
+
+.badge-val-sep {
+    color: #9aa69f;
     font-weight: 700;
+}
+
+.recs-pill-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+
+.recs-pill-status.pill-good,
+.recs-pill-status.pill-optimal {
+    background: #e6f0ec;
+    color: #126b4f;
+    border: 1px solid #a3cfbe;
+}
+
+.recs-pill-status.pill-warning {
+    background: #fef3c7;
+    color: #b45309;
+    border: 1px solid #fde68a;
+}
+
+.recs-pill-status.pill-critical {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+.recs-badge-sub {
+    font-size: 10.5px;
+    font-weight: 650;
+    color: #75847b;
+    margin-top: 3px;
+}
+
+.status-sub-live {
+    color: #126b4f;
+    font-weight: 750;
+}
+
+.btn-recs-refresh {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 11px 18px;
+    background: #126b4f;
+    border: 1px solid #0e563f;
+    border-radius: 11px;
     color: #ffffff;
+    font-size: 12.5px;
+    font-weight: 750;
     cursor: pointer;
-    transition: background 0.15s ease, border-color 0.15s ease;
+    box-shadow: 0 3px 10px rgba(18, 107, 79, 0.22);
+    transition: all 0.18s ease;
 }
 
-.recs-refresh-btn:hover {
-    background: rgba(255, 255, 255, 0.24);
-    border-color: rgba(255, 255, 255, 0.35);
+.btn-recs-refresh:hover {
+    background: #0e563f;
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(18, 107, 79, 0.32);
 }
 
-.recs-refresh-btn .ui-icon {
-    width: 14px;
-    height: 14px;
+.btn-recs-refresh:active {
+    transform: translateY(0);
+}
+
+.btn-recs-refresh .ui-icon {
+    width: 15px;
+    height: 15px;
 }
 
 /* Base Uniform Card */
@@ -28739,5 +28928,21 @@ body.recommendations-page {
         width: 100% !important;
         margin-left: 0 !important;
         padding: 24px 18px 36px !important;
+    }
+    .recs-sync-banner {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+    }
+    .recs-sync-right {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .recs-sync-badge {
+        width: 100%;
+    }
+    .btn-recs-refresh {
+        width: 100%;
+        justify-content: center;
     }
 }

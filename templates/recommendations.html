@@ -11,7 +11,7 @@
 
     <title>AI Recommendations | AERIS-V</title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='3.5') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='3.7') }}">
 </head>
 
 <body class="dashboard-page recommendations-page" data-user-email="{{ user.email if user else '' }}">
@@ -197,41 +197,53 @@
 
         </header>
 
-        <!-- LIVE TELEMETRY & MODEL STATUS SYNC STRIP (UNIFORM THEME) -->
-        <section class="dashboard-section recs-telemetry-banner-section" aria-labelledby="live-sync-heading">
-            <div class="tools-sync-banner">
-                <div class="sync-banner-info">
-                    <div class="sync-banner-icon">
+        <!-- LIVE TELEMETRY & MODEL STATUS SYNC STRIP -->
+        <section class="dashboard-section recs-banner-section" aria-labelledby="recs-sync-heading">
+            <div class="recs-sync-banner">
+                <div class="recs-sync-left">
+                    <div class="recs-sync-icon">
                         <svg class="ui-icon" aria-hidden="true">
                             <use href="#icon-sparkles"></use>
                         </svg>
                     </div>
-                    <div>
-                        <span class="tools-eyebrow">ML MODEL &amp; GEMINI DECISION SUPPORT</span>
-                        <h2 id="live-sync-heading">DecisionTreeClassifier &middot; 24-Hour Horizon</h2>
+                    <div class="recs-sync-title-group">
+                        <div class="recs-sync-eyebrow">
+                            <span class="recs-live-pulse"></span>
+                            <span>ML MODEL &amp; GEMINI DECISION SUPPORT</span>
+                        </div>
+                        <h2 id="recs-sync-heading" class="recs-sync-title">DecisionTreeClassifier &middot; 24-Hour Horizon</h2>
+                        <p class="recs-sync-desc">Autonomous telemetry inference &middot; <em>Penaeus vannamei</em> culture</p>
                     </div>
                 </div>
 
-                <div class="sync-telemetry-badges">
-                    <div class="telemetry-badge">
-                        <span class="telemetry-label">CURRENT TELEMETRY</span>
-                        <span class="telemetry-value">{{ ai_data.current_status.temp }} &deg;C &middot; {{ ai_data.current_status.ph }} pH</span>
-                        <span class="telemetry-substatus status-optimal">Live Pond Sensors</span>
+                <div class="recs-sync-right">
+                    <div class="recs-sync-badge">
+                        <span class="recs-badge-label">CURRENT TELEMETRY</span>
+                        <div class="recs-badge-value">
+                            <span class="badge-val-temp">{{ ai_data.current_status.temp }} &deg;C</span>
+                            <span class="badge-val-sep">&middot;</span>
+                            <span class="badge-val-ph">{{ ai_data.current_status.ph }} pH</span>
+                        </div>
+                        <span class="recs-badge-sub status-sub-live">Live Pond Sensors</span>
                     </div>
 
-                    <div class="telemetry-badge">
-                        <span class="telemetry-label">ML CLASSIFICATION</span>
-                        <span class="telemetry-value telemetry-status-{{ ai_data.current_status.class.split('-')[-1] }}">{{ ai_data.current_status.heading }}</span>
-                        <span class="telemetry-substatus">WQI {{ ai_data.current_status.wqi_score }}/100</span>
+                    <div class="recs-sync-badge">
+                        <span class="recs-badge-label">ML CLASSIFICATION</span>
+                        <div class="recs-badge-value">
+                            <span class="recs-pill-status pill-{{ ai_data.current_status.heading.lower() }}">{{ ai_data.current_status.heading }}</span>
+                        </div>
+                        <span class="recs-badge-sub">WQI {{ ai_data.current_status.wqi_score }}/100</span>
                     </div>
 
-                    <div class="telemetry-badge">
-                        <span class="telemetry-label">24H RISK PREDICTION</span>
-                        <span class="telemetry-value telemetry-status-{{ ai_data.prediction.status.lower() }}">{{ ai_data.prediction.status }}</span>
-                        <span class="telemetry-substatus">{{ ai_data.prediction.confidence }}% Confidence</span>
+                    <div class="recs-sync-badge">
+                        <span class="recs-badge-label">24H RISK PREDICTION</span>
+                        <div class="recs-badge-value">
+                            <span class="recs-pill-status pill-{{ ai_data.prediction.status.lower() }}">{{ ai_data.prediction.status }}</span>
+                        </div>
+                        <span class="recs-badge-sub">{{ ai_data.prediction.confidence }}% Confidence</span>
                     </div>
 
-                    <button type="button" id="refresh-recommendations-btn" class="dashboard-toolbar-btn recs-refresh-btn" title="Refresh Recommendations">
+                    <button type="button" id="refresh-recommendations-btn" class="btn-recs-refresh" title="Refresh AI Recommendations">
                         <svg class="ui-icon" aria-hidden="true"><use href="#icon-arrow"></use></svg>
                         <span>Refresh AI</span>
                     </button>
