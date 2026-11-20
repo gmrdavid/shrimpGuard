@@ -11,7 +11,7 @@
 
     <title>AI Recommendations | AERIS-V</title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='3.7') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='3.8') }}">
 </head>
 
 <body class="dashboard-page recommendations-page" data-user-email="{{ user.email if user else '' }}">
@@ -454,7 +454,9 @@
                     </div>
 
                     <div class="recs-card-footer">
-                        <a href="#all-recs" class="view-all-recs-link">View All Recommendations &rarr;</a>
+                        <button type="button" id="open-all-recommendations-btn" class="view-all-recs-link">
+                            View All Recommendations &rarr;
+                        </button>
                     </div>
 
                 </div>
@@ -686,6 +688,125 @@
 
 </div>
 
+<!-- ALL AI RECOMMENDATIONS & FIELD PROTOCOLS MODAL DIALOG -->
+<dialog id="all-recommendations-modal" class="recs-modal" aria-labelledby="all-recs-modal-title">
+    <div class="recs-modal-card">
+        <!-- MODAL HEADER -->
+        <div class="recs-modal-header">
+            <div class="recs-modal-title-group">
+                <span class="recs-modal-icon-badge" aria-hidden="true">
+                    <svg class="ui-icon"><use href="#icon-sparkles"></use></svg>
+                </span>
+                <div class="recs-modal-heading-text">
+                    <h2 id="all-recs-modal-title">All AI Recommendations &amp; Field Protocols</h2>
+                    <p class="recs-modal-subtitle">Autonomous Decision Support &middot; <em>Penaeus vannamei</em> Culture</p>
+                </div>
+            </div>
+            <button type="button" id="close-all-recs-modal" class="recs-modal-close" aria-label="Close modal">&times;</button>
+        </div>
+
+        <!-- TELEMETRY SNAPSHOT STRIP -->
+        <div class="recs-modal-telemetry-strip">
+            <div class="modal-telem-item">
+                <span class="telem-label">Live Temperature</span>
+                <strong>{{ ai_data.current_status.temp }} &deg;C</strong>
+            </div>
+            <div class="modal-telem-item">
+                <span class="telem-label">Live pH Level</span>
+                <strong>{{ ai_data.current_status.ph }} pH</strong>
+            </div>
+            <div class="modal-telem-item">
+                <span class="telem-label">ML Classification</span>
+                <span class="recs-pill-status pill-{{ ai_data.current_status.heading.lower() }}">{{ ai_data.current_status.heading }} (WQI {{ ai_data.current_status.wqi_score }}/100)</span>
+            </div>
+            <div class="modal-telem-item">
+                <span class="telem-label">24H Risk Horizon</span>
+                <span class="recs-pill-status pill-{{ ai_data.prediction.status.lower() }}">{{ ai_data.prediction.status }} ({{ ai_data.prediction.confidence }}%)</span>
+            </div>
+        </div>
+
+        <!-- FILTER TABS -->
+        <div class="recs-modal-filter-bar">
+            <button type="button" class="modal-filter-pill active" data-filter="all">All Protocols ({{ (ai_data.all_recommendations or ai_data.recommendations)|length }})</button>
+            <button type="button" class="modal-filter-pill" data-filter="pH Management">pH Management</button>
+            <button type="button" class="modal-filter-pill" data-filter="Feeding Protocol">Feeding Protocol</button>
+            <button type="button" class="modal-filter-pill" data-filter="Pond Circulation">Pond Circulation</button>
+        </div>
+
+        <!-- MODAL BODY -->
+        <div class="recs-modal-body">
+            <div class="recs-modal-grid">
+                {% for rec in (ai_data.all_recommendations or ai_data.recommendations) %}
+                <div class="modal-rec-card" data-category="{{ rec.category }}">
+                    <div class="modal-rec-top">
+                        <div class="modal-rec-icon-wrap">
+                            <svg class="ui-icon" aria-hidden="true">
+                                {% if rec.category == 'Pond Circulation' or rec.category == 'Oxygen Management' %}
+                                <use href="#icon-aeration"></use>
+                                {% elif rec.category == 'pH Management' %}
+                                <use href="#icon-ph"></use>
+                                {% elif rec.category == 'Feeding Protocol' or rec.category == 'Feeding Management' %}
+                                <use href="#icon-feed"></use>
+                                {% else %}
+                                <use href="#icon-sparkles"></use>
+                                {% endif %}
+                            </svg>
+                        </div>
+                        <div class="modal-rec-header-info">
+                            <div class="modal-rec-title-row">
+                                <h3 class="modal-rec-title">{{ rec.title }}</h3>
+                                <span class="rec-badge {{ rec.badge_class or 'badge-primary' }}">{{ rec.badge }}</span>
+                            </div>
+                            <div class="modal-rec-meta-tags">
+                                <span class="rec-meta-item">Priority: <strong class="{{ rec.priority_class or 'priority-medium' }}">{{ rec.priority }}</strong></span>
+                                <span class="rec-meta-item">Impact: <strong class="{{ rec.impact_class or 'impact-high' }}">{{ rec.impact }}</strong></span>
+                                <span class="rec-meta-item">Category: <strong>{{ rec.category }}</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="modal-rec-desc">{{ rec.description }}</p>
+
+                    <div class="modal-rec-details-box">
+                        <div class="details-heading">Operational Guidance &amp; Biological Rationale:</div>
+                        <p class="details-text">{{ rec.details }}</p>
+                    </div>
+
+                    {% if rec.action_steps %}
+                    <div class="modal-rec-checklist">
+                        <div class="checklist-heading">Action Checklist &amp; Implementation Steps:</div>
+                        <ul class="checklist-items">
+                            {% for step in rec.action_steps %}
+                            <li>
+                                <span class="check-box-icon">&#10003;</span>
+                                <span>{{ step }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- MODAL FOOTER -->
+        <div class="recs-modal-footer">
+            <span class="modal-footer-caption">Physical DS18B20 &amp; DFRobot pH Telemetry &middot; DecisionTreeClassifier ML Model</span>
+            <div class="modal-footer-actions">
+                <button type="button" class="btn-modal-print" onclick="window.print()">
+                    <svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                        <rect x="6" y="14" width="12" height="8"/>
+                    </svg>
+                    <span>Print Protocols</span>
+                </button>
+                <button type="button" class="btn-modal-close-action" id="close-all-recs-modal-btn">Close</button>
+            </div>
+        </div>
+    </div>
+</dialog>
+
 <!-- NOTIFICATION DRAWER / SCRIPTS (UNIFORM ACROSS ALL WEBPAGES) -->
 <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
 <script src="{{ url_for('static', filename='js/adaptive.js') }}"></script>
@@ -767,6 +888,76 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
         });
     }
+
+    // ALL RECOMMENDATIONS MODAL INTERACTION
+    const allRecsModal = document.getElementById("all-recommendations-modal");
+    const openAllRecsBtn = document.getElementById("open-all-recommendations-btn");
+    const closeAllRecsTop = document.getElementById("close-all-recs-modal");
+    const closeAllRecsBottom = document.getElementById("close-all-recs-modal-btn");
+
+    function openModal() {
+        if (allRecsModal) {
+            allRecsModal.showModal();
+            document.body.style.overflow = "hidden";
+        }
+    }
+
+    function closeModal() {
+        if (allRecsModal) {
+            allRecsModal.close();
+            document.body.style.overflow = "";
+        }
+    }
+
+    if (openAllRecsBtn) {
+        openAllRecsBtn.addEventListener("click", function (e) {
+            e.preventDefault();
+            openModal();
+        });
+    }
+
+    // Also support any element with .view-all-recs-link
+    document.querySelectorAll(".view-all-recs-link").forEach(btn => {
+        btn.addEventListener("click", function (e) {
+            e.preventDefault();
+            openModal();
+        });
+    });
+
+    if (closeAllRecsTop) closeAllRecsTop.addEventListener("click", closeModal);
+    if (closeAllRecsBottom) closeAllRecsBottom.addEventListener("click", closeModal);
+
+    // Close when clicking modal backdrop
+    if (allRecsModal) {
+        allRecsModal.addEventListener("click", function (e) {
+            const card = this.querySelector(".recs-modal-card");
+            if (card && !card.contains(e.target)) {
+                closeModal();
+            }
+        });
+
+        allRecsModal.addEventListener("cancel", function () {
+            document.body.style.overflow = "";
+        });
+    }
+
+    // Modal Category Filter Tabs
+    const filterPills = document.querySelectorAll(".modal-filter-pill");
+    filterPills.forEach(pill => {
+        pill.addEventListener("click", function () {
+            filterPills.forEach(p => p.classList.remove("active"));
+            this.classList.add("active");
+            const filter = this.getAttribute("data-filter");
+            const cards = document.querySelectorAll(".modal-rec-card");
+            cards.forEach(card => {
+                if (filter === "all" || card.getAttribute("data-category") === filter) {
+                    card.style.display = "";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+        });
+    });
 });
 </script>
 

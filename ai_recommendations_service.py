@@ -280,55 +280,98 @@ def _generate_dynamic_vannamei_recommendations(
     Generates rich, fully customized recommendation cards, prediction narrative,
     and best practice tips based solely on real pH and Temperature telemetry.
     """
-    recommendations = []
+    # Build Comprehensive Protocols Catalog (for Modal & Expanded Views)
+    all_recommendations = []
 
-    # CARD 1: pH Management & Alkalinity Buffering
+    # PROTOCOL 1: pH Management & Alkalinity Buffering
     if current_ph < 7.50:
-        recommendations.append({
+        rec_ph_1 = {
+            "id": "rec-ph-buffer",
             "title": "Apply Agricultural Limestone / Buffer Acidic pH",
-            "badge": "Recommended",
-            "badge_class": "badge-primary",
+            "badge": "Critical Action",
+            "badge_class": "badge-danger",
             "priority": "High",
             "priority_class": "priority-high",
             "impact": "High",
             "impact_class": "impact-high",
             "category": "pH Management",
             "icon": "icon-ph",
-            "description": f"pH is currently {current_ph:.2f} (below the 7.50–8.50 optimal range). Fast corrective buffering is required to protect shrimp cuticle calcification.",
-            "details": f"At pH {current_ph:.2f}, Penaeus vannamei experiences metabolic acid stress and soft-shell syndrome during ecdysis (molting). Broadcast agricultural limestone (CaCO3) at 15–20 kg/ha or sodium bicarbonate (NaHCO3) at 10–15 kg/ha across pond water to raise total alkalinity (>120 mg/L) and stabilize pH back into 7.8–8.2."
-        })
+            "description": f"pH is currently {current_ph:.2f} (below optimal 7.50–8.50). Rapid corrective buffering is required to protect shrimp cuticle calcification.",
+            "details": f"At pH {current_ph:.2f}, Penaeus vannamei experiences metabolic acid stress and soft-shell syndrome during ecdysis (molting). Broadcast agricultural limestone (CaCO3) at 15–20 kg/ha or sodium bicarbonate (NaHCO3) at 10–15 kg/ha across pond water to raise total alkalinity (>120 mg/L) and stabilize pH back into 7.8–8.2.",
+            "action_steps": [
+                f"Broadcast agricultural limestone (CaCO3) at 15–20 kg/ha evenly across aerator water currents.",
+                "Verify total pond alkalinity reaches at least 120–150 mg/L as CaCO3 using titration check.",
+                "Re-test pond pH at 15:00 to verify stabilized buffer capacity and avoid afternoon crashes."
+            ]
+        }
     elif current_ph > 8.50:
-        recommendations.append({
+        rec_ph_1 = {
+            "id": "rec-ph-buffer",
             "title": "Mitigate Alkaline Spike & Ammonia Toxicity",
-            "badge": "Recommended",
-            "badge_class": "badge-primary",
+            "badge": "Critical Action",
+            "badge_class": "badge-danger",
             "priority": "High",
             "priority_class": "priority-high",
             "impact": "High",
             "impact_class": "impact-high",
             "category": "pH Management",
             "icon": "icon-ph",
-            "description": f"pH has surged to {current_ph:.2f} (above the 8.50 safe limit). High pH dramatically multiplies toxic un-ionized ammonia (NH3) fractions.",
-            "details": f"Alkaline spikes (>8.50 pH) during sunny afternoons are driven by intense microalgae photosynthesis consuming all free CO2. Apply fermented molasses or sugarcane carbon source at 20–30 L/ha to release CO2 and boost heterotrophic bacterial activity, bringing pH down towards 8.0–8.2."
-        })
+            "description": f"pH has surged to {current_ph:.2f} (above safe 8.50 limit). High pH dramatically multiplies toxic un-ionized ammonia (NH3) fractions.",
+            "details": f"Alkaline spikes (>8.50 pH) during sunny afternoons are driven by intense microalgae photosynthesis consuming all free CO2. Apply fermented molasses or sugarcane carbon source at 20–30 L/ha to release CO2 and boost heterotrophic bacterial activity, bringing pH down towards 8.0–8.2.",
+            "action_steps": [
+                "Apply fermented molasses or sugarcane juice at 20–30 L/ha across pond perimeter.",
+                "Increase aerator agitation to dissipate excess photosynthetically generated oxygen and volatile ammonia.",
+                "Suspend afternoon nitrogenous feed broadcast until pond pH drops back below 8.30."
+            ]
+        }
     else:
-        recommendations.append({
-            "title": "Stabilize pH Level",
-            "badge": "Suggestion",
-            "badge_class": "badge-purple",
+        rec_ph_1 = {
+            "id": "rec-ph-buffer",
+            "title": "Stabilize pH Level & Alkalinity Reserve",
+            "badge": "Recommended",
+            "badge_class": "badge-primary",
             "priority": "Low",
             "priority_class": "priority-low",
             "impact": "Medium",
             "impact_class": "impact-medium",
             "category": "pH Management",
             "icon": "icon-ph",
-            "description": f"pH is currently {current_ph:.2f} ({ph_trend.lower()}), within the optimal range (7.50–8.50) for Penaeus vannamei.",
-            "details": f"Maintain stable diurnal pH fluctuation (keep delta under 0.5 units between morning 06:00 and afternoon 15:00). Periodic light buffering with agricultural limestone ensures resilience against sudden rainfall or microalgal die-offs."
-        })
+            "description": f"pH is currently {current_ph:.2f} ({ph_trend.lower()}), within optimal range (7.50–8.50) for Penaeus vannamei.",
+            "details": f"Maintain stable diurnal pH fluctuation (keep delta under 0.5 units between morning 06:00 and afternoon 15:00). Periodic light buffering with agricultural limestone ensures resilience against sudden rainfall or microalgal die-offs.",
+            "action_steps": [
+                "Maintain diurnal pH delta below 0.5 units between morning (06:00) and afternoon (15:00).",
+                "Perform weekly alkalinity titrations to ensure carbonate reserve remains above 120 mg/L as CaCO3.",
+                "Broadcast light maintenance dolomite (5–10 kg/ha) during new moon or full moon molting peaks."
+            ]
+        }
+    all_recommendations.append(rec_ph_1)
 
-    # CARD 2: Temperature-Regulated Feeding Protocol
+    # PROTOCOL 2: Diurnal pH & Molting Calcification Safeguard
+    rec_ph_2 = {
+        "id": "rec-ph-diurnal",
+        "title": "Diurnal pH & Molting Calcification Safeguard",
+        "badge": "Recommended",
+        "badge_class": "badge-primary",
+        "priority": "Medium",
+        "priority_class": "priority-medium",
+        "impact": "High",
+        "impact_class": "impact-high",
+        "category": "pH Management",
+        "icon": "icon-ph",
+        "description": "Safeguard shrimp cuticle mineralization and osmotic balance across diurnal day-night pH swings.",
+        "details": "Penaeus vannamei molts synchronously around lunar cycles (new moon and full moon). Rapid pH drops (<7.5) during molting soften the exoskeleton and invite secondary Vibrio infections, while high pH (>8.5) increases un-ionized ammonia toxicity. Dissolved calcium and magnesium ions must be sustained at a 1:3 ratio with salinity.",
+        "action_steps": [
+            "Track diurnal swing: record morning pH at 06:00 and afternoon peak at 15:00 daily (keep delta < 0.5 units).",
+            "Apply mineral supplements (magnesium chloride and calcium chloride) if soft-shell syndrome is observed.",
+            "Ensure dissolved carbon dioxide is stripped at night using active paddlewheels."
+        ]
+    }
+    all_recommendations.append(rec_ph_2)
+
+    # PROTOCOL 3: Temperature-Regulated Feeding Protocol
     if current_temp < 28.0:
-        recommendations.append({
+        rec_feed_1 = {
+            "id": "rec-feed-temp",
             "title": "Regulate Feeding for Sub-Optimal Water Temperature",
             "badge": "Recommended",
             "badge_class": "badge-primary",
@@ -338,25 +381,37 @@ def _generate_dynamic_vannamei_recommendations(
             "impact_class": "impact-high",
             "category": "Feeding Protocol",
             "icon": "icon-feed",
-            "description": f"Water temperature is {current_temp:.1f} °C (below 28.0 °C). Shrimp gastric evacuation rate and metabolic enzyme activity are reduced.",
-            "details": f"At {current_temp:.1f} °C, Pacific white shrimp digestive efficiency drops by up to 25%. Inspect feed trays 2.5 hours after broadcast. Reduce the subsequent feeding ration by 15–20% to avoid unconsumed pellet accumulation on the pond bottom, which creates toxic anaerobic sludge."
-        })
+            "description": f"Water temperature is {current_temp:.1f} °C (below 28.0 °C). Shrimp gastric evacuation rate and digestive enzyme activity are reduced.",
+            "details": f"At {current_temp:.1f} °C, Pacific white shrimp digestive efficiency drops by up to 25%. Inspect feed trays 2.5 hours after broadcast. Reduce subsequent feeding rations by 15–20% to avoid unconsumed pellet accumulation on the pond bottom, which creates toxic anaerobic sludge.",
+            "action_steps": [
+                "Trim subsequent feed ration by 15–25% to prevent unconsumed pellet decay on the pond floor.",
+                "Inspect check trays 2.5 hours after broadcast rather than the standard 2.0-hour window.",
+                "Shift the primary feed allocation to the warmest solar window of the day (12:00–15:00)."
+            ]
+        }
     elif current_temp > 32.0:
-        recommendations.append({
+        rec_feed_1 = {
+            "id": "rec-feed-temp",
             "title": "Calibrate Feeding Due to Thermal Stress",
-            "badge": "Recommended",
-            "badge_class": "badge-primary",
+            "badge": "Critical Action",
+            "badge_class": "badge-danger",
             "priority": "High",
             "priority_class": "priority-high",
             "impact": "High",
             "impact_class": "impact-high",
             "category": "Feeding Protocol",
             "icon": "icon-feed",
-            "description": f"Water temperature is elevated at {current_temp:.1f} °C (exceeds 32.0 °C). High temperatures accelerate respiration and waste generation.",
-            "details": f"At temperatures above 32.0 °C, shrimp energy expenditure spikes and feed conversion ratio (FCR) deteriorates. Split daily rations into smaller, frequent feedings and suspend midday feeding during peak solar irradiance. Fortify feeds with Vitamin C (2–3 g/kg feed) to alleviate thermal oxidative stress."
-        })
+            "description": f"Water temperature is elevated at {current_temp:.1f} °C (exceeds 32.0 °C). High temperatures accelerate respiration and metabolic waste generation.",
+            "details": f"At temperatures above 32.0 °C, shrimp energy expenditure spikes and feed conversion ratio (FCR) deteriorates. Split daily rations into smaller, frequent feedings and suspend midday feeding during peak solar irradiance. Fortify feeds with Vitamin C (2–3 g/kg feed) to alleviate thermal oxidative stress.",
+            "action_steps": [
+                "Split daily rations into 4–5 smaller portions; suspend broadcast between 12:00 and 14:00 if water exceeds 33 °C.",
+                "Fortify feed pellets with coated Vitamin C (2–3 g/kg) and organic selenium to counter thermal oxidative stress.",
+                "Inspect bottom check-trays within 1.5 hours to detect any thermal feed rejection."
+            ]
+        }
     else:
-        recommendations.append({
+        rec_feed_1 = {
+            "id": "rec-feed-temp",
             "title": "Optimize Feeding at Ideal Thermal Conditions",
             "badge": "Recommended",
             "badge_class": "badge-primary",
@@ -367,23 +422,83 @@ def _generate_dynamic_vannamei_recommendations(
             "category": "Feeding Protocol",
             "icon": "icon-feed",
             "description": f"Water temperature is optimal at {current_temp:.1f} °C. Shrimp metabolic enzyme efficiency and feed intake are at peak capacity.",
-            "details": f"Maintain standard body-weight feeding schedules. Check feed check-trays 2.0 hours post-broadcast. Ensure feed protein levels (35–38% crude protein) are efficiently converted by maintaining paddlewheel water circulation in the feeding perimeter."
-        })
+            "details": f"Maintain standard body-weight feeding schedules. Check feed check-trays 2.0 hours post-broadcast. Ensure feed protein levels (35–38% crude protein) are efficiently converted by maintaining paddlewheel water circulation in the feeding perimeter.",
+            "action_steps": [
+                "Maintain standard biomass feeding tables based on current average body weight (ABW).",
+                "Inspect check-trays 2.0 hours post-broadcast; adjust next meal if uneaten feed is >10%.",
+                "Ensure feed protein (35–38% CP) is fully assimilated by sustaining 5–10 cm/s circular perimeter currents."
+            ]
+        }
+    all_recommendations.append(rec_feed_1)
 
-    # CARD 3: Nocturnal Pond Circulation & Thermal Destratification
-    recommendations.append({
-        "title": "Aerator Duty Cycle for Temperature & pH Balancing",
+    # PROTOCOL 4: Bioenergetic Feed Protein & Nutrient Allocation
+    rec_feed_2 = {
+        "id": "rec-feed-nutrition",
+        "title": "Temperature-Compensated Bioenergetic Nutrition",
         "badge": "Suggestion",
         "badge_class": "badge-purple",
+        "priority": "Medium",
+        "priority_class": "priority-medium",
+        "impact": "Medium",
+        "impact_class": "impact-medium",
+        "category": "Feeding Protocol",
+        "icon": "icon-feed",
+        "description": f"Match dietary protein and lipid ratios to shrimp metabolic consumption rates at the current temperature ({current_temp:.1f} °C).",
+        "details": f"At {current_temp:.1f} °C, shrimp baseline respiration and energy expenditure dictate protein synthesis efficiency. Feeding excess high-protein rations during thermal variations leads to unassimilated nitrogen excretion into the water column.",
+        "action_steps": [
+            "Adjust daily protein allocation based on weekly body weight sampling and feeding response.",
+            "Store feed bags in dry, temperature-controlled facilities (<25 °C) to prevent lipid rancidity.",
+            "Top-dress pellets with gut probiotics (Bacillus subtilis) to support digestive enzyme synthesis."
+        ]
+    }
+    all_recommendations.append(rec_feed_2)
+
+    # PROTOCOL 5: Nocturnal Pond Circulation & Thermal Destratification
+    rec_circ_1 = {
+        "id": "rec-circ-aeration",
+        "title": "Aerator Duty Cycle for Temperature & pH Balancing",
+        "badge": "Recommended",
+        "badge_class": "badge-primary",
         "priority": "Medium" if (current_temp > 31.5 or current_ph < 7.6) else "Low",
         "priority_class": "priority-medium" if (current_temp > 31.5 or current_ph < 7.6) else "priority-low",
         "impact": "Medium",
         "impact_class": "impact-medium",
         "category": "Pond Circulation",
         "icon": "icon-aeration",
-        "description": f"Synchronize paddlewheel aerators to prevent thermal stratification and nocturnal pH drops caused by respiration.",
-        "details": f"Pond water easily stratifies into a warm surface layer and cooler bottom sludge zone, while nocturnal CO2 accumulation depresses early morning pH. Run paddlewheels consistently from 22:00 to 06:00 to destratify temperature layers and strip dissolved CO2."
-    })
+        "description": "Synchronize paddlewheel aerators to prevent thermal stratification and nocturnal pH drops caused by respiration.",
+        "details": "Pond water easily stratifies into a warm surface layer and cooler bottom sludge zone, while nocturnal CO2 accumulation depresses early morning pH. Run paddlewheels consistently from 22:00 to 06:00 to destratify temperature layers and strip dissolved CO2.",
+        "action_steps": [
+            "Operate paddlewheel aerators continuously between 22:00 and 06:00 to break thermal layering.",
+            "Position aerators to direct clean water circular currents around perimeter feeding areas.",
+            "Inspect motor amperage and paddle submersion depth (8–10 cm paddle tip depth)."
+        ]
+    }
+    all_recommendations.append(rec_circ_1)
+
+    # PROTOCOL 6: Heavy Rainfall & Thermal Inversion Defense Plan
+    rec_circ_2 = {
+        "id": "rec-circ-storm",
+        "title": "Heavy Rainfall & Thermal Inversion Defense Plan",
+        "badge": "Suggestion",
+        "badge_class": "badge-purple",
+        "priority": "Low",
+        "priority_class": "priority-low",
+        "impact": "Medium",
+        "impact_class": "impact-medium",
+        "category": "Pond Circulation",
+        "icon": "icon-aeration",
+        "description": "Protect pond water from sudden thermal shock and acid rainwater runoff during precipitation events.",
+        "details": "Tropical downpours rapidly drop water temperature by 2–4 °C and deliver acidic rainwater (pH 5.5–6.5) that floats on top of warmer, denser brackish water. This stratification causes sudden thermal shock and anoxia at the bottom.",
+        "action_steps": [
+            "Broadcast agricultural lime (10–15 kg/100m dikes) along pond dikes prior to heavy rainfall.",
+            "Activate aerators immediately during rain events to mix freshwater surface runoff with pond water.",
+            "Drain freshwater surface layers using pond overflow gates without releasing bottom water."
+        ]
+    }
+    all_recommendations.append(rec_circ_2)
+
+    # Top 3 recommendations for main card display
+    recommendations = [rec_ph_1, rec_feed_1, rec_circ_1]
 
     # Dynamic 24-hour prediction narrative based strictly on temperature and pH
     first_wqi = projections[0]["wqi"]
@@ -418,6 +533,7 @@ def _generate_dynamic_vannamei_recommendations(
 
     return {
         "recommendations": recommendations,
+        "all_recommendations": all_recommendations,
         "prediction_narrative": pred_narrative,
         "best_practices": best_practices,
         "source": "AERIS-V Vannamei ML Intelligence Engine",
@@ -801,6 +917,7 @@ def get_comprehensive_ai_recommendations(
         },
         "active_alerts": active_alerts,
         "recommendations": ai_content.get("recommendations", []),
+        "all_recommendations": ai_content.get("all_recommendations", ai_content.get("recommendations", [])),
         "parameters": parameters,
         "influential_factors": influential_factors,
         "best_practices": ai_content.get("best_practices", []),
