@@ -395,7 +395,7 @@
                             </span>
                             <div>
                                 <h2 class="recs-section-title">AI Recommendations for You</h2>
-                                <p class="recs-section-subtitle">Personalized water temperature &amp; pH recommendations based on live sensor telemetry and ML analysis.</p>
+                                <p class="recs-section-subtitle">Personalized <em>Penaeus vannamei</em> water temperature &amp; pH protocols based on live telemetry and ML analysis.</p>
                             </div>
                         </div>
                     </div>
@@ -572,7 +572,7 @@
 
             </div>
 
-            <!-- RIGHT COLUMN: PARAMETER ANALYSIS & BEST PRACTICES -->
+            <!-- RIGHT COLUMN: PARAMETER ANALYSIS & ACTIONABLE SOLUTIONS -->
             <div class="recs-right-column">
 
                 <!-- CARD: PARAMETER ANALYSIS -->
@@ -639,28 +639,30 @@
                     </div>
                 </div>
 
-                <!-- CARD: BEST PRACTICES TIPS -->
+                <!-- CARD: ACTIONABLE SOLUTIONS (PENAEUS VANNAMEI) -->
                 <div class="recs-card recs-card-best-practices">
                     <div class="practices-header">
                         <span class="practices-lightbulb-icon">
-                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-lightbulb"></use></svg>
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg>
                         </span>
                         <div>
                             <div class="recs-card-label" style="margin-bottom:2px;">
                                 <span class="card-label-dot"></span>
-                                Water Quality Guidelines
+                                Penaeus vannamei Live Solutions
                             </div>
-                            <h2 class="practices-title">pH &amp; Temperature Best Practices</h2>
+                            <h2 class="practices-title">Actionable Solutions</h2>
                         </div>
                     </div>
 
                     <ul class="practices-list">
-                        {% for tip in ai_data.best_practices %}
+                        {% for item in (ai_data.actionable_solutions or ai_data.best_practices) %}
                         <li class="practice-item">
                             <span class="practice-item-icon">
-                                <svg class="ui-icon" aria-hidden="true"><use href="#{{ tip.icon }}"></use></svg>
+                                <svg class="ui-icon" aria-hidden="true"><use href="#{{ item.icon or 'icon-sparkles' }}"></use></svg>
                             </span>
-                            <span class="practice-item-text">{{ tip.text }}</span>
+                            <span class="practice-item-text">
+                                {% if item.title %}<strong>{{ item.title }}:</strong> {% endif %}{{ item.text }}
+                            </span>
                         </li>
                         {% endfor %}
                     </ul>

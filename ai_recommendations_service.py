@@ -289,6 +289,137 @@ def compute_influential_factors(
     return factors
 
 
+def _generate_actionable_solutions(
+    current_temp: float,
+    current_ph: float,
+    temp_trend: str,
+    ph_trend: str,
+    ml_status: str
+) -> List[Dict[str, str]]:
+    """
+    Generates 5 dynamic, immediate Actionable Solutions strictly customized to
+    the live collected Water Temperature and pH Level for Penaeus vannamei.
+    """
+    solutions = []
+
+    # SOLUTION 1: Immediate pH Remediation / Buffering Action
+    if current_ph < 7.50:
+        solutions.append({
+            "icon": "icon-ph",
+            "title": f"Acid Stress Remediation (pH {current_ph:.2f})",
+            "text": (
+                f"Broadcast agricultural limestone (CaCO3) at 15–20 kg/ha or sodium bicarbonate (NaHCO3) "
+                f"at 10–15 kg/ha across pond water currents to raise total alkalinity (>120 mg/L) "
+                f"and prevent soft-shell syndrome during Penaeus vannamei ecdysis (molting)."
+            )
+        })
+    elif current_ph > 8.50:
+        solutions.append({
+            "icon": "icon-ph",
+            "title": f"Alkaline Spike Mitigation (pH {current_ph:.2f})",
+            "text": (
+                f"Apply fermented molasses or organic sugarcane carbon at 20–30 L/ha across pond perimeters "
+                f"to stimulate heterotrophic CO2 release and prevent toxic un-ionized ammonia (NH3) gill diffusion "
+                f"in Penaeus vannamei."
+            )
+        })
+    else:
+        solutions.append({
+            "icon": "icon-ph",
+            "title": f"pH Stability & Buffer Maintenance (pH {current_ph:.2f})",
+            "text": (
+                f"pH is optimal at {current_ph:.2f} (trending {ph_trend.lower()}). Apply maintenance dolomite (5–10 kg/ha) "
+                f"to preserve carbonate reserve (>120 mg/L) and keep diurnal pH swings within ≤ 0.5 units "
+                f"between 06:00 and 15:00."
+            )
+        })
+
+    # SOLUTION 2: Immediate Thermal Regulation & Water Column Management
+    if current_temp < 28.0:
+        solutions.append({
+            "icon": "icon-thermometer",
+            "title": f"Thermal Depth Retention ({current_temp:.1f} °C)",
+            "text": (
+                f"Water temperature is below 28.0 °C. Deepen pond water column to 1.3–1.5 meters to retain benthic "
+                f"thermal mass against nighttime cooling and avoid cold well-water pumping to sustain Vannamei "
+                f"metabolic enzyme kinetics."
+            )
+        })
+    elif current_temp > 32.0:
+        solutions.append({
+            "icon": "icon-thermometer",
+            "title": f"Thermal Stress Mitigation ({current_temp:.1f} °C)",
+            "text": (
+                f"Water temperature is elevated at {current_temp:.1f} °C. Deepen pond depth to 1.4–1.6 meters "
+                f"to provide a cooler bottom sanctuary layer and promote surface water movement during peak solar "
+                f"noon (11:00–14:00) for evaporative cooling."
+            )
+        })
+    else:
+        solutions.append({
+            "icon": "icon-thermometer",
+            "title": f"Thermal Homeostasis Regulation ({current_temp:.1f} °C)",
+            "text": (
+                f"Water temperature is optimal at {current_temp:.1f} °C (trending {temp_trend.lower()}). "
+                f"Maintain pond depth at 1.2–1.4 meters to buffer against sudden squall cooling and ensure "
+                f"diurnal thermal variation stays strictly under 3.0 °C."
+            )
+        })
+
+    # SOLUTION 3: Molting Safeguard & Mineral Ionic Balance
+    if current_ph < 7.50:
+        solutions.append({
+            "icon": "icon-sparkles",
+            "title": "Cuticle Mineralization & Molting Protection",
+            "text": (
+                f"At {current_temp:.1f} °C and acidic pH {current_ph:.2f}, Penaeus vannamei fails to calcify new cuticles. "
+                f"Supplement dissolved calcium and magnesium (1:3 Ca:Mg ratio) immediately to eliminate "
+                f"soft-shell mortality during synchronous lunar molting."
+            )
+        })
+    elif current_ph > 8.50:
+        solutions.append({
+            "icon": "icon-sparkles",
+            "title": f"Ammonia Toxicity Prevention at {current_temp:.1f} °C",
+            "text": (
+                f"At {current_temp:.1f} °C, high pH ({current_ph:.2f}) exponentially shifts ammonium into toxic un-ionized NH3. "
+                f"Increase water circulation to strip volatile gas and delay high-protein inputs until pH drops below 8.30."
+            )
+        })
+    else:
+        solutions.append({
+            "icon": "icon-sparkles",
+            "title": "Synchronous Ecdysis & Alkalinity Safeguard",
+            "text": (
+                f"Maintain total alkalinity ≥ 120 mg/L as CaCO3 to protect Penaeus vannamei during upcoming "
+                f"lunar molting peaks, preventing cuticle softening and osmotic stress across daily temperature cycles."
+            )
+        })
+
+    # SOLUTION 4: Thermal & pH Column Destratification
+    solutions.append({
+        "icon": "icon-thermometer",
+        "title": "Column Destratification & Benthic Homogenization",
+        "text": (
+            f"Circulate pond water layers during midday sun to eliminate thermal stratification between the "
+            f"heated surface layer and cooler bottom zones where Penaeus vannamei browses, keeping temperature "
+            f"gradients under 1.5 °C."
+        )
+    })
+
+    # SOLUTION 5: Sensor Maintenance & Drift Calibration
+    solutions.append({
+        "icon": "icon-monitor-check",
+        "title": "Sensor Calibration & Biofilm Inspection",
+        "text": (
+            f"Inspect physical DFRobot pH glass probe and DS18B20 temperature probe at 30–50 cm depth. "
+            f"Clear microalgae biofilm fouling with a soft brush and verify calibration using standard pH 7.00/4.01 buffers."
+        )
+    })
+
+    return solutions
+
+
 def _generate_dynamic_vannamei_recommendations(
     current_temp: float,
     current_ph: float,
@@ -550,19 +681,20 @@ def _generate_dynamic_vannamei_recommendations(
             f"with stable temperature ({current_temp:.1f} °C) and pH ({current_ph:.2f}) within recommended boundaries."
         )
 
-    best_practices = [
-        {"icon": "icon-ph", "text": "Maintain diurnal pH delta ≤ 0.5 units between pre-dawn (06:00) and mid-afternoon (15:00) to protect cuticle calcification."},
-        {"icon": "icon-thermometer", "text": "Keep pond water temperature strictly within 28.0–32.0 °C; maintain 1.2–1.5 m pond depth to provide thermal insulation."},
-        {"icon": "icon-ph", "text": "Ensure total pond alkalinity remains above 120 mg/L as CaCO3 using agricultural limestone to prevent sudden pH crashes."},
-        {"icon": "icon-thermometer", "text": "Destratify water columns during calm sunny afternoons to prevent surface overheating and cold bottom shock."},
-        {"icon": "icon-monitor-check", "text": "Calibrate the physical DS18B20 temperature probe and DFRobot pH sensor regularly using standard buffers."}
-    ]
+    actionable_solutions = _generate_actionable_solutions(
+        current_temp=current_temp,
+        current_ph=current_ph,
+        temp_trend=temp_trend,
+        ph_trend=ph_trend,
+        ml_status=ml_status
+    )
 
     return {
         "recommendations": recommendations,
         "all_recommendations": all_recommendations,
         "prediction_narrative": pred_narrative,
-        "best_practices": best_practices,
+        "actionable_solutions": actionable_solutions,
+        "best_practices": actionable_solutions,
         "source": "AERIS-V Vannamei ML Intelligence Engine",
     }
 
@@ -666,11 +798,12 @@ Return a valid JSON object matching this exact schema:
         }}
     ],
     "prediction_narrative": "A concise 2-sentence prediction narrative explaining the 24-hour water quality trajectory based on temperature and pH trends.",
-    "best_practices": [
-        {{"icon": "icon-ph", "text": "Maintain diurnal pH variation within ≤ 0.5 units between pre-dawn (06:00) and mid-afternoon (15:00)."}},
-        {{"icon": "icon-thermometer", "text": "Maintain water temperature within the ML optimal window (28.0–32.0 °C) using 1.2–1.5 m water depth."}},
-        {{"icon": "icon-ph", "text": "Ensure total pond alkalinity remains above 120 mg/L as CaCO3 to buffer against abrupt pH crashes."}},
-        {{"icon": "icon-monitor-check", "text": "Calibrate the physical DS18B20 temperature probe and DFRobot pH sensor regularly using standard buffers."}}
+    "actionable_solutions": [
+        {{"icon": "icon-ph", "title": "pH Remediation & Chemical Buffering", "text": "Specific corrective chemical buffering with exact dosages for Penaeus vannamei based on current pH."}},
+        {{"icon": "icon-thermometer", "title": "Thermal Depth Buffering", "text": "Actionable thermal regulation and water column management for Penaeus vannamei based on current temperature."}},
+        {{"icon": "icon-sparkles", "title": "Ecdysis Mineral Safeguard", "text": "Cuticle calcification, alkalinity maintenance (>120 mg/L), and molting protection in Penaeus vannamei."}},
+        {{"icon": "icon-thermometer", "title": "Thermal Destratification", "text": "Circulation protocol to blend surface and benthic layers for uniform water temperature."}},
+        {{"icon": "icon-monitor-check", "title": "Sensor Calibration & Cleaning", "text": "Physical DFRobot pH glass probe and DS18B20 temperature sensor maintenance and buffer calibration."}}
     ]
 }}"""
 
@@ -693,6 +826,8 @@ Return a valid JSON object matching this exact schema:
         data = json.loads(cleaned)
         if "recommendations" in data and len(data["recommendations"]) >= 2:
             data["source"] = f"Google Gemini ({model})"
+            if "actionable_solutions" in data:
+                data["best_practices"] = data["actionable_solutions"]
             return data
     except Exception as exc:
         logger.warning("Gemini AI API call encountered: %s; transitioning to dynamic Vannamei inference.", exc)
@@ -928,14 +1063,18 @@ def get_comprehensive_ai_recommendations(
     else:
         pred_subtext = f"There is a {pred_conf}% confidence that water quality will maintain optimal conditions."
 
-    # Enforce that Best Practices Tips strictly and exclusively focus on pH and Temperature
-    pure_best_practices = [
-        {"icon": "icon-ph", "text": "Maintain diurnal pH delta ≤ 0.5 units between pre-dawn (06:00) and mid-afternoon (15:00) to protect cuticle calcification."},
-        {"icon": "icon-thermometer", "text": "Keep pond water temperature strictly within 28.0–32.0 °C; maintain 1.2–1.5 m pond depth to provide thermal insulation."},
-        {"icon": "icon-ph", "text": "Ensure total pond alkalinity remains above 120 mg/L as CaCO3 using agricultural limestone to prevent sudden pH crashes."},
-        {"icon": "icon-thermometer", "text": "Destratify water columns during calm sunny afternoons to prevent surface overheating and cold bottom shock."},
-        {"icon": "icon-monitor-check", "text": "Calibrate the physical DS18B20 temperature probe and DFRobot pH sensor regularly using standard buffers."}
-    ]
+    # Dynamic Actionable Solutions strictly customized to live sensor telemetry for Penaeus vannamei
+    dynamic_solutions = _generate_actionable_solutions(
+        current_temp=current_temp,
+        current_ph=current_ph,
+        temp_trend=temp_trend_info["trend"],
+        ph_trend=ph_trend_info["trend"],
+        ml_status=current_status
+    )
+
+    actionable_solutions = ai_content.get("actionable_solutions")
+    if not actionable_solutions or len(actionable_solutions) < 3:
+        actionable_solutions = dynamic_solutions
 
     result = {
         "current_status": {
@@ -959,7 +1098,8 @@ def get_comprehensive_ai_recommendations(
         "all_recommendations": ai_content.get("all_recommendations", ai_content.get("recommendations", [])),
         "parameters": parameters,
         "influential_factors": influential_factors,
-        "best_practices": pure_best_practices,
+        "actionable_solutions": actionable_solutions,
+        "best_practices": actionable_solutions,
         "model_metadata": {
             **get_ml_model_metadata(),
             "source": ai_content.get("source", "AERIS-V Vannamei ML Intelligence Engine")
