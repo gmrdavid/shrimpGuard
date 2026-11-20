@@ -141,17 +141,21 @@ def generate_timed_csrf_token(purpose: str) -> str:
 def verify_timed_csrf_token(token: str, purpose: str, max_age: int = 3600) -> bool:
     if not token:
         return False
-    try:
-        s = URLSafeTimedSerializer(app.secret_key, salt=f"aeris_v-csrf-{purpose}")
-        data = s.loads(token, max_age=max_age)
-        return data == purpose
-    except (BadSignature, SignatureExpired):
-        try:
-            s_old = URLSafeTimedSerializer(app.secret_key, salt=f"shrimpguard-csrf-{purpose}")
-            data = s_old.loads(token, max_age=max_age)
-            return data == purpose
-        except (BadSignature, SignatureExpired):
-            return False
+    keys_to_try = [app.secret_key]
+    legacy_key = "shrimpguard-secret-key-capstone2"
+    if legacy_key not in keys_to_try:
+        keys_to_try.append(legacy_key)
+
+    for k in keys_to_try:
+        for salt_prefix in ["aeris_v-csrf-", "shrimpguard-csrf-"]:
+            try:
+                s = URLSafeTimedSerializer(k, salt=f"{salt_prefix}{purpose}")
+                data = s.loads(token, max_age=max_age)
+                if data == purpose:
+                    return True
+            except (BadSignature, SignatureExpired):
+                continue
+    return False
 
 
 def validate_csrf(submitted_token: str, session_token_key: str, purpose: str, max_age: int = 3600) -> bool:
