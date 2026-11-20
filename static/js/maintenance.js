@@ -1,5 +1,5 @@
 /**
- * ShrimpGuard - Submerged Probe Biofilm Maintenance & Calibration Controller
+ * AERIS-V - Submerged Probe Biofilm Maintenance & Calibration Controller
  * Counteracts electrochemical sensor drift from organic biofouling in Penaeus vannamei aquaculture ponds.
  */
 
@@ -1237,7 +1237,7 @@
     }
 
     // Expose helpers globally for cross-module integration
-    window.ShrimpGuardMaintenance = {
+    window.AerisVMaintenance = window.ShrimpGuardMaintenance = {
         fetchStatus: fetchMaintenanceStatus,
         fetchHistory: fetchMaintenanceHistory,
         openSOPModal: openSOPModal,

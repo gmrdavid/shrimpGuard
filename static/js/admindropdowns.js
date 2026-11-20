@@ -1,5 +1,5 @@
 /**
- * ShrimpGuard - Admin Custom Dropdowns
+ * AERIS-V - Admin Custom Dropdowns
  * Replicates the Status Filter dropdown design from Historical Readings across all admin views.
  */
 (function() {

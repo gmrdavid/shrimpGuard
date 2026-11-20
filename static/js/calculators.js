@@ -2133,7 +2133,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const a = document.createElement("a");
                 a.href = downloadUrl;
                 const disposition = res.headers.get("Content-Disposition");
-                let filename = `shrimpguard-aquaculture-calculations_${scope}_${format}.${format}`;
+                let filename = `aeris_v-aquaculture-calculations_${scope}_${format}.${format}`;
                 if (disposition && disposition.indexOf("filename=") !== -1) {
                     const matches = /filename[^;=\\n]*=((['"]).*?\\2|[^;\\n]*)/.exec(disposition);
                     if (matches != null && matches[1]) {
@@ -3184,6 +3184,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // 6. Save preference to localStorage
         if (savePreference) {
             try {
+                localStorage.setItem("aeris_v_active_calc_module", moduleKey);
                 localStorage.setItem("shrimpguard_active_calc_module", moduleKey);
             } catch (err) {
                 console.warn("Could not save active calc module to localStorage", err);
@@ -3253,7 +3254,7 @@ document.addEventListener("DOMContentLoaded", function () {
             initialModule = hashModule;
         } else {
             try {
-                const storedModule = localStorage.getItem("shrimpguard_active_calc_module");
+                const storedModule = localStorage.getItem("aeris_v_active_calc_module") || localStorage.getItem("shrimpguard_active_calc_module");
                 if (storedModule && MODULE_DEFINITIONS[storedModule]) {
                     initialModule = storedModule;
                 }
@@ -3371,7 +3372,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function getActiveModuleKey() {
         try {
-            const stored = localStorage.getItem("shrimpguard_active_calc_module");
+            const stored = localStorage.getItem("aeris_v_active_calc_module") || localStorage.getItem("shrimpguard_active_calc_module");
             if (stored && stored !== "standards") return stored;
         } catch (e) {}
 

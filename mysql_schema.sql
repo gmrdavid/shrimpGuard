@@ -1,11 +1,11 @@
--- ShrimpGuard MySQL schema
+-- AERIS-V MySQL schema
 -- Import this file with a MySQL account that can create databases.
 
-CREATE DATABASE IF NOT EXISTS shrimpguard
+CREATE DATABASE IF NOT EXISTS aeris_v
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
 
-USE shrimpguard;
+USE aeris_v;
 
 CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(80) NOT NULL,

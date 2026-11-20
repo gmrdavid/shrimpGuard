@@ -1096,10 +1096,12 @@ window.addEventListener("resize", () => {
 let monitoringPollTimer = null;
 function restartMonitoringPolling() {
     if (monitoringPollTimer) clearInterval(monitoringPollTimer);
-    const interval = window.ShrimpGuardAdaptive && window.ShrimpGuardAdaptive.getPollInterval
-        ? window.ShrimpGuardAdaptive.getPollInterval(5000, 25000)
+    const adaptive = window.AerisVAdaptive || window.ShrimpGuardAdaptive;
+    const interval = adaptive && adaptive.getPollInterval
+        ? adaptive.getPollInterval(5000, 25000)
         : 5000;
     monitoringPollTimer = setInterval(loadMonitoringData, interval);
 }
 restartMonitoringPolling();
+window.addEventListener("aeris_v:preferences-changed", restartMonitoringPolling);
 window.addEventListener("shrimpguard:preferences-changed", restartMonitoringPolling);

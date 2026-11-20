@@ -662,11 +662,12 @@ function updateDeviceTime() {
 
     // --- ADAPTIVE SYSTEM SETTINGS LOGIC ---
     function initAdaptiveSettings() {
-        if (!window.ShrimpGuardAdaptive) return;
+        const adaptive = window.AerisVAdaptive || window.ShrimpGuardAdaptive;
+        if (!adaptive) return;
 
-        const model = window.ShrimpGuardAdaptive.getModel();
-        const persona = window.ShrimpGuardAdaptive.getPersona();
-        const device = window.ShrimpGuardAdaptive.getDevice();
+        const model = adaptive.getModel();
+        const persona = adaptive.getPersona();
+        const device = adaptive.getDevice();
 
         const badgeEl = document.getElementById("adaptive-persona-badge");
         const descEl = document.getElementById("adaptive-persona-desc");
@@ -755,15 +756,16 @@ function updateDeviceTime() {
         }
 
         function savePrefs() {
-            if (!window.ShrimpGuardAdaptive || typeof window.ShrimpGuardAdaptive.updatePreferences !== "function") return;
-            window.ShrimpGuardAdaptive.updatePreferences({
+            const adaptive = window.AerisVAdaptive || window.ShrimpGuardAdaptive;
+            if (!adaptive || typeof adaptive.updatePreferences !== "function") return;
+            adaptive.updatePreferences({
                 auto_adapt: autoAdaptCheck ? autoAdaptCheck.checked : true,
                 sunlight_mode: sunlightSelect ? sunlightSelect.value : "auto",
                 density: densitySelect ? densitySelect.value : "auto",
                 data_saver: dataSaverSelect ? dataSaverSelect.value : "auto"
             });
-            if (typeof window.ShrimpGuardAdaptive.applyAdaptations === "function") {
-                window.ShrimpGuardAdaptive.applyAdaptations();
+            if (typeof adaptive.applyAdaptations === "function") {
+                adaptive.applyAdaptations();
             }
         }
 
@@ -814,7 +816,10 @@ function updateDeviceTime() {
         if (confirmResetAdaptiveBtn && resetAdaptiveDialog) {
             confirmResetAdaptiveBtn.addEventListener("click", () => {
                 resetAdaptiveDialog.close();
-                window.ShrimpGuardAdaptive.resetModel();
+                const adaptive = window.AerisVAdaptive || window.ShrimpGuardAdaptive;
+                if (adaptive && typeof adaptive.resetModel === "function") {
+                    adaptive.resetModel();
+                }
                 initAdaptiveSettings();
                 showPresentationNotice("Learned profile and presentation reset to factory defaults.");
             });

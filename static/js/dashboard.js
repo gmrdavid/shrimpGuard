@@ -549,6 +549,7 @@ if (qualityForm) {
             const savedReading = await saveReading(data);
             displayResults(savedReading);
             closeTestModal();
+            window.dispatchEvent(new Event('aeris_v:notification-update'));
             window.dispatchEvent(new Event('shrimpguard:notification-update'));
         } catch (error) {
             console.error("Unable to save simulated water quality reading:", error);
@@ -594,10 +595,12 @@ loadLatestReading();
 let dashboardPollTimer = null;
 function restartDashboardPolling() {
     if (dashboardPollTimer) clearInterval(dashboardPollTimer);
-    const interval = window.ShrimpGuardAdaptive && window.ShrimpGuardAdaptive.getPollInterval
-        ? window.ShrimpGuardAdaptive.getPollInterval(4000, 25000)
+    const adaptive = window.AerisVAdaptive || window.ShrimpGuardAdaptive;
+    const interval = adaptive && adaptive.getPollInterval
+        ? adaptive.getPollInterval(4000, 25000)
         : 4000;
     dashboardPollTimer = setInterval(loadLatestReading, interval);
 }
 restartDashboardPolling();
+window.addEventListener("aeris_v:preferences-changed", restartDashboardPolling);
 window.addEventListener("shrimpguard:preferences-changed", restartDashboardPolling);

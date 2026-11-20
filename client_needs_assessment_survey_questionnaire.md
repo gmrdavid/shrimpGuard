@@ -1,6 +1,6 @@
 # CLIENT NEEDS ASSESSMENT SURVEY QUESTIONNAIRE
 
-**Project Title:** *A Machine Learning-Integrated IoT-Based Water Quality Monitoring and Decision Support System for Pacific White Shrimp (Penaeus vannamei) Aquaculture (ShrimpGuard)*  
+**Project Title:** *A Machine Learning-Integrated IoT-Based Water Quality Monitoring and Decision Support System for Pacific White Shrimp (Penaeus vannamei) Aquaculture (AERIS-V)*  
 **Institution:** Southern Leyte State University – Hinunangan Campus  
 **Program:** Bachelor of Science in Information Technology  
 **Researchers:**  
@@ -18,7 +18,7 @@
 
 We are third-year Bachelor of Science in Information Technology students at Southern Leyte State University – Hinunangan Campus conducting research for our Capstone Project.
 
-Our proposed system, **ShrimpGuard**, is an automated, solar-powered Internet of Things (IoT) and artificial intelligence monitoring platform designed for *Penaeus vannamei* (Pacific White Shrimp) aquaculture. The system automatically measures water temperature and pH, transmits data wirelessly across long distances using radio communication (LoRa) without cellular airtime fees, logs backup records to an onboard memory card (MicroSD) during signal drops, displays real-time readings and alarms (LCD screen, green/yellow/red lights, and a buzzer) near the caretaker, and uses machine learning and AI to classify pond conditions and recommend practical corrective actions (such as aerator adjustments, liming dosages, and feeding reductions) through a web dashboard and mobile push notifications.
+Our proposed system, **AERIS-V**, is an automated, solar-powered Internet of Things (IoT) and artificial intelligence monitoring platform designed for *Penaeus vannamei* (Pacific White Shrimp) aquaculture. The system automatically measures water temperature and pH, transmits data wirelessly across long distances using radio communication (LoRa) without cellular airtime fees, logs backup records to an onboard memory card (MicroSD) during signal drops, displays real-time readings and alarms (LCD screen, green/yellow/red lights, and a buzzer) near the caretaker, and uses machine learning and AI to classify pond conditions and recommend practical corrective actions (such as aerator adjustments, liming dosages, and feeding reductions) through a web dashboard and mobile push notifications.
 
 This survey aims to evaluate your current monitoring practices, operational challenges, and practical needs. Your feedback will directly guide the engineering and features of the proposed system to ensure it addresses real-world aquaculture requirements. To ensure accuracy and convenience for distant farm operators, initial pilot testing and demonstration will be conducted using controlled water quality samples and a synchronous virtual walkthrough. All responses will be kept strictly confidential and used solely for academic research.
 
@@ -139,7 +139,7 @@ This survey aims to evaluate your current monitoring practices, operational chal
 
 ---
 
-### PART IV: NEEDS ASSESSMENT FOR SHRIMPGUARD HARDWARE & TELEMETRY
+### PART IV: NEEDS ASSESSMENT FOR AERIS-V HARDWARE & TELEMETRY
 
 **15. How important are the following hardware and physical features for a pond-side monitoring unit?**
 
@@ -207,7 +207,7 @@ This survey aims to evaluate your current monitoring practices, operational chal
 
 ### PART VI: PRACTICALITY, BUDGET & WILLINGNESS TO ADOPT
 
-**23. If ShrimpGuard proves accurate, dependable, and simple to operate, would you be willing to adopt it on your farm?**  
+**23. If AERIS-V proves accurate, dependable, and simple to operate, would you be willing to adopt it on your farm?**  
 [ ] Definitely Yes  
 [ ] Probably Yes  
 [ ] Uncertain / Depends on the cost and maintenance requirements  
@@ -251,4 +251,4 @@ ________________________________________________________________________________
 ---
 
 **THANK YOU VERY MUCH FOR YOUR VALUABLE TIME AND COOPERATION!**  
-*Your expert feedback directly supports the design and continuous improvement of the ShrimpGuard system for the local aquaculture community.*
+*Your expert feedback directly supports the design and continuous improvement of the AERIS-V system for the local aquaculture community.*

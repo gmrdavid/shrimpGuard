@@ -1,9 +1,9 @@
 ===================================================================================
-SHRIMPGUARD - HARDWARE NODE PAIRING & TELEMETRY ROUTING GUIDE
+AERIS-V - HARDWARE NODE PAIRING & TELEMETRY ROUTING GUIDE
 ===================================================================================
 
 This guide explains where to find the required information when pairing an ESP32
-LoRa transmitter unit with your ShrimpGuard account on the "Devices & Hardware" page.
+LoRa transmitter unit with your AERIS-V account on the "Devices & Hardware" page.
 
 -----------------------------------------------------------------------------------
 1. HARDWARE NODE ID * (Required)
@@ -11,7 +11,7 @@ LoRa transmitter unit with your ShrimpGuard account on the "Devices & Hardware" 
 What it is:
   The physical hardware broadcast identifier programmed into your ESP32 LoRa
   transmitter (Node 1). Every telemetry packet sent over radio includes this ID
-  so the ShrimpGuard receiver can distinguish which pond node sent the reading.
+  so the AERIS-V receiver can distinguish which pond node sent the reading.
 
 Where to find it:
   1. 20x4 LCD Screen (Node 2 Receiver Base Station):
@@ -56,7 +56,7 @@ Where to find it:
       * Main Pond Alpha Floating Station
 
 Default Behavior:
-  - If left blank, ShrimpGuard automatically names it:
+  - If left blank, AERIS-V automatically names it:
     "Pond Node <NODE_ID>" (e.g., Pond Node NODE02).
 
 -----------------------------------------------------------------------------------
@@ -83,7 +83,7 @@ Why it matters:
 ===================================================================================
 STEP-BY-STEP PAIRING WALKTHROUGH
 ===================================================================================
-1. Log in to your ShrimpGuard account.
+1. Log in to your AERIS-V account.
 2. In the sidebar, navigate to "Devices & Hardware" (/devices).
 3. In the top toolbar, click the green "Pair Pond Node" button.
 4. Fill in the modal form:

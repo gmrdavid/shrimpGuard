@@ -1,5 +1,5 @@
 /**
- * ShrimpGuard - User Logout Handler
+ * AERIS-V - User Logout Handler
  * Robust modal confirmation and secure session termination.
  */
 (function () {
@@ -56,6 +56,7 @@
             confirmLogout.classList.add("loading");
 
             try {
+                localStorage.removeItem("aeris_v_adaptive_model");
                 localStorage.removeItem("shrimpguard_adaptive_model");
             } catch (e) {}
 

@@ -1,6 +1,6 @@
 """
 ===================================================================================
-ShrimpGuard - Built-in Hardware LoRa Serial Listener (Zero-Dependency Win32)
+AERIS-V - Built-in Hardware LoRa Serial Listener (Zero-Dependency Win32)
 ===================================================================================
 Directly connects to the Node 2 LoRa Receiver on Windows via standard-library ctypes
 without requiring pyserial or any external dependencies.
@@ -8,7 +8,7 @@ without requiring pyserial or any external dependencies.
 Features:
   - Auto-detects active COM ports (COM8, COM5, etc.)
   - Listens to incoming LoRa telemetry packets from Node 1 (Pond sensors)
-  - Automatically ingests readings into ShrimpGuard database ('sensors' table)
+  - Automatically ingests readings into AERIS-V database ('sensors' table)
   - Seamlessly updates live dashboard and triggers ntfy emergency alerts
 ===================================================================================
 """
@@ -267,7 +267,7 @@ def _run_listener_loop(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dis
                 # Port busy (e.g. Arduino IDE Serial Monitor open)
                 logger.warning(
                     f"[HardwareSerial] {port} is busy or locked (Win32 Error 5: Access Denied). "
-                    "Make sure the Arduino Serial Monitor or VS Code Port Monitor is CLOSED so ShrimpGuard can access it!"
+                    "Make sure the Arduino Serial Monitor or VS Code Port Monitor is CLOSED so AERIS-V can access it!"
                 )
             port, busy_port = detect_receiver_port(check_busy=True)
             if port:
@@ -275,7 +275,7 @@ def _run_listener_loop(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dis
             elif busy_port:
                 logger.warning(
                     f"[HardwareSerial] Port {busy_port} is detected but locked (Win32 Error 5: Access Denied). "
-                    "Close Arduino IDE / VS Code Serial Monitor so ShrimpGuard can connect."
+                    "Close Arduino IDE / VS Code Serial Monitor so AERIS-V can connect."
                 )
 
         if not handle:

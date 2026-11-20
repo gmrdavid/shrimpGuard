@@ -64,6 +64,7 @@ async function markAllNotificationsRead() {
             if (modalContent) {
                 renderNotificationsList(cachedNotifications, 0);
             }
+            window.dispatchEvent(new Event("aeris_v:notification-update"));
             window.dispatchEvent(new Event("shrimpguard:notification-update"));
         }
     } catch (err) {
@@ -261,6 +262,7 @@ function initializeNotifications() {
     setupNotificationModal();
     pollNotificationBadge();
     setInterval(pollNotificationBadge, 8000);
+    window.addEventListener("aeris_v:notification-update", pollNotificationBadge);
     window.addEventListener("shrimpguard:notification-update", pollNotificationBadge);
 }
 

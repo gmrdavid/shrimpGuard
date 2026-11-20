@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-logger = logging.getLogger("shrimpguard.ai_calculators")
+logger = logging.getLogger("aeris_v.ai_calculators")
 
 # In-memory cache for calculator AI insights (5-minute TTL)
 # Key: md5 hash of module + sorted parameters, Value: (timestamp, result_dict)
@@ -525,7 +525,7 @@ def _generate_fallback_insight(module: str, data: Dict[str, Any]) -> Dict[str, A
             "recommendation": rec_text,
             "action_items": actions,
             "module_ratings": module_ratings,
-            "source": "ShrimpGuard Aquaculture Dynamic Engine (Fallback)",
+            "source": "AERIS-V Aquaculture Dynamic Engine (Fallback)",
             "cached": False,
             "module": "all"
         }
@@ -553,7 +553,7 @@ def _generate_fallback_insight(module: str, data: Dict[str, Any]) -> Dict[str, A
         "evaluation": eval_text,
         "recommendation": rec_text,
         "action_items": actions,
-        "source": "ShrimpGuard Aquaculture Dynamic Engine (Fallback)",
+        "source": "AERIS-V Aquaculture Dynamic Engine (Fallback)",
         "cached": False,
         "module": module
     }

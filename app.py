@@ -134,19 +134,24 @@ app.session_interface = AdaptiveSessionInterface()
 
 
 def generate_timed_csrf_token(purpose: str) -> str:
-    s = URLSafeTimedSerializer(app.secret_key, salt=f"shrimpguard-csrf-{purpose}")
+    s = URLSafeTimedSerializer(app.secret_key, salt=f"aeris_v-csrf-{purpose}")
     return s.dumps(purpose)
 
 
 def verify_timed_csrf_token(token: str, purpose: str, max_age: int = 3600) -> bool:
     if not token:
         return False
-    s = URLSafeTimedSerializer(app.secret_key, salt=f"shrimpguard-csrf-{purpose}")
     try:
+        s = URLSafeTimedSerializer(app.secret_key, salt=f"aeris_v-csrf-{purpose}")
         data = s.loads(token, max_age=max_age)
         return data == purpose
     except (BadSignature, SignatureExpired):
-        return False
+        try:
+            s_old = URLSafeTimedSerializer(app.secret_key, salt=f"shrimpguard-csrf-{purpose}")
+            data = s_old.loads(token, max_age=max_age)
+            return data == purpose
+        except (BadSignature, SignatureExpired):
+            return False
 
 
 def validate_csrf(submitted_token: str, session_token_key: str, purpose: str, max_age: int = 3600) -> bool:
@@ -169,7 +174,7 @@ def get_database_uri():
         password=os.getenv("DB_PASSWORD") or None,
         host=os.getenv("DB_HOST", "127.0.0.1"),
         port=int(os.getenv("DB_PORT") or "3306"),
-        database=os.getenv("DB_NAME", "shrimpguard"),
+        database=os.getenv("DB_NAME", "aeris_v"),
         query={"charset": "utf8mb4"},
     )
 
@@ -2755,11 +2760,11 @@ def export_historical_data():
     is_all_statuses = not target_status or target_status.lower() == "all"
 
     if is_all_dates and is_all_statuses:
-        download_name = f"shrimpguard-historical-data.{export_format}"
+        download_name = f"aeris_v-historical-data.{export_format}"
     else:
         date_slug = "all-dates" if is_all_dates else re.sub(r"[^a-zA-Z0-9_-]", "-", target_date)
         status_slug = "all-statuses" if is_all_statuses else re.sub(r"[^a-zA-Z0-9_-]", "-", target_status)
-        download_name = f"shrimpguard-historical-{date_slug}-{status_slug}.{export_format}"
+        download_name = f"aeris_v-historical-{date_slug}-{status_slug}.{export_format}"
 
     # CSV Export format
     if export_format == "csv":
@@ -3343,7 +3348,7 @@ def admin_telemetry_export():
             ])
 
         output.seek(0)
-        filename = f"shrimpguard_telemetry_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        filename = f"aeris_v_telemetry_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
         return send_file(
             io.BytesIO(output.getvalue().encode("utf-8")),
             mimetype="text/csv",
@@ -3457,6 +3462,8 @@ def admin_logs_export():
                     db.or_(
                         ActivityLog.user_email == None,
                         ActivityLog.user_email == "",
+                        ActivityLog.user_email == "system@aeris_v",
+                        ActivityLog.user_email == "system@aeris-v.com",
                         ActivityLog.user_email == "system@shrimpguard",
                         ActivityLog.user_name == "System",
                     )
@@ -3511,7 +3518,7 @@ def admin_logs_export():
                     f'<c r="A{row_number}"><v>{l.id}</v></c>',
                     text_cell(f"B{row_number}", ts),
                     text_cell(f"C{row_number}", l.user_name or "System"),
-                    text_cell(f"D{row_number}", l.user_email or "system@shrimpguard"),
+                    text_cell(f"D{row_number}", l.user_email or "system@aeris_v"),
                     text_cell(f"E{row_number}", l.role or "System"),
                     text_cell(f"F{row_number}", l.action),
                     text_cell(f"G{row_number}", l.details or ""),
@@ -3560,7 +3567,7 @@ def admin_logs_export():
                 excel_file.writestr("xl/worksheets/sheet1.xml", worksheet)
 
             workbook.seek(0)
-            filename = f"shrimpguard_audit_{user_label}_{now.strftime('%Y%m%d_%H%M%S')}.xlsx"
+            filename = f"aeris_v_audit_{user_label}_{now.strftime('%Y%m%d_%H%M%S')}.xlsx"
             return send_file(
                 workbook,
                 as_attachment=True,
@@ -3587,7 +3594,7 @@ def admin_logs_export():
                 l.id,
                 ts,
                 l.user_name or "System",
-                l.user_email or "system@shrimpguard",
+                l.user_email or "system@aeris_v",
                 l.role or "System",
                 l.action,
                 l.details or "",
@@ -3595,7 +3602,7 @@ def admin_logs_export():
             ])
 
         output.seek(0)
-        filename = f"shrimpguard_audit_{user_label}_{now.strftime('%Y%m%d_%H%M%S')}.csv"
+        filename = f"aeris_v_audit_{user_label}_{now.strftime('%Y%m%d_%H%M%S')}.csv"
         return send_file(
             io.BytesIO(output.getvalue().encode("utf-8-sig")),
             mimetype="text/csv",
@@ -4449,7 +4456,7 @@ def export_aquaculture_calculations():
     # Dynamic filename
     timestamp_slug = datetime.now().strftime("%Y%m%d_%H%M%S")
     cat_summary = "all-tools" if len(selected_cats) == len(AQUACULTURE_EXPORT_CATEGORIES) else f"{len(selected_cats)}-modules"
-    download_filename = f"shrimpguard-aquaculture-calculations_{cat_summary}_{timestamp_slug}.{export_format}"
+    download_filename = f"aeris_v-aquaculture-calculations_{cat_summary}_{timestamp_slug}.{export_format}"
 
     # Log export activity
     log_activity(
@@ -4674,7 +4681,7 @@ def api_test_ntfy():
             severity="TEST",
             temp=29.0,
             ph=8.0,
-            reason="Test notification verification from ShrimpGuard gateway via ntfy.sh",
+            reason="Test notification verification from AERIS-V gateway via ntfy.sh",
             topic=topic
         )
     except Exception as exc:
@@ -5004,7 +5011,7 @@ def get_adaptive_next_action(persona_id, user_email=None):
     if persona_id == "evaluating":
         return {
             "type": "optimal",
-            "title": "Welcome to ShrimpGuard",
+            "title": "Welcome to AERIS-V",
             "message": "Explore real-time pond monitoring, calculators, and water quality analysis to personalize your workflow.",
             "url": "/monitoring",
             "cta": "Explore Monitoring",

@@ -1,6 +1,6 @@
 /*
   ===================================================================================
-  ShrimpGuard - NODE 1: Multi-Sensor LoRa Transmitter with Embedded ML Classifier
+  AERIS-V - NODE 1: Multi-Sensor LoRa Transmitter with Embedded ML Classifier
   ===================================================================================
   Features:
     - DS18B20 Digital Temperature Sensor (1-Wire, non-blocking 12-bit conversion)
@@ -86,7 +86,7 @@
 // --- MicroSD Card Logging Parameters ---
 #define ENABLE_SD_LOGGING  true  // Set to true for offline blackout resilience & real-time SD logging
 const uint32_t SD_RETRY_MS = 10000; // Retry mounting SD card every 10s if card inserted while running
-const char SD_LOG_FILE[]   = "/shrimpguard_node1.csv";
+const char SD_LOG_FILE[]   = "/aeris_v_node1.csv";
 
 // --- pH ADC Parameters ---
 #define ESPADC             4096.0f   // ESP32 12-bit ADC resolution (0..4095)
@@ -353,7 +353,7 @@ void setup() {
 
   Serial.println();
   Serial.println(F("============================================================="));
-  Serial.println(F("  ShrimpGuard Node 1: DS18B20 + pH + LoRa Transmitter + SD   "));
+  Serial.println(F("    AERIS-V Node 1: DS18B20 + pH + LoRa Transmitter + SD    "));
   Serial.println(F("============================================================="));
   Serial.print(F("Device ID: "));
   Serial.println(DEVICE_ID);

@@ -1195,7 +1195,7 @@ async function executeHistoricalExport() {
         }
 
         // Determine filename from Content-Disposition header if available
-        let filename = `shrimpguard-historical-${filters.targetDate === 'all' ? 'all-dates' : filters.targetDate}-${filters.status}.${filters.format}`;
+        let filename = `aeris_v-historical-${filters.targetDate === 'all' ? 'all-dates' : filters.targetDate}-${filters.status}.${filters.format}`;
         const disposition = response.headers.get("Content-Disposition");
         if (disposition && disposition.includes("filename=")) {
             const nameParts = disposition.split("filename=");

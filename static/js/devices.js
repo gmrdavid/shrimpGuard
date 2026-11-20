@@ -1,5 +1,5 @@
 /**
- * ShrimpGuard - Devices & Hardware Management Engine
+ * AERIS-V - Devices & Hardware Management Engine
  * Real-time monitoring, hardware diagnostics, and serial gateway control.
  */
 
@@ -412,8 +412,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Dynamic polling (throttled under Data-Saver)
     function restartPolling() {
         if (pollTimer) clearInterval(pollTimer);
-        const interval = window.ShrimpGuardAdaptive && window.ShrimpGuardAdaptive.getPollInterval
-            ? window.ShrimpGuardAdaptive.getPollInterval(4000, 25000)
+        const adaptive = window.AerisVAdaptive || window.ShrimpGuardAdaptive;
+        const interval = adaptive && adaptive.getPollInterval
+            ? adaptive.getPollInterval(4000, 25000)
             : 4000;
         pollTimer = setInterval(() => {
             fetchDevicesInventory();
@@ -421,6 +422,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }, interval);
     }
     restartPolling();
+    window.addEventListener("aeris_v:preferences-changed", restartPolling);
     window.addEventListener("shrimpguard:preferences-changed", restartPolling);
 
     // Relative time updater
@@ -715,11 +717,12 @@ function setupUnpairModal() {
                     showNotice(data.message || `Node '${nodeId}' successfully unpaired.`, "success");
                     await fetchPairedNodes();
                     await fetchDevicesInventory();
-                    if (window.ShrimpGuardMaintenance && typeof window.ShrimpGuardMaintenance.fetchStatus === "function") {
-                        window.ShrimpGuardMaintenance.fetchStatus();
+                    const maint = window.AerisVMaintenance || window.ShrimpGuardMaintenance;
+                    if (maint && typeof maint.fetchStatus === "function") {
+                        maint.fetchStatus();
                     }
-                    if (window.ShrimpGuardMaintenance && typeof window.ShrimpGuardMaintenance.fetchHistory === "function") {
-                        window.ShrimpGuardMaintenance.fetchHistory();
+                    if (maint && typeof maint.fetchHistory === "function") {
+                        maint.fetchHistory();
                     }
                 } else {
                     showNotice(data.error || "Failed to unpair node.", "error");
@@ -853,11 +856,12 @@ function setupPairNodeModal() {
                     showNotice(data.message || `Node '${nodeId}' paired successfully!`, false);
                     fetchPairedNodes();
                     fetchDevicesInventory();
-                    if (window.ShrimpGuardMaintenance && typeof window.ShrimpGuardMaintenance.fetchStatus === "function") {
-                        window.ShrimpGuardMaintenance.fetchStatus();
+                    const maint = window.AerisVMaintenance || window.ShrimpGuardMaintenance;
+                    if (maint && typeof maint.fetchStatus === "function") {
+                        maint.fetchStatus();
                     }
-                    if (window.ShrimpGuardMaintenance && typeof window.ShrimpGuardMaintenance.fetchHistory === "function") {
-                        window.ShrimpGuardMaintenance.fetchHistory();
+                    if (maint && typeof maint.fetchHistory === "function") {
+                        maint.fetchHistory();
                     }
                 } else {
                     if (errBox) {

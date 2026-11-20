@@ -136,7 +136,7 @@ def send_ntfy_notification(
     json_bytes = json.dumps(payload).encode("utf-8")
 
     headers = {
-        "User-Agent": "ShrimpGuard-Alerts/2.0",
+        "User-Agent": "AERIS-V-Alerts/2.0",
         "Content-Type": "application/json; charset=utf-8",
     }
 
@@ -198,9 +198,9 @@ def send_water_quality_alert_ntfy(
 
     # Fast path for verification/test pushes: bypass external AI calls and dispatch immediately
     if severity_upper == "TEST":
-        title = "🧪 ShrimpGuard Push Test Notification"
+        title = "🧪 AERIS-V Push Test Notification"
         body_message = (
-            "✅ ShrimpGuard Gateway Push Alerts Verified!\n\n"
+            "✅ AERIS-V Gateway Push Alerts Verified!\n\n"
             f"📡 Target Topic: {topic or 'Configured Topic'}\n"
             f"⏱️ Tested at: {timestamp}\n\n"
             "Your ntfy.sh push notification connection is working properly! "
@@ -236,21 +236,21 @@ def send_water_quality_alert_ntfy(
     else:
         ai_recommendation = reason or "Pond conditions require continued observation and standard monitoring."
         solutions_list = ["Inspect mechanical aerators and monitor pH and dissolved oxygen."]
-        ai_source = "ShrimpGuard Engine"
+        ai_source = "AERIS-V Engine"
 
     # Priority and Tags
     if severity_upper == "CRITICAL":
         priority = 5
         tags = ["rotating_light", "warning", "shrimp"]
-        title = f"🚨 ShrimpGuard EMERGENCY [{severity_upper}]"
+        title = f"🚨 AERIS-V EMERGENCY [{severity_upper}]"
     elif severity_upper == "WARNING":
         priority = 4
         tags = ["warning", "shrimp"]
-        title = f"⚠️ ShrimpGuard WARNING [{severity_upper}]"
+        title = f"⚠️ AERIS-V WARNING [{severity_upper}]"
     else:
         priority = 3
         tags = ["white_check_mark", "shrimp"]
-        title = f"ℹ️ ShrimpGuard Notification [{severity_upper}]"
+        title = f"ℹ️ AERIS-V Notification [{severity_upper}]"
 
     # Format numbered actionable solutions (up to 4 key actions)
     formatted_actions = []
@@ -344,11 +344,11 @@ def send_sensor_maintenance_alert_ntfy(
     is_overdue = (status.lower() == "overdue") or (days_until_cleaning <= 0) or (days_until_calibration <= 0)
 
     if is_test:
-        title = f"🧪 ShrimpGuard: Sensor Maintenance Test Alert [{device_id}]"
+        title = f"🧪 AERIS-V: Sensor Maintenance Test Alert [{device_id}]"
         priority = 3
         tags = ["wrench", "shrimp", "test"]
     elif is_overdue:
-        title = f"🚨 ShrimpGuard OVERDUE: Probe Biofilm Scrub & Calibration [{device_id}]"
+        title = f"🚨 AERIS-V OVERDUE: Probe Biofilm Scrub & Calibration [{device_id}]"
         priority = 5  # Emergency
         tags = ["rotating_light", "wrench", "biohazard", "shrimp"]
     else:
@@ -359,7 +359,7 @@ def send_sensor_maintenance_alert_ntfy(
         tags = ["warning", "wrench", "soap", "shrimp"]
 
     body_message = (
-        f"🦐 ShrimpGuard Sensor Maintenance Alert\n"
+        f"🦐 AERIS-V Sensor Maintenance Alert\n"
         f"📍 Pond Node: {device_id} (DFRobot pH & DS18B20 Temp)\n"
         f"🎯 Reading Tolerance: Target Drift < ±0.10 pH\n"
         f"⚠️ Drift Risk: {drift_risk}\n\n"
@@ -377,7 +377,7 @@ def send_sensor_maintenance_alert_ntfy(
         f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
         f"👤 Last Serviced: {last_cleaned_at or 'Not recorded'} by {performed_by}\n"
         f"⏱️ Alert Issued: {timestamp}\n"
-        f"📱 Open ShrimpGuard dashboard to view SOP guide & log maintenance."
+        f"📱 Open AERIS-V dashboard to view SOP guide & log maintenance."
     )
 
     return send_ntfy_notification(

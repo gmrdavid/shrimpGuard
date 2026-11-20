@@ -13,13 +13,13 @@ from dotenv import load_dotenv
 load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
 
 API_URL = "http://127.0.0.1:5000/api/readings"
-SECRET_KEY = os.getenv("SECRET_KEY", "shrimpguard-secret-key-capstone2")
+SECRET_KEY = os.getenv("SECRET_KEY", "aeris-v-secret-key-capstone2")
 
 
 def send_sensor_reading(temperature, ph):
     """
-    Sends an automated sensor telemetry reading to the ShrimpGuard API.
-    If classified as Warning or Critical, ShrimpGuard automatically pushes
+    Sends an automated sensor telemetry reading to the AERIS-V API.
+    If classified as Warning or Critical, AERIS-V automatically pushes
     the alert to ntfy.sh with AI recommendations without any manual button clicking.
     """
     payload = {
@@ -48,7 +48,7 @@ def send_sensor_reading(temperature, ph):
                 print(f"     (Pond condition is Optimal; no emergency alert needed.)")
             return data
     except urllib.error.URLError as e:
-        print(f"[ERROR] Could not connect to ShrimpGuard at {API_URL}.")
+        print(f"[ERROR] Could not connect to AERIS-V at {API_URL}.")
         print("        Make sure the web server is running ('python app.py').")
         return None
     except Exception as e:
@@ -57,7 +57,7 @@ def send_sensor_reading(temperature, ph):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="ShrimpGuard Automated IoT Sensor Simulator")
+    parser = argparse.ArgumentParser(description="AERIS-V Automated IoT Sensor Simulator")
     parser.add_argument("--temp", type=float, default=None, help="Custom temperature value in °C")
     parser.add_argument("--ph", type=float, default=None, help="Custom pH level")
     parser.add_argument("--loop", action="store_true", help="Run continuous automated sensor loop")
@@ -67,7 +67,7 @@ def main():
     args = parser.parse_args()
 
     print("=====================================================")
-    print("  ShrimpGuard Automated Sensor Telemetry Simulator   ")
+    print("    AERIS-V Automated Sensor Telemetry Simulator     ")
     print("=====================================================")
     print(f"Target Endpoint: {API_URL}")
     print("No manual button clicking required — alerts dispatch automatically.\n")

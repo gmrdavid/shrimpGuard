@@ -1,5 +1,5 @@
 /**
- * ShrimpGuard Adaptive Web Engine (AWS)
+ * AERIS-V Adaptive Web Engine (AWS)
  * Automatically adjusts structure, content, and presentation based on
  * user behavior, interaction history, device context, and pond telemetry.
  */
@@ -18,7 +18,7 @@
 
     function getStorageKey() {
         const email = getCurrentUserEmail();
-        return email ? `shrimpguard_adaptive_model_${email}` : "shrimpguard_adaptive_model_shared";
+        return email ? `aeris_v_adaptive_model_${email}` : "aeris_v_adaptive_model_shared";
     }
 
     const PERSONA_CONFIGS = {
@@ -128,8 +128,11 @@
         try {
             const key = getStorageKey();
             let raw = localStorage.getItem(key);
-            if (!raw && key !== "shrimpguard_adaptive_model_shared") {
-                raw = localStorage.getItem("shrimpguard_adaptive_model_shared");
+            if (!raw) {
+                // Seamlessly fall back to legacy keys if upgrading
+                const email = getCurrentUserEmail();
+                if (email) raw = localStorage.getItem(`shrimpguard_adaptive_model_${email}`);
+                if (!raw) raw = localStorage.getItem("aeris_v_adaptive_model_shared") || localStorage.getItem("shrimpguard_adaptive_model_shared");
             }
             if (!raw) return getDefaultModel();
             const parsed = JSON.parse(raw);
@@ -144,7 +147,7 @@
             const key = getStorageKey();
             const jsonStr = JSON.stringify(modelToSave);
             localStorage.setItem(key, jsonStr);
-            localStorage.setItem("shrimpguard_adaptive_model_shared", jsonStr);
+            localStorage.setItem("aeris_v_adaptive_model_shared", jsonStr);
         } catch (e) {
             console.warn("Adaptive model could not be written to localStorage:", e);
         }
@@ -631,13 +634,13 @@
         saveModel(model);
         applyAdaptations();
         syncModelToBackend();
-        window.dispatchEvent(new CustomEvent("shrimpguard:preferences-changed", {
-            detail: {
-                preferences: model.preferences,
-                isDataSaver: isDataSaverActive(),
-                pollInterval: getPollInterval()
-            }
-        }));
+        const prefDetail = {
+            preferences: model.preferences,
+            isDataSaver: isDataSaverActive(),
+            pollInterval: getPollInterval()
+        };
+        window.dispatchEvent(new CustomEvent("aeris_v:preferences-changed", { detail: prefDetail }));
+        window.dispatchEvent(new CustomEvent("shrimpguard:preferences-changed", { detail: prefDetail }));
     }
 
     function resetModel() {
@@ -707,10 +710,12 @@
         }, { passive: true });
 
         // Listen for sensor telemetry dispatch
-        window.addEventListener("shrimpguard:telemetry-update", () => {
+        const handleTelemetryUpdate = () => {
             updateNextActionBanner();
             adaptMetricCards();
-        });
+        };
+        window.addEventListener("aeris_v:telemetry-update", handleTelemetryUpdate);
+        window.addEventListener("shrimpguard:telemetry-update", handleTelemetryUpdate);
 
         // Periodic sync
         setInterval(() => {
@@ -734,7 +739,7 @@
     }
 
     // Expose global API
-    window.ShrimpGuardAdaptive = {
+    window.AerisVAdaptive = window.ShrimpGuardAdaptive = {
         getModel: () => model,
         getPersona: () => classifyPersona(model),
         getDevice: detectDevice,

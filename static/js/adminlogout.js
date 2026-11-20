@@ -1,5 +1,5 @@
 /**
- * ShrimpGuard - Admin Logout Handler
+ * AERIS-V - Admin Logout Handler
  * Robust modal confirmation and secure session termination.
  */
 (() => {

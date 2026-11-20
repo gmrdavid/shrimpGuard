@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#126b4f">
-    <title>Audit &amp; System Logs | ShrimpGuard Admin</title>
+    <title>Audit &amp; System Logs | AERIS-V Admin</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=3.4">
 </head>
@@ -18,13 +18,13 @@
 
 <!-- SIDEBAR -->
 <aside class="sidebar dashboard-sidebar">
-    <a href="/admin/dashboard" class="logo dashboard-logo" aria-label="ShrimpGuard administration">
+    <a href="/admin/dashboard" class="logo dashboard-logo" aria-label="AERIS-V administration">
         <span class="dashboard-logo-mark">
             <svg class="ui-icon brand-icon" aria-hidden="true">
                 <use href="#icon-shrimp"></use>
             </svg>
         </span>
-        <span>ShrimpGuard</span>
+        <span>AERIS-V</span>
     </a>
 
     <p class="subtitle">Administration</p>
@@ -478,7 +478,7 @@
                     </thead>
                     <tbody id="logs-table-body">
                         {% for l in logs %}
-                        <tr data-log-row data-timestamp="{{ l.timestamp.strftime('%Y-%m-%d %H:%M:%S') if l.timestamp and l.timestamp.strftime is defined else l.timestamp }}" data-date="{{ l.timestamp.strftime('%Y-%m-%d') if l.timestamp and l.timestamp.strftime is defined else '' }}" data-action="{{ (l.action or '')|lower }}" data-role="{{ (l.role or '')|lower }}" data-user="{{ (l.user_name or 'System')|lower }}" data-email="{{ (l.user_email or 'system@shrimpguard')|lower }}" data-search="{{ (l.user_name or '')|lower }} {{ (l.user_email or '')|lower }} {{ (l.action or '')|lower }} {{ (l.details or '')|lower }} {{ (l.ip_address or '')|lower }}">
+                        <tr data-log-row data-timestamp="{{ l.timestamp.strftime('%Y-%m-%d %H:%M:%S') if l.timestamp and l.timestamp.strftime is defined else l.timestamp }}" data-date="{{ l.timestamp.strftime('%Y-%m-%d') if l.timestamp and l.timestamp.strftime is defined else '' }}" data-action="{{ (l.action or '')|lower }}" data-role="{{ (l.role or '')|lower }}" data-user="{{ (l.user_name or 'System')|lower }}" data-email="{{ (l.user_email or 'system@aeris_v')|lower }}" data-search="{{ (l.user_name or '')|lower }} {{ (l.user_email or '')|lower }} {{ (l.action or '')|lower }} {{ (l.details or '')|lower }} {{ (l.ip_address or '')|lower }}">
                             <td>
                                 <time datetime="{{ l.timestamp }}" style="font-size: 11.5px; font-weight: 600; color: #475a4e;">
                                     {% if l.timestamp and l.timestamp.strftime is defined %}
@@ -495,7 +495,7 @@
                             </td>
                             <td>
                                 <strong>{{ l.user_name or 'System' }}</strong>
-                                <small style="display: block; color: #6b7280; font-size: 11px;">{{ l.user_email or 'system@shrimpguard' }}</small>
+                                <small style="display: block; color: #6b7280; font-size: 11px;">{{ l.user_email or 'system@aeris_v' }}</small>
                             </td>
                             <td>
                                 <span class="table-status {% if (l.role or '')|lower == 'admin' %}admin-role-badge{% else %}client-role-badge{% endif %}">
@@ -548,7 +548,7 @@
             <svg class="ui-icon" aria-hidden="true">
                 <use href="#icon-shrimp"></use>
             </svg>
-            ShrimpGuard
+            AERIS-V
         </span>
         <span>Administration Console &bull; Security &amp; Operations</span>
     </footer>
@@ -945,7 +945,7 @@
                     const rowEmail = (row.dataset.email || "").toLowerCase();
                     const rowUser = (row.dataset.user || "").toLowerCase();
                     if (targetUser === "system") {
-                        if (rowUser !== "system" && rowEmail !== "system@shrimpguard") return;
+                        if (rowUser !== "system" && rowEmail !== "system@aeris_v" && rowEmail !== "system@shrimpguard") return;
                     } else {
                         if (rowEmail !== targetUser.toLowerCase() && !rowUser.includes(targetUser.toLowerCase())) return;
                     }

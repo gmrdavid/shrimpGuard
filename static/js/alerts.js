@@ -786,6 +786,7 @@ function initAlertHistoryControls() {
                         cachedRecentNotifications.forEach(n => n.is_read = true);
                         renderRecentNotifications(cachedRecentNotifications);
                     }
+                    window.dispatchEvent(new Event("aeris_v:notification-update"));
                     window.dispatchEvent(new Event("shrimpguard:notification-update"));
                 }
             } catch (err) {

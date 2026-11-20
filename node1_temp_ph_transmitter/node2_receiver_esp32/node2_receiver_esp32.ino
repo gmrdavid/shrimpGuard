@@ -1,6 +1,6 @@
 /*
   ===================================================================================
-  ShrimpGuard - NODE 2: LoRa Telemetry Receiver + 20x4 LCD + 3-LED Indicator + Buzzer
+  AERIS-V - NODE 2: LoRa Telemetry Receiver + 20x4 LCD + 3-LED Indicator + Buzzer
   ===================================================================================
   Features:
     - SX1278 (RA-02) 433 MHz LoRa Receiver (SPI, non-blocking interrupt via RadioLib)
@@ -137,14 +137,16 @@ const uint32_t RADIO_RETRY_MS     = 5000;  // RadioLib init retry interval
 #define LORA_PREAMBLE      8
 #define LORA_POWER_DBM     10
 
-// --- ShrimpGuard Integration Settings ---
+// --- AERIS-V Integration Settings ---
 // Node 2 is standalone & solar-powered near the farmer (not plugged into PC via USB).
-// It forwards received LoRa telemetry over local Wi-Fi directly to ShrimpGuard.
+// It forwards received LoRa telemetry over local Wi-Fi directly to AERIS-V.
 #define ENABLE_WIFI_POST           true   // Enabled for standalone solar operation
 const char* WIFI_SSID             = "Xiaomi 12X";      // Enter your Wi-Fi Router or Phone Hotspot Name
 const char* WIFI_PASSWORD         = "12345678K";  // Enter your Wi-Fi Password
-const char* SHRIMPGUARD_API_URL   = "http://10.136.191.145:5000/api/readings"; // ShrimpGuard PC Local IP
-const char* SHRIMPGUARD_API_KEY   = "shrimpguard-secret-key-capstone2";
+const char* AERIS_V_API_URL       = "http://10.136.191.145:5000/api/readings"; // AERIS-V PC Local IP
+const char* AERIS_V_API_KEY       = "aeris-v-secret-key-capstone2";
+#define SHRIMPGUARD_API_URL AERIS_V_API_URL
+#define SHRIMPGUARD_API_KEY AERIS_V_API_KEY
 // ============================================================================
 
 // Hardware Objects
@@ -499,7 +501,7 @@ void updateLcdScreen(bool timeoutAlert) {
     lcd.setCursor(0, 0);
     lcd.print("====================");
     lcd.setCursor(0, 1);
-    lcd.print("  ShrimpGuard Node2 ");
+    lcd.print("    AERIS-V Node2   ");
     lcd.setCursor(0, 2);
     lcd.print("Waiting for data... ");
     lcd.setCursor(0, 3);
@@ -560,9 +562,9 @@ void updateLcdScreen(bool timeoutAlert) {
 }
 
 // ----------------------------------------------------------------------------
-// Helper: Direct WiFi HTTP POST to ShrimpGuard API (Used when ENABLE_WIFI_POST=true)
+// Helper: Direct WiFi HTTP POST to AERIS-V API (Used when ENABLE_WIFI_POST=true)
 // ----------------------------------------------------------------------------
-void postReadingToShrimpGuard(float temp, float ph, const char* devId, uint32_t seq) {
+void postReadingToAerisV(float temp, float ph, const char* devId, uint32_t seq) {
 #if (defined(ESP8266) || defined(ESP32))
   if (!ENABLE_WIFI_POST) return;
   if (WiFi.status() != WL_CONNECTED) {
@@ -575,17 +577,17 @@ void postReadingToShrimpGuard(float temp, float ph, const char* devId, uint32_t 
   WiFiClient client;
   HTTPClient http;
 #if defined(ESP8266)
-  if (!http.begin(client, SHRIMPGUARD_API_URL)) {
+  if (!http.begin(client, AERIS_V_API_URL)) {
 #else
-  if (!http.begin(SHRIMPGUARD_API_URL)) {
+  if (!http.begin(AERIS_V_API_URL)) {
 #endif
-    Serial.println(F("[HTTP] Failed to initialize connection to ShrimpGuard API."));
+    Serial.println(F("[HTTP] Failed to initialize connection to AERIS-V API."));
     return;
   }
 
   http.setTimeout(4000); // 4-second timeout to prevent blocking LoRa loop
   http.addHeader(F("Content-Type"), F("application/json"));
-  http.addHeader(F("X-API-Key"), SHRIMPGUARD_API_KEY);
+  http.addHeader(F("X-API-Key"), AERIS_V_API_KEY);
 
   char jsonPayload[180];
   snprintf(jsonPayload, sizeof(jsonPayload),
@@ -594,7 +596,7 @@ void postReadingToShrimpGuard(float temp, float ph, const char* devId, uint32_t 
 
   int httpCode = http.POST((uint8_t*)jsonPayload, strlen(jsonPayload));
   if (httpCode > 0) {
-    Serial.print(F("[HTTP] Forwarded reading to ShrimpGuard -> HTTP "));
+    Serial.print(F("[HTTP] Forwarded reading to AERIS-V -> HTTP "));
     Serial.println(httpCode);
   } else {
     Serial.print(F("[HTTP] POST failed, error: "));
@@ -602,6 +604,11 @@ void postReadingToShrimpGuard(float temp, float ph, const char* devId, uint32_t 
   }
   http.end();
 #endif
+}
+
+// Backward-compat function alias
+void postReadingToShrimpGuard(float temp, float ph, const char* devId, uint32_t seq) {
+  postReadingToAerisV(temp, ph, devId, seq);
 }
 
 // ----------------------------------------------------------------------------
@@ -717,7 +724,7 @@ void handlePacket() {
   Serial.print(F(" dB"));
   Serial.println();
 
-  // --- Forward Telemetry to ShrimpGuard System ---
+  // --- Forward Telemetry to AERIS-V System ---
   // 1. Output machine-parseable JSON line for USB Serial Gateway (lora_gateway.py)
   Serial.print(F("LORA_JSON:{\"device\":\""));
   Serial.print(id);
@@ -743,9 +750,9 @@ void handlePacket() {
   updateLeds(lastStatus, false);
   updateLcdScreen(false);
 
-  // 2. Direct WiFi HTTP POST to ShrimpGuard System (after Node 2 displays the reading)
+  // 2. Direct WiFi HTTP POST to AERIS-V System (after Node 2 displays the reading)
   if (ENABLE_WIFI_POST && lastTempValid && !isnan(phVal)) {
-    postReadingToShrimpGuard(tempC, phVal, id, seq);
+    postReadingToAerisV(tempC, phVal, id, seq);
   }
 }
 
@@ -826,7 +833,7 @@ void setup() {
   lcd.setCursor(0, 0);
   lcd.print("====================");
   lcd.setCursor(0, 1);
-  lcd.print("  ShrimpGuard Node2 ");
+  lcd.print("    AERIS-V Node2   ");
   lcd.setCursor(0, 2);
   lcd.print("ESP32 LoRa + ML LCD ");
   lcd.setCursor(0, 3);
