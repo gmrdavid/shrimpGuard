@@ -47,7 +47,7 @@ function showNotice(message, state = false) {
     if (!banner || !msg) return;
 
     let noticeType = "success";
-    if (state === true || state === "error") {
+    if (state === true || state === "error" || state === "standby" || state === "warning") {
         noticeType = "error";
     } else if (state === "info" || state === "scanning") {
         noticeType = "info";
@@ -274,11 +274,11 @@ async function reconnectGateway() {
             // Active Gateway detected -> GREEN background
             showNotice(result.message || "Gateway connected successfully!", "success");
         } else {
-            // Standby or disconnected -> Warning notice with field deployment explanation
+            // Standby or disconnected -> RED background as requested
             const msg = result && result.message
                 ? result.message
-                : "Gateway is currently in Standby. In wireless deployment, Node 2 forwards data via Wi-Fi (POST /api/readings) — no USB cable required. Awaiting packet broadcast.";
-            showNotice(msg, "warning");
+                : "Gateway is currently in Standby. In wireless solar/battery deployment, Node 2 transmits telemetry wirelessly over Wi-Fi (POST /api/readings) — no USB cable required. Awaiting next periodic packet broadcast.";
+            showNotice(msg, "error");
         }
 
         await fetchDevicesInventory();

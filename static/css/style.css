@@ -25024,8 +25024,10 @@ nav a {
     color: #059669 !important;
 }
 
-/* Red Clean Background for Error / Failure / Not Connected */
-.devices-banner-notice.error {
+/* Red Clean Background for Error / Failure / Standby / Not Connected */
+.devices-banner-notice.error,
+.devices-banner-notice.standby,
+.devices-banner-notice.warning {
     background: #fef2f2 !important;
     color: #991b1b !important;
     border: 1px solid #fecaca !important;
@@ -25034,7 +25036,11 @@ nav a {
 }
 
 .devices-banner-notice.error .banner-icon,
-.devices-banner-notice.error > .ui-icon {
+.devices-banner-notice.standby .banner-icon,
+.devices-banner-notice.warning .banner-icon,
+.devices-banner-notice.error > .ui-icon,
+.devices-banner-notice.standby > .ui-icon,
+.devices-banner-notice.warning > .ui-icon {
     color: #dc2626 !important;
 }
 
