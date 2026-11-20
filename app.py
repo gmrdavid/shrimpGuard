@@ -28,6 +28,7 @@ from recommendations import (
     get_ml_parameter_status,
     predict_recommendation,
 )
+from ai_recommendations_service import get_comprehensive_ai_recommendations
 from ntfy_service import (
     generate_secure_topic,
     is_valid_topic,
@@ -3980,6 +3981,26 @@ def analytics():
     user_email = session.get("user_id")
     user = db.session.get(User, user_email) if user_email else None
     return render_template("analytics.html", user=user)
+
+
+@app.route("/recommendations")
+@app.route("/ai-recommendations")
+@role_required("Client", "Admin")
+def ai_recommendations_page():
+    user_email = session.get("user_id")
+    user = db.session.get(User, user_email) if user_email else None
+    device_id = request.args.get("device_id")
+    ai_data = get_comprehensive_ai_recommendations(user_email=user_email, device_id=device_id)
+    return render_template("recommendations.html", user=user, ai_data=ai_data)
+
+
+@app.route("/api/ai/recommendations")
+@role_required("Client", "Admin")
+def api_ai_recommendations():
+    user_email = session.get("user_id")
+    device_id = request.args.get("device_id")
+    ai_data = get_comprehensive_ai_recommendations(user_email=user_email, device_id=device_id)
+    return jsonify(ai_data)
 
 
 @app.route("/calculators")

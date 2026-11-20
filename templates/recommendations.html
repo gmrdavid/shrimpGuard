@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/aeris_v_icon_64.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/aeris_v_icon_512.png') }}">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#126b4f">
+
+    <title>AI Recommendations | AERIS-V</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='3.3') }}">
+</head>
+
+<body class="recommendations-page" data-user-email="{{ user.email if user else '' }}">
+
+{% include "_icon_sprite.html" %}
+
+<!-- SVG SYMBOLS FOR AI ICONS -->
+<svg style="display: none;" aria-hidden="true">
+    <symbol id="icon-ai-robot" viewBox="0 0 24 24">
+        <rect x="3" y="11" width="18" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+        <circle cx="8.5" cy="16" r="1.5" fill="currentColor"/>
+        <circle cx="15.5" cy="16" r="1.5" fill="currentColor"/>
+        <path d="M12 2v4M9 2h6M2 14v4M22 14v4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-aeration" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
+        <path d="M12 3a9 9 0 0 1 9 9h-3a6 6 0 0 0-6-6V3zm0 18a9 9 0 0 1-9-9h3a6 6 0 0 0 6 6v3z" fill="currentColor"/>
+    </symbol>
+    <symbol id="icon-turbidity" viewBox="0 0 24 24">
+        <path d="M3 17c3-2 6 2 9 0s6-2 9 0M3 12c3-2 6 2 9 0s6-2 9 0M3 7c3-2 6 2 9 0s6-2 9 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-ph" viewBox="0 0 24 24">
+        <path d="M10 2v7.31a5 5 0 1 0 4 0V2h-4z" fill="none" stroke="currentColor" stroke-width="2"/>
+        <path d="M8.5 15h7M9.5 18h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-feed" viewBox="0 0 24 24">
+        <path d="M12 3v3M18.5 5.5l-2.1 2.1M5.5 5.5l2.1 2.1M4 14a8 8 0 0 0 16 0H4z" fill="none" stroke="currentColor" stroke-width="2"/>
+        <circle cx="12" cy="14" r="1" fill="currentColor"/>
+    </symbol>
+    <symbol id="icon-water-cycle" viewBox="0 0 24 24">
+        <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" fill="none" stroke="currentColor" stroke-width="2"/>
+    </symbol>
+    <symbol id="icon-aerator" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="2" fill="currentColor"/>
+        <path d="M12 2v4m0 12v4M2 12h4m12 0h4m-3.07-6.93-2.83 2.83m-8.2 8.2-2.83 2.83m0-13.86 2.83 2.83m8.2 8.2 2.83 2.83" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-monitor-check" viewBox="0 0 24 24">
+        <rect x="2" y="3" width="20" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+        <path d="m8 10 3 3 5-5M12 17v4M8 21h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+</svg>
+
+<div class="dashboard-layout recommendations-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar dashboard-sidebar">
+
+        <a href="/dashboard" class="logo dashboard-logo" aria-label="AERIS-V dashboard">
+            <span class="dashboard-logo-mark">
+                <img src="{{ url_for('static', filename='images/aeris_v_icon_64.png') }}" alt="AERIS-V" class="brand-img" width="32" height="32">
+            </span>
+            <span>AERIS-V</span>
+        </a>
+
+        <p class="subtitle">Water Quality Monitoring</p>
+
+        <div class="sidebar-section-label">MAIN MENU</div>
+
+        <nav class="dashboard-nav" aria-label="Main navigation">
+
+            <a href="/dashboard">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-dashboard"></use>
+                </svg>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="/monitoring">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-monitor"></use>
+                </svg>
+                <span>Real-time Monitoring</span>
+            </a>
+
+            <a href="/recommendations" class="active" aria-current="page">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-sparkles"></use>
+                </svg>
+                <span>AI Recommendation</span>
+            </a>
+
+            <a href="/devices">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-cpu"></use>
+                </svg>
+                <span>Devices &amp; Hardware</span>
+            </a>
+
+            <a href="/historical">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-history"></use>
+                </svg>
+                <span>Historical Data</span>
+            </a>
+
+            <a href="/analytics">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-chart"></use>
+                </svg>
+                <span>Analytics &amp; Reports</span>
+            </a>
+
+            <a href="/alerts">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-alert"></use>
+                </svg>
+                <span>Alerts and Notifications</span>
+            </a>
+
+            <a href="/calculators">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-calculator"></use>
+                </svg>
+                <span>Tools and Calculators</span>
+            </a>
+
+            <a href="/settings">
+                <svg class="ui-icon" aria-hidden="true">
+                    <use href="#icon-settings"></use>
+                </svg>
+                <span>Settings</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="sidebar-help">
+                <span class="sidebar-help-icon">
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-sparkles"></use>
+                    </svg>
+                </span>
+                <div>
+                    <strong>AI Decision Support</strong>
+                    <p>Machine Learning &amp; Gemini</p>
+                </div>
+            </div>
+            {% include "userlogout.html" %}
+        </div>
+
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content recommendations-main">
+
+        <!-- HEADER -->
+        <header class="dashboard-header recommendations-header">
+            <div class="header-left">
+                <div class="header-eyebrow">
+                    <span class="header-eyebrow-dot"></span>
+                    DECISION SUPPORT SYSTEM &middot; PENAEUS VANNAMEI
+                </div>
+                <h1 class="header-title">AI Recommendation</h1>
+                <p class="header-subtitle">
+                    Personalized recommendations and 24-hour predictive intelligence driven by ML classification &amp; Gemini AI.
+                </p>
+            </div>
+
+            <div class="header-right">
+                <div class="model-badge-live" title="Trained DecisionTreeClassifier connected">
+                    <span class="live-dot-green"></span>
+                    <span class="model-badge-text">ML Model Active</span>
+                </div>
+                <button type="button" id="refresh-recommendations-btn" class="btn-refresh-recs" title="Refresh AI Recommendations">
+                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-arrow"></use></svg>
+                    <span>Refresh</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- TOP ROW: 3 CARDS -->
+        <section class="recs-top-grid">
+
+            <!-- CARD 1: CURRENT WATER QUALITY STATUS -->
+            <div class="recs-card recs-card-status">
+                <div class="recs-card-label">Current Water Quality Status</div>
+                <div class="status-indicator-row">
+                    {% if ai_data.current_status.heading == 'GOOD' or ai_data.current_status.heading == 'OPTIMAL' %}
+                    <span class="status-circle-icon icon-good">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-check"></use></svg>
+                    </span>
+                    <h2 class="status-heading text-good">{{ ai_data.current_status.heading }}</h2>
+                    {% elif ai_data.current_status.heading == 'WARNING' %}
+                    <span class="status-circle-icon icon-warning">!</span>
+                    <h2 class="status-heading text-warning">{{ ai_data.current_status.heading }}</h2>
+                    {% else %}
+                    <span class="status-circle-icon icon-critical">&times;</span>
+                    <h2 class="status-heading text-critical">{{ ai_data.current_status.heading }}</h2>
+                    {% endif %}
+                </div>
+                <p class="status-subtext">{{ ai_data.current_status.subtext }}</p>
+
+                <div class="wqi-block">
+                    <div class="wqi-label">WQI Score</div>
+                    <div class="wqi-value-display">
+                        <span class="wqi-number">{{ ai_data.current_status.wqi_score }}</span>
+                        <span class="wqi-max">/100</span>
+                    </div>
+                    <div class="wqi-progress-track">
+                        <div class="wqi-progress-bar {% if ai_data.current_status.wqi_score >= 80 %}bar-good{% elif ai_data.current_status.wqi_score >= 60 %}bar-warning{% else %}bar-critical{% endif %}"
+                             style="width: {{ ai_data.current_status.wqi_score }}%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD 2: AI MODEL PREDICTION (NEXT 24 HOURS) -->
+            <div class="recs-card recs-card-prediction">
+                <div class="recs-card-label">AI Model Prediction (Next 24 Hours)</div>
+
+                <div class="prediction-split">
+                    <div class="prediction-text-side">
+                        <div class="prediction-heading-row">
+                            {% if ai_data.prediction.status == 'WARNING' %}
+                            <span class="pred-warning-icon">⚠️</span>
+                            <h2 class="pred-heading text-warning">{{ ai_data.prediction.status }}</h2>
+                            {% elif ai_data.prediction.status == 'CRITICAL' %}
+                            <span class="pred-warning-icon">🚨</span>
+                            <h2 class="pred-heading text-critical">{{ ai_data.prediction.status }}</h2>
+                            {% else %}
+                            <span class="pred-warning-icon">✅</span>
+                            <h2 class="pred-heading text-good">{{ ai_data.prediction.status }}</h2>
+                            {% endif %}
+                        </div>
+
+                        <p class="pred-subtext">{{ ai_data.prediction.subtext }}</p>
+
+                        <button type="button" id="scroll-to-prediction-btn" class="btn-view-details-outline">
+                            View Prediction Details
+                        </button>
+                    </div>
+
+                    <div class="prediction-gauge-side">
+                        <div class="donut-gauge-wrapper">
+                            <svg class="donut-gauge-svg" viewBox="0 0 100 100">
+                                <circle class="donut-gauge-bg" cx="50" cy="50" r="38" />
+                                <circle class="donut-gauge-fill {% if ai_data.prediction.status == 'WARNING' %}gauge-warning{% elif ai_data.prediction.status == 'CRITICAL' %}gauge-critical{% else %}gauge-good{% endif %}"
+                                        cx="50" cy="50" r="38"
+                                        stroke-dasharray="238.76"
+                                        stroke-dashoffset="{{ 238.76 - (238.76 * ai_data.prediction.confidence / 100) }}" />
+                            </svg>
+                            <div class="donut-gauge-text">
+                                <span class="donut-gauge-pct">{{ ai_data.prediction.confidence }}%</span>
+                                <span class="donut-gauge-caption">Confidence</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD 3: ACTIVE ALERTS -->
+            <div class="recs-card recs-card-alerts">
+                <div class="alerts-card-header">
+                    <div class="recs-card-label">Active Alerts</div>
+                    <a href="/alerts" class="view-all-link">View all</a>
+                </div>
+
+                <div class="alerts-list-compact">
+                    {% for alert in ai_data.active_alerts %}
+                    <div class="alert-item-row {% if alert.is_critical %}alert-critical-tint{% elif alert.is_normal %}alert-normal-tint{% else %}alert-warning-tint{% endif %}">
+                        <div class="alert-item-icon">
+                            {% if alert.is_critical or alert.severity == 'Critical' %}
+                            <span class="alert-sym-critical">⚠️</span>
+                            {% elif alert.is_normal %}
+                            <span class="alert-sym-normal">
+                                <svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
+                            </span>
+                            {% else %}
+                            <span class="alert-sym-warning">⚠️</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="alert-item-content">
+                            <div class="alert-item-title-row">
+                                <span class="alert-item-title">{{ alert.title }}</span>
+                                {% if alert.severity == 'Critical' %}
+                                <span class="alert-badge-soft-critical">Critical</span>
+                                {% elif alert.severity == 'Warning' %}
+                                <span class="alert-badge-soft-warning">Warning</span>
+                                {% endif %}
+                            </div>
+                            <p class="alert-item-desc">{{ alert.description }}</p>
+                            <span class="alert-item-time">{{ alert.time }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </section>
+
+        <!-- MIDDLE TWO-COLUMN SECTION -->
+        <section class="recs-middle-grid">
+
+            <!-- LEFT COLUMN: AI RECOMMENDATIONS FOR YOU -->
+            <div class="recs-left-column">
+
+                <div class="recs-card recs-card-recommendations">
+
+                    <div class="recommendations-header-block">
+                        <div class="rec-header-title-row">
+                            <span class="rec-robot-icon">
+                                <svg class="ui-icon" aria-hidden="true"><use href="#icon-ai-robot"></use></svg>
+                            </span>
+                            <div>
+                                <h2 class="recs-section-title">AI Recommendations for You</h2>
+                                <p class="recs-section-subtitle">Personalized recommendations based on current conditions and ML analysis.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="recommendations-cards-stack">
+                        {% for rec in ai_data.recommendations %}
+                        <div class="rec-entry-card" data-rec-index="{{ loop.index0 }}">
+                            <div class="rec-entry-top">
+                                <div class="rec-entry-icon-wrap">
+                                    <svg class="ui-icon" aria-hidden="true">
+                                        {% if rec.category == 'Oxygen Management' %}
+                                        <use href="#icon-aeration"></use>
+                                        {% elif rec.category == 'Water Clarity' %}
+                                        <use href="#icon-turbidity"></use>
+                                        {% elif rec.category == 'pH Management' %}
+                                        <use href="#icon-ph"></use>
+                                        {% else %}
+                                        <use href="#icon-sparkles"></use>
+                                        {% endif %}
+                                    </svg>
+                                </div>
+
+                                <div class="rec-entry-main">
+                                    <div class="rec-entry-title-row">
+                                        <h3 class="rec-entry-title">{{ rec.title }}</h3>
+                                        <span class="rec-badge {{ rec.badge_class or 'badge-primary' }}">{{ rec.badge }}</span>
+                                    </div>
+
+                                    <p class="rec-entry-desc">{{ rec.description }}</p>
+
+                                    <div class="rec-meta-tags-row">
+                                        <span class="rec-meta-item">Priority: <strong class="{{ rec.priority_class or 'priority-medium' }}">{{ rec.priority }}</strong></span>
+                                        <span class="rec-meta-item">Impact: <strong class="{{ rec.impact_class or 'impact-high' }}">{{ rec.impact }}</strong></span>
+                                        <span class="rec-meta-item">Category: <strong>{{ rec.category }}</strong></span>
+                                    </div>
+                                </div>
+
+                                <div class="rec-entry-action">
+                                    <button type="button" class="btn-accordion-toggle" aria-expanded="false">
+                                        <span>View Details</span> <span class="arrow-glyph">&or;</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- EXPANDABLE ACCORDION CONTENT -->
+                            <div class="rec-accordion-body" hidden>
+                                <div class="accordion-inner-box">
+                                    <div class="accordion-subhead">Operational Guidance &amp; Biological Rationale:</div>
+                                    <p class="accordion-detail-text">{{ rec.details }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="recs-card-footer">
+                        <a href="#all-recs" class="view-all-recs-link">View All Recommendations &rarr;</a>
+                    </div>
+
+                </div>
+
+                <!-- BOTTOM ROW: PREDICTION DETAILS (NEXT 24 HOURS) -->
+                <div id="prediction-details-section" class="recs-card recs-card-prediction-details">
+
+                    <div class="prediction-details-header">
+                        <h2 class="pred-details-title">Prediction Details (Next 24 Hours)</h2>
+                    </div>
+
+                    <div class="pred-details-grid">
+
+                        <!-- LEFT: WQI SCORE TIMELINE CHART -->
+                        <div class="pred-chart-side">
+                            <div class="chart-y-axis-label">WQI Score</div>
+                            <div class="chart-container-svg">
+                                <svg class="forecast-line-chart" viewBox="0 0 500 220" preserveAspectRatio="none">
+                                    <defs>
+                                        <linearGradient id="wqi-area-gradient" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stop-color="#10b981" stop-opacity="0.35"/>
+                                            <stop offset="60%" stop-color="#f59e0b" stop-opacity="0.15"/>
+                                            <stop offset="100%" stop-color="#ef4444" stop-opacity="0.0"/>
+                                        </linearGradient>
+                                    </defs>
+
+                                    <!-- Grid lines: 100, 75, 50, 25, 0 -->
+                                    <line x1="45" y1="20" x2="480" y2="20" class="chart-grid-line"/>
+                                    <text x="35" y="24" class="chart-axis-text">100</text>
+
+                                    <line x1="45" y1="60" x2="480" y2="60" class="chart-grid-line"/>
+                                    <text x="35" y="64" class="chart-axis-text">75</text>
+
+                                    <line x1="45" y1="100" x2="480" y2="100" class="chart-grid-line"/>
+                                    <text x="35" y="104" class="chart-axis-text">50</text>
+
+                                    <line x1="45" y1="140" x2="480" y2="140" class="chart-grid-line"/>
+                                    <text x="35" y="144" class="chart-axis-text">25</text>
+
+                                    <line x1="45" y1="180" x2="480" y2="180" class="chart-grid-line axis-baseline"/>
+                                    <text x="35" y="184" class="chart-axis-text">0</text>
+
+                                    <!-- Dynamic points calculation -->
+                                    {% set x_coords = [60, 160, 260, 360, 460] %}
+                                    {% set pts = ai_data.prediction.projections %}
+
+                                    <!-- SVG Area Fill -->
+                                    <polygon points="
+                                        60,{{ 180 - (pts[0].wqi * 1.6) }}
+                                        160,{{ 180 - (pts[1].wqi * 1.6) }}
+                                        260,{{ 180 - (pts[2].wqi * 1.6) }}
+                                        360,{{ 180 - (pts[3].wqi * 1.6) }}
+                                        460,{{ 180 - (pts[4].wqi * 1.6) }}
+                                        460,180
+                                        60,180"
+                                        fill="url(#wqi-area-gradient)"/>
+
+                                    <!-- SVG Connecting Lines -->
+                                    <polyline points="
+                                        60,{{ 180 - (pts[0].wqi * 1.6) }}
+                                        160,{{ 180 - (pts[1].wqi * 1.6) }}
+                                        260,{{ 180 - (pts[2].wqi * 1.6) }}
+                                        360,{{ 180 - (pts[3].wqi * 1.6) }}
+                                        460,{{ 180 - (pts[4].wqi * 1.6) }}"
+                                        class="forecast-stroke-line" />
+
+                                    <!-- Data Points and Values -->
+                                    {% for pt in pts %}
+                                    {% set x = x_coords[loop.index0] %}
+                                    {% set y = 180 - (pt.wqi * 1.6) %}
+                                    <circle cx="{{ x }}" cy="{{ y }}" r="5" class="chart-point-dot {% if pt.wqi >= 80 %}dot-good{% elif pt.wqi >= 60 %}dot-warning{% else %}dot-critical{% endif %}"/>
+                                    <text x="{{ x }}" y="{{ y - 10 }}" text-anchor="middle" class="chart-val-label">{{ pt.wqi }}</text>
+                                    <text x="{{ x }}" y="202" text-anchor="middle" class="chart-x-label">{{ pt.label }}</text>
+                                    {% endfor %}
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- RIGHT: NARRATIVE & INFLUENTIAL FACTORS -->
+                        <div class="pred-factors-side">
+                            <p class="pred-narrative-paragraph">
+                                {{ ai_data.prediction.narrative }}
+                            </p>
+
+                            <div class="influential-factors-block">
+                                <h3 class="factors-subhead">Most Influential Factors</h3>
+
+                                <div class="factors-chips-row">
+                                    {% for factor in ai_data.influential_factors %}
+                                    <div class="factor-chip-card">
+                                        <div class="factor-rank-box rank-{{ factor.rank }}">{{ factor.rank }}</div>
+                                        <div class="factor-details">
+                                            <div class="factor-name">{{ factor.name }}</div>
+                                            <div class="factor-impact-val">{{ factor.raw_impact }}</div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="model-meta-footer">
+                                <span class="meta-item">Model Used: <strong>{{ ai_data.model_metadata.name }}</strong></span>
+                                <span class="meta-item">Last Trained: {{ ai_data.model_metadata.last_trained }}</span>
+                                <span class="meta-item">Accuracy: <strong>{{ ai_data.model_metadata.accuracy }}</strong></span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: PARAMETER ANALYSIS & BEST PRACTICES -->
+            <div class="recs-right-column">
+
+                <!-- CARD: PARAMETER ANALYSIS -->
+                <div class="recs-card recs-card-parameter-analysis">
+                    <div class="param-card-header">
+                        <h2 class="param-card-title">Parameter Analysis</h2>
+                        <p class="param-card-subtitle">Analysis of current parameters vs. recommended ranges for P. vannamei</p>
+                    </div>
+
+                    <div class="param-table-wrapper">
+                        <table class="param-analysis-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Current</th>
+                                    <th>Range</th>
+                                    <th>Status</th>
+                                    <th>Trend</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for param in ai_data.parameters %}
+                                <tr>
+                                    <td class="param-name-cell">
+                                        <span class="param-table-icon">
+                                            <svg class="ui-icon" aria-hidden="true">
+                                                {% if param.name == 'Temperature' %}
+                                                <use href="#icon-thermometer"></use>
+                                                {% elif param.name == 'pH' %}
+                                                <use href="#icon-droplet"></use>
+                                                {% elif param.name == 'Salinity' %}
+                                                <use href="#icon-water-cycle"></use>
+                                                {% elif param.name == 'Turbidity' %}
+                                                <use href="#icon-turbidity"></use>
+                                                {% else %}
+                                                <use href="#icon-aeration"></use>
+                                                {% endif %}
+                                            </svg>
+                                        </span>
+                                        <span>{{ param.name }}</span>
+                                    </td>
+                                    <td class="param-current-val">{{ param.current }}</td>
+                                    <td class="param-range-val">{{ param.range }}</td>
+                                    <td class="param-status-badge">
+                                        {% if param.status == 'Optimal' %}
+                                        <span class="status-badge-dot badge-good" title="Optimal">✓</span>
+                                        {% elif param.status == 'Warning' %}
+                                        <span class="status-badge-dot badge-warning" title="Warning">!</span>
+                                        {% else %}
+                                        <span class="status-badge-dot badge-critical" title="Critical">✕</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="param-trend-cell">
+                                        <span class="trend-indicator {{ param.trend_class }}">{{ param.trend_symbol }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="param-card-footer">
+                        <a href="/historical" class="recs-footer-link">View Parameter History &rarr;</a>
+                    </div>
+                </div>
+
+                <!-- CARD: BEST PRACTICES TIPS -->
+                <div class="recs-card recs-card-best-practices">
+                    <div class="practices-header">
+                        <span class="practices-lightbulb-icon">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-lightbulb"></use></svg>
+                        </span>
+                        <h2 class="practices-title">Best Practices Tips</h2>
+                    </div>
+
+                    <ul class="practices-list">
+                        {% for tip in ai_data.best_practices %}
+                        <li class="practice-item">
+                            <span class="practice-item-icon">
+                                <svg class="ui-icon" aria-hidden="true"><use href="#{{ tip.icon }}"></use></svg>
+                            </span>
+                            <span class="practice-item-text">{{ tip.text }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+
+                    <div class="practices-footer">
+                        <a href="/calculators" class="recs-footer-link">View All Best Practices &rarr;</a>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="dashboard-footer recs-footer">
+            <span>
+                <img src="{{ url_for('static', filename='images/aeris_v_icon_64.png') }}" alt="AERIS-V" width="18" height="18" style="display:inline-block; vertical-align:middle; margin-right:6px;">AERIS-V
+            </span>
+            <span>Aquaculture Environmental Real-Time Intelligence System &ndash; Vannamei</span>
+        </footer>
+
+    </main>
+
+</div>
+
+<!-- INTERACTIVE SCRIPTS -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Accordion Toggle for Recommendation Cards
+    const toggleButtons = document.querySelectorAll(".btn-accordion-toggle");
+    toggleButtons.forEach(btn => {
+        btn.addEventListener("click", function () {
+            const card = this.closest(".rec-entry-card");
+            const body = card.querySelector(".rec-accordion-body");
+            const isExpanded = this.getAttribute("aria-expanded") === "true";
+            
+            if (isExpanded) {
+                this.setAttribute("aria-expanded", "false");
+                body.hidden = true;
+                this.querySelector(".arrow-glyph").innerHTML = "&or;";
+                this.querySelector("span").textContent = "View Details";
+            } else {
+                this.setAttribute("aria-expanded", "true");
+                body.hidden = false;
+                this.querySelector(".arrow-glyph").innerHTML = "&and;";
+                this.querySelector("span").textContent = "Hide Details";
+            }
+        });
+    });
+
+    // Smooth Scroll to Prediction Details
+    const scrollBtn = document.getElementById("scroll-to-prediction-btn");
+    if (scrollBtn) {
+        scrollBtn.addEventListener("click", function () {
+            const predSection = document.getElementById("prediction-details-section");
+            if (predSection) {
+                predSection.scrollIntoView({ behavior: "smooth", block: "start" });
+                predSection.style.transition = "box-shadow 0.4s ease";
+                predSection.style.boxShadow = "0 0 0 3px rgba(16, 185, 129, 0.45)";
+                setTimeout(() => {
+                    predSection.style.boxShadow = "";
+                }, 1500);
+            }
+        });
+    }
+
+    // Refresh Button AJAX handler
+    const refreshBtn = document.getElementById("refresh-recommendations-btn");
+    if (refreshBtn) {
+        refreshBtn.addEventListener("click", function () {
+            const btnSpan = refreshBtn.querySelector("span");
+            const originalText = btnSpan.textContent;
+            btnSpan.textContent = "Analyzing...";
+            refreshBtn.disabled = true;
+            
+            fetch("/api/ai/recommendations")
+                .then(res => res.json())
+                .then(data => {
+                    location.reload();
+                })
+                .catch(err => {
+                    console.error("Refresh error:", err);
+                    location.reload();
+                });
+        });
+    }
+});
+</script>
+
+</body>
+</html>

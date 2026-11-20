@@ -9,3 +9,5 @@ instance/
 dashboard.db
 .env
 .env.*
+
+scratch/
