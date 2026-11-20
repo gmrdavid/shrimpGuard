@@ -406,12 +406,14 @@
                             <div class="rec-entry-top">
                                 <div class="rec-entry-icon-wrap">
                                     <svg class="ui-icon" aria-hidden="true">
-                                        {% if rec.category == 'Oxygen Management' %}
+                                        {% if rec.category == 'Oxygen Management' or rec.category == 'Pond Circulation' %}
                                         <use href="#icon-aeration"></use>
-                                        {% elif rec.category == 'Water Clarity' %}
-                                        <use href="#icon-turbidity"></use>
                                         {% elif rec.category == 'pH Management' %}
                                         <use href="#icon-ph"></use>
+                                        {% elif rec.category == 'Feeding Protocol' or rec.category == 'Feeding Management' %}
+                                        <use href="#icon-feed"></use>
+                                        {% elif rec.category == 'Water Clarity' %}
+                                        <use href="#icon-turbidity"></use>
                                         {% else %}
                                         <use href="#icon-sparkles"></use>
                                         {% endif %}
@@ -581,7 +583,7 @@
                             Parameter Analysis
                         </div>
                         <h2 class="param-card-title">Live Water Chemistries</h2>
-                        <p class="param-card-subtitle">Current parameters vs. recommended ranges for <em>Penaeus vannamei</em></p>
+                        <p class="param-card-subtitle">Real pond sensor telemetry vs. ML optimal ranges for <em>Penaeus vannamei</em></p>
                     </div>
 
                     <div class="param-table-wrapper">
@@ -601,16 +603,12 @@
                                     <td class="param-name-cell">
                                         <span class="param-table-icon">
                                             <svg class="ui-icon" aria-hidden="true">
-                                                {% if param.name == 'Temperature' %}
+                                                {% if 'Temperature' in param.name %}
                                                 <use href="#icon-thermometer"></use>
-                                                {% elif param.name == 'pH' %}
+                                                {% elif 'pH' in param.name %}
                                                 <use href="#icon-droplet"></use>
-                                                {% elif param.name == 'Salinity' %}
-                                                <use href="#icon-water-cycle"></use>
-                                                {% elif param.name == 'Turbidity' %}
-                                                <use href="#icon-turbidity"></use>
                                                 {% else %}
-                                                <use href="#icon-aeration"></use>
+                                                <use href="#icon-sparkles"></use>
                                                 {% endif %}
                                             </svg>
                                         </span>
