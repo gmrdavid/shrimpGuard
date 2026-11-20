@@ -169,7 +169,7 @@
                 <h1>AI Recommendation</h1>
 
                 <p>
-                    Personalized recommendations and 24-hour predictive intelligence driven by ML classification &amp; Gemini AI.
+                    Predictive water temperature &amp; pH decision support driven by DecisionTreeClassifier ML &amp; Gemini AI.
                 </p>
             </div>
 
@@ -212,7 +212,7 @@
                             <span>ML MODEL &amp; GEMINI DECISION SUPPORT</span>
                         </div>
                         <h2 id="recs-sync-heading" class="recs-sync-title">DecisionTreeClassifier &middot; 24-Hour Horizon</h2>
-                        <p class="recs-sync-desc">Autonomous telemetry inference &middot; <em>Penaeus vannamei</em> culture</p>
+                        <p class="recs-sync-desc">Autonomous telemetry inference &middot; Water Temperature &amp; pH for <em>Penaeus vannamei</em></p>
                     </div>
                 </div>
 
@@ -395,7 +395,7 @@
                             </span>
                             <div>
                                 <h2 class="recs-section-title">AI Recommendations for You</h2>
-                                <p class="recs-section-subtitle">Personalized recommendations based on current conditions and ML analysis.</p>
+                                <p class="recs-section-subtitle">Personalized water temperature &amp; pH recommendations based on live sensor telemetry and ML analysis.</p>
                             </div>
                         </div>
                     </div>
@@ -406,14 +406,12 @@
                             <div class="rec-entry-top">
                                 <div class="rec-entry-icon-wrap">
                                     <svg class="ui-icon" aria-hidden="true">
-                                        {% if rec.category == 'Oxygen Management' or rec.category == 'Pond Circulation' %}
-                                        <use href="#icon-aeration"></use>
-                                        {% elif rec.category == 'pH Management' %}
+                                        {% if rec.category == 'pH Management' %}
                                         <use href="#icon-ph"></use>
-                                        {% elif rec.category == 'Feeding Protocol' or rec.category == 'Feeding Management' %}
-                                        <use href="#icon-feed"></use>
-                                        {% elif rec.category == 'Water Clarity' %}
-                                        <use href="#icon-turbidity"></use>
+                                        {% elif rec.category == 'Temperature Management' %}
+                                        <use href="#icon-thermometer"></use>
+                                        {% elif rec.category == 'Thermal & pH Equilibrium' %}
+                                        <use href="#icon-sparkles"></use>
                                         {% else %}
                                         <use href="#icon-sparkles"></use>
                                         {% endif %}
@@ -725,12 +723,12 @@
             </div>
         </div>
 
-        <!-- FILTER TABS -->
+        <!-- FILTER TABS (STRICTLY PH & TEMPERATURE DOMAINS) -->
         <div class="recs-modal-filter-bar">
             <button type="button" class="modal-filter-pill active" data-filter="all">All Protocols ({{ (ai_data.all_recommendations or ai_data.recommendations)|length }})</button>
             <button type="button" class="modal-filter-pill" data-filter="pH Management">pH Management</button>
-            <button type="button" class="modal-filter-pill" data-filter="Feeding Protocol">Feeding Protocol</button>
-            <button type="button" class="modal-filter-pill" data-filter="Pond Circulation">Pond Circulation</button>
+            <button type="button" class="modal-filter-pill" data-filter="Temperature Management">Temperature Management</button>
+            <button type="button" class="modal-filter-pill" data-filter="Thermal & pH Equilibrium">Thermal &amp; pH Equilibrium</button>
         </div>
 
         <!-- MODAL BODY -->
@@ -741,12 +739,12 @@
                     <div class="modal-rec-top">
                         <div class="modal-rec-icon-wrap">
                             <svg class="ui-icon" aria-hidden="true">
-                                {% if rec.category == 'Pond Circulation' or rec.category == 'Oxygen Management' %}
-                                <use href="#icon-aeration"></use>
-                                {% elif rec.category == 'pH Management' %}
+                                {% if rec.category == 'pH Management' %}
                                 <use href="#icon-ph"></use>
-                                {% elif rec.category == 'Feeding Protocol' or rec.category == 'Feeding Management' %}
-                                <use href="#icon-feed"></use>
+                                {% elif rec.category == 'Temperature Management' %}
+                                <use href="#icon-thermometer"></use>
+                                {% elif rec.category == 'Thermal & pH Equilibrium' %}
+                                <use href="#icon-sparkles"></use>
                                 {% else %}
                                 <use href="#icon-sparkles"></use>
                                 {% endif %}

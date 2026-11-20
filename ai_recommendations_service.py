@@ -280,10 +280,10 @@ def _generate_dynamic_vannamei_recommendations(
     Generates rich, fully customized recommendation cards, prediction narrative,
     and best practice tips based solely on real pH and Temperature telemetry.
     """
-    # Build Comprehensive Protocols Catalog (for Modal & Expanded Views)
+    # Build Comprehensive Protocols Catalog strictly for Temperature and pH (for Modal & Expanded Views)
     all_recommendations = []
 
-    # PROTOCOL 1: pH Management & Alkalinity Buffering
+    # PROTOCOL 1: pH Management & Chemical Buffering
     if current_ph < 7.50:
         rec_ph_1 = {
             "id": "rec-ph-buffer",
@@ -299,7 +299,7 @@ def _generate_dynamic_vannamei_recommendations(
             "description": f"pH is currently {current_ph:.2f} (below optimal 7.50–8.50). Rapid corrective buffering is required to protect shrimp cuticle calcification.",
             "details": f"At pH {current_ph:.2f}, Penaeus vannamei experiences metabolic acid stress and soft-shell syndrome during ecdysis (molting). Broadcast agricultural limestone (CaCO3) at 15–20 kg/ha or sodium bicarbonate (NaHCO3) at 10–15 kg/ha across pond water to raise total alkalinity (>120 mg/L) and stabilize pH back into 7.8–8.2.",
             "action_steps": [
-                f"Broadcast agricultural limestone (CaCO3) at 15–20 kg/ha evenly across aerator water currents.",
+                f"Broadcast agricultural limestone (CaCO3) at 15–20 kg/ha evenly across water surface currents.",
                 "Verify total pond alkalinity reaches at least 120–150 mg/L as CaCO3 using titration check.",
                 "Re-test pond pH at 15:00 to verify stabilized buffer capacity and avoid afternoon crashes."
             ]
@@ -320,8 +320,8 @@ def _generate_dynamic_vannamei_recommendations(
             "details": f"Alkaline spikes (>8.50 pH) during sunny afternoons are driven by intense microalgae photosynthesis consuming all free CO2. Apply fermented molasses or sugarcane carbon source at 20–30 L/ha to release CO2 and boost heterotrophic bacterial activity, bringing pH down towards 8.0–8.2.",
             "action_steps": [
                 "Apply fermented molasses or sugarcane juice at 20–30 L/ha across pond perimeter.",
-                "Increase aerator agitation to dissipate excess photosynthetically generated oxygen and volatile ammonia.",
-                "Suspend afternoon nitrogenous feed broadcast until pond pH drops back below 8.30."
+                "Enhance surface agitation to dissipate volatile ammonia fractions.",
+                "Verify afternoon pH trend and monitor for algae bloom crash."
             ]
         }
     else:
@@ -346,10 +346,10 @@ def _generate_dynamic_vannamei_recommendations(
         }
     all_recommendations.append(rec_ph_1)
 
-    # PROTOCOL 2: Diurnal pH & Molting Calcification Safeguard
+    # PROTOCOL 2: Diurnal pH Stabilization & Ecdysis (Molting) Safeguard
     rec_ph_2 = {
         "id": "rec-ph-diurnal",
-        "title": "Diurnal pH & Molting Calcification Safeguard",
+        "title": "Diurnal pH Stabilization & Molting Safeguard",
         "badge": "Recommended",
         "badge_class": "badge-primary",
         "priority": "Medium",
@@ -363,142 +363,142 @@ def _generate_dynamic_vannamei_recommendations(
         "action_steps": [
             "Track diurnal swing: record morning pH at 06:00 and afternoon peak at 15:00 daily (keep delta < 0.5 units).",
             "Apply mineral supplements (magnesium chloride and calcium chloride) if soft-shell syndrome is observed.",
-            "Ensure dissolved carbon dioxide is stripped at night using active paddlewheels."
+            "Ensure dissolved carbon dioxide is balanced to prevent severe nocturnal acid depression."
         ]
     }
     all_recommendations.append(rec_ph_2)
 
-    # PROTOCOL 3: Temperature-Regulated Feeding Protocol
+    # PROTOCOL 3: Water Temperature Thermal Regulation & Water Column Depth
     if current_temp < 28.0:
-        rec_feed_1 = {
-            "id": "rec-feed-temp",
-            "title": "Regulate Feeding for Sub-Optimal Water Temperature",
+        rec_temp_1 = {
+            "id": "rec-temp-regulation",
+            "title": "Pond Water Warming & Thermal Depth Retention",
             "badge": "Recommended",
             "badge_class": "badge-primary",
             "priority": "Medium",
             "priority_class": "priority-medium",
             "impact": "High",
             "impact_class": "impact-high",
-            "category": "Feeding Protocol",
-            "icon": "icon-feed",
-            "description": f"Water temperature is {current_temp:.1f} °C (below 28.0 °C). Shrimp gastric evacuation rate and digestive enzyme activity are reduced.",
-            "details": f"At {current_temp:.1f} °C, Pacific white shrimp digestive efficiency drops by up to 25%. Inspect feed trays 2.5 hours after broadcast. Reduce subsequent feeding rations by 15–20% to avoid unconsumed pellet accumulation on the pond bottom, which creates toxic anaerobic sludge.",
+            "category": "Temperature Management",
+            "icon": "icon-thermometer",
+            "description": f"Water temperature is {current_temp:.1f} °C (below 28.0 °C). Shrimp metabolic enzyme activity and osmotic regulation slow significantly.",
+            "details": f"At {current_temp:.1f} °C, Pacific white shrimp baseline energy expenditure declines. Deepen water column to 1.2–1.5 meters to maximize thermal heat retention during nighttime cooling. Avoid cold well-water pumping during the coolest hours.",
             "action_steps": [
-                "Trim subsequent feed ration by 15–25% to prevent unconsumed pellet decay on the pond floor.",
-                "Inspect check trays 2.5 hours after broadcast rather than the standard 2.0-hour window.",
-                "Shift the primary feed allocation to the warmest solar window of the day (12:00–15:00)."
+                "Maintain pond water column depth at 1.2–1.5 meters to stabilize bottom thermal mass against cold night air.",
+                "Schedule any fresh water exchange strictly between 12:00 and 14:00 when ambient solar heat is highest.",
+                "Monitor shrimp activity along pond edges as water temperature recovers towards 28.0 °C."
             ]
         }
     elif current_temp > 32.0:
-        rec_feed_1 = {
-            "id": "rec-feed-temp",
-            "title": "Calibrate Feeding Due to Thermal Stress",
+        rec_temp_1 = {
+            "id": "rec-temp-regulation",
+            "title": "Mitigate Elevated Water Temperature & Thermal Stress",
             "badge": "Critical Action",
             "badge_class": "badge-danger",
             "priority": "High",
             "priority_class": "priority-high",
             "impact": "High",
             "impact_class": "impact-high",
-            "category": "Feeding Protocol",
-            "icon": "icon-feed",
-            "description": f"Water temperature is elevated at {current_temp:.1f} °C (exceeds 32.0 °C). High temperatures accelerate respiration and metabolic waste generation.",
-            "details": f"At temperatures above 32.0 °C, shrimp energy expenditure spikes and feed conversion ratio (FCR) deteriorates. Split daily rations into smaller, frequent feedings and suspend midday feeding during peak solar irradiance. Fortify feeds with Vitamin C (2–3 g/kg feed) to alleviate thermal oxidative stress.",
+            "category": "Temperature Management",
+            "icon": "icon-thermometer",
+            "description": f"Water temperature is elevated at {current_temp:.1f} °C (exceeds 32.0 °C). High temperatures accelerate respiration and trigger thermal stress.",
+            "details": f"At temperatures above 32.0 °C, shrimp physiological stress increases and resistance to pathogens weakens. Increase pond depth to 1.4–1.6 meters so cooler bottom refuge layers are available during peak midday sun.",
             "action_steps": [
-                "Split daily rations into 4–5 smaller portions; suspend broadcast between 12:00 and 14:00 if water exceeds 33 °C.",
-                "Fortify feed pellets with coated Vitamin C (2–3 g/kg) and organic selenium to counter thermal oxidative stress.",
-                "Inspect bottom check-trays within 1.5 hours to detect any thermal feed rejection."
+                "Increase pond water depth to 1.4–1.6 meters to establish a cooler bottom sanctuary layer.",
+                "Activate surface water flow to promote evaporative cooling during peak solar irradiation (11:00–14:00).",
+                "Ensure continuous monitoring of DS18B20 sensor to detect any further temperature spikes above 33.0 °C."
             ]
         }
     else:
-        rec_feed_1 = {
-            "id": "rec-feed-temp",
-            "title": "Optimize Feeding at Ideal Thermal Conditions",
-            "badge": "Recommended",
+        rec_temp_1 = {
+            "id": "rec-temp-regulation",
+            "title": "Maintain Optimal Thermal Homeostasis (28–32 °C)",
+            "badge": "Optimal",
             "badge_class": "badge-primary",
-            "priority": "Medium",
-            "priority_class": "priority-medium",
-            "impact": "High",
-            "impact_class": "impact-high",
-            "category": "Feeding Protocol",
-            "icon": "icon-feed",
-            "description": f"Water temperature is optimal at {current_temp:.1f} °C. Shrimp metabolic enzyme efficiency and feed intake are at peak capacity.",
-            "details": f"Maintain standard body-weight feeding schedules. Check feed check-trays 2.0 hours post-broadcast. Ensure feed protein levels (35–38% crude protein) are efficiently converted by maintaining paddlewheel water circulation in the feeding perimeter.",
+            "priority": "Low",
+            "priority_class": "priority-low",
+            "impact": "Medium",
+            "impact_class": "impact-medium",
+            "category": "Temperature Management",
+            "icon": "icon-thermometer",
+            "description": f"Water temperature is optimal at {current_temp:.1f} °C. Shrimp physiological homeostasis and growth kinetics are at peak performance.",
+            "details": f"Pacific white shrimp thrive best between 28.0 °C and 32.0 °C (midpoint 30.0 °C). Maintain steady water depth to buffer against sudden temperature drops caused by squalls or night breezes.",
             "action_steps": [
-                "Maintain standard biomass feeding tables based on current average body weight (ABW).",
-                "Inspect check-trays 2.0 hours post-broadcast; adjust next meal if uneaten feed is >10%.",
-                "Ensure feed protein (35–38% CP) is fully assimilated by sustaining 5–10 cm/s circular perimeter currents."
+                "Maintain standard pond water level at 1.2–1.4 meters for optimal thermal buffering.",
+                "Monitor diurnal temperature swing (verify delta is less than 3.0 °C between morning and afternoon).",
+                "Ensure temperature sensor probe remains clean and submerged at 30–50 cm operational depth."
             ]
         }
-    all_recommendations.append(rec_feed_1)
+    all_recommendations.append(rec_temp_1)
 
-    # PROTOCOL 4: Bioenergetic Feed Protein & Nutrient Allocation
-    rec_feed_2 = {
-        "id": "rec-feed-nutrition",
-        "title": "Temperature-Compensated Bioenergetic Nutrition",
-        "badge": "Suggestion",
-        "badge_class": "badge-purple",
+    # PROTOCOL 4: Thermal Stratification & Water Layer Destratification
+    rec_temp_2 = {
+        "id": "rec-temp-stratification",
+        "title": "Thermal Layer Destratification & Column Homogenization",
+        "badge": "Recommended",
+        "badge_class": "badge-primary",
         "priority": "Medium",
         "priority_class": "priority-medium",
         "impact": "Medium",
         "impact_class": "impact-medium",
-        "category": "Feeding Protocol",
-        "icon": "icon-feed",
-        "description": f"Match dietary protein and lipid ratios to shrimp metabolic consumption rates at the current temperature ({current_temp:.1f} °C).",
-        "details": f"At {current_temp:.1f} °C, shrimp baseline respiration and energy expenditure dictate protein synthesis efficiency. Feeding excess high-protein rations during thermal variations leads to unassimilated nitrogen excretion into the water column.",
+        "category": "Temperature Management",
+        "icon": "icon-thermometer",
+        "description": "Prevent sharp thermal gradients between solar-heated surface water and cooler pond bottom layers.",
+        "details": "Under calm, sunny weather, the top 20–30 cm of water can heat up to 34 °C while the bottom sludge layer stays at 28 °C. This thermal boundary prevents natural vertical mixing, trapping waste at the bottom. Synchronized circulation blends these water layers into a uniform, safe temperature.",
         "action_steps": [
-            "Adjust daily protein allocation based on weekly body weight sampling and feeding response.",
-            "Store feed bags in dry, temperature-controlled facilities (<25 °C) to prevent lipid rancidity.",
-            "Top-dress pellets with gut probiotics (Bacillus subtilis) to support digestive enzyme synthesis."
+            "Circulate water layers during early afternoon to mix surface heat down into cooler benthic zones.",
+            "Verify vertical temperature difference between surface and bottom remains within 1.0–1.5 °C.",
+            "Avoid stagnant water zones where thermal pockets can develop."
         ]
     }
-    all_recommendations.append(rec_feed_2)
+    all_recommendations.append(rec_temp_2)
 
-    # PROTOCOL 5: Nocturnal Pond Circulation & Thermal Destratification
-    rec_circ_1 = {
-        "id": "rec-circ-aeration",
-        "title": "Aerator Duty Cycle for Temperature & pH Balancing",
+    # PROTOCOL 5: Temperature-Dependent pH Dissociation & Equilibrium
+    rec_equil_1 = {
+        "id": "rec-equil-dissociation",
+        "title": "Temperature-Dependent pH & Carbonate Equilibrium",
         "badge": "Recommended",
         "badge_class": "badge-primary",
-        "priority": "Medium" if (current_temp > 31.5 or current_ph < 7.6) else "Low",
-        "priority_class": "priority-medium" if (current_temp > 31.5 or current_ph < 7.6) else "priority-low",
-        "impact": "Medium",
-        "impact_class": "impact-medium",
-        "category": "Pond Circulation",
-        "icon": "icon-aeration",
-        "description": "Synchronize paddlewheel aerators to prevent thermal stratification and nocturnal pH drops caused by respiration.",
-        "details": "Pond water easily stratifies into a warm surface layer and cooler bottom sludge zone, while nocturnal CO2 accumulation depresses early morning pH. Run paddlewheels consistently from 22:00 to 06:00 to destratify temperature layers and strip dissolved CO2.",
+        "priority": "Medium" if (current_temp > 31.5 or current_ph < 7.6 or current_ph > 8.4) else "Low",
+        "priority_class": "priority-medium" if (current_temp > 31.5 or current_ph < 7.6 or current_ph > 8.4) else "priority-low",
+        "impact": "High",
+        "impact_class": "impact-high",
+        "category": "Thermal & pH Equilibrium",
+        "icon": "icon-sparkles",
+        "description": "Manage the biochemical synergy between water temperature and pH chemical dissociation constants.",
+        "details": f"Temperature directly influences the dissociation constant of water and carbonic acid. At {current_temp:.1f} °C, higher temperatures accelerate the conversion of non-toxic ammonium (NH4+) to toxic un-ionized ammonia (NH3) if pH surges above 8.30. Synchronous monitoring of both parameters is critical to prevent compounding biological stress.",
         "action_steps": [
-            "Operate paddlewheel aerators continuously between 22:00 and 06:00 to break thermal layering.",
-            "Position aerators to direct clean water circular currents around perimeter feeding areas.",
-            "Inspect motor amperage and paddle submersion depth (8–10 cm paddle tip depth)."
+            f"Cross-reference live telemetry: Temp ({current_temp:.1f} °C) and pH ({current_ph:.2f}) simultaneously.",
+            "If water temperature exceeds 31 °C while pH is above 8.40, prioritize immediate alkalinity stabilization.",
+            "Record dual-sensor readings twice daily at 06:00 (minimum values) and 15:00 (peak values)."
         ]
     }
-    all_recommendations.append(rec_circ_1)
+    all_recommendations.append(rec_equil_1)
 
-    # PROTOCOL 6: Heavy Rainfall & Thermal Inversion Defense Plan
-    rec_circ_2 = {
-        "id": "rec-circ-storm",
-        "title": "Heavy Rainfall & Thermal Inversion Defense Plan",
+    # PROTOCOL 6: Heavy Rain & Weather Inversion Defense Plan
+    rec_equil_2 = {
+        "id": "rec-equil-storm",
+        "title": "Heavy Rain Thermal Shock & Acid Inversion Defense",
         "badge": "Suggestion",
         "badge_class": "badge-purple",
         "priority": "Low",
         "priority_class": "priority-low",
         "impact": "Medium",
         "impact_class": "impact-medium",
-        "category": "Pond Circulation",
-        "icon": "icon-aeration",
-        "description": "Protect pond water from sudden thermal shock and acid rainwater runoff during precipitation events.",
-        "details": "Tropical downpours rapidly drop water temperature by 2–4 °C and deliver acidic rainwater (pH 5.5–6.5) that floats on top of warmer, denser brackish water. This stratification causes sudden thermal shock and anoxia at the bottom.",
+        "category": "Thermal & pH Equilibrium",
+        "icon": "icon-sparkles",
+        "description": "Defend pond water from combined sudden temperature drops and acidic rainwater runoff during squalls.",
+        "details": "Tropical downpours rapidly drop water temperature by 2–4 °C while delivering acidic rainwater (pH 5.5–6.5) that floats on top of warmer brackish water. This stratification causes sudden thermal shock and anoxia at the bottom. Pre-rain liming and water column blending preserve chemical stability.",
         "action_steps": [
-            "Broadcast agricultural lime (10–15 kg/100m dikes) along pond dikes prior to heavy rainfall.",
-            "Activate aerators immediately during rain events to mix freshwater surface runoff with pond water.",
-            "Drain freshwater surface layers using pond overflow gates without releasing bottom water."
+            "Broadcast agricultural lime (10–15 kg/100m dikes) along pond berms before impending rainstorms.",
+            "Circulate water during heavy downpours to blend acidic freshwater surface layers into buffered pond water.",
+            "Drain freshwater surface layer via surface spillway gates to prevent pH collapse."
         ]
     }
-    all_recommendations.append(rec_circ_2)
+    all_recommendations.append(rec_equil_2)
 
-    # Top 3 recommendations for main card display
-    recommendations = [rec_ph_1, rec_feed_1, rec_circ_1]
+    # Top 3 recommendations for main card display (strictly one per core domain)
+    recommendations = [rec_ph_1, rec_temp_1, rec_equil_1]
 
     # Dynamic 24-hour prediction narrative based strictly on temperature and pH
     first_wqi = projections[0]["wqi"]
@@ -511,7 +511,7 @@ def _generate_dynamic_vannamei_recommendations(
     if prediction_status == "CRITICAL" or drop >= 25:
         pred_narrative = (
             f"The model predicts critical water stress within the next 12 - 24 hours driven by {factor_phrase}. "
-            f"Immediate preventative buffering and temperature-adjusted feeding are advised."
+            f"Immediate preventative buffering and thermal depth regulation are advised."
         )
     elif prediction_status == "WARNING" or drop >= 10:
         pred_narrative = (
@@ -525,10 +525,10 @@ def _generate_dynamic_vannamei_recommendations(
         )
 
     best_practices = [
-        {"icon": "icon-feed", "text": "Regulate feeding trays according to water temperature (optimal 28–32 °C) to avoid unconsumed waste."},
-        {"icon": "icon-ph", "text": "Monitor pH diurnal swing (06:00 vs 15:00) and maintain alkalinity > 120 mg/L with limestone."},
-        {"icon": "icon-aeration", "text": "Run aerators during nighttime and pre-dawn to destratify temperature layers and stabilize pH."},
-        {"icon": "icon-monitor-check", "text": "Verify temperature and pH sensor calibration periodically using standard buffer solutions."}
+        {"icon": "icon-ph", "text": "Maintain diurnal pH variation within ≤ 0.5 units between pre-dawn (06:00) and mid-afternoon (15:00)."},
+        {"icon": "icon-thermometer", "text": "Maintain water temperature within the ML optimal window (28.0–32.0 °C) using 1.2–1.5 m water depth."},
+        {"icon": "icon-ph", "text": "Ensure total pond alkalinity remains above 120 mg/L as CaCO3 to buffer against abrupt pH crashes."},
+        {"icon": "icon-monitor-check", "text": "Calibrate the physical DS18B20 temperature probe and DFRobot pH sensor regularly using standard buffers."}
     ]
 
     return {
@@ -570,11 +570,14 @@ def call_gemini_recommendations(
         client = OpenAI(api_key=api_key, base_url=base_url, timeout=6.0, max_retries=0)
 
         system_prompt = (
-            "You are an expert aquaculture specialist and penaeid shrimp pathologist "
-            "specializing solely in Penaeus vannamei (Pacific white shrimp) farming operations. "
-            "The farm monitoring hardware has ONLY TWO physical sensors deployed: Water Temperature and pH. "
-            "Analyze live pond water temperature and pH telemetry and ML model outputs. "
-            "Do NOT assume or mention any unmeasured parameters like dissolved oxygen, turbidity, or salinity. "
+            "You are an expert aquaculture specialist and water chemistry expert "
+            "specializing solely in Penaeus vannamei (Pacific white shrimp) pond water quality. "
+            "The farm monitoring hardware has ONLY TWO physical sensors deployed: Water Temperature and pH Level. "
+            "Under the Tools and Calculators section of the application, there are already separate dedicated "
+            "computation engines for aeration sizing, feed rates, and stocking growth. "
+            "Therefore, this AI Recommendation module must focus STRICTLY and EXCLUSIVELY on Water Temperature and pH Level management. "
+            "Do NOT provide feeding protocols or aeration equipment sizing calculations. "
+            "Focus purely on pH stabilization, liming, thermal regulation, diurnal swings, and temperature-pH equilibrium. "
             "Return ONLY a single valid JSON object."
         )
 
@@ -588,15 +591,15 @@ def call_gemini_recommendations(
 - Most Influential Factors: {json.dumps(factor_names)}
 
 Generate 3 tailored recommendations specifically for:
-1. pH Management & Alkalinity Buffering (limestone CaCO3, dolomite, NaHCO3, or biological carbon buffering)
-2. Temperature-Regulated Feeding Protocol (adjusting tray rations based on temperature digestion kinetics)
-3. Pond Circulation & Nocturnal Thermal Destratification (paddlewheel duty cycles for temperature & pH balance)
+1. pH Management & Chemical Buffering (limestone CaCO3, dolomite, NaHCO3, or biological carbon buffering)
+2. Water Temperature Thermal Regulation (water column depth, thermal buffering against solar midday or night chill)
+3. Temperature & pH Synergistic Equilibrium (handling temperature-driven pH shifts and diurnal swings)
 
 Return a valid JSON object matching this exact schema:
 {{
     "recommendations": [
         {{
-            "title": "Stabilize pH Level",
+            "title": "Stabilize pH Level & Alkalinity Buffer",
             "badge": "Recommended",
             "badge_class": "badge-primary",
             "priority": "Medium",
@@ -609,38 +612,38 @@ Return a valid JSON object matching this exact schema:
             "details": "Detailed operational instructions with specific dosages (e.g. kg/ha limestone) and biological rationale for Penaeus vannamei."
         }},
         {{
-            "title": "Temperature-Adjusted Feeding Protocol",
+            "title": "Thermal Regulation & Pond Depth Management",
             "badge": "Recommended",
             "badge_class": "badge-primary",
             "priority": "Medium",
             "priority_class": "priority-medium",
             "impact": "High",
             "impact_class": "impact-high",
-            "category": "Feeding Protocol",
-            "icon": "icon-feed",
+            "category": "Temperature Management",
+            "icon": "icon-thermometer",
             "description": "Clear concise description based on the real water temperature reading.",
-            "details": "Actionable feeding guidance, tray check intervals, and metabolic digestion adjustments for P. vannamei."
+            "details": "Actionable thermal management guidance, water depth adjustments (1.2–1.5m), and diurnal temperature shock prevention."
         }},
         {{
-            "title": "Aerator Duty Cycle for Temperature & pH Balancing",
+            "title": "Temperature-Dependent pH Equilibrium",
             "badge": "Suggestion",
             "badge_class": "badge-purple",
             "priority": "Low",
             "priority_class": "priority-low",
             "impact": "Medium",
             "impact_class": "impact-medium",
-            "category": "Pond Circulation",
-            "icon": "icon-aeration",
-            "description": "Pond water destratification and nocturnal pH degassing strategy.",
-            "details": "Specific operational schedule for paddlewheel aerators to prevent temperature layers and morning pH depression."
+            "category": "Thermal & pH Equilibrium",
+            "icon": "icon-sparkles",
+            "description": "Pond temperature and pH equilibrium strategy.",
+            "details": "Biochemical coordination between water temperature and pH dissociation to prevent compounded stress in P. vannamei."
         }}
     ],
     "prediction_narrative": "A concise 2-sentence prediction narrative explaining the 24-hour water quality trajectory based on temperature and pH trends.",
     "best_practices": [
-        {{"icon": "icon-feed", "text": "Regulate feeding trays according to water temperature (optimal 28–32 °C) to avoid unconsumed waste."}},
-        {{"icon": "icon-ph", "text": "Monitor pH diurnal swing (06:00 vs 15:00) and maintain alkalinity > 120 mg/L with limestone."}},
-        {{"icon": "icon-aeration", "text": "Run aerators during nighttime and pre-dawn to destratify temperature layers and stabilize pH."}},
-        {{"icon": "icon-monitor-check", "text": "Verify temperature and pH sensor calibration periodically using standard buffer solutions."}}
+        {{"icon": "icon-ph", "text": "Maintain diurnal pH variation within ≤ 0.5 units between pre-dawn (06:00) and mid-afternoon (15:00)."}},
+        {{"icon": "icon-thermometer", "text": "Maintain water temperature within the ML optimal window (28.0–32.0 °C) using 1.2–1.5 m water depth."}},
+        {{"icon": "icon-ph", "text": "Ensure total pond alkalinity remains above 120 mg/L as CaCO3 to buffer against abrupt pH crashes."}},
+        {{"icon": "icon-monitor-check", "text": "Calibrate the physical DS18B20 temperature probe and DFRobot pH sensor regularly using standard buffers."}}
     ]
 }}"""
 
