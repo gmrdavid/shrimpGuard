@@ -29005,6 +29005,69 @@ body.recommendations-page {
     height: 14px;
 }
 
+/* RECOMMENDATIONS ADVISORY NOTE */
+.recs-advisory-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 18px;
+    padding: 13px 15px;
+    border: 1px solid #ebdccb;
+    border-radius: 10px;
+    background: #fbf8f2;
+    color: #6b533e;
+    font-size: 11.5px;
+    line-height: 1.55;
+}
+
+.recs-advisory-note .ui-icon {
+    width: 16px;
+    height: 16px;
+    color: #b45309;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.recs-advisory-note p {
+    margin: 0;
+}
+
+.recs-advisory-note strong {
+    color: #3b2818;
+    font-weight: 800;
+}
+
+.recs-modal-advisory-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 16px 24px 0;
+    padding: 12px 15px;
+    border: 1px solid #ebdccb;
+    border-radius: 10px;
+    background: #fbf8f2;
+    color: #6b533e;
+    font-size: 11.5px;
+    line-height: 1.55;
+}
+
+.recs-modal-advisory-note .ui-icon {
+    width: 16px;
+    height: 16px;
+    color: #b45309;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.recs-modal-advisory-note p {
+    margin: 0;
+}
+
+.recs-modal-advisory-note strong {
+    color: #3b2818;
+    font-weight: 800;
+}
+
 /* RESPONSIVENESS */
 @media (max-width: 1080px) {
     .recs-top-grid {
