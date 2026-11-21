@@ -19587,16 +19587,15 @@ nav a {
     transition: box-shadow 180ms ease, transform 180ms ease !important;
 }
 
-/* Main Telemetry Stream Panels Across Pages */
+/* Main Telemetry Stream Panels Across Pages (Preserving stroke on ML Model Sync Banner) */
 .dashboard-page .telemetry-stream-panel,
 .monitoring-page .monitoring-stream-panel,
-.recommendations-page .recs-card-status,
-.recommendations-page .recs-banner-panel,
+.recommendations-page .recs-sync-banner,
 .tools-telemetry-section .panel {
     background: linear-gradient(180deg, #f8fbf9 0%, #edf6f1 100%) !important;
     border: 1px solid #d2e5da !important;
     border-top: 3.5px solid #126b4f !important;
-    border-radius: 16px !important;
+    border-radius: 17px !important;
     box-shadow: 0 6px 22px rgba(18, 107, 79, 0.055) !important;
 }
 
@@ -19743,16 +19742,89 @@ nav a {
     box-shadow: 0 5px 20px rgba(5, 150, 105, 0.05) !important;
 }
 
-/* AI Recommendations Main Cards Across Pages */
-.recommendations-page .recs-card,
-.recommendations-page .rec-card,
-.recommendations-page .rec-section-card,
-.recommendations-page .recs-overview-panel,
+/* AI Recommendations Main Cards Across Pages (Monitoring page retains border) */
 .monitoring-page .monitoring-recommendations-panel {
     background: linear-gradient(180deg, #f8fbf9 0%, #edf6f1 100%) !important;
     border: 1px solid #d4e7dc !important;
     border-top: 3.5px solid #126b4f !important;
     box-shadow: 0 5px 20px rgba(18, 107, 79, 0.045) !important;
+}
+
+/* AI Recommendation Webpage - Stroke-Free Main Boxes (except ML Model Sync Banner) */
+.recommendations-page .recs-card,
+.recommendations-page .rec-card,
+.recommendations-page .rec-section-card,
+.recommendations-page .recs-overview-panel {
+    background: linear-gradient(180deg, #f8fbf9 0%, #edf6f1 100%) !important;
+    border: none !important;
+    border-top: none !important;
+    border-color: transparent !important;
+    box-shadow: 0 4px 20px rgba(18, 107, 79, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+.recommendations-page .recs-card:hover {
+    border: none !important;
+    border-color: transparent !important;
+    box-shadow: 0 8px 28px rgba(18, 107, 79, 0.08) !important;
+}
+
+/* AI Recommendation Webpage - Inner Sub-Boxes Stroke Removal */
+.recommendations-page .rec-entry-card {
+    border: none !important;
+    border-color: transparent !important;
+    box-shadow: 0 2px 10px rgba(18, 107, 79, 0.04) !important;
+}
+
+.recommendations-page .rec-entry-card:hover {
+    border: none !important;
+    border-color: transparent !important;
+    box-shadow: 0 5px 18px rgba(18, 107, 79, 0.08) !important;
+}
+
+.recommendations-page .param-table-wrapper {
+    border: none !important;
+    border-color: transparent !important;
+    box-shadow: 0 2px 8px rgba(18, 107, 79, 0.03) !important;
+}
+
+.recommendations-page .alert-item-row {
+    border: none !important;
+    border-color: transparent !important;
+}
+
+.recommendations-page .factor-chip-card {
+    border: none !important;
+    border-color: transparent !important;
+}
+
+.recommendations-page .recs-advisory-note {
+    border: none !important;
+    border-color: transparent !important;
+}
+
+.recommendations-page .recs-modal-card {
+    border: none !important;
+    border-color: transparent !important;
+}
+
+.recommendations-page .recs-modal-item {
+    border: none !important;
+    border-color: transparent !important;
+    box-shadow: 0 2px 10px rgba(18, 107, 79, 0.04) !important;
+}
+
+/* Ensure ML Model & Gemini Decision Support banner retains its crisp stroke */
+.recommendations-page .recs-sync-banner {
+    background: linear-gradient(180deg, #f8fbf9 0%, #edf6f1 100%) !important;
+    border: 1px solid #d2e5da !important;
+    border-top: 3.5px solid #126b4f !important;
+    border-radius: 17px !important;
+    box-shadow: 0 6px 22px rgba(18, 107, 79, 0.055) !important;
+}
+
+.recommendations-page .recs-sync-badge {
+    background: #ffffff !important;
+    border: 1px solid #dce8e0 !important;
 }
 
 /* Sub-boxes, inputs & inner components inside main boxes retain clean contrast */
@@ -28576,20 +28648,20 @@ body.recommendations-page {
     height: 15px;
 }
 
-/* Base Uniform Card */
+/* Base Uniform Card (Stroke-Free Clean Modern Elevation) */
 .recs-card {
     position: relative;
     background: var(--sg-surface);
-    border: 1px solid #dce8e0;
+    border: none;
     border-radius: 16px;
     padding: 22px 24px;
     box-shadow: 0 4px 22px rgba(18, 107, 79, 0.045);
-    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .recs-card:hover {
     box-shadow: 0 8px 28px rgba(18, 107, 79, 0.07);
-    border-color: #c8ded0;
+    border-color: transparent;
 }
 
 .recs-card-label {
@@ -28886,17 +28958,17 @@ body.recommendations-page {
 
 .alert-item-row.alert-normal-tint {
     background: #f2f8f5;
-    border: 1px solid #dce8e0;
+    border: none;
 }
 
 .alert-item-row.alert-warning-tint {
     background: #fffbeb;
-    border: 1px solid #fef08a;
+    border: none;
 }
 
 .alert-item-row.alert-critical-tint {
     background: #fef2f2;
-    border: 1px solid #fecaca;
+    border: none;
 }
 
 .alert-item-icon {
@@ -29024,17 +29096,17 @@ body.recommendations-page {
 }
 
 .rec-entry-card {
-    border: 1px solid #dce8e0;
+    border: none;
     border-radius: 14px;
     background: #ffffff;
     padding: 18px 20px;
-    box-shadow: 0 2px 10px rgba(18, 107, 79, 0.03);
+    box-shadow: 0 2px 10px rgba(18, 107, 79, 0.04);
     transition: all 0.2s ease;
 }
 
 .rec-entry-card:hover {
-    border-color: #a3cfbe;
-    box-shadow: 0 4px 16px rgba(18, 107, 79, 0.06);
+    border-color: transparent;
+    box-shadow: 0 5px 18px rgba(18, 107, 79, 0.08);
 }
 
 .rec-entry-top {
@@ -29351,15 +29423,15 @@ body.recommendations-page {
 
 .factor-chip-card:nth-child(1) {
     background: #e6f0ec;
-    border: 1px solid #c2dbd1;
+    border: none;
 }
 .factor-chip-card:nth-child(2) {
     background: #fef3c7;
-    border: 1px solid #fde68a;
+    border: none;
 }
 .factor-chip-card:nth-child(3) {
     background: #f3ede4;
-    border: 1px solid #dfcfbe;
+    border: none;
 }
 
 .factor-rank-box {
@@ -29420,7 +29492,7 @@ body.recommendations-page {
 
 .param-table-wrapper {
     overflow-x: auto;
-    border: 1px solid #dce8e0;
+    border: none;
     border-radius: 12px;
 }
 
@@ -29596,7 +29668,7 @@ body.recommendations-page {
     gap: 10px;
     margin-top: 18px;
     padding: 13px 15px;
-    border: 1px solid #ebdccb;
+    border: none;
     border-radius: 10px;
     background: #fbf8f2;
     color: #6b533e;
