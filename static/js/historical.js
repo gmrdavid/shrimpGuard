@@ -1237,9 +1237,30 @@ function updateTable() {
         const isDemo = reading.status && reading.status.toLowerCase().includes("demo");
         const statusLabel = isDemo ? `Demo · ${qualityStatus}` : qualityStatus;
         const statusClass = isDemo ? "demo" : qualityStatus.toLowerCase();
+        const dotClass = statusClass.includes("critical")
+            ? "dot-danger"
+            : statusClass.includes("warning")
+            ? "dot-warning"
+            : statusClass.includes("demo")
+            ? "dot-demo"
+            : "dot-optimal";
         const formattedTemp = !isNaN(Number(reading.temperature)) ? Number(reading.temperature).toFixed(2) : reading.temperature;
         const formattedPh = !isNaN(Number(reading.ph)) ? Number(reading.ph).toFixed(2) : reading.ph;
-        return `<tr><td>${date.toLocaleDateString()}</td><td>${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</td><td>${formattedTemp} °C</td><td>${formattedPh}</td><td><span class="table-status ${statusClass}">${statusLabel}</span></td></tr>`;
+        const dateDisplay = !isNaN(date.getTime())
+            ? date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
+            : (reading.recorded_at || "-");
+        const timeDisplay = !isNaN(date.getTime())
+            ? date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+            : "-";
+        return `
+            <tr>
+                <td><span class="table-cell-date">${dateDisplay}</span></td>
+                <td><span class="table-cell-time">${timeDisplay}</span></td>
+                <td><span class="reading-val-badge reading-val-temp">${formattedTemp} °C</span></td>
+                <td><span class="reading-val-badge reading-val-ph">${formattedPh}</span></td>
+                <td><span class="table-status status-${statusClass}"><span class="status-indicator-dot ${dotClass}"></span>${statusLabel}</span></td>
+            </tr>
+        `;
     }).join("");
     document.getElementById("table-empty").hidden = total > 0;
 

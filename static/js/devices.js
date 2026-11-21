@@ -225,7 +225,7 @@ function renderDevices(data) {
             tr.innerHTML = `
                 <td>
                     <div class="device-cell-title-row">
-                        <span class="device-cell-name">${dev.name}</span>
+                        <strong class="device-cell-name">${dev.name}</strong>
                     </div>
                 </td>
                 <td>
@@ -238,6 +238,7 @@ function renderDevices(data) {
                 </td>
                 <td>
                     <span class="device-cell-seen">
+                        <svg class="ui-icon" style="width:12px;height:12px;color:#8a998f;margin-right:4px;" aria-hidden="true"><use href="#icon-clock"></use></svg>
                         ${dev.last_seen || "Just now"}
                     </span>
                 </td>

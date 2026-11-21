@@ -568,23 +568,32 @@ function renderAlertHistory(history) {
     } else {
         tableBody.innerHTML = pagedItems.map((item) => {
             const d = new Date(item.recorded_at);
-            const dateStr = !isNaN(d.getTime()) ? d.toLocaleDateString() : item.recorded_at;
-            const timeStr = !isNaN(d.getTime()) ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "-";
+            const dateStr = !isNaN(d.getTime())
+                ? d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
+                : (item.recorded_at || "-");
+            const timeStr = !isNaN(d.getTime())
+                ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+                : "-";
 
             const overall = statusForAlert(item);
             const severityBadge = overall === "Critical"
-                ? '<span class="severity-badge severity-critical">Critical</span>'
+                ? '<span class="severity-badge severity-critical"><span class="status-indicator-dot dot-danger"></span>Critical</span>'
                 : overall === "Warning"
-                ? '<span class="severity-badge severity-warning">Warning</span>'
-                : '<span class="severity-badge severity-optimal severity-none">Optimal</span>';
+                ? '<span class="severity-badge severity-warning"><span class="status-indicator-dot dot-warning"></span>Warning</span>'
+                : '<span class="severity-badge severity-optimal severity-none"><span class="status-indicator-dot dot-optimal"></span>Optimal</span>';
+
+            const countNum = Number(item.alert_count) || 0;
+            const countBadge = countNum > 0
+                ? `<span class="alert-count-pill alert-count-active">${countNum} active</span>`
+                : `<span class="alert-count-pill alert-count-zero">0</span>`;
 
             return `
                 <tr>
-                    <td>${dateStr}</td>
-                    <td>${timeStr}</td>
-                    <td><strong>${item.alert_count}</strong></td>
+                    <td><span class="table-cell-date">${dateStr}</span></td>
+                    <td><span class="table-cell-time">${timeStr}</span></td>
+                    <td>${countBadge}</td>
                     <td>${severityBadge}</td>
-                    <td>${item.details || "-"}</td>
+                    <td><span class="alert-detail-text">${item.details || "All pond parameters optimal"}</span></td>
                 </tr>
             `;
         }).join("");
