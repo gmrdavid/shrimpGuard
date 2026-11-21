@@ -19121,6 +19121,93 @@ nav a {
     margin-top: 1px;
 }
 
+.monitoring-page .rec-summary-tag {
+    font-size: 10px;
+    font-weight: 750;
+    color: #126b4f;
+    background: #e6f4ee;
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid #c3e5d5;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.monitoring-page .rec-provider-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #1b5145;
+    background: #f0f7f3;
+    border: 1px solid #d4e7dc;
+    padding: 3px 9px;
+    border-radius: 6px;
+}
+
+.monitoring-page .rec-provider-tag .ui-icon {
+    width: 13px;
+    height: 13px;
+    color: #126b4f;
+}
+
+.monitoring-page .monitoring-rec-footer-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    background: #fbf9f5;
+    border: 1px solid #dfcfbe;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-top: 4px;
+}
+
+.monitoring-page .rec-footer-info {
+    flex: 1 1 280px;
+}
+
+.monitoring-page .rec-footer-heading {
+    display: block;
+    font-size: 13px;
+    font-weight: 800;
+    color: #3b2818;
+    margin-bottom: 3px;
+}
+
+.monitoring-page .rec-footer-sub {
+    font-size: 11.5px;
+    color: #705844;
+    line-height: 1.45;
+    margin: 0;
+}
+
+.monitoring-page .btn-view-detailed-recs {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 750;
+    color: #ffffff;
+    background: linear-gradient(135deg, #126b4f 0%, #0d523c 100%);
+    border: 1px solid #0d523c;
+    border-radius: 8px;
+    padding: 9px 16px;
+    text-decoration: none;
+    box-shadow: 0 1px 3px rgba(18, 107, 79, 0.25);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    white-space: nowrap;
+}
+
+.monitoring-page .btn-view-detailed-recs:hover {
+    background: linear-gradient(135deg, #16815f 0%, #126b4f 100%);
+    box-shadow: 0 3px 8px rgba(18, 107, 79, 0.35);
+    transform: translateY(-1px);
+    color: #ffffff;
+}
+
 
 /* ==========================================================================
    AERIS-V — UNIFIED CLIENT PAGES DESIGN SYSTEM (ANALYTICS-STANDARD)

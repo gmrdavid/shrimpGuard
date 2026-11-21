@@ -678,15 +678,15 @@ function updateRecommendations(reading, recommendation) {
 
     const classification = recommendation.classification || "Assessment";
     const badgeClass = classification.toLowerCase();
-    const recommendationText = recommendation.recommendation || "Maintain standard pond monitoring protocols.";
-    const provider = recommendation.source || "OpenAI API";
+    const summaryText = recommendation.summary || recommendation.recommendation_summary || recommendation.recommendation || "Maintain standard pond monitoring protocols.";
+    const provider = recommendation.source || "Google Gemini API";
     const species = recommendation.species || "Penaeus vannamei (Pacific White Shrimp)";
 
     let solutionsList = [];
     if (Array.isArray(recommendation.actionable_solutions) && recommendation.actionable_solutions.length > 0) {
-        solutionsList = recommendation.actionable_solutions;
-    } else if (recommendation.actionable_solution) {
-        solutionsList = [recommendation.actionable_solution];
+        solutionsList = recommendation.actionable_solutions.slice(0, 3);
+    } else if (recommendation.actionable_solution || recommendation.actionable_summary) {
+        solutionsList = [recommendation.actionable_summary || recommendation.actionable_solution];
     }
 
     let solutionsHtml = "";
@@ -695,7 +695,7 @@ function updateRecommendations(reading, recommendation) {
             <div class="rec-action-panel">
                 <div class="rec-action-header">
                     <svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
-                    <span>ACTIONABLE SOLUTIONS FOR PENAEUS VANNAMEI</span>
+                    <span>SUMMARY ACTION DIRECTIVES &bull; PENAEUS VANNAMEI</span>
                 </div>
                 <ul class="rec-action-items">
                     ${solutionsList.map((step) => `
@@ -715,18 +715,34 @@ function updateRecommendations(reading, recommendation) {
                 <div class="rec-badge-wrap">
                     <span class="table-status ${badgeClass}">${classification} Status</span>
                     <span class="rec-species-chip">Target: <em>${species}</em></span>
+                    <span class="rec-summary-tag">Summary View</span>
+                </div>
+                <div class="rec-provider-tag">
+                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg>
+                    <span>${provider}</span>
                 </div>
             </div>
 
             <div class="rec-content-section">
                 <h4 class="rec-content-title">
                     <svg class="ui-icon" aria-hidden="true"><use href="#icon-lightbulb"></use></svg>
-                    Biological Assessment &amp; Recommendation
+                    Gemini API Recommendation (Summary)
                 </h4>
-                <p class="rec-text-body">${recommendationText}</p>
+                <p class="rec-text-body">${summaryText}</p>
             </div>
 
             ${solutionsHtml}
+
+            <!-- DIRECT LINK TO DETAILED RECOMMENDATIONS WEBPAGE -->
+            <div class="monitoring-rec-footer-card">
+                <div class="rec-footer-info">
+                    <span class="rec-footer-heading">Need In-Depth Field Protocols &amp; 24-Hour Horizon Analysis?</span>
+                    <p class="rec-footer-sub">Access complete chemical dosages, step-by-step checklists, and ML trajectory graphs on the dedicated AI Recommendation page.</p>
+                </div>
+                <a href="/recommendations" class="btn-view-detailed-recs">
+                    <span>View Detailed AI Recommendations &rarr;</span>
+                </a>
+            </div>
         </div>
     `;
 }

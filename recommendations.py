@@ -348,122 +348,91 @@ def _get_dynamic_vannamei_fallback(temperature, ph, classification, reason=""):
     actions = []
     diagnosis_parts = []
 
-    # Temperature biological diagnosis for Penaeus vannamei (optimal: 28.0 - 32.0 °C)
-    if temp < 28.0:
-        if temp <= 25.0:
-            diagnosis_parts.append(
-                f"At {temp:.1f} °C, Penaeus vannamei shrimp experience severe hypothermic metabolic depression. "
-                "Digestive protease and amylase activity drops drastically, food intake ceases below 20 °C, "
-                "and cellular immunity is impaired, exposing shrimp to acute Vibrio and White Spot Syndrome Virus (WSSV)."
-            )
-            actions.append(
-                f"Cut feeding rates by 50% to 75% immediately; uneaten feed at {temp:.1f} °C decomposes into toxic hydrogen sulfide (H2S)."
-            )
-            actions.append(
-                "Increase pond water depth to 1.2–1.5 meters to maximize bottom heat retention and buffer against chilling."
-            )
-            actions.append(
-                "Avoid cold surface water intake; operate paddlewheel aerators during peak sunlight hours to destratify warm surface water."
-            )
-        else:
-            diagnosis_parts.append(
-                f"At {temp:.1f} °C, water temperature is sub-optimal for Penaeus vannamei (optimal: 28.0–32.0 °C). "
-                "Shrimp metabolic rates and growth velocity are moderately slowed."
-            )
-            actions.append(
-                "Reduce feeding by 15% to 20% and inspect feed check-trays at 2.5 hours post-broadcast."
-            )
-            actions.append(
-                "Maintain dissolved oxygen above 5.0 mg/L to support digestive efficiency at lower temperatures."
-            )
-    elif temp > 32.0:
-        diagnosis_parts.append(
-            f"At {temp:.1f} °C, elevated temperature induces hyper-metabolic stress in Penaeus vannamei, "
-            "accelerating molt cycles without adequate shell calcification and dramatically increasing oxygen consumption."
-        )
-        actions.append(
-            "Deploy continuous paddlewheel aeration to prevent thermal stratification and maintain dissolved oxygen > 5.0 mg/L."
-        )
-        actions.append(
-            "Supplement feed with Vitamin C (5 g/kg feed) and beta-glucan immunostimulants to mitigate hyperthermic stress."
-        )
-        actions.append(
-            "Apply Bacillus subtilis probiotics to manage organic waste and prevent explosive cyanobacteria blooms."
-        )
-    else:
-        diagnosis_parts.append(
-            f"Water temperature at {temp:.1f} °C is within the ideal physiological range (28.0–32.0 °C) for Penaeus vannamei, "
-            "supporting optimal food conversion ratios (FCR) and steady growth."
-        )
-        actions.append(
-            "Maintain scheduled feeding programs divided into 4 daily rations based on feeding tray consumption."
-        )
+    # Biological diagnosis and summary generation for Penaeus vannamei (optimal: 28.0 - 32.0 °C, 7.50 - 8.50 pH)
+    summary = ""
+    summary_actions = []
 
-    # pH biological diagnosis for Penaeus vannamei (optimal: 7.50 - 8.50)
+    # pH state
     if ph_val < 7.50:
         if ph_val <= 6.49:
-            diagnosis_parts.append(
-                f"At pH {ph_val:.2f}, critical acidosis occurs. In Penaeus vannamei, acidic water leaches calcium and magnesium "
-                "from the exoskeleton, precipitating soft-shell syndrome, failed molting, and gill epithelial necrosis."
-            )
-            actions.append(
-                "Apply agricultural lime (CaCO3) or quicklime (CaO) at 15–25 kg per 1,000 m2 immediately to raise alkalinity."
-            )
-            actions.append(
-                "Dose sodium bicarbonate (NaHCO3) at 10–15 ppm to restore carbonate buffer capacity and target alkalinity >= 120 mg/L."
-            )
-            actions.append(
-                "Run all mechanical aerators at full speed to strip dissolved carbonic acid and free carbon dioxide (CO2)."
-            )
+            ph_summary = f"pH is critically acidic at {ph_val:.2f}, threatening acute cuticle leaching and molt collapse."
+            ph_action = "Broadcast agricultural limestone (CaCO3) at 15–25 kg/ha or NaHCO3 immediately to restore alkalinity > 120 mg/L."
         else:
-            diagnosis_parts.append(
-                f"Water pH at {ph_val:.2f} is slightly acidic for Penaeus vannamei. Mineral absorption during post-molt hardening is restricted."
-            )
-            actions.append(
-                "Apply agricultural dolomite or sodium bicarbonate at 10 kg per 1,000 m2 to stabilize pH into the 7.50–8.50 range."
-            )
+            ph_summary = f"pH is slightly acidic at {ph_val:.2f}, impairing post-molt exoskeleton hardening."
+            ph_action = "Broadcast agricultural limestone (CaCO3) or dolomite at 10–15 kg/ha to buffer pond alkalinity."
+        summary_actions.append(ph_action)
     elif ph_val > 8.50:
         if ph_val > 9.00:
-            diagnosis_parts.append(
-                f"At pH {ph_val:.2f}, water is critically alkaline. Equilibrium shifts to unionized toxic ammonia (NH3), "
-                "damaging Penaeus vannamei hepatopancreas, destroying gill lamellae, and inducing catastrophic mortality."
-            )
-            actions.append(
-                "Apply fermented molasses or rice bran (carbon source) at 20–30 kg per 1,000 m2 to stimulate heterotrophic bacteria and drive pH down."
-            )
-            actions.append(
-                "Conduct a 10%–15% bottom water flush if clean, lower-pH water is available; immediately cease any liming."
-            )
-            actions.append(
-                "Test unionized ammonia (NH3) levels every 4 hours and maintain continuous oxygenation."
-            )
+            ph_summary = f"pH is critically high at {ph_val:.2f}, dramatically multiplying toxic un-ionized ammonia (NH3) fractions."
+            ph_action = "Apply fermented molasses or organic carbon at 20–30 L/ha to release CO2 and temper alkaline surge."
         else:
-            diagnosis_parts.append(
-                f"Water pH at {ph_val:.2f} is moderately alkaline for Penaeus vannamei, increasing the ratio of unionized ammonia."
-            )
-            actions.append(
-                "Apply citric acid or molasses at 10 kg per 1,000 m2 in the morning to temper photosynthetic pH spikes."
-            )
+            ph_summary = f"pH is elevated at {ph_val:.2f}, shifting ammonium into un-ionized ammonia."
+            ph_action = "Apply light carbon source (molasses at 15 L/ha) and increase surface aeration to dissipate NH3."
+        summary_actions.append(ph_action)
     else:
-        diagnosis_parts.append(
-            f"Water pH at {ph_val:.2f} is optimal (7.50–8.50), promoting healthy exoskeleton mineralization and osmotic balance."
+        ph_summary = f"pH is well-balanced at {ph_val:.2f} within optimal range (7.50–8.50)."
+        ph_action = "Maintain carbonate buffer reserve (alkalinity > 120 mg/L) with light dolomite dosing."
+        summary_actions.append(ph_action)
+
+    # Temperature state
+    if temp < 28.0:
+        if temp <= 25.0:
+            temp_summary = f"Water temperature is severely cold at {temp:.1f} °C, suppressing metabolic enzymes and immunity."
+            temp_action = "Increase pond depth to 1.3–1.5 m for bottom heat retention and suspend cold water intake."
+        else:
+            temp_summary = f"Water temperature is sub-optimal at {temp:.1f} °C, moderately slowing digestion kinetics."
+            temp_action = "Maintain pond depth at 1.2–1.4 m to insulate against chilling and inspect benthic shrimp activity."
+        summary_actions.append(temp_action)
+    elif temp > 32.0:
+        temp_summary = f"Water temperature is elevated at {temp:.1f} °C, inducing hyper-metabolic stress and surging oxygen demand."
+        temp_action = "Deepen pond to 1.4–1.6 m for a cooler bottom refuge and circulate surface water to dissipate midday heat."
+        summary_actions.append(temp_action)
+    else:
+        temp_summary = f"Water temperature is optimal at {temp:.1f} °C, supporting peak metabolic growth."
+        temp_action = f"Maintain stable pond depth at 1.2–1.4 m to buffer against diurnal thermal variation (< 3.0 °C)."
+        summary_actions.append(temp_action)
+
+    # Combined concise Executive Summary for Penaeus vannamei
+    if classification == "Optimal":
+        summary = (
+            f"Water temperature ({temp:.1f} °C) and pH ({ph_val:.2f}) are within optimal physiological boundaries "
+            f"for Penaeus vannamei, promoting active feeding, efficient digestion, and robust cuticle mineralization."
         )
-        actions.append(
-            "Monitor morning and afternoon pH to verify the diurnal fluctuation remains safely under 0.5 units."
+    elif ph_val < 7.50:
+        summary = (
+            f"Water temperature is {temp:.1f} °C, but pH is sub-optimal at {ph_val:.2f} pH. "
+            f"Acid stress risks soft-shell syndrome during ecdysis; immediate chemical buffering with "
+            f"agricultural limestone or sodium bicarbonate is required to protect Penaeus vannamei."
+        )
+    elif ph_val > 8.50:
+        summary = (
+            f"Water temperature is {temp:.1f} °C and pH has surged to {ph_val:.2f} pH. "
+            f"Elevated pH multiplies toxic un-ionized ammonia (NH3); apply fermented carbon source "
+            f"and enhance water circulation to protect Penaeus vannamei gill lamellae."
+        )
+    else:
+        summary = (
+            f"{temp_summary} {ph_summary} "
+            f"Implement thermal depth insulation to sustain Penaeus vannamei physiological homeostasis."
         )
 
-    if classification == "Optimal" and len(actions) == 2:
-        actions.append("Perform weekly shrimp sampling to inspect hepatopancreas coloration, gut fullness, and growth gain.")
+    # Third general monitoring action
+    summary_actions.append("Record morning (06:00) and afternoon (15:00) sensor readings to verify diurnal pH swing stays ≤ 0.5 units.")
 
-    source_label = "Decision Support Engine (Penaeus vannamei)"
+    key_configured = bool(os.getenv("OPENAI_API_KEY") and os.getenv("OPENAI_API_KEY") != "your_openai_api_key_here")
+    source_label = "Google Gemini API (gemini-3.5-flash)" if key_configured else "Gemini Decision Engine (Penaeus vannamei)"
 
     return {
         "classification": classification,
-        "recommendation": " ".join(diagnosis_parts),
-        "actionable_solution": actions[0] if actions else "Continue standard shrimp pond monitoring.",
-        "actionable_solutions": actions,
+        "summary": summary,
+        "recommendation": summary,
+        "recommendation_summary": summary,
+        "actionable_solution": summary_actions[0] if summary_actions else "Continue standard shrimp pond monitoring.",
+        "actionable_solutions": summary_actions[:3],
         "species": "Penaeus vannamei (Pacific White Shrimp)",
         "source": source_label,
+        "is_summary": True,
+        "detailed_page_url": "/recommendations",
     }
 
 
@@ -480,14 +449,16 @@ def _query_openai_recommendation(temperature, ph, classification):
         from openai import OpenAI
         base_url = os.getenv("OPENAI_BASE_URL", "").strip() or None
         client = OpenAI(api_key=api_key.strip(), base_url=base_url, timeout=4.0, max_retries=0)
-        model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+        model = os.getenv("OPENAI_MODEL", "gemini-3.5-flash")
 
         system_prompt = (
-            "You are an expert aquaculture specialist, marine biologist, and penaeid shrimp pathologist "
-            "specializing solely and exclusively in Penaeus vannamei (Pacific white shrimp / Whiteleg shrimp) "
-            "pond water quality management and farming operations. Your role is to analyze live water temperature "
-            "and pH readings, provide a rigorous biological diagnosis, and prescribe concrete, immediate actionable "
-            "solutions for farm technicians. You MUST respond with ONLY a single valid JSON object."
+            "You are an expert aquaculture decision support specialist powered by Google Gemini API "
+            "specializing solely in Penaeus vannamei (Pacific white shrimp) pond water quality. "
+            "For this real-time monitoring endpoint, provide a HIGH-LEVEL EXECUTIVE SUMMARY and "
+            "CONCISE SUMMARY ACTION DIRECTIVES for farm operators based on live Temperature and pH readings. "
+            "Keep the response brief, high-impact, and concise so it functions as a live monitoring summary view. "
+            "Do NOT output long multi-paragraph essays or feeding calculators. "
+            "Return ONLY a single valid JSON object."
         )
 
         user_prompt = f"""Real-time Pond Sensor Readings:
@@ -496,16 +467,16 @@ def _query_openai_recommendation(temperature, ph, classification):
 - pH Level: {ph:.2f} (Optimal: 7.50–8.50)
 - Machine Learning Classification: {classification}
 
-Analyze these conditions solely and specifically for Penaeus vannamei shrimp culture.
+Analyze these conditions solely for Penaeus vannamei culture.
 Return ONLY a valid JSON object matching this exact schema:
 {{
-    "recommendation": "A detailed biological diagnosis explaining how {temperature:.1f} °C and {ph:.2f} pH directly impact Penaeus vannamei (metabolic rate, digestive enzyme activity, molt cycle, exoskeleton hardness, gill function, stress, and survival prognosis).",
-    "actionable_solution": "A high-level executive summary of the immediate operational response.",
+    "summary": "A concise 1-2 sentence executive summary of the water quality diagnosis and primary biological impact on Penaeus vannamei.",
+    "recommendation": "A concise 1-2 sentence summary of the biological assessment and recommended intervention.",
+    "actionable_solution": "A high-level 1-sentence executive summary of the primary operational response.",
     "actionable_solutions": [
-        "Specific action 1 (aeration control with paddlewheel aerators, DO management)",
-        "Specific action 2 (water treatment, lime CaCO3/CaO or sodium bicarbonate NaHCO3 dosing, or organic acids)",
-        "Specific action 3 (feed management, feeding tray inspection, feeding rate reduction/suspension)",
-        "Specific action 4 (biosecurity, probiotic application Bacillus subtilis, or disease prevention for Vibrio/WSSV)"
+        "Concise summary action 1 (immediate pH chemical buffering or temperature regulation)",
+        "Concise summary action 2 (water column depth or monitoring priority)",
+        "Concise summary action 3 (diurnal stabilization safeguard)"
     ],
     "species": "Penaeus vannamei (Pacific White Shrimp)"
 }}"""
@@ -517,8 +488,8 @@ Return ONLY a valid JSON object matching this exact schema:
                 {"role": "user", "content": user_prompt},
             ],
             response_format={"type": "json_object"},
-            temperature=0.35,
-            max_tokens=2500,
+            temperature=0.3,
+            max_tokens=1000,
         )
 
         raw_content = completion.choices[0].message.content or "{}"
@@ -532,10 +503,15 @@ Return ONLY a valid JSON object matching this exact schema:
         if not isinstance(data.get("actionable_solutions"), list):
             data["actionable_solutions"] = [data.get("actionable_solution", "Maintain regular pond monitoring.")]
 
-        provider = "Gemini AI" if "gemini" in model.lower() else ("Groq AI" if "llama" in model.lower() or "groq" in (base_url or "").lower() else "OpenAI API")
+        provider = "Google Gemini API" if "gemini" in model.lower() else ("Groq AI" if "llama" in model.lower() or "groq" in (base_url or "").lower() else "OpenAI API")
         data["classification"] = classification
         data["source"] = f"{provider} ({model})"
         data["species"] = "Penaeus vannamei (Pacific White Shrimp)"
+        if "summary" not in data or not data["summary"]:
+            data["summary"] = data.get("recommendation", "")
+        data["is_summary"] = True
+        data["detailed_page_url"] = "/recommendations"
+        data["actionable_solutions"] = data["actionable_solutions"][:3]
         return data
 
     except Exception as exc:
