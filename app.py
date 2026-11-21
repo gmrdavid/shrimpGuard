@@ -1906,6 +1906,85 @@ def api_devices_unpair():
         return jsonify({"success": False, "error": f"Database error: {str(exc)}"}), 500
 
 
+@app.route("/api/devices/edit", methods=["POST"])
+@role_required("Client", "Admin")
+def api_devices_edit():
+    """Updates device_name and pond_location for a paired node."""
+    user_email = session.get("user_id")
+    payload = request.get_json(silent=True) or {}
+    raw_node_id = str(payload.get("device_id") or "").strip().upper()
+    device_name = str(payload.get("device_name") or "").strip()
+    pond_location = str(payload.get("pond_location") or "").strip()
+
+    if not raw_node_id:
+        return jsonify({"success": False, "error": "Hardware Node ID is required."}), 400
+
+    try:
+        device = UserDevice.query.filter_by(device_id=raw_node_id).first()
+        if not device:
+            return jsonify({"success": False, "error": f"Node '{raw_node_id}' not found."}), 404
+
+        if device.user_email != user_email and session.get("role") != "Admin":
+            return jsonify({"success": False, "error": "You do not have permission to edit this node."}), 403
+
+        if device_name:
+            device.device_name = device_name
+        if pond_location:
+            device.pond_location = pond_location
+
+        db.session.commit()
+        log_activity(user_email, "Edit Device", f"Updated node '{raw_node_id}' ({device.device_name}, {device.pond_location})")
+        return jsonify({
+            "success": True,
+            "message": f"Hardware Node '{raw_node_id}' updated successfully.",
+            "device": device.to_dict()
+        })
+    except Exception as exc:
+        db.session.rollback()
+        app.logger.exception("Failed to edit device: %s", exc)
+        return jsonify({"success": False, "error": f"Database error: {str(exc)}"}), 500
+
+
+@app.route("/api/devices/toggle-pause", methods=["POST"])
+@role_required("Client", "Admin")
+def api_devices_toggle_pause():
+    """Toggles status between Active and Paused for a paired node."""
+    user_email = session.get("user_id")
+    payload = request.get_json(silent=True) or {}
+    raw_node_id = str(payload.get("device_id") or "").strip().upper()
+
+    if not raw_node_id:
+        return jsonify({"success": False, "error": "Hardware Node ID is required."}), 400
+
+    try:
+        device = UserDevice.query.filter_by(device_id=raw_node_id).first()
+        if not device:
+            return jsonify({"success": False, "error": f"Node '{raw_node_id}' not found."}), 404
+
+        if device.user_email != user_email and session.get("role") != "Admin":
+            return jsonify({"success": False, "error": "You do not have permission to modify this node."}), 403
+
+        if device.status == "Paused":
+            device.status = "Active"
+            action_desc = "Resumed"
+        else:
+            device.status = "Paused"
+            action_desc = "Paused"
+
+        db.session.commit()
+        log_activity(user_email, f"{action_desc} Device", f"{action_desc} telemetry routing for node '{raw_node_id}'")
+        return jsonify({
+            "success": True,
+            "message": f"Telemetry for Node '{raw_node_id}' has been {action_desc.lower()}.",
+            "status": device.status,
+            "device": device.to_dict()
+        })
+    except Exception as exc:
+        db.session.rollback()
+        app.logger.exception("Failed to toggle pause on device: %s", exc)
+        return jsonify({"success": False, "error": f"Database error: {str(exc)}"}), 500
+
+
 
 @app.route("/api/hardware/reconnect", methods=["POST"])
 @role_required("Client", "Admin")

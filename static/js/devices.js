@@ -420,8 +420,10 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchDevicesInventory();
     fetchPairedNodes();
     setupPairNodeModal();
+    setupEditNodeModal();
+    setupPauseNodeModal();
     setupUnpairModal();
-    attachUnpairHandlers();
+    attachDeviceActionHandlers();
 
     // Dynamic polling (throttled under Data-Saver)
     function restartPolling() {
@@ -514,6 +516,29 @@ document.addEventListener("DOMContentLoaded", () => {
         if (reRunBtn) {
             e.preventDefault();
             runDiagnostics();
+            return;
+        }
+
+        const editBtn = e.target.closest(".btn-edit-node");
+        if (editBtn) {
+            e.preventDefault();
+            const nodeId = editBtn.getAttribute("data-node-id");
+            if (!nodeId) return;
+            const nodeName = editBtn.getAttribute("data-node-name") || "";
+            const nodeLocation = editBtn.getAttribute("data-node-location") || "";
+            openEditNodeModal(nodeId, nodeName, nodeLocation);
+            return;
+        }
+
+        const pauseBtn = e.target.closest(".btn-pause-node");
+        if (pauseBtn) {
+            e.preventDefault();
+            const nodeId = pauseBtn.getAttribute("data-node-id");
+            if (!nodeId) return;
+            const nodeName = pauseBtn.getAttribute("data-node-name") || "";
+            const nodeLocation = pauseBtn.getAttribute("data-node-location") || "";
+            const nodeStatus = pauseBtn.getAttribute("data-node-status") || "Active";
+            openPauseNodeModal(nodeId, nodeName, nodeLocation, nodeStatus);
             return;
         }
 
@@ -618,10 +643,19 @@ function renderPairedNodes(nodes) {
 
     tbody.innerHTML = nodes.map(node => {
         const isStreaming = Boolean(node.is_streaming);
+        const isPaused = (node.status === "Paused");
         const lastSeenText = node.last_seen ? timeAgo(node.last_seen) : "Awaiting first packet";
-        const linkBadge = isStreaming
-            ? `<span class="table-status status-optimal status-online"><span class="status-indicator-dot dot-optimal"></span> Streaming Live</span>`
-            : `<span class="table-status status-optimal status-online"><span class="status-indicator-dot dot-optimal"></span> Active</span>`;
+        
+        let linkBadge;
+        if (isPaused) {
+            linkBadge = `<span class="table-status status-warning status-paused"><span class="status-indicator-dot dot-warning"></span> Paused</span>`;
+        } else if (isStreaming) {
+            linkBadge = `<span class="table-status status-optimal status-online"><span class="status-indicator-dot dot-optimal"></span> Streaming Live</span>`;
+        } else {
+            linkBadge = `<span class="table-status status-optimal status-online"><span class="status-indicator-dot dot-optimal"></span> Active</span>`;
+        }
+
+        const nodeLoc = node.pond_location || 'Pond Site';
 
         return `
             <tr class="device-row" data-node-id="${escapeHtml(node.device_id)}">
@@ -631,7 +665,7 @@ function renderPairedNodes(nodes) {
                 <td>
                     <div class="device-cell-title-row">
                         <strong class="device-cell-name">${escapeHtml(node.device_name)}</strong>
-                        <span class="device-location-tag">(${escapeHtml(node.pond_location || 'Pond Site')})</span>
+                        <span class="device-location-tag">(${escapeHtml(nodeLoc)})</span>
                     </div>
                 </td>
                 <td>
@@ -646,16 +680,305 @@ function renderPairedNodes(nodes) {
                     </span>
                 </td>
                 <td style="text-align: center;">
-                    <button type="button" class="btn-unpair-node" data-node-id="${escapeHtml(node.device_id)}" data-node-name="${escapeHtml(node.device_name || '')}" data-node-location="${escapeHtml(node.pond_location || 'Pond Site')}">
-                        Unpair
-                    </button>
+                    <div class="device-actions-wrap">
+                        <button type="button" class="btn-node-action btn-edit-node" data-node-id="${escapeHtml(node.device_id)}" data-node-name="${escapeHtml(node.device_name || '')}" data-node-location="${escapeHtml(nodeLoc)}" title="Edit node nickname and location">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-edit"></use></svg>
+                            <span>Edit</span>
+                        </button>
+                        <button type="button" class="btn-node-action btn-pause-node ${isPaused ? 'is-paused' : ''}" data-node-id="${escapeHtml(node.device_id)}" data-node-name="${escapeHtml(node.device_name || '')}" data-node-location="${escapeHtml(nodeLoc)}" data-node-status="${escapeHtml(node.status || 'Active')}" title="${isPaused ? 'Resume telemetry stream' : 'Pause telemetry stream'}">
+                            <svg class="ui-icon" aria-hidden="true"><use href="${isPaused ? '#icon-play' : '#icon-pause'}"></use></svg>
+                            <span>${isPaused ? 'Resume' : 'Pause'}</span>
+                        </button>
+                        <button type="button" class="btn-node-action btn-unpair-node" data-node-id="${escapeHtml(node.device_id)}" data-node-name="${escapeHtml(node.device_name || '')}" data-node-location="${escapeHtml(nodeLoc)}" title="Unpair this hardware node">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-trash"></use></svg>
+                            <span>Unpair</span>
+                        </button>
+                    </div>
                 </td>
             </tr>
         `;
     }).join("");
 
-    attachUnpairHandlers();
+    attachDeviceActionHandlers();
 }
+
+/* ==========================================================================
+   EDIT TELEMETRY NODE MODAL CONTROLLER
+   ========================================================================== */
+
+let pendingEditNodeId = null;
+
+function openEditNodeModal(nodeId, nodeName = "", nodeLocation = "") {
+    pendingEditNodeId = nodeId;
+    const dialog = document.getElementById("edit-node-dialog");
+    if (!dialog) return;
+
+    const idInput = document.getElementById("edit-node-id");
+    const nameInput = document.getElementById("edit-node-name");
+    const locInput = document.getElementById("edit-pond-location");
+    const errBox = document.getElementById("edit-node-error");
+
+    if (idInput) idInput.value = nodeId;
+    if (nameInput) nameInput.value = nodeName;
+    if (locInput) locInput.value = nodeLocation;
+    if (errBox) {
+        errBox.textContent = "";
+        errBox.style.display = "none";
+    }
+
+    if (typeof dialog.showModal === "function") {
+        dialog.showModal();
+    } else {
+        dialog.setAttribute("open", "");
+    }
+    document.body.classList.add("modal-backdrop-open");
+}
+
+function closeEditNodeModal() {
+    pendingEditNodeId = null;
+    const dialog = document.getElementById("edit-node-dialog");
+    if (!dialog) return;
+
+    if (typeof dialog.close === "function") {
+        dialog.close();
+    } else {
+        dialog.removeAttribute("open");
+    }
+    document.body.classList.remove("modal-backdrop-open");
+}
+
+function setupEditNodeModal() {
+    const dialog = document.getElementById("edit-node-dialog");
+    if (!dialog) return;
+
+    const cancelBtn = document.getElementById("cancel-edit-node");
+    const closeBtn = document.getElementById("btn-close-edit-dialog");
+    const form = document.getElementById("edit-node-form");
+    const errBox = document.getElementById("edit-node-error");
+    const submitBtn = document.getElementById("submit-edit-node");
+
+    if (closeBtn) closeBtn.addEventListener("click", closeEditNodeModal);
+    if (cancelBtn) cancelBtn.addEventListener("click", closeEditNodeModal);
+
+    dialog.addEventListener("click", (e) => {
+        if (e.target === dialog) closeEditNodeModal();
+    });
+
+    if (form) {
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const idInput = document.getElementById("edit-node-id");
+            const nameInput = document.getElementById("edit-node-name");
+            const locInput = document.getElementById("edit-pond-location");
+
+            const nodeId = (idInput ? idInput.value : "").trim().toUpperCase();
+            const deviceName = (nameInput ? nameInput.value : "").trim();
+            const pondLocation = (locInput ? locInput.value : "").trim();
+
+            if (!nodeId) return;
+
+            if (errBox) errBox.style.display = "none";
+            const originalContent = submitBtn ? submitBtn.innerHTML : "";
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `<svg class="ui-icon devices-spin" aria-hidden="true"><use href="#icon-settings"></use></svg><span>Saving...</span>`;
+            }
+
+            try {
+                const res = await fetch("/api/devices/edit", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        device_id: nodeId,
+                        device_name: deviceName,
+                        pond_location: pondLocation
+                    })
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    closeEditNodeModal();
+                    showNotice(data.message || `Node '${nodeId}' updated successfully.`, "success");
+                    await fetchPairedNodes();
+                    await fetchDevicesInventory();
+                } else {
+                    if (errBox) {
+                        errBox.textContent = data.error || "Failed to update node.";
+                        errBox.style.display = "block";
+                    }
+                }
+            } catch (err) {
+                console.error("[Devices] Edit node error:", err);
+                if (errBox) {
+                    errBox.textContent = "Network error while saving. Please try again.";
+                    errBox.style.display = "block";
+                }
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalContent;
+                }
+            }
+        });
+    }
+}
+
+/* ==========================================================================
+   PAUSE / RESUME TELEMETRY NODE MODAL CONTROLLER
+   ========================================================================== */
+
+let pendingPauseNodeId = null;
+let pendingPauseStatus = "Active";
+
+function openPauseNodeModal(nodeId, nodeName = "", nodeLocation = "", currentStatus = "Active") {
+    pendingPauseNodeId = nodeId;
+    pendingPauseStatus = currentStatus;
+    const modal = document.getElementById("pause-node-modal");
+    if (!modal) return;
+
+    const isCurrentlyPaused = (currentStatus === "Paused");
+
+    const titleEl = document.getElementById("pause-modal-title");
+    const subtitleEl = document.getElementById("pause-modal-subtitle");
+    const eyebrowEl = document.getElementById("pause-modal-eyebrow");
+    const leadTextEl = document.getElementById("pause-modal-lead-text");
+    const idEl = document.getElementById("pause-target-node-id");
+    const nameEl = document.getElementById("pause-target-node-name");
+    const locEl = document.getElementById("pause-target-node-location");
+    const statusLabel = document.getElementById("pause-target-status-label");
+    const pulseDot = document.getElementById("pause-target-pulse-dot");
+    const bannerTitle = document.getElementById("pause-modal-banner-title");
+    const bannerDesc = document.getElementById("pause-modal-banner-desc");
+    const btnLabel = document.getElementById("pause-btn-label");
+    const btnIcon = document.getElementById("pause-btn-icon");
+    const modalIcon = document.getElementById("pause-modal-icon");
+    const iconBadge = document.getElementById("pause-modal-icon-badge");
+
+    if (idEl) idEl.textContent = nodeId || "NODE";
+    if (nameEl) nameEl.textContent = nodeName || `Telemetry Node (${nodeId})`;
+    if (locEl) locEl.textContent = nodeLocation ? `Location: ${nodeLocation}` : "Pond Site";
+
+    if (isCurrentlyPaused) {
+        if (titleEl) titleEl.textContent = "Resume Telemetry Stream";
+        if (subtitleEl) subtitleEl.textContent = "Reactivate incoming telemetry packet routing for this node";
+        if (eyebrowEl) eyebrowEl.textContent = "TELEMETRY REACTIVATION";
+        if (leadTextEl) leadTextEl.textContent = "Are you sure you want to resume telemetry ingestion for this pond node? Real-time data streams will immediately begin routing to your live dashboard.";
+        if (statusLabel) statusLabel.textContent = "Paused";
+        if (pulseDot) pulseDot.style.background = "#f59e0b";
+        if (bannerTitle) bannerTitle.textContent = "Stream Resumption Note";
+        if (bannerDesc) bannerDesc.textContent = "Resuming will immediately listen for LoRa radio packets broadcasting from this transmitter unit and resume 24/7 AI condition tracking.";
+        if (btnLabel) btnLabel.textContent = "Confirm Resume";
+        if (btnIcon) {
+            const useEl = btnIcon.querySelector("use");
+            if (useEl) useEl.setAttribute("href", "#icon-play");
+        }
+        if (modalIcon) {
+            const useEl = modalIcon.querySelector("use");
+            if (useEl) useEl.setAttribute("href", "#icon-play");
+        }
+        if (iconBadge) {
+            iconBadge.style.color = "#15803d";
+            iconBadge.style.boxShadow = "0 4px 14px rgba(22, 163, 74, 0.18)";
+        }
+    } else {
+        if (titleEl) titleEl.textContent = "Pause Telemetry Stream";
+        if (subtitleEl) subtitleEl.textContent = "Temporarily pause incoming telemetry packets from this node";
+        if (eyebrowEl) eyebrowEl.textContent = "TELEMETRY STREAM CONTROL";
+        if (leadTextEl) leadTextEl.textContent = "Are you sure you want to pause telemetry data ingestion for this pond node? Incoming sensor packets will be safely placed on standby.";
+        if (statusLabel) statusLabel.textContent = "Active";
+        if (pulseDot) pulseDot.style.background = "#10b981";
+        if (bannerTitle) bannerTitle.textContent = "Stream Standby Note";
+        if (bannerDesc) bannerDesc.textContent = "Pausing telemetry halts incoming sensor packet routing without unpairing your hardware. All historical data and calibration schedules remain preserved.";
+        if (btnLabel) btnLabel.textContent = "Confirm Pause";
+        if (btnIcon) {
+            const useEl = btnIcon.querySelector("use");
+            if (useEl) useEl.setAttribute("href", "#icon-pause");
+        }
+        if (modalIcon) {
+            const useEl = modalIcon.querySelector("use");
+            if (useEl) useEl.setAttribute("href", "#icon-pause");
+        }
+        if (iconBadge) {
+            iconBadge.style.color = "#d97706";
+            iconBadge.style.boxShadow = "0 4px 14px rgba(217, 119, 6, 0.18)";
+        }
+    }
+
+    modal.style.display = "flex";
+    modal.classList.add("is-open");
+    document.body.classList.add("modal-backdrop-open");
+}
+
+function closePauseNodeModal() {
+    pendingPauseNodeId = null;
+    const modal = document.getElementById("pause-node-modal");
+    if (!modal) return;
+
+    modal.style.display = "none";
+    modal.classList.remove("is-open");
+    document.body.classList.remove("modal-backdrop-open");
+}
+
+function setupPauseNodeModal() {
+    const modal = document.getElementById("pause-node-modal");
+    if (!modal) return;
+
+    const btnClose = document.getElementById("btn-close-pause-modal");
+    const btnCancel = document.getElementById("btn-cancel-pause");
+    const btnConfirm = document.getElementById("btn-confirm-pause");
+
+    if (btnClose) btnClose.addEventListener("click", closePauseNodeModal);
+    if (btnCancel) btnCancel.addEventListener("click", closePauseNodeModal);
+
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) closePauseNodeModal();
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && modal.classList.contains("is-open")) {
+            closePauseNodeModal();
+        }
+    });
+
+    if (btnConfirm) {
+        btnConfirm.addEventListener("click", async () => {
+            if (!pendingPauseNodeId) return;
+            const nodeId = pendingPauseNodeId;
+            const originalContent = btnConfirm.innerHTML;
+            btnConfirm.disabled = true;
+            btnConfirm.innerHTML = `<svg class="ui-icon devices-spin" aria-hidden="true"><use href="#icon-settings"></use></svg><span>Updating...</span>`;
+
+            try {
+                const res = await fetch("/api/devices/toggle-pause", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ device_id: nodeId })
+                });
+                const data = await res.json();
+                closePauseNodeModal();
+
+                if (res.ok && data.success) {
+                    showNotice(data.message || `Node '${nodeId}' status updated.`, "success");
+                    await fetchPairedNodes();
+                    await fetchDevicesInventory();
+                } else {
+                    showNotice(data.error || "Failed to update node status.", "error");
+                }
+            } catch (err) {
+                console.error("[Devices] Toggle pause error:", err);
+                closePauseNodeModal();
+                showNotice("Network error while updating node status.", "error");
+            } finally {
+                btnConfirm.disabled = false;
+                btnConfirm.innerHTML = originalContent;
+            }
+        });
+    }
+}
+
+/* ==========================================================================
+   UNPAIR TELEMETRY NODE MODAL CONTROLLER
+   ========================================================================== */
 
 let pendingUnpairNodeId = null;
 
@@ -753,7 +1076,30 @@ function setupUnpairModal() {
     }
 }
 
-function attachUnpairHandlers() {
+function attachDeviceActionHandlers() {
+    document.querySelectorAll(".btn-edit-node").forEach(btn => {
+        btn.onclick = (e) => {
+            e.preventDefault();
+            const nodeId = btn.getAttribute("data-node-id");
+            if (!nodeId) return;
+            const nodeName = btn.getAttribute("data-node-name") || "";
+            const nodeLocation = btn.getAttribute("data-node-location") || "";
+            openEditNodeModal(nodeId, nodeName, nodeLocation);
+        };
+    });
+
+    document.querySelectorAll(".btn-pause-node").forEach(btn => {
+        btn.onclick = (e) => {
+            e.preventDefault();
+            const nodeId = btn.getAttribute("data-node-id");
+            if (!nodeId) return;
+            const nodeName = btn.getAttribute("data-node-name") || "";
+            const nodeLocation = btn.getAttribute("data-node-location") || "";
+            const nodeStatus = btn.getAttribute("data-node-status") || "Active";
+            openPauseNodeModal(nodeId, nodeName, nodeLocation, nodeStatus);
+        };
+    });
+
     document.querySelectorAll(".btn-unpair-node").forEach(btn => {
         btn.onclick = (e) => {
             e.preventDefault();
@@ -777,6 +1123,8 @@ function attachUnpairHandlers() {
         };
     });
 }
+
+const attachUnpairHandlers = attachDeviceActionHandlers;
 
 function setupPairNodeModal() {
     const dialog = document.getElementById("pair-node-dialog");

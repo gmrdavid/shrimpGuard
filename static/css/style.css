@@ -30449,116 +30449,382 @@ dialog#pair-node-dialog[open],
     -webkit-backdrop-filter: blur(8px) !important;
 }
 
-.unpair-modal-container {
-    max-width: 490px !important;
+/* ==========================================================================
+   PAIRED TELEMETRY NODES TABLE ACTIONS (EDIT, PAUSE, UNPAIR)
+   ========================================================================== */
+
+.device-actions-wrap {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+    flex-wrap: nowrap !important;
+}
+
+.btn-node-action {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    padding: 0 11px !important;
+    border-radius: 8px !important;
+    font-size: 12px !important;
+    font-weight: 650 !important;
+    cursor: pointer !important;
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    border: 1px solid transparent !important;
+    font-family: inherit !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+    outline: none !important;
+}
+
+.btn-node-action .ui-icon {
+    width: 14px !important;
+    height: 14px !important;
+    flex-shrink: 0 !important;
+}
+
+/* Edit action - clean soft sky/blue */
+.btn-edit-node {
+    background: #f0f7ff !important;
+    color: #0284c7 !important;
+    border: 1px solid rgba(2, 132, 199, 0.18) !important;
+}
+
+.btn-edit-node:hover {
+    background: #0284c7 !important;
+    color: #ffffff !important;
+    border-color: #0284c7 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 3px 8px rgba(2, 132, 199, 0.25) !important;
+}
+
+/* Pause action - clean soft amber/orange when active */
+.btn-pause-node {
+    background: #fffbeb !important;
+    color: #d97706 !important;
+    border: 1px solid rgba(217, 119, 6, 0.2) !important;
+}
+
+.btn-pause-node:hover {
+    background: #d97706 !important;
+    color: #ffffff !important;
+    border-color: #d97706 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 3px 8px rgba(217, 119, 6, 0.25) !important;
+}
+
+/* Pause action - clean soft emerald/green when paused (Resume mode) */
+.btn-pause-node.is-paused {
+    background: #f0fdf4 !important;
+    color: #16a34a !important;
+    border: 1px solid rgba(22, 163, 74, 0.2) !important;
+}
+
+.btn-pause-node.is-paused:hover {
+    background: #16a34a !important;
+    color: #ffffff !important;
+    border-color: #16a34a !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 3px 8px rgba(22, 163, 74, 0.25) !important;
+}
+
+/* Unpair action - clean soft red/rose */
+.btn-unpair-node {
+    background: #fef2f2 !important;
+    color: #dc2626 !important;
+    border: 1px solid rgba(220, 38, 38, 0.18) !important;
+}
+
+.btn-unpair-node:hover {
+    background: #dc2626 !important;
+    color: #ffffff !important;
+    border-color: #dc2626 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 3px 8px rgba(220, 38, 38, 0.25) !important;
+}
+
+/* Status badge for paused state */
+.table-status.status-paused {
+    background: #fffbeb !important;
+    color: #b45309 !important;
+    border: 1px solid rgba(245, 158, 11, 0.25) !important;
+}
+
+.status-indicator-dot.dot-warning {
+    background: #f59e0b !important;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2) !important;
+}
+
+/* ==========================================================================
+   EDIT TELEMETRY NODE MODAL DIALOG (UNIFORM THEME)
+   ========================================================================== */
+
+dialog#edit-node-dialog,
+.devices-page dialog#edit-node-dialog,
+.edit-node-dialog {
+    border: none !important;
+    border-radius: 24px !important;
+    box-shadow: 0 25px 65px -12px rgba(18, 54, 46, 0.28), 0 12px 28px -6px rgba(18, 54, 46, 0.12), 0 0 1px rgba(18, 54, 46, 0.15) !important;
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: auto !important;
+    max-width: 530px !important;
     width: 92% !important;
+    overflow: hidden !important;
 }
 
-.unpair-target-card {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    padding: 13px 16px;
-    margin: 16px 0;
-    display: flex;
-    align-items: center;
-    gap: 13px;
+dialog#edit-node-dialog::backdrop,
+.devices-page dialog#edit-node-dialog::backdrop {
+    background: rgba(12, 31, 26, 0.62) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
 }
 
-.unpair-target-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 9px;
-    background: #fee2e2;
-    color: #dc2626;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+dialog#edit-node-dialog[open],
+.devices-page dialog#edit-node-dialog[open] {
+    animation: pairNodeDialogEntrance 0.26s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-.unpair-target-icon .ui-icon {
-    width: 20px;
-    height: 20px;
+/* ==========================================================================
+   PAUSE / RESUME TELEMETRY NODE MODAL (UNIFORM THEME)
+   ========================================================================== */
+
+#pause-node-modal.maint-modal-backdrop {
+    background: rgba(12, 31, 26, 0.62) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
 }
 
-.unpair-target-meta {
-    min-width: 0;
-    flex: 1;
+.pause-modal-container {
+    border: none !important;
+    border-radius: 24px !important;
+    box-shadow: 0 25px 65px -12px rgba(18, 54, 46, 0.28), 0 12px 28px -6px rgba(18, 54, 46, 0.12), 0 0 1px rgba(18, 54, 46, 0.15) !important;
+    background: #ffffff !important;
+    max-width: 530px !important;
+    width: 92% !important;
+    overflow: hidden !important;
+    animation: pairNodeDialogEntrance 0.26s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-.unpair-target-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 2px;
-    flex-wrap: wrap;
+#pause-node-modal .maint-modal-header {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+    padding: 24px 28px 20px !important;
+    background: linear-gradient(135deg, #f0fbf5 0%, #e6f6ed 60%, #ddf2e5 100%) !important;
+    border-top: none !important;
+    border-bottom: 1px solid rgba(22, 163, 74, 0.08) !important;
+    border-top-left-radius: 24px !important;
+    border-top-right-radius: 24px !important;
 }
 
-.unpair-target-name {
-    font-size: 13.5px;
-    font-weight: 700;
-    color: #1e293b;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+#pause-node-modal .maint-modal-icon-badge {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 14px !important;
+    background: #ffffff !important;
+    color: #d97706 !important;
+    border: none !important;
+    box-shadow: 0 4px 14px rgba(217, 119, 6, 0.18) !important;
+    flex-shrink: 0 !important;
 }
 
-.unpair-target-loc {
-    font-size: 12px;
-    color: #64748b;
-    display: block;
+#pause-node-modal .maint-modal-icon-badge .ui-icon {
+    width: 24px !important;
+    height: 24px !important;
 }
 
-.unpair-warning-callout {
-    background: #fffbeb;
-    border: 1px solid #fde68a;
-    border-left: 4px solid #f59e0b;
-    border-radius: 8px;
-    padding: 12px 14px;
-    font-size: 12.5px;
-    color: #92400e;
-    line-height: 1.5;
+/* ==========================================================================
+   UNPAIR TELEMETRY NODE MODAL (UNIFORM THEME)
+   ========================================================================== */
+
+#unpair-node-modal.maint-modal-backdrop {
+    background: rgba(12, 31, 26, 0.62) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
 }
 
-.unpair-warning-callout strong {
-    color: #78350f;
-    font-weight: 700;
+.unpair-modal-container {
+    border: none !important;
+    border-radius: 24px !important;
+    box-shadow: 0 25px 65px -12px rgba(18, 54, 46, 0.28), 0 12px 28px -6px rgba(18, 54, 46, 0.12), 0 0 1px rgba(18, 54, 46, 0.15) !important;
+    background: #ffffff !important;
+    max-width: 530px !important;
+    width: 92% !important;
+    overflow: hidden !important;
+    animation: pairNodeDialogEntrance 0.26s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.unpair-modal-header {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+    padding: 24px 28px 20px !important;
+    background: linear-gradient(135deg, #fff5f5 0%, #fee2e2 60%, #fecaca 100%) !important;
+    border-top: none !important;
+    border-bottom: 1px solid rgba(220, 38, 38, 0.08) !important;
+    border-top-left-radius: 24px !important;
+    border-top-right-radius: 24px !important;
+}
+
+.unpair-icon-badge {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 14px !important;
+    background: #ffffff !important;
+    color: #dc2626 !important;
+    border: none !important;
+    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.18) !important;
+    flex-shrink: 0 !important;
+}
+
+.unpair-icon-badge .ui-icon {
+    width: 24px !important;
+    height: 24px !important;
+}
+
+.unpair-eyebrow {
+    color: #dc2626 !important;
+}
+
+.unpair-title {
+    color: #991b1b !important;
+}
+
+.unpair-target-card-uniform {
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+    background: #fef2f2 !important;
+    border: none !important;
+    box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.14) !important;
+    border-radius: 14px !important;
+    padding: 13px 16px !important;
+    margin-bottom: 2px !important;
+}
+
+.unpair-context-icon {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 12px !important;
+    background: #ffffff !important;
+    color: #dc2626 !important;
+    border: none !important;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.15) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+}
+
+.unpair-context-chip {
+    background: #ffffff !important;
+    color: #dc2626 !important;
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.12) !important;
+    padding: 4px 10px !important;
+    border-radius: 9999px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+
+.unpair-warning-banner {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    padding: 13px 16px !important;
+    background: #fffbeb !important;
+    border-radius: 14px !important;
+    box-shadow: inset 0 0 0 1px rgba(217, 119, 6, 0.18) !important;
+}
+
+.unpair-warning-icon {
+    width: 20px !important;
+    height: 20px !important;
+    color: #d97706 !important;
+    flex-shrink: 0 !important;
+    margin-top: 1px !important;
+}
+
+.unpair-warning-icon .ui-icon {
+    width: 19px !important;
+    height: 19px !important;
+}
+
+.unpair-warning-text {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+}
+
+.unpair-warning-text strong {
+    font-size: 12.5px !important;
+    font-weight: 750 !important;
+    color: #92400e !important;
+}
+
+.unpair-warning-text span {
+    color: #b45309 !important;
 }
 
 .btn-unpair-confirm {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    background: #dc2626 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    padding: 0 24px !important;
+    border-radius: 12px !important;
+    border: none !important;
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
     color: #ffffff !important;
-    border: 1px solid #b91c1c !important;
-    padding: 9px 18px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 650;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.2);
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.25) !important;
+    font-family: inherit !important;
+    box-sizing: border-box !important;
 }
 
 .btn-unpair-confirm:hover {
-    background: #b91c1c !important;
-    border-color: #991b1b !important;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
+    background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%) !important;
+    box-shadow: 0 8px 22px rgba(220, 38, 38, 0.35) !important;
+    transform: translateY(-1.5px) !important;
+}
+
+.btn-unpair-confirm:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2) !important;
 }
 
 .btn-unpair-confirm:disabled {
-    opacity: 0.65;
-    cursor: not-allowed;
-    transform: none;
+    opacity: 0.65 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
 }
 
 .btn-unpair-confirm .ui-icon {
-    width: 16px;
-    height: 16px;
+    width: 17px !important;
+    height: 17px !important;
 }
 
 /* ==========================================================================

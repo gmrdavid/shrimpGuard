@@ -510,7 +510,7 @@
                                         Last Telemetry
                                     </span>
                                 </th>
-                                <th scope="col" style="width: 110px; text-align: center;">Actions</th>
+                                <th scope="col" style="width: 220px; text-align: center;">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="paired-nodes-table-body">
@@ -530,9 +530,15 @@
                                     <span class="device-owner-cell">{{ node.user_email }}</span>
                                 </td>
                                 <td>
+                                    {% if node.status == 'Paused' %}
+                                    <span class="table-status status-warning status-paused">
+                                        <span class="status-indicator-dot dot-warning"></span> Paused
+                                    </span>
+                                    {% else %}
                                     <span class="table-status status-optimal status-online">
                                         <span class="status-indicator-dot dot-optimal"></span> Active
                                     </span>
+                                    {% endif %}
                                 </td>
                                 <td>
                                     <span class="device-cell-seen node-last-seen-cell">
@@ -548,9 +554,20 @@
                                     </span>
                                 </td>
                                 <td style="text-align: center;">
-                                    <button type="button" class="btn-unpair-node" data-node-id="{{ node.device_id }}" data-node-name="{{ node.device_name }}" data-node-location="{{ node_loc }}">
-                                        Unpair
-                                    </button>
+                                    <div class="device-actions-wrap">
+                                        <button type="button" class="btn-node-action btn-edit-node" data-node-id="{{ node.device_id }}" data-node-name="{{ node.device_name }}" data-node-location="{{ node_loc }}" title="Edit node nickname and pond location">
+                                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-edit"></use></svg>
+                                            <span>Edit</span>
+                                        </button>
+                                        <button type="button" class="btn-node-action btn-pause-node {% if node.status == 'Paused' %}is-paused{% endif %}" data-node-id="{{ node.device_id }}" data-node-name="{{ node.device_name }}" data-node-location="{{ node_loc }}" data-node-status="{{ node.status or 'Active' }}" title="{% if node.status == 'Paused' %}Resume telemetry stream{% else %}Pause telemetry stream{% endif %}">
+                                            <svg class="ui-icon" aria-hidden="true"><use href="{% if node.status == 'Paused' %}#icon-play{% else %}#icon-pause{% endif %}"></use></svg>
+                                            <span>{% if node.status == 'Paused' %}Resume{% else %}Pause{% endif %}</span>
+                                        </button>
+                                        <button type="button" class="btn-node-action btn-unpair-node" data-node-id="{{ node.device_id }}" data-node-name="{{ node.device_name }}" data-node-location="{{ node_loc }}" title="Unpair this hardware node">
+                                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-trash"></use></svg>
+                                            <span>Unpair</span>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                             {% else %}
@@ -920,19 +937,181 @@
     </div>
 </dialog>
 
-<!-- UNPAIR POND TELEMETRY NODE CONFIRMATION MODAL -->
-<div id="unpair-node-modal" class="maint-modal-backdrop" style="display: none;" role="dialog" aria-labelledby="unpair-modal-title" aria-modal="true">
-    <div class="maint-modal-container unpair-modal-container">
-        <div class="maint-modal-header">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <div class="maint-modal-icon-badge" style="background: #fef2f2; color: #dc2626;">
-                    <svg class="ui-icon" aria-hidden="true">
-                        <use href="#icon-alert"></use>
+<!-- EDIT POND TELEMETRY NODE MODAL DIALOG -->
+<dialog id="edit-node-dialog" class="pair-node-dialog edit-node-dialog admin-user-dialog" aria-labelledby="edit-dialog-title">
+    <div class="pair-dialog-card admin-modal-card">
+        <header class="pair-dialog-header admin-user-dialog-heading">
+            <div class="pair-dialog-header-main admin-modal-title-group">
+                <div class="pair-dialog-icon admin-modal-icon-badge" aria-hidden="true">
+                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-edit"></use></svg>
+                </div>
+                <div class="pair-dialog-title-wrap admin-modal-heading-text">
+                    <span class="pair-dialog-eyebrow">NODE CONFIGURATION</span>
+                    <h2 id="edit-dialog-title">Edit Telemetry Node</h2>
+                    <p class="pair-dialog-subtitle admin-modal-subtitle">Update node friendly nickname and pond location assignment</p>
+                </div>
+            </div>
+            <button class="pair-dialog-close-btn admin-dialog-close" id="btn-close-edit-dialog" type="button" aria-label="Close dialog">
+                <svg class="ui-icon" aria-hidden="true"><use href="#icon-x"></use></svg>
+            </button>
+        </header>
+
+        <form id="edit-node-form" class="pair-dialog-form admin-user-form">
+            <div class="pair-dialog-body admin-form-body">
+                <div id="edit-node-error" class="pair-dialog-error" style="display: none;"></div>
+
+                <div class="pair-dialog-tip-banner">
+                    <div class="pair-tip-icon" aria-hidden="true">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg>
+                    </div>
+                    <div class="pair-tip-text">
+                        <strong>Hardware Identity Notice</strong>
+                        <span>The Hardware Node ID is hard-coded into physical ESP32 firmware and cannot be altered. You can update its display nickname and assigned farm pond location.</span>
+                    </div>
+                </div>
+
+                <div class="pair-form-field admin-form-field">
+                    <label for="edit-node-id" class="pair-field-label">
+                        <span>Hardware Node ID</span>
+                        <span class="field-badge optional">Fixed ID</span>
+                    </label>
+                    <div class="pair-input-wrap admin-input-group">
+                        <span class="pair-input-icon admin-input-icon" aria-hidden="true">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-cpu"></use></svg>
+                        </span>
+                        <input type="text" id="edit-node-id" name="device_id" readonly class="pair-input input-node-id" style="opacity: 0.85; background: #f1f5f9; cursor: not-allowed;">
+                    </div>
+                    <span class="pair-field-hint admin-field-hint">
+                        Physical node broadcast identifier over LoRa radio network.
+                    </span>
+                </div>
+
+                <div class="pair-form-field admin-form-field">
+                    <label for="edit-node-name" class="pair-field-label">
+                        <span>Node Friendly Name <span class="required-star" aria-hidden="true">*</span></span>
+                        <span class="field-badge required">Required</span>
+                    </label>
+                    <div class="pair-input-wrap admin-input-group">
+                        <span class="pair-input-icon admin-input-icon" aria-hidden="true">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-settings"></use></svg>
+                        </span>
+                        <input type="text" id="edit-node-name" name="device_name" required placeholder="e.g. Node 1 Primary Monitor" autocomplete="off" class="pair-input">
+                    </div>
+                    <span class="pair-field-hint admin-field-hint">
+                        A recognized nickname for this hardware unit across dashboards.
+                    </span>
+                </div>
+
+                <div class="pair-form-field admin-form-field">
+                    <label for="edit-pond-location" class="pair-field-label">
+                        <span>Pond Location / Site <span class="required-star" aria-hidden="true">*</span></span>
+                        <span class="field-badge required">Required</span>
+                    </label>
+                    <div class="pair-input-wrap admin-input-group">
+                        <span class="pair-input-icon admin-input-icon" aria-hidden="true">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-droplet"></use></svg>
+                        </span>
+                        <input type="text" id="edit-pond-location" name="pond_location" required placeholder="e.g. Main Pond Alpha, Nursery Pond 2" autocomplete="off" class="pair-input">
+                    </div>
+                    <span class="pair-field-hint admin-field-hint">
+                        Target shrimp pond or water tank where this node is placed.
+                    </span>
+                </div>
+            </div>
+
+            <div class="pair-dialog-footer admin-user-form-actions">
+                <button id="cancel-edit-node" class="btn-pair-cancel admin-user-cancel" type="button">
+                    Cancel
+                </button>
+                <button id="submit-edit-node" class="btn-pair-submit admin-user-submit" type="submit">
+                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
+                    <span>Save Changes</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<!-- PAUSE / RESUME POND TELEMETRY NODE CONFIRMATION MODAL -->
+<div id="pause-node-modal" class="maint-modal-backdrop" style="display: none;" role="dialog" aria-labelledby="pause-modal-title" aria-modal="true">
+    <div class="maint-modal-container maint-modal-sm maint-log-dialog pause-modal-container">
+        <div class="maint-modal-header" id="pause-modal-header">
+            <div class="maint-header-info-wrap">
+                <div class="maint-modal-icon-badge" id="pause-modal-icon-badge">
+                    <svg class="ui-icon" aria-hidden="true" id="pause-modal-icon">
+                        <use href="#icon-pause"></use>
                     </svg>
                 </div>
-                <div>
-                    <span class="maint-modal-eyebrow" style="color: #dc2626;">DEVICE DISCONNECTION</span>
-                    <h2 id="unpair-modal-title">Unpair Telemetry Node</h2>
+                <div class="maint-modal-heading-text">
+                    <span class="maint-modal-eyebrow" id="pause-modal-eyebrow">TELEMETRY STREAM CONTROL</span>
+                    <h2 id="pause-modal-title">Pause Telemetry Stream</h2>
+                    <p class="maint-modal-subtitle" id="pause-modal-subtitle">Temporarily pause incoming telemetry packets from this node</p>
+                </div>
+            </div>
+            <button type="button" class="maint-modal-close" id="btn-close-pause-modal" aria-label="Close dialog">
+                <svg class="ui-icon" aria-hidden="true"><use href="#icon-x"></use></svg>
+            </button>
+        </div>
+
+        <div class="maint-modal-body">
+            <p style="margin: 0 0 16px; font-size: 13.5px; color: #334155; line-height: 1.5;" id="pause-modal-lead-text">
+                Are you sure you want to pause telemetry data ingestion for this pond node?
+            </p>
+
+            <div class="maint-target-context-card" id="pause-target-context-card">
+                <div class="maint-target-context-icon" id="pause-target-icon-wrap">
+                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-cpu"></use></svg>
+                </div>
+                <div class="maint-target-context-info">
+                    <div class="maint-target-context-title">
+                        <span class="maint-target-id-badge" id="pause-target-node-id">NODE01</span>
+                        <strong id="pause-target-node-name">Pond Transmitter Node</strong>
+                    </div>
+                    <span class="maint-target-context-sub" id="pause-target-node-location">Location: Pond Site</span>
+                </div>
+                <div class="maint-target-context-chip" id="pause-target-status-chip">
+                    <span class="status-pulse-dot" id="pause-target-pulse-dot" style="background: #10b981;"></span>
+                    <span id="pause-target-status-label">Active</span>
+                </div>
+            </div>
+
+            <div class="pair-dialog-tip-banner" id="pause-modal-info-banner" style="margin-top: 14px;">
+                <div class="pair-tip-icon" aria-hidden="true">
+                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg>
+                </div>
+                <div class="pair-tip-text" id="pause-modal-banner-text">
+                    <strong id="pause-modal-banner-title">Stream Status Note</strong>
+                    <span id="pause-modal-banner-desc">Pausing telemetry halts incoming sensor packet routing without unpairing your hardware. All historical data and calibration schedules remain preserved.</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="maint-modal-footer">
+            <button type="button" class="btn-maint-secondary" id="btn-cancel-pause">
+                Cancel
+            </button>
+            <button type="button" class="btn-maint-primary" id="btn-confirm-pause">
+                <svg class="ui-icon" aria-hidden="true" id="pause-btn-icon"><use href="#icon-pause"></use></svg>
+                <span id="pause-btn-label">Confirm Pause</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- UNPAIR POND TELEMETRY NODE CONFIRMATION MODAL -->
+<div id="unpair-node-modal" class="maint-modal-backdrop" style="display: none;" role="dialog" aria-labelledby="unpair-modal-title" aria-modal="true">
+    <div class="maint-modal-container maint-modal-sm maint-log-dialog unpair-modal-container">
+        <div class="maint-modal-header unpair-modal-header">
+            <div class="maint-header-info-wrap">
+                <div class="maint-modal-icon-badge unpair-icon-badge">
+                    <svg class="ui-icon" aria-hidden="true">
+                        <use href="#icon-trash"></use>
+                    </svg>
+                </div>
+                <div class="maint-modal-heading-text">
+                    <span class="maint-modal-eyebrow unpair-eyebrow">DEVICE DISCONNECTION</span>
+                    <h2 id="unpair-modal-title" class="unpair-title">Unpair Telemetry Node</h2>
+                    <p class="maint-modal-subtitle">Disconnect physical LoRa hardware transmitter from your account</p>
                 </div>
             </div>
             <button type="button" class="maint-modal-close" id="btn-close-unpair-modal" aria-label="Close dialog">
@@ -945,21 +1124,31 @@
                 Are you sure you want to unpair this pond telemetry node from your account?
             </p>
 
-            <div class="unpair-target-card">
-                <div class="unpair-target-icon">
+            <div class="maint-target-context-card unpair-target-card-uniform">
+                <div class="maint-target-context-icon unpair-context-icon">
                     <svg class="ui-icon" aria-hidden="true"><use href="#icon-cpu"></use></svg>
                 </div>
-                <div class="unpair-target-meta">
-                    <div class="unpair-target-header">
-                        <span class="device-id-badge" id="unpair-target-node-id">NODE01</span>
-                        <strong class="unpair-target-name" id="unpair-target-node-name">Pond Transmitter Node</strong>
+                <div class="maint-target-context-info">
+                    <div class="maint-target-context-title">
+                        <span class="maint-target-id-badge" id="unpair-target-node-id">NODE01</span>
+                        <strong id="unpair-target-node-name">Pond Transmitter Node</strong>
                     </div>
-                    <span class="unpair-target-loc" id="unpair-target-node-location">Location: Pond Site</span>
+                    <span class="maint-target-context-sub" id="unpair-target-node-location">Location: Pond Site</span>
+                </div>
+                <div class="maint-target-context-chip unpair-context-chip">
+                    <span class="status-pulse-dot" style="background: #ef4444;"></span>
+                    <span>To Disconnect</span>
                 </div>
             </div>
 
-            <div class="unpair-warning-callout">
-                <strong>Warning:</strong> Live water quality telemetry (pH, Temperature, Battery, and RF packet feed) from this physical node will immediately cease routing to your dashboard. You can re-pair this hardware at any time using your Hardware Node ID.
+            <div class="unpair-warning-banner" style="margin-top: 14px;">
+                <div class="unpair-warning-icon" aria-hidden="true">
+                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-alert"></use></svg>
+                </div>
+                <div class="unpair-warning-text">
+                    <strong>Telemetry Interruption Warning</strong>
+                    <span>Live water quality telemetry (pH, Temperature, Battery, and RF packet feed) from this physical node will immediately cease routing to your dashboard. You can re-pair this hardware at any time using your Hardware Node ID.</span>
+                </div>
             </div>
         </div>
 
@@ -968,7 +1157,7 @@
                 Cancel
             </button>
             <button type="button" class="btn-unpair-confirm" id="btn-confirm-unpair">
-                <svg class="ui-icon" aria-hidden="true"><use href="#icon-alert"></use></svg>
+                <svg class="ui-icon" aria-hidden="true"><use href="#icon-trash"></use></svg>
                 <span>Confirm Unpair</span>
             </button>
         </div>
