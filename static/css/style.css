@@ -19549,21 +19549,68 @@ nav a {
     box-shadow: 0 1px 3px rgba(28, 69, 45, 0.03) !important;
 }
 
-/* 5. Standard Panels Across All Pages */
+/* 5. Standard Panels Across All Pages - Clean Refined Background Tints for Main Boxes */
 .dashboard-page .panel,
 .monitoring-page .panel,
 .historical-page .panel,
 .analytics-page .panel,
 .alerts-page .panel,
 .settings-page .panel,
+.devices-page .panel,
+.calculators-page .panel,
+.admin-page .panel,
 .dashboard-page .input-panel,
 .settings-page .input-panel,
-.historical-page .filter-panel {
-    border: 1px solid #e5ece7 !important;
+.historical-page .filter-panel,
+.dashboard-page .dashboard-panel,
+.monitoring-page .monitoring-status-panel,
+.monitoring-page .monitoring-source-panel,
+.monitoring-page .monitoring-trend-panel,
+.monitoring-page .monitoring-recommendations-panel,
+.historical-page .historical-filter-panel,
+.historical-page .historical-review-panel,
+.historical-page .historical-chart-panel,
+.historical-page .historical-records-panel,
+.alerts-page .alerts-panel,
+.settings-page .settings-panel,
+.settings-page .settings-intro-panel,
+.dashboard-page .dashboard-input-panel,
+.devices-page .devices-panel,
+.devices-page .probe-lifecycle-card,
+.calculators-page .tools-calc-panel,
+.calculators-page .calculator-card,
+.admin-page .admin-panel {
+    border: 1px solid #dce8e0 !important;
     border-radius: 17px !important;
-    background: #fff !important;
-    box-shadow: 0 5px 20px rgba(28, 69, 45, 0.025) !important;
+    background: linear-gradient(180deg, #f9fbf9 0%, #f3f8f5 100%) !important;
+    box-shadow: 0 4px 18px rgba(18, 107, 79, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
     transition: box-shadow 180ms ease, transform 180ms ease !important;
+}
+
+/* Main Telemetry Stream Panels Across Pages */
+.dashboard-page .telemetry-stream-panel,
+.monitoring-page .monitoring-stream-panel,
+.recommendations-page .recs-card-status,
+.recommendations-page .recs-banner-panel,
+.tools-telemetry-section .panel {
+    background: linear-gradient(180deg, #f8fbf9 0%, #edf6f1 100%) !important;
+    border: 1px solid #d2e5da !important;
+    border-top: 3.5px solid #126b4f !important;
+    border-radius: 16px !important;
+    box-shadow: 0 6px 22px rgba(18, 107, 79, 0.055) !important;
+}
+
+/* Main Table Panels & Wrappers Across Pages */
+.historical-page .historical-table-wrap,
+.alerts-page .alerts-history-table-wrap,
+.alerts-page .alerts-table-wrap,
+.devices-table-wrap,
+.paired-nodes-table-wrap,
+.admin-page .admin-table-wrap,
+.admin-page .admin-role-table-wrap {
+    background: linear-gradient(180deg, #f9fbf9 0%, #f4f8f5 100%) !important;
+    border: 1px solid #dce5df !important;
+    box-shadow: 0 4px 18px rgba(18, 107, 79, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
 }
 
 .dashboard-page .dashboard-panel,
@@ -19618,7 +19665,7 @@ nav a {
     height: 22px !important;
 }
 
-/* 6. Unified Metric Cards (Dashboard, Monitoring, Analytics, Alerts) */
+/* 6. Unified Metric Cards (Dashboard, Monitoring, Analytics, Alerts, Devices) */
 .dashboard-page .dashboard-metric-cards {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -19647,6 +19694,7 @@ nav a {
 .monitoring-page .monitoring-reading-card,
 .analytics-page .analytics-metric-card,
 .alerts-page .alerts-metric-card,
+.devices-page .devices-metric-card,
 .analytics-page .analytics-sensor-card {
     position: relative !important;
     display: flex !important;
@@ -19656,10 +19704,10 @@ nav a {
     min-width: 0 !important;
     padding: 22px 22px 0 !important;
     overflow: hidden !important;
-    border: 1px solid #e5ece7 !important;
+    border: 1px solid #dce8e1 !important;
     border-radius: 17px !important;
-    background: #fff !important;
-    box-shadow: 0 5px 20px rgba(28, 69, 45, 0.025) !important;
+    background: linear-gradient(180deg, #f9fbf9 0%, #f2f7f4 100%) !important;
+    box-shadow: 0 4px 18px rgba(18, 107, 79, 0.04) !important;
     transition: box-shadow 180ms ease, transform 180ms ease !important;
 }
 
@@ -19667,9 +19715,58 @@ nav a {
 .monitoring-page .monitoring-reading-card:hover,
 .analytics-page .analytics-metric-card:hover,
 .alerts-page .alerts-metric-card:hover,
+.devices-page .devices-metric-card:hover,
 .analytics-page .analytics-sensor-card:hover {
-    box-shadow: 0 9px 25px rgba(28, 69, 45, 0.07) !important;
+    box-shadow: 0 9px 25px rgba(18, 107, 79, 0.07) !important;
     transform: translateY(-2px) !important;
+}
+
+/* Water Temperature Main Parameter Card (Soft Clean Pale Ice-Blue Tint) */
+.dashboard-page .dashboard-metric-card.temperature-card,
+.monitoring-page .monitoring-reading-card.temperature-card,
+.monitoring-page .monitoring-cards > .monitoring-reading-card:first-child,
+.dashboard-page .dashboard-metric-cards > .dashboard-metric-card:first-child {
+    background: linear-gradient(180deg, #f9fbfe 0%, #edf4fc 100%) !important;
+    border: 1px solid #d8e5f5 !important;
+    border-top: 3.5px solid #2563eb !important;
+    box-shadow: 0 5px 20px rgba(37, 99, 235, 0.05) !important;
+}
+
+/* Water pH Level Main Parameter Card (Soft Clean Pale Emerald-Mint Tint) */
+.dashboard-page .dashboard-metric-card.ph-card,
+.monitoring-page .monitoring-reading-card.ph-card,
+.monitoring-page .monitoring-cards > .monitoring-reading-card:last-child,
+.dashboard-page .dashboard-metric-cards > .dashboard-metric-card:last-child {
+    background: linear-gradient(180deg, #f8fcf9 0%, #ecf7f1 100%) !important;
+    border: 1px solid #d2e9dd !important;
+    border-top: 3.5px solid #059669 !important;
+    box-shadow: 0 5px 20px rgba(5, 150, 105, 0.05) !important;
+}
+
+/* AI Recommendations Main Cards Across Pages */
+.recommendations-page .recs-card,
+.recommendations-page .rec-card,
+.recommendations-page .rec-section-card,
+.recommendations-page .recs-overview-panel,
+.monitoring-page .monitoring-recommendations-panel {
+    background: linear-gradient(180deg, #f8fbf9 0%, #edf6f1 100%) !important;
+    border: 1px solid #d4e7dc !important;
+    border-top: 3.5px solid #126b4f !important;
+    box-shadow: 0 5px 20px rgba(18, 107, 79, 0.045) !important;
+}
+
+/* Sub-boxes, inputs & inner components inside main boxes retain clean contrast */
+.panel input:not([type="checkbox"]):not([type="radio"]),
+.dashboard-panel input:not([type="checkbox"]):not([type="radio"]),
+.historical-filter-panel input,
+.settings-panel input,
+.tools-calc-panel input,
+.panel select,
+.dashboard-panel select,
+.historical-filter-panel select,
+.settings-panel select,
+.tools-calc-panel select {
+    background: #ffffff !important;
 }
 
 /* Metric Status Badges */
