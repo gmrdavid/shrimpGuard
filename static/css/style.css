@@ -29743,265 +29743,474 @@ body.modal-backdrop-open {
 }
 
 /* ==========================================================================
-   UNPAIR TELEMETRY NODE MODAL & DIALOG POLISH
+   PAIR TELEMETRY NODE MODAL & DIALOG - ELEVATED DESIGN
    ========================================================================== */
 
-.devices-page dialog.admin-user-dialog,
-.devices-dialog {
-    border: 1px solid #dce7df !important;
-    border-radius: 16px !important;
-    box-shadow: 0 24px 70px -8px rgba(18, 54, 46, 0.28), 0 8px 24px -4px rgba(18, 54, 46, 0.12) !important;
+dialog#pair-node-dialog,
+.devices-page dialog#pair-node-dialog,
+.pair-node-dialog {
+    border: none !important;
+    border-radius: 24px !important;
+    box-shadow: 0 25px 65px -12px rgba(18, 54, 46, 0.28), 0 12px 28px -6px rgba(18, 54, 46, 0.12), 0 0 1px rgba(18, 54, 46, 0.15) !important;
     background: #ffffff !important;
     padding: 0 !important;
     margin: auto !important;
-    overflow: visible !important;
+    max-width: 530px !important;
+    width: 92% !important;
+    overflow: hidden !important;
 }
 
-.devices-page dialog.admin-user-dialog .admin-modal-card {
+dialog#pair-node-dialog::backdrop,
+.devices-page dialog#pair-node-dialog::backdrop {
+    background: rgba(12, 31, 26, 0.62) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+}
+
+dialog#pair-node-dialog[open],
+.devices-page dialog#pair-node-dialog[open] {
+    animation: pairNodeDialogEntrance 0.26s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@keyframes pairNodeDialogEntrance {
+    0% {
+        opacity: 0;
+        transform: scale(0.96) translateY(12px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.pair-dialog-card,
+.devices-page dialog#pair-node-dialog .admin-modal-card {
     display: flex;
     flex-direction: column;
-    border-radius: 15px;
+    border-radius: 24px;
     background: #ffffff;
-    overflow: visible;
+    border: none !important;
+    overflow: hidden;
 }
 
-.devices-page dialog.admin-user-dialog::backdrop {
-    background: rgba(14, 30, 26, 0.65) !important;
-    backdrop-filter: blur(6px) !important;
-    -webkit-backdrop-filter: blur(6px) !important;
-}
-
-.devices-page dialog.admin-user-dialog[open] {
-    animation: adminDialogIn 0.2s ease-out;
-}
-
-.devices-page dialog.admin-user-dialog .admin-user-dialog-heading {
+/* Header with clean pastel mint gradient & badge */
+.pair-dialog-header,
+.devices-page dialog#pair-node-dialog .admin-user-dialog-heading {
     position: static;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    padding: 18px 24px;
-    background: #ffffff;
-    border-bottom: 1px solid #edf2f0;
-    border-top-left-radius: 15px;
-    border-top-right-radius: 15px;
-    border-top: 3.5px solid #1b5145;
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+    padding: 24px 28px 20px !important;
+    background: linear-gradient(135deg, #f0fbf5 0%, #e6f6ed 60%, #ddf2e5 100%) !important;
+    border-top: none !important;
+    border-bottom: 1px solid rgba(22, 163, 74, 0.08) !important;
+    border-top-left-radius: 24px !important;
+    border-top-right-radius: 24px !important;
 }
 
-.devices-page dialog.admin-user-dialog .admin-modal-title-group {
-    display: flex;
-    align-items: center;
-    gap: 13px;
+.pair-dialog-header-main,
+.devices-page dialog#pair-node-dialog .admin-modal-title-group {
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+    min-width: 0 !important;
+    flex: 1;
+}
+
+.pair-dialog-icon,
+.devices-page dialog#pair-node-dialog .admin-modal-icon-badge {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 14px !important;
+    background: #ffffff !important;
+    color: #15803d !important;
+    border: none !important;
+    box-shadow: 0 4px 14px rgba(22, 163, 74, 0.16) !important;
+    flex-shrink: 0 !important;
+}
+
+.pair-dialog-icon .ui-icon,
+.devices-page dialog#pair-node-dialog .admin-modal-icon-badge .ui-icon {
+    width: 24px !important;
+    height: 24px !important;
+}
+
+.pair-dialog-title-wrap,
+.devices-page dialog#pair-node-dialog .admin-modal-heading-text {
     min-width: 0;
+    flex: 1;
 }
 
-.devices-page dialog.admin-user-dialog .admin-modal-icon-badge {
+.pair-dialog-eyebrow {
+    display: block;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #16a34a;
+    margin-bottom: 3px;
+    line-height: 1.2;
+}
+
+.devices-page dialog#pair-node-dialog h2,
+#pair-dialog-title {
+    margin: 0 !important;
+    font-size: 18.5px !important;
+    font-weight: 800 !important;
+    color: #143d34 !important;
+    line-height: 1.3 !important;
+    letter-spacing: -0.015em !important;
+}
+
+.pair-dialog-subtitle,
+.devices-page dialog#pair-node-dialog .admin-modal-subtitle {
+    margin: 4px 0 0 !important;
+    font-size: 12.5px !important;
+    color: #52796f !important;
+    line-height: 1.45 !important;
+}
+
+.pair-dialog-close-btn,
+.devices-page dialog#pair-node-dialog .admin-dialog-close {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 50% !important;
+    background: rgba(255, 255, 255, 0.8) !important;
+    color: #52796f !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    flex-shrink: 0 !important;
+}
+
+.pair-dialog-close-btn:hover,
+.devices-page dialog#pair-node-dialog .admin-dialog-close:hover {
+    background: #fee2e2 !important;
+    color: #dc2626 !important;
+    transform: rotate(90deg) scale(1.06) !important;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.18) !important;
+}
+
+.pair-dialog-close-btn .ui-icon,
+.devices-page dialog#pair-node-dialog .admin-dialog-close .ui-icon {
+    width: 18px !important;
+    height: 18px !important;
+}
+
+/* Tip setup banner */
+.pair-dialog-tip-banner {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    background: #eaf6ef;
-    color: #1b5145;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 13px 16px;
+    background: #f0fdf4;
+    border-radius: 14px;
+    box-shadow: inset 0 0 0 1px rgba(22, 163, 74, 0.14);
+    margin-bottom: 2px;
+}
+
+.pair-tip-icon {
+    width: 20px;
+    height: 20px;
+    color: #16a34a;
     flex-shrink: 0;
-    border: 1px solid rgba(27, 81, 69, 0.12);
+    margin-top: 1px;
 }
 
-.devices-page dialog.admin-user-dialog .admin-modal-icon-badge .ui-icon {
-    width: 21px;
-    height: 21px;
+.pair-tip-icon .ui-icon {
+    width: 19px;
+    height: 19px;
 }
 
-.devices-page dialog.admin-user-dialog .admin-modal-heading-text h2 {
-    margin: 0;
-    font-size: 17.5px;
+.pair-tip-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.pair-tip-text strong {
+    font-size: 12.5px;
     font-weight: 750;
-    color: #143d34;
-    line-height: 1.3;
-    letter-spacing: -0.01em;
+    color: #166534;
 }
 
-.devices-page dialog.admin-user-dialog .admin-modal-subtitle {
-    margin: 3px 0 0;
-    font-size: 12px;
-    color: #61776a;
-    line-height: 1.4;
+.pair-tip-text span {
+    color: #15803d;
 }
 
-.devices-page dialog.admin-user-dialog .admin-dialog-close {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    border: 1px solid #dce7df;
-    border-radius: 8px;
-    background: #ffffff;
-    color: #61776a;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    flex-shrink: 0;
-}
-
-.devices-page dialog.admin-user-dialog .admin-dialog-close:hover {
-    border-color: #dc2626;
-    background: #fef2f2;
-    color: #dc2626;
-}
-
-.devices-page dialog.admin-user-dialog .admin-user-form {
-    padding: 0;
-}
-
-.devices-page dialog.admin-user-dialog .admin-form-body {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    padding: 22px 24px;
-}
-
-.devices-page dialog.admin-user-dialog .admin-form-field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 0;
-}
-
-.devices-page dialog.admin-user-dialog .admin-form-field label {
-    font-size: 12px;
+.pair-tip-text code {
+    background: rgba(22, 163, 74, 0.12);
+    padding: 1px 6px;
+    border-radius: 5px;
+    font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+    font-size: 11.5px;
+    color: #14532d;
     font-weight: 700;
-    color: #263e36;
-    letter-spacing: 0.01em;
 }
 
-.devices-page dialog.admin-user-dialog .admin-form-field label span {
+/* Error state banner */
+.pair-dialog-error {
+    padding: 12px 16px;
+    background: #fef2f2;
+    border: none;
+    border-radius: 12px;
+    color: #b91c1c;
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 1.45;
+    box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.2);
+    margin-bottom: 2px;
+}
+
+/* Form Body & Fields */
+.pair-dialog-body,
+.devices-page dialog#pair-node-dialog .admin-form-body {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 18px !important;
+    padding: 22px 28px 12px !important;
+}
+
+.pair-form-field,
+.devices-page dialog#pair-node-dialog .admin-form-field {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 7px !important;
+    margin-bottom: 0 !important;
+}
+
+.pair-field-label,
+.devices-page dialog#pair-node-dialog .admin-form-field label {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    font-size: 12.5px !important;
+    font-weight: 700 !important;
+    color: #1c3d33 !important;
+    letter-spacing: 0.01em !important;
+}
+
+.pair-field-label .required-star {
     color: #dc2626;
+    font-weight: 800;
     margin-left: 2px;
 }
 
-.devices-page dialog.admin-user-dialog .admin-field-hint {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
+.field-badge {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 7px;
+    border-radius: 6px;
+    line-height: 1.4;
+}
+
+.field-badge.required {
+    background: #fef2f2;
+    color: #dc2626;
+    box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.12);
+}
+
+.field-badge.optional {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.pair-input-wrap,
+.devices-page dialog#pair-node-dialog .admin-input-group {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+
+.pair-input-icon,
+.devices-page dialog#pair-node-dialog .admin-input-icon {
+    position: absolute !important;
+    left: 14px !important;
+    width: 18px !important;
+    height: 18px !important;
+    color: #94a3b8 !important;
+    pointer-events: none !important;
+    transition: color 0.18s ease !important;
+    flex-shrink: 0 !important;
+    z-index: 2 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.pair-input-icon .ui-icon,
+.devices-page dialog#pair-node-dialog .admin-input-icon .ui-icon {
+    width: 18px !important;
+    height: 18px !important;
+}
+
+.pair-input-wrap:focus-within .pair-input-icon,
+.devices-page dialog#pair-node-dialog .admin-input-group:focus-within .admin-input-icon {
+    color: #16a34a !important;
+}
+
+.pair-input,
+.devices-page dialog#pair-node-dialog .admin-form-field input {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 46px !important;
+    min-height: 46px !important;
+    padding: 0 16px 0 44px !important;
+    border: 1.5px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    outline: none !important;
+    background: #f8fafc !important;
+    color: #1e293b !important;
+    font-family: inherit !important;
+    font-size: 13.5px !important;
+    font-weight: 550 !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.pair-input:hover,
+.devices-page dialog#pair-node-dialog .admin-form-field input:hover {
+    border-color: #cbd5e1 !important;
+    background: #ffffff !important;
+}
+
+.pair-input:focus,
+.devices-page dialog#pair-node-dialog .admin-form-field input:focus {
+    border-color: #16a34a !important;
+    box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.12) !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+}
+
+.pair-input.input-node-id {
+    letter-spacing: 0.08em;
+    font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+}
+
+.pair-field-hint,
+.devices-page dialog#pair-node-dialog .admin-field-hint {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    font-size: 11.5px !important;
+    font-weight: 500 !important;
+    color: #64748b !important;
+    line-height: 1.45 !important;
+    margin-top: 1px !important;
+}
+
+.pair-field-hint code,
+.devices-page dialog#pair-node-dialog .admin-field-hint code {
+    background: #f1f5f9;
+    padding: 2px 5px;
+    border-radius: 4px;
     font-size: 11px;
-    font-weight: 550;
-    color: #789083;
+    color: #334155;
+    font-family: 'JetBrains Mono', Consolas, monospace;
+    font-weight: 600;
 }
 
-.devices-page dialog.admin-user-dialog .admin-input-group {
-    position: relative;
-    display: flex;
-    align-items: center;
-    width: 100%;
+/* Footer Actions */
+.pair-dialog-footer,
+.devices-page dialog#pair-node-dialog .admin-user-form-actions {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 12px !important;
+    padding: 18px 28px 24px !important;
+    border-top: 1px solid #edf2f0 !important;
+    background: #fafcfb !important;
+    border-bottom-left-radius: 24px !important;
+    border-bottom-right-radius: 24px !important;
 }
 
-.devices-page dialog.admin-user-dialog .admin-input-icon {
-    position: absolute;
-    left: 13px;
-    width: 16px;
-    height: 16px;
-    color: #647b6e;
-    pointer-events: none;
-    transition: color 0.15s ease;
-    flex-shrink: 0;
-    z-index: 2;
+.btn-pair-cancel,
+.devices-page dialog#pair-node-dialog .admin-user-cancel {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    padding: 0 20px !important;
+    border-radius: 12px !important;
+    border: 1px solid #e2e8f0 !important;
+    background: #ffffff !important;
+    color: #475569 !important;
+    font-size: 13px !important;
+    font-weight: 650 !important;
+    cursor: pointer !important;
+    transition: all 0.18s ease !important;
+    font-family: inherit !important;
+    box-sizing: border-box !important;
 }
 
-.devices-page dialog.admin-user-dialog .admin-input-group:focus-within .admin-input-icon {
-    color: #16a34a;
+.btn-pair-cancel:hover,
+.devices-page dialog#pair-node-dialog .admin-user-cancel:hover {
+    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+    color: #1e293b !important;
 }
 
-.devices-page dialog.admin-user-dialog .admin-form-field input {
-    box-sizing: border-box;
-    width: 100%;
-    height: 42px;
-    min-height: 42px;
-    padding: 0 14px 0 39px;
-    border: 1px solid #dce7df;
-    border-radius: 10px;
-    outline: none;
-    background: #ffffff;
-    color: #1a382d;
-    font: inherit;
-    font-size: 13px;
-    font-weight: 550;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+.btn-pair-submit,
+.devices-page dialog#pair-node-dialog .admin-user-submit {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    padding: 0 24px !important;
+    border-radius: 12px !important;
+    border: none !important;
+    background: linear-gradient(135deg, #1b5145 0%, #15803d 100%) !important;
+    color: #ffffff !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    font-family: inherit !important;
+    box-sizing: border-box !important;
+    box-shadow: 0 4px 14px rgba(27, 81, 69, 0.25) !important;
 }
 
-.devices-page dialog.admin-user-dialog .admin-form-field input:focus {
-    border-color: #16a34a;
-    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
-    background: #ffffff;
+.btn-pair-submit:hover,
+.devices-page dialog#pair-node-dialog .admin-user-submit:hover {
+    background: linear-gradient(135deg, #143d34 0%, #166534 100%) !important;
+    box-shadow: 0 8px 22px rgba(27, 81, 69, 0.35) !important;
+    transform: translateY(-1.5px) !important;
 }
 
-.devices-page dialog.admin-user-dialog .admin-user-form-actions {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 10px;
-    padding: 16px 24px 20px;
-    border-top: 1px solid #edf2f0;
-    background: #fbfdfc;
-    border-bottom-left-radius: 15px;
-    border-bottom-right-radius: 15px;
+.btn-pair-submit:active,
+.devices-page dialog#pair-node-dialog .admin-user-submit:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 8px rgba(27, 81, 69, 0.2) !important;
 }
 
-.devices-page dialog.admin-user-dialog .admin-user-cancel,
-.devices-page dialog.admin-user-dialog .admin-user-submit {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    height: 40px;
-    min-height: 40px;
-    padding: 0 18px;
-    border-radius: 9px;
-    font-size: 12.5px;
-    font-weight: 650;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    font-family: inherit;
-    box-sizing: border-box;
+.btn-pair-submit .ui-icon {
+    width: 17px !important;
+    height: 17px !important;
 }
 
-.devices-page dialog.admin-user-dialog .admin-user-cancel {
-    border: 1px solid #dce7df;
-    background: #ffffff;
-    color: #4b6255;
-}
-
-.devices-page dialog.admin-user-dialog .admin-user-cancel:hover {
-    background: #f0f7f3;
-    border-color: #24744d;
-    color: #143d34;
-}
-
-.devices-page dialog.admin-user-dialog .admin-user-submit {
-    border: 1px solid #1b5145;
-    background: linear-gradient(135deg, #1b5145 0%, #143d34 100%);
-    color: #ffffff;
-    box-shadow: 0 3px 10px rgba(27, 81, 69, 0.22);
-}
-
-.devices-page dialog.admin-user-dialog .admin-user-submit:hover {
-    background: linear-gradient(135deg, #143d34 0%, #0d2923 100%);
-    border-color: #143d34;
-    box-shadow: 0 5px 14px rgba(20, 61, 52, 0.32);
-    transform: translateY(-1px);
-}
-
-.devices-page dialog.admin-user-dialog .admin-user-submit:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 6px rgba(20, 61, 52, 0.2);
-}
-
+/* Fallback for general devices dialog backdrop */
 .devices-page dialog::backdrop {
-    background: rgba(15, 23, 42, 0.65) !important;
-    backdrop-filter: blur(4px) !important;
-    -webkit-backdrop-filter: blur(4px) !important;
+    background: rgba(12, 31, 26, 0.62) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
 }
 
 .unpair-modal-container {

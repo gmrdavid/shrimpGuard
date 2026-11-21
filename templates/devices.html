@@ -826,79 +826,94 @@
 </div>
 
 <!-- PAIR POND NODE MODAL DIALOG -->
-<dialog id="pair-node-dialog" class="admin-user-dialog" aria-labelledby="pair-dialog-title" style="max-width: 490px; width: 92%;">
-    <div class="admin-modal-card">
-        <header class="admin-user-dialog-heading">
-            <div class="admin-modal-title-group">
-                <span class="admin-modal-icon-badge" aria-hidden="true" style="background: #eaf6ef; color: #1b5145;">
-                    <svg class="ui-icon" aria-hidden="true">
-                        <use href="#icon-cpu"></use>
-                    </svg>
-                </span>
-                <div class="admin-modal-heading-text">
+<dialog id="pair-node-dialog" class="pair-node-dialog admin-user-dialog" aria-labelledby="pair-dialog-title">
+    <div class="pair-dialog-card admin-modal-card">
+        <header class="pair-dialog-header admin-user-dialog-heading">
+            <div class="pair-dialog-header-main admin-modal-title-group">
+                <div class="pair-dialog-icon admin-modal-icon-badge" aria-hidden="true">
+                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-cpu"></use></svg>
+                </div>
+                <div class="pair-dialog-title-wrap admin-modal-heading-text">
+                    <span class="pair-dialog-eyebrow">HARDWARE TELEMETRY</span>
                     <h2 id="pair-dialog-title">Pair Pond Telemetry Node</h2>
-                    <p class="admin-modal-subtitle">Link a physical LoRa transmitter (ESP32) to your account</p>
+                    <p class="pair-dialog-subtitle admin-modal-subtitle">Link a physical LoRa transmitter (ESP32) to stream live pond readings</p>
                 </div>
             </div>
-            <button class="admin-dialog-close" id="btn-close-pair-dialog" type="button" aria-label="Close dialog">
-                <svg class="ui-icon" aria-hidden="true">
-                    <use href="#icon-x"></use>
-                </svg>
+            <button class="pair-dialog-close-btn admin-dialog-close" id="btn-close-pair-dialog" type="button" aria-label="Close dialog">
+                <svg class="ui-icon" aria-hidden="true"><use href="#icon-x"></use></svg>
             </button>
         </header>
 
-        <form id="pair-node-form" class="admin-user-form">
-            <div class="admin-form-body">
-                <div id="pair-node-error" style="display: none; padding: 10px 14px; background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; border-radius: 8px; font-size: 13px;"></div>
+        <form id="pair-node-form" class="pair-dialog-form admin-user-form">
+            <div class="pair-dialog-body admin-form-body">
+                <div id="pair-node-error" class="pair-dialog-error" style="display: none;"></div>
 
-                <div class="admin-form-field">
-                    <label for="pair-node-id">
-                        Hardware Node ID <span aria-hidden="true">*</span>
+                <div class="pair-dialog-tip-banner">
+                    <div class="pair-tip-icon" aria-hidden="true">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg>
+                    </div>
+                    <div class="pair-tip-text">
+                        <strong>Transmitter Setup Guide</strong>
+                        <span>Look for the Node ID on Row 1 of your ESP32 LCD screen (e.g. <code>[NODE01]</code>) or the hardware label on your pond enclosure.</span>
+                    </div>
+                </div>
+
+                <div class="pair-form-field admin-form-field">
+                    <label for="pair-node-id" class="pair-field-label">
+                        <span>Hardware Node ID <span class="required-star" aria-hidden="true">*</span></span>
+                        <span class="field-badge required">Required</span>
                     </label>
-                    <div class="admin-input-group">
-                        <svg class="ui-icon admin-input-icon" aria-hidden="true">
-                            <use href="#icon-cpu"></use>
-                        </svg>
-                        <input type="text" id="pair-node-id" name="device_id" required placeholder="e.g. NODE01, NODE02" style="text-transform: uppercase;">
+                    <div class="pair-input-wrap admin-input-group">
+                        <span class="pair-input-icon admin-input-icon" aria-hidden="true">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-cpu"></use></svg>
+                        </span>
+                        <input type="text" id="pair-node-id" name="device_id" required placeholder="e.g. NODE01, NODE02" autocomplete="off" spellcheck="false" class="pair-input input-node-id">
                     </div>
-                    <span class="admin-field-hint">
-                        Found on Row 1 of the 20x4 LCD (e.g. <code>[NODE01]</code>) or hardware unit label.
+                    <span class="pair-field-hint admin-field-hint">
+                        Uppercase alphanumeric identifier broadcasting over LoRa (e.g. <code>NODE01</code>).
                     </span>
                 </div>
 
-                <div class="admin-form-field">
-                    <label for="pair-node-name">Node Label / Friendly Name</label>
-                    <div class="admin-input-group">
-                        <svg class="ui-icon admin-input-icon" aria-hidden="true">
-                            <use href="#icon-settings"></use>
-                        </svg>
-                        <input type="text" id="pair-node-name" name="device_name" placeholder="e.g. Node 1 Primary Monitor">
+                <div class="pair-form-field admin-form-field">
+                    <label for="pair-node-name" class="pair-field-label">
+                        <span>Node Friendly Name</span>
+                        <span class="field-badge optional">Optional</span>
+                    </label>
+                    <div class="pair-input-wrap admin-input-group">
+                        <span class="pair-input-icon admin-input-icon" aria-hidden="true">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-settings"></use></svg>
+                        </span>
+                        <input type="text" id="pair-node-name" name="device_name" placeholder="e.g. Node 1 Primary Monitor" autocomplete="off" class="pair-input">
                     </div>
-                    <span class="admin-field-hint">
-                        A friendly nickname for this hardware unit (defaults to &ldquo;Pond Node &lt;ID&gt;&rdquo;).
+                    <span class="pair-field-hint admin-field-hint">
+                        A recognized nickname for this hardware unit (defaults to &ldquo;Pond Node &lt;ID&gt;&rdquo;).
                     </span>
                 </div>
 
-                <div class="admin-form-field">
-                    <label for="pair-pond-location">Pond Location / Site</label>
-                    <div class="admin-input-group">
-                        <svg class="ui-icon admin-input-icon" aria-hidden="true">
-                            <use href="#icon-droplet"></use>
-                        </svg>
-                        <input type="text" id="pair-pond-location" name="pond_location" placeholder="e.g. Pond Alpha, Nursery Pond 2">
+                <div class="pair-form-field admin-form-field">
+                    <label for="pair-pond-location" class="pair-field-label">
+                        <span>Pond Location / Site</span>
+                        <span class="field-badge optional">Optional</span>
+                    </label>
+                    <div class="pair-input-wrap admin-input-group">
+                        <span class="pair-input-icon admin-input-icon" aria-hidden="true">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-droplet"></use></svg>
+                        </span>
+                        <input type="text" id="pair-pond-location" name="pond_location" placeholder="e.g. Pond Alpha, Nursery Pond 2" autocomplete="off" class="pair-input">
                     </div>
-                    <span class="admin-field-hint">
-                        Your farm pond or tank location where this node is placed.
+                    <span class="pair-field-hint admin-field-hint">
+                        Target pond or tank location where this telemetry probe is currently submerged.
                     </span>
                 </div>
             </div>
 
-            <div class="admin-user-form-actions">
-                <button id="cancel-pair-node" class="admin-user-cancel" type="button">
+            <div class="pair-dialog-footer admin-user-form-actions">
+                <button id="cancel-pair-node" class="btn-pair-cancel admin-user-cancel" type="button">
                     Cancel
                 </button>
-                <button id="submit-pair-node" class="admin-user-submit" type="submit">
-                    Pair Hardware Node
+                <button id="submit-pair-node" class="btn-pair-submit admin-user-submit" type="submit">
+                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
+                    <span>Pair Hardware Node</span>
                 </button>
             </div>
         </form>
