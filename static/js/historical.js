@@ -1234,14 +1234,23 @@ function updateTable() {
     body.innerHTML = pagedItems.map((reading) => {
         const date = new Date(reading.recorded_at);
         const qualityStatus = statusFor(reading);
-        const isDemo = reading.status && reading.status.toLowerCase().includes("demo");
+        const isDemo = Boolean(reading.status && reading.status.toLowerCase().includes("demo"));
+        const baseStatus = (qualityStatus || "Optimal").toLowerCase();
         const statusLabel = isDemo ? `Demo · ${qualityStatus}` : qualityStatus;
-        const statusClass = isDemo ? "demo" : qualityStatus.toLowerCase();
-        const dotClass = statusClass.includes("critical")
+        const statusClass = baseStatus.includes("critical")
+            ? "critical"
+            : baseStatus.includes("warning")
+            ? "warning"
+            : baseStatus.includes("optimal") || baseStatus.includes("good") || baseStatus.includes("normal")
+            ? "optimal"
+            : isDemo
+            ? "demo"
+            : "optimal";
+        const dotClass = statusClass === "critical"
             ? "dot-danger"
-            : statusClass.includes("warning")
+            : statusClass === "warning"
             ? "dot-warning"
-            : statusClass.includes("demo")
+            : statusClass === "demo"
             ? "dot-demo"
             : "dot-optimal";
         const formattedTemp = !isNaN(Number(reading.temperature)) ? Number(reading.temperature).toFixed(2) : reading.temperature;
@@ -1269,7 +1278,7 @@ function updateTable() {
                     </span>
                 </td>
                 <td>
-                    <span class="table-status status-${statusClass}">
+                    <span class="table-status status-${statusClass} ${statusClass}${isDemo ? ' is-demo' : ''}">
                         <span class="status-indicator-dot ${dotClass}"></span>
                         ${statusLabel}
                     </span>

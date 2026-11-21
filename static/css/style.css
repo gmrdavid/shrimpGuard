@@ -26433,6 +26433,127 @@ body.adaptive-sunlight .maint-banner-actions .btn-maint-dismiss {
     border: 1px solid #a7f3d0 !important;
 }
 
+/* Historical Readings Pond Status Badges */
+.historical-page .table-status,
+.historical-table .table-status {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6.5px !important;
+    padding: 4px 10px !important;
+    border-radius: 6px !important;
+    font-size: 11.5px !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+    line-height: 1.4 !important;
+    border: 1px solid transparent !important;
+    box-sizing: border-box !important;
+    letter-spacing: -0.15px !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+    transition: background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease !important;
+}
+
+/* Optimal Pond Status - Crisp Pastel Mint Emerald */
+.historical-page .table-status.status-optimal,
+.historical-page .table-status.optimal,
+.historical-table .table-status.status-optimal,
+.historical-table .table-status.optimal {
+    background: #ecfdf5 !important;
+    color: #065f46 !important;
+    border-color: #a7f3d0 !important;
+}
+
+.historical-page .table-status.status-optimal:hover,
+.historical-table .table-status.status-optimal:hover {
+    background: #d1fae5 !important;
+    border-color: #6ee7b7 !important;
+}
+
+/* Warning Pond Status - Crisp Pastel Warm Amber */
+.historical-page .table-status.status-warning,
+.historical-page .table-status.warning,
+.historical-table .table-status.status-warning,
+.historical-table .table-status.warning {
+    background: #fffbeb !important;
+    color: #92400e !important;
+    border-color: #fde68a !important;
+}
+
+.historical-page .table-status.status-warning:hover,
+.historical-table .table-status.status-warning:hover {
+    background: #fef3c7 !important;
+    border-color: #fcd34d !important;
+}
+
+/* Critical Pond Status - Crisp Pastel Rose Red */
+.historical-page .table-status.status-critical,
+.historical-page .table-status.critical,
+.historical-table .table-status.status-critical,
+.historical-table .table-status.critical {
+    background: #fef2f2 !important;
+    color: #991b1b !important;
+    border-color: #fecaca !important;
+}
+
+.historical-page .table-status.status-critical:hover,
+.historical-table .table-status.status-critical:hover {
+    background: #fee2e2 !important;
+    border-color: #fca5a5 !important;
+}
+
+/* Demo Status - Crisp Pastel Ice Sky Blue */
+.historical-page .table-status.status-demo,
+.historical-page .table-status.demo,
+.historical-table .table-status.status-demo,
+.historical-table .table-status.demo {
+    background: #f0f9ff !important;
+    color: #0369a1 !important;
+    border-color: #bae6fd !important;
+}
+
+.historical-page .table-status.status-demo:hover,
+.historical-table .table-status.status-demo:hover {
+    background: #e0f2fe !important;
+    border-color: #7dd3fc !important;
+}
+
+/* Status Indicator Dots in Historical Table */
+.historical-page .historical-table .status-indicator-dot,
+.historical-table .status-indicator-dot {
+    width: 6.5px !important;
+    height: 6.5px !important;
+    border-radius: 50% !important;
+    display: inline-block !important;
+    flex-shrink: 0 !important;
+    margin: 0 !important;
+}
+
+.historical-page .historical-table .status-indicator-dot.dot-optimal,
+.historical-table .status-indicator-dot.dot-optimal {
+    background: #10b981 !important;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25) !important;
+}
+
+.historical-page .historical-table .status-indicator-dot.dot-warning,
+.historical-table .status-indicator-dot.dot-warning {
+    background: #f59e0b !important;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25) !important;
+}
+
+.historical-page .historical-table .status-indicator-dot.dot-danger,
+.historical-page .historical-table .status-indicator-dot.dot-critical,
+.historical-table .status-indicator-dot.dot-danger,
+.historical-table .status-indicator-dot.dot-critical {
+    background: #ef4444 !important;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25) !important;
+}
+
+.historical-page .historical-table .status-indicator-dot.dot-demo,
+.historical-table .status-indicator-dot.dot-demo {
+    background: #0284c7 !important;
+    box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.25) !important;
+}
+
 /* Live Pulsing Dot Animation */
 @keyframes liveDotPulse {
     0% {
