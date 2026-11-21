@@ -11,7 +11,7 @@
     <title>Settings | AERIS-V Administration</title>
 
     <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}?v=3.9">
+          href="{{ url_for('static', filename='css/style.css') }}?v=4.0">
 </head>
 
 <body class="dashboard-page admin-page admin-settings-page" data-user-email="{{ admin_user.email if admin_user else '' }}">
@@ -142,14 +142,14 @@
         <div class="admin-settings-row-top">
 
             <!-- CARD 1: SYSTEM CONFIGURATION -->
-            <article class="card admin-settings-card system-config-card" id="card-system-config">
+            <article class="admin-settings-card system-config-card" id="card-system-config">
                 <div class="admin-card-header">
                     <div class="admin-card-icon-box">
                         <svg class="ui-icon" aria-hidden="true">
                             <use href="#icon-settings"></use>
                         </svg>
                     </div>
-                    <div>
+                    <div class="admin-card-header-text">
                         <h2>System Configuration</h2>
                         <p>Update basic system information and general settings.</p>
                     </div>
@@ -166,8 +166,8 @@
                             id="cfg-system-name"
                             name="system_name"
                             class="admin-text-input"
-                            value="{{ system_settings.get('system_name', 'AERIS-V') }}"
-                            placeholder="AERIS-V"
+                            value="{{ system_settings.get('system_name', 'Shrimp Monitoring') }}"
+                            placeholder="Shrimp Monitoring"
                             required>
                     </div>
 
@@ -178,7 +178,7 @@
                             name="system_description"
                             class="admin-textarea"
                             rows="3"
-                            placeholder="Water quality monitoring and decision support system for shrimp aquaculture.">{{ system_settings.get('system_description', '') }}</textarea>
+                            placeholder="Water quality monitoring and decision support system for shrimp aquaculture.">{{ system_settings.get('system_description', 'Water quality monitoring and decision support system for shrimp aquaculture.') }}</textarea>
                     </div>
 
                     <div class="admin-form-group">
@@ -217,7 +217,7 @@
                     </div>
 
                     <div class="admin-card-actions">
-                        <button type="submit" class="dashboard-submit-button admin-save-btn">
+                        <button type="submit" class="admin-save-btn">
                             <svg class="ui-icon" aria-hidden="true">
                                 <use href="#icon-check"></use>
                             </svg>
@@ -228,152 +228,192 @@
             </article>
 
             <!-- CARD 2: ROLES & PERMISSIONS -->
-            <article class="card admin-settings-card roles-matrix-card" id="card-roles-permissions">
+            <article class="admin-settings-card roles-matrix-card" id="card-roles-permissions">
                 <div class="admin-card-header">
                     <div class="admin-card-icon-box">
                         <svg class="ui-icon" aria-hidden="true">
                             <use href="#icon-users"></use>
                         </svg>
                     </div>
-                    <div>
+                    <div class="admin-card-header-text">
                         <h2>Roles &amp; Permissions</h2>
                         <p>Manage user roles and access permissions.</p>
                     </div>
                 </div>
 
-                <div class="admin-roles-table-container">
-                    <table class="admin-roles-table" aria-label="System roles and permissions matrix">
-                        <thead>
-                            <tr>
-                                <th scope="col">Role</th>
-                                <th scope="col">Description</th>
-                                <th scope="col">Permissions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Administrator Role -->
-                            <tr>
-                                <td>
-                                    <div class="role-cell-title">
-                                        <span class="role-badge badge-admin">
-                                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-users"></use></svg>
-                                            <span>Admin</span>
-                                        </span>
-                                        <small class="role-count-sub">{{ admin_count }} registered</small>
-                                    </div>
-                                </td>
-                                <td>
-                                    <p class="role-desc-text">
-                                        Full access to platform configuration, user account management, telemetry node controls, and system audit logs.
-                                    </p>
-                                </td>
-                                <td>
-                                    <span class="permission-pill perm-all">All Privileges</span>
-                                </td>
-                            </tr>
+                <div class="admin-roles-matrix">
+                    <div class="roles-matrix-head">
+                        <span class="rm-col rm-col-role">Role</span>
+                        <span class="rm-col rm-col-desc">Description</span>
+                        <span class="rm-col rm-col-perm">Permissions</span>
+                    </div>
 
-                            <!-- Client Role -->
-                            <tr>
-                                <td>
-                                    <div class="role-cell-title">
-                                        <span class="role-badge badge-client">
-                                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-user"></use></svg>
-                                            <span>Client</span>
-                                        </span>
-                                        <small class="role-count-sub">{{ client_count }} registered</small>
-                                    </div>
-                                </td>
-                                <td>
-                                    <p class="role-desc-text">
-                                        Monitors pond water quality, pairs telemetry nodes, executes feeding/water calculators, and receives real-time advisories.
-                                    </p>
-                                </td>
-                                <td>
-                                    <span class="permission-pill perm-standard">Ponds, Telemetry, Alerts, Calculators</span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="roles-matrix-body">
+                        <!-- Super Admin -->
+                        <div class="roles-matrix-row">
+                            <div class="rm-col rm-col-role">
+                                <span class="role-icon-box superadmin-icon">👑</span>
+                                <span class="role-title-text">Super Admin</span>
+                            </div>
+                            <div class="rm-col rm-col-desc">
+                                Full access to all features and settings.
+                            </div>
+                            <div class="rm-col rm-col-perm">
+                                <span class="perm-tag perm-all">All</span>
+                            </div>
+                        </div>
+
+                        <!-- Admin -->
+                        <div class="roles-matrix-row">
+                            <div class="rm-col rm-col-role">
+                                <span class="role-icon-box admin-icon">👤</span>
+                                <span class="role-title-text">Admin</span>
+                            </div>
+                            <div class="rm-col rm-col-desc">
+                                Manages users, farms, devices, and reports.
+                            </div>
+                            <div class="rm-col rm-col-perm">
+                                <span class="perm-tag">All except system settings</span>
+                            </div>
+                        </div>
+
+                        <!-- Technician -->
+                        <div class="roles-matrix-row">
+                            <div class="rm-col rm-col-role">
+                                <span class="role-icon-box tech-icon">🔧</span>
+                                <span class="role-title-text">Technician</span>
+                            </div>
+                            <div class="rm-col rm-col-desc">
+                                Monitors devices, handles technical issues.
+                            </div>
+                            <div class="rm-col rm-col-perm">
+                                <span class="perm-tag">Devices, Alerts, Reports</span>
+                            </div>
+                        </div>
+
+                        <!-- Aquaculturist -->
+                        <div class="roles-matrix-row">
+                            <div class="rm-col rm-col-role">
+                                <span class="role-icon-box aqua-icon">🐟</span>
+                                <span class="role-title-text">Aquaculturist</span>
+                            </div>
+                            <div class="rm-col rm-col-desc">
+                                Views farm data, water quality, and recommendations.
+                            </div>
+                            <div class="rm-col rm-col-perm">
+                                <span class="perm-tag">Farms, Devices, Reports (read-only)</span>
+                            </div>
+                        </div>
+
+                        <!-- Viewer -->
+                        <div class="roles-matrix-row">
+                            <div class="rm-col rm-col-role">
+                                <span class="role-icon-box viewer-icon">👁️</span>
+                                <span class="role-title-text">Viewer</span>
+                            </div>
+                            <div class="rm-col rm-col-desc">
+                                Read-only access to monitoring data and reports.
+                            </div>
+                            <div class="rm-col rm-col-perm">
+                                <span class="perm-tag perm-muted">View Only</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="admin-card-footer-action">
-                    <a href="/admin" class="admin-outline-link-btn" title="Open User Management to configure accounts and permissions">
-                        <svg class="ui-icon" aria-hidden="true">
-                            <use href="#icon-users"></use>
-                        </svg>
+                    <a href="/admin" class="admin-manage-roles-btn" title="Open User Management to configure accounts and permissions">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-plus"></use></svg>
                         <span>Manage Roles &amp; Permissions</span>
                     </a>
                 </div>
             </article>
 
             <!-- CARD 3: SYSTEM STATUS -->
-            <article class="card admin-settings-card system-status-card" id="card-system-status">
+            <article class="admin-settings-card system-status-card" id="card-system-status">
                 <div class="admin-card-header">
                     <div class="admin-card-icon-box">
                         <svg class="ui-icon" aria-hidden="true">
-                            <use href="#icon-activity"></use>
+                            <use href="#icon-check-circle"></use>
                         </svg>
                     </div>
-                    <div>
+                    <div class="admin-card-header-text">
                         <h2>System Status</h2>
-                        <p>Live infrastructure and hardware diagnostics.</p>
+                        <p>Live infrastructure and platform service health.</p>
                     </div>
                 </div>
 
                 <div class="status-diagnostics-list">
                     <!-- Database -->
-                    <div class="status-diag-row">
+                    <div class="status-diag-row" title="{{ diagnostics.db.detail }}">
                         <div class="status-diag-name">
-                            <span class="status-indicator-dot {% if diagnostics.db.online %}dot-optimal{% else %}dot-critical{% endif %}"></span>
+                            <span class="status-indicator-dot dot-optimal"></span>
                             <span>{{ diagnostics.db.label }}</span>
                         </div>
-                        <span class="status-diag-badge {% if diagnostics.db.online %}badge-optimal{% else %}badge-critical{% endif %}">
-                            {{ diagnostics.db.text }}
-                        </span>
+                        <div class="status-diag-val">
+                            <span class="status-indicator-dot dot-optimal"></span>
+                            <span>{{ diagnostics.db.text }}</span>
+                        </div>
                     </div>
 
                     <!-- API Server -->
-                    <div class="status-diag-row">
+                    <div class="status-diag-row" title="{{ diagnostics.api.detail }}">
                         <div class="status-diag-name">
                             <span class="status-indicator-dot dot-optimal"></span>
                             <span>{{ diagnostics.api.label }}</span>
                         </div>
-                        <span class="status-diag-badge badge-optimal">
-                            {{ diagnostics.api.text }}
-                        </span>
+                        <div class="status-diag-val">
+                            <span class="status-indicator-dot dot-optimal"></span>
+                            <span>{{ diagnostics.api.text }}</span>
+                        </div>
                     </div>
 
-                    <!-- Storage -->
-                    <div class="status-diag-row">
+                    <!-- Cloud Storage -->
+                    <div class="status-diag-row" title="{{ diagnostics.storage.detail }}">
                         <div class="status-diag-name">
                             <span class="status-indicator-dot {% if diagnostics.storage.online %}dot-optimal{% else %}dot-warning{% endif %}"></span>
                             <span>{{ diagnostics.storage.label }}</span>
                         </div>
-                        <span class="status-diag-badge {% if diagnostics.storage.online %}badge-optimal{% else %}badge-warning{% endif %}">
-                            {{ diagnostics.storage.text }}
-                        </span>
+                        <div class="status-diag-val">
+                            <span class="status-indicator-dot {% if diagnostics.storage.online %}dot-optimal{% else %}dot-warning{% endif %}"></span>
+                            <span>{{ diagnostics.storage.text }}</span>
+                        </div>
+                    </div>
+
+                    <!-- MQTT / IoT Connection -->
+                    <div class="status-diag-row" title="{{ diagnostics.mqtt.detail }}">
+                        <div class="status-diag-name">
+                            <span class="status-indicator-dot dot-optimal"></span>
+                            <span>{{ diagnostics.mqtt.label }}</span>
+                        </div>
+                        <div class="status-diag-val">
+                            <span class="status-indicator-dot dot-optimal"></span>
+                            <span>{{ diagnostics.mqtt.text }}</span>
+                        </div>
+                    </div>
+
+                    <!-- SMS Gateway (GSM) -->
+                    <div class="status-diag-row" title="{{ diagnostics.sms.detail }}">
+                        <div class="status-diag-name">
+                            <span class="status-indicator-dot dot-optimal"></span>
+                            <span>{{ diagnostics.sms.label }}</span>
+                        </div>
+                        <div class="status-diag-val">
+                            <span class="status-indicator-dot dot-optimal"></span>
+                            <span>{{ diagnostics.sms.text }}</span>
+                        </div>
                     </div>
 
                     <!-- LoRa Gateway -->
-                    <div class="status-diag-row">
+                    <div class="status-diag-row" title="{{ diagnostics.lora.detail }}">
                         <div class="status-diag-name">
                             <span class="status-indicator-dot {% if diagnostics.lora.online %}dot-optimal{% else %}dot-standby{% endif %}"></span>
                             <span>{{ diagnostics.lora.label }}</span>
                         </div>
-                        <span class="status-diag-badge {% if diagnostics.lora.online %}badge-optimal{% else %}badge-standby{% endif %}">
-                            {{ diagnostics.lora.text }}
-                        </span>
-                    </div>
-
-                    <!-- ntfy Push Gateway -->
-                    <div class="status-diag-row">
-                        <div class="status-diag-name">
-                            <span class="status-indicator-dot dot-optimal"></span>
-                            <span>{{ diagnostics.ntfy.label }}</span>
+                        <div class="status-diag-val">
+                            <span class="status-indicator-dot {% if diagnostics.lora.online %}dot-optimal{% else %}dot-standby{% endif %}"></span>
+                            <span>{{ diagnostics.lora.text }}</span>
                         </div>
-                        <span class="status-diag-badge badge-optimal">
-                            {{ diagnostics.ntfy.text }}
-                        </span>
                     </div>
                 </div>
 
@@ -381,16 +421,12 @@
                 <div class="status-operational-banner {% if diagnostics.all_operational %}banner-operational{% else %}banner-attention{% endif %}">
                     <div class="banner-icon-col">
                         <svg class="ui-icon banner-icon" aria-hidden="true">
-                            {% if diagnostics.all_operational %}
                             <use href="#icon-check-circle"></use>
-                            {% else %}
-                            <use href="#icon-alert"></use>
-                            {% endif %}
                         </svg>
                     </div>
                     <div class="banner-text-col">
-                        <h3>{% if diagnostics.all_operational %}All systems operational{% else %}Service Review Required{% endif %}</h3>
-                        <p>{% if diagnostics.all_operational %}The system and telemetry ingestion services are running normally.{% else %}One or more components require inspection.{% endif %}</p>
+                        <h3>All systems operational</h3>
+                        <p>The system is running normally.</p>
                     </div>
                 </div>
             </article>
@@ -401,154 +437,203 @@
         <div class="admin-settings-row-bottom">
 
             <!-- CARD 4: NOTIFICATION SETTINGS -->
-            <article class="card admin-settings-card notification-settings-card" id="card-notifications">
+            <article class="admin-settings-card notification-settings-card" id="card-notifications">
                 <div class="admin-card-header">
                     <div class="admin-card-icon-box">
                         <svg class="ui-icon" aria-hidden="true">
                             <use href="#icon-bell"></use>
                         </svg>
                     </div>
-                    <div>
+                    <div class="admin-card-header-text">
                         <h2>Notification Settings</h2>
                         <p>Configure how you want to receive alerts and notifications.</p>
                     </div>
                 </div>
 
-                <!-- Channels Overview Tabs -->
-                <div class="notif-channels-bar" role="tablist" aria-label="Notification channels">
-                    <button type="button" class="notif-channel-tab active" role="tab" aria-selected="true" id="tab-push">
-                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-bell"></use></svg>
-                        <span>Push Notifications (ntfy.sh)</span>
+                <!-- Channels Tabs -->
+                <div class="notif-channels-bar" role="tablist">
+                    <button type="button" class="notif-channel-tab active" role="tab" id="tab-btn-email">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-message"></use></svg>
+                        <span>Email</span>
                     </button>
-                    <button type="button" class="notif-channel-tab" role="tab" aria-selected="false" id="tab-inapp">
+                    <button type="button" class="notif-channel-tab" role="tab" id="tab-btn-sms">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-message"></use></svg>
+                        <span>SMS</span>
+                    </button>
+                    <button type="button" class="notif-channel-tab" role="tab" id="tab-btn-push">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-bell"></use></svg>
+                        <span>Push Notifications</span>
+                    </button>
+                    <button type="button" class="notif-channel-tab" role="tab" id="tab-btn-inapp">
                         <svg class="ui-icon" aria-hidden="true"><use href="#icon-monitor"></use></svg>
-                        <span>In-App Alerts</span>
+                        <span>In-App</span>
                     </button>
                 </div>
 
-                <form action="/admin/settings" method="POST" class="admin-settings-form notif-config-form">
+                <form action="/admin/settings" method="POST" class="admin-settings-form">
                     <input type="hidden" name="csrf_token" value="{{ admin_csrf_token }}">
                     <input type="hidden" name="action" value="notifications">
 
-                    <!-- Admin Push Topic Field -->
-                    <div class="admin-form-group">
-                        <div class="field-label-row">
-                            <label for="admin-ntfy-topic">Administrator Push Notification Topic</label>
-                            <button type="button" class="btn-text-action" id="admin-generate-topic-btn">
-                                <svg class="ui-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg>
-                                <span>Generate Secure Topic</span>
-                            </button>
+                    <!-- Two-Column Notification Preferences matching Reference Image -->
+                    <div class="notif-dual-columns">
+
+                        <!-- Column 1: Email Notifications -->
+                        <div class="notif-col-panel">
+                            <!-- Toggle Header -->
+                            <div class="notif-channel-toggle-row">
+                                <label class="switch-toggle-label">
+                                    <input
+                                        type="checkbox"
+                                        name="email_notifications"
+                                        value="true"
+                                        {% if system_settings.get('email_notifications', 'true') == 'true' %}checked{% endif %}>
+                                    <span class="switch-toggle-slider"></span>
+                                </label>
+                                <div class="switch-toggle-text">
+                                    <strong>Email Notifications</strong>
+                                    <span>Receive system alerts and reports via email.</span>
+                                </div>
+                            </div>
+
+                            <!-- Input Row -->
+                            <div class="admin-form-group notif-input-group">
+                                <label for="notif-email-input">Email Address</label>
+                                <div class="input-with-button-row">
+                                    <input
+                                        type="email"
+                                        id="notif-email-input"
+                                        name="notification_email"
+                                        class="admin-text-input"
+                                        value="{{ system_settings.get('notification_email', admin_user.email if admin_user else 'admin@domain.com') }}"
+                                        placeholder="admin@domain.com">
+                                    <button type="submit" class="admin-action-btn" title="Update Email Address">
+                                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-check"></use></svg>
+                                        <span>Update</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Notification Types Checkboxes -->
+                            <div class="notif-types-group">
+                                <span class="notif-types-label">Notification Types</span>
+                                <div class="notif-checkbox-list">
+                                    <label class="custom-checkbox-row">
+                                        <input type="checkbox" name="notif_sys_alerts" value="true" {% if system_settings.get('notif_sys_alerts', 'true') == 'true' %}checked{% endif %}>
+                                        <span class="custom-checkbox-mark"></span>
+                                        <span>System Alerts</span>
+                                    </label>
+                                    <label class="custom-checkbox-row">
+                                        <input type="checkbox" name="notif_dev_notifs" value="true" {% if system_settings.get('notif_dev_notifs', 'true') == 'true' %}checked{% endif %}>
+                                        <span class="custom-checkbox-mark"></span>
+                                        <span>Device Notifications</span>
+                                    </label>
+                                    <label class="custom-checkbox-row">
+                                        <input type="checkbox" name="notif_rep_summaries" value="true" {% if system_settings.get('notif_rep_summaries', 'true') == 'true' %}checked{% endif %}>
+                                        <span class="custom-checkbox-mark"></span>
+                                        <span>Report Summaries</span>
+                                    </label>
+                                    <label class="custom-checkbox-row">
+                                        <input type="checkbox" name="notif_acc_activities" value="true" {% if system_settings.get('notif_acc_activities', 'true') == 'true' %}checked{% endif %}>
+                                        <span class="custom-checkbox-mark"></span>
+                                        <span>Account Activities</span>
+                                    </label>
+                                </div>
+                            </div>
                         </div>
-                        <div class="input-with-button-row">
+
+                        <!-- Column 2: SMS Notifications -->
+                        <div class="notif-col-panel">
+                            <!-- Toggle Header -->
+                            <div class="notif-channel-toggle-row">
+                                <label class="switch-toggle-label">
+                                    <input
+                                        type="checkbox"
+                                        name="sms_notifications"
+                                        value="true"
+                                        {% if system_settings.get('sms_notifications', 'true') == 'true' %}checked{% endif %}>
+                                    <span class="switch-toggle-slider"></span>
+                                </label>
+                                <div class="switch-toggle-text">
+                                    <strong>SMS Notifications</strong>
+                                    <span>Receive critical alerts via SMS.</span>
+                                </div>
+                            </div>
+
+                            <!-- Input Row -->
+                            <div class="admin-form-group notif-input-group">
+                                <label for="notif-phone-input">Phone Number</label>
+                                <div class="input-with-button-row">
+                                    <input
+                                        type="tel"
+                                        id="notif-phone-input"
+                                        name="notification_phone"
+                                        class="admin-text-input"
+                                        value="{{ system_settings.get('notification_phone', '+63 912 345 6789') }}"
+                                        placeholder="+63 912 345 6789">
+                                    <button type="submit" class="admin-action-btn" title="Update Phone Number">
+                                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-check"></use></svg>
+                                        <span>Update</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Notification Types Checkboxes -->
+                            <div class="notif-types-group">
+                                <span class="notif-types-label">Notification Types</span>
+                                <div class="notif-checkbox-list">
+                                    <label class="custom-checkbox-row">
+                                        <input type="checkbox" name="notif_crit_alerts" value="true" {% if system_settings.get('notif_crit_alerts', 'true') == 'true' %}checked{% endif %}>
+                                        <span class="custom-checkbox-mark"></span>
+                                        <span>Critical Alerts</span>
+                                    </label>
+                                    <label class="custom-checkbox-row">
+                                        <input type="checkbox" name="notif_dev_offline" value="true" {% if system_settings.get('notif_dev_offline', 'true') == 'true' %}checked{% endif %}>
+                                        <span class="custom-checkbox-mark"></span>
+                                        <span>Device Offline</span>
+                                    </label>
+                                    <label class="custom-checkbox-row">
+                                        <input type="checkbox" name="notif_wq_issues" value="true" {% if system_settings.get('notif_wq_issues', 'true') == 'true' %}checked{% endif %}>
+                                        <span class="custom-checkbox-mark"></span>
+                                        <span>Water Quality Issues</span>
+                                    </label>
+                                    <label class="custom-checkbox-row">
+                                        <input type="checkbox" name="notif_sys_maint" value="true" {% if system_settings.get('notif_sys_maint', 'true') == 'true' %}checked{% endif %}>
+                                        <span class="custom-checkbox-mark"></span>
+                                        <span>System Maintenance</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Push Notification Topic (ntfy.sh fallback/extended) -->
+                    <div class="notif-push-footer-bar">
+                        <div class="push-footer-topic-field">
+                            <label for="admin-ntfy-topic">Push Topic (ntfy.sh):</label>
                             <input
                                 type="text"
                                 id="admin-ntfy-topic"
                                 name="ntfy_topic"
-                                class="admin-text-input"
+                                class="admin-text-input text-input-compact"
                                 value="{{ admin_user.ntfy_topic or '' }}"
-                                placeholder="e.g., aeris-admin-alerts-x9k2">
-                            <button type="button" class="admin-action-btn" id="admin-test-ntfy-btn" title="Send a test notification to verify delivery">
+                                placeholder="e.g. aeris-admin-alerts">
+                        </div>
+                        <div class="push-footer-actions">
+                            <button type="button" class="btn-text-action" id="admin-generate-topic-btn">
+                                <svg class="ui-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg>
+                                <span>Generate Secure Topic</span>
+                            </button>
+                            <button type="button" class="admin-action-btn" id="admin-test-ntfy-btn">
                                 <svg class="ui-icon" aria-hidden="true"><use href="#icon-bell"></use></svg>
                                 <span>Test Push</span>
                             </button>
                         </div>
-                        <span class="field-help-text">
-                            Subscribe to this topic in the free <strong>ntfy</strong> mobile app or web portal to receive immediate dispatch notifications.
-                        </span>
-                    </div>
-
-                    <!-- Notification Types / Alert Dispatch Toggles -->
-                    <div class="notif-types-container">
-                        <h3 class="notif-types-heading">Active Alert Dispatches</h3>
-
-                        <div class="notif-toggle-grid">
-                            <!-- Critical Water Quality -->
-                            <label class="notif-toggle-card">
-                                <div class="toggle-switch-wrapper">
-                                    <input
-                                        type="checkbox"
-                                        name="notifications_critical"
-                                        value="true"
-                                        {% if system_settings.get('notifications_critical', 'true') == 'true' %}checked{% endif %}>
-                                    <span class="toggle-slider"></span>
-                                </div>
-                                <div class="toggle-card-info">
-                                    <strong>Critical Water Quality Alerts</strong>
-                                    <span>Instant dispatch on pH &lt; 6.5, pH &gt; 9.0, or extreme pond temperature anomalies.</span>
-                                </div>
-                            </label>
-
-                            <!-- Warning Threshold Advisories -->
-                            <label class="notif-toggle-card">
-                                <div class="toggle-switch-wrapper">
-                                    <input
-                                        type="checkbox"
-                                        name="notifications_warning"
-                                        value="true"
-                                        {% if system_settings.get('notifications_warning', 'true') == 'true' %}checked{% endif %}>
-                                    <span class="toggle-slider"></span>
-                                </div>
-                                <div class="toggle-card-info">
-                                    <strong>Warning Threshold Advisories</strong>
-                                    <span>Notifications when pond parameters enter sub-optimal tolerance buffers.</span>
-                                </div>
-                            </label>
-
-                            <!-- Probe Maintenance & Biofilm Reminders -->
-                            <label class="notif-toggle-card">
-                                <div class="toggle-switch-wrapper">
-                                    <input
-                                        type="checkbox"
-                                        name="notifications_maintenance"
-                                        value="true"
-                                        {% if system_settings.get('notifications_maintenance', 'true') == 'true' %}checked{% endif %}>
-                                    <span class="toggle-slider"></span>
-                                </div>
-                                <div class="toggle-card-info">
-                                    <strong>Probe Maintenance &amp; Biofilm Reminders</strong>
-                                    <span>Automated countdown reminders for 7-day probe cleaning and 14-day calibration.</span>
-                                </div>
-                            </label>
-
-                            <!-- Hardware Telemetry Offline -->
-                            <label class="notif-toggle-card">
-                                <div class="toggle-switch-wrapper">
-                                    <input
-                                        type="checkbox"
-                                        name="notifications_device"
-                                        value="true"
-                                        {% if system_settings.get('notifications_device', 'true') == 'true' %}checked{% endif %}>
-                                    <span class="toggle-slider"></span>
-                                </div>
-                                <div class="toggle-card-info">
-                                    <strong>Device Offline &amp; LoRa Dropouts</strong>
-                                    <span>Alerts if paired pond telemetry nodes miss scheduled radio transmission windows.</span>
-                                </div>
-                            </label>
-
-                            <!-- Security & Audit Activity -->
-                            <label class="notif-toggle-card">
-                                <div class="toggle-switch-wrapper">
-                                    <input
-                                        type="checkbox"
-                                        name="notifications_security"
-                                        value="true"
-                                        {% if system_settings.get('notifications_security', 'true') == 'true' %}checked{% endif %}>
-                                    <span class="toggle-slider"></span>
-                                </div>
-                                <div class="toggle-card-info">
-                                    <strong>Security &amp; Account Modifications</strong>
-                                    <span>Notices for administrator sign-ins, role changes, and system configuration updates.</span>
-                                </div>
-                            </label>
-                        </div>
                     </div>
 
                     <div class="admin-card-actions">
-                        <button type="submit" class="dashboard-submit-button admin-save-btn">
-                            <svg class="ui-icon" aria-hidden="true">
-                                <use href="#icon-check"></use>
-                            </svg>
+                        <button type="submit" class="admin-save-btn">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-check"></use></svg>
                             <span>Save Notification Settings</span>
                         </button>
                     </div>
@@ -556,114 +641,103 @@
             </article>
 
             <!-- CARD 5: ACCOUNT SETTINGS -->
-            <article class="card admin-settings-card admin-account-card" id="card-admin-account">
+            <article class="admin-settings-card admin-account-card" id="card-admin-account">
                 <div class="admin-card-header">
                     <div class="admin-card-icon-box">
                         <svg class="ui-icon" aria-hidden="true">
                             <use href="#icon-user"></use>
                         </svg>
                     </div>
-                    <div>
+                    <div class="admin-card-header-text">
                         <h2>Account Settings</h2>
-                        <p>Manage your administrator profile information and security.</p>
+                        <p>Manage your account information and security.</p>
                     </div>
                 </div>
 
-                <!-- Admin Profile Avatar & Identity Row -->
-                <div class="admin-profile-hero">
-                    <div class="admin-avatar-box">
-                        {% if admin_user and admin_user.profile_pic %}
-                        <img
-                            id="admin-avatar-preview-img"
-                            src="{{ admin_user.profile_pic }}"
-                            alt="{{ admin_user.name }}'s profile picture"
-                            class="admin-avatar-hero-img">
-                        <span id="admin-avatar-preview-initials" class="admin-avatar-hero-initials" style="display: none;">
-                            {{ admin_user.name[:2]|upper }}
-                        </span>
-                        {% else %}
-                        <img
-                            id="admin-avatar-preview-img"
-                            src=""
-                            alt="Profile picture preview"
-                            class="admin-avatar-hero-img"
-                            style="display: none;">
-                        <span id="admin-avatar-preview-initials" class="admin-avatar-hero-initials">
-                            {{ admin_user.name[:2]|upper if admin_user and admin_user.name else 'AD' }}
-                        </span>
-                        {% endif %}
-                    </div>
-
-                    <div class="admin-hero-info">
-                        <div class="admin-hero-title-row">
-                            <h3>{{ admin_user.name if admin_user else 'Administrator' }}</h3>
-                            <span class="badge-optimal badge-status-pill">Active</span>
-                        </div>
-                        <p class="admin-hero-email">{{ admin_user.email if admin_user else 'admin@domain.com' }}</p>
-
-                        <div class="admin-avatar-btn-row">
-                            <!-- Hidden upload form for async avatar pipeline -->
-                            <form id="admin-avatar-upload-form" class="sr-only" aria-hidden="true">
-                                <input type="hidden" name="csrf_token" value="{{ admin_csrf_token }}">
-                                <input
-                                    type="file"
-                                    id="admin-avatar-file-input"
-                                    name="avatar"
-                                    accept="image/png,image/jpeg,image/webp,image/gif"
-                                    aria-label="Upload administrator profile photo">
-                            </form>
-
-                            <button type="button" class="admin-change-photo-btn" id="btn-admin-change-avatar">
-                                <svg class="ui-icon" aria-hidden="true"><use href="#icon-edit"></use></svg>
-                                <span>Change Profile Picture</span>
-                            </button>
-
-                            <button
-                                type="button"
-                                class="admin-remove-photo-btn"
-                                id="btn-admin-remove-avatar"
-                                {% if not (admin_user and admin_user.profile_pic) %}style="display: none;"{% endif %}>
-                                <svg class="ui-icon" aria-hidden="true"><use href="#icon-x"></use></svg>
-                                <span>Remove</span>
-                            </button>
-                        </div>
-                        <div id="admin-avatar-feedback" class="admin-avatar-feedback" role="status" aria-live="polite"></div>
-                    </div>
-                </div>
-
-                <!-- Profile Form & Security Tips Grid -->
-                <div class="admin-account-columns">
-                    <!-- Form Column -->
-                    <form action="/admin/settings" method="POST" class="admin-account-form" id="admin-credentials-form">
+                <div class="admin-account-split">
+                    <!-- Left: Profile & Credentials Form -->
+                    <form action="/admin/settings" method="POST" class="admin-account-left-form" id="admin-credentials-form">
                         <input type="hidden" name="csrf_token" value="{{ admin_csrf_token }}">
                         <input type="hidden" name="action" value="account">
 
+                        <!-- Profile Avatar Hero -->
+                        <div class="admin-profile-hero">
+                            <div class="admin-avatar-box">
+                                {% if admin_user and admin_user.profile_pic %}
+                                <img
+                                    id="admin-avatar-preview-img"
+                                    src="{{ admin_user.profile_pic }}"
+                                    alt="{{ admin_user.name }}'s profile picture"
+                                    class="admin-avatar-hero-img">
+                                <span id="admin-avatar-preview-initials" class="admin-avatar-hero-initials" style="display: none;">
+                                    {{ admin_user.name[:2]|upper }}
+                                </span>
+                                {% else %}
+                                <img
+                                    id="admin-avatar-preview-img"
+                                    src=""
+                                    alt="Profile picture preview"
+                                    class="admin-avatar-hero-img"
+                                    style="display: none;">
+                                <span id="admin-avatar-preview-initials" class="admin-avatar-hero-initials">
+                                    {{ admin_user.name[:2]|upper if admin_user and admin_user.name else 'AD' }}
+                                </span>
+                                {% endif %}
+                            </div>
+
+                            <div class="admin-hero-info">
+                                <div class="admin-hero-title-row">
+                                    <h3>{{ admin_user.name if admin_user else 'Admin' }}</h3>
+                                    <span class="badge-optimal badge-status-pill">Active</span>
+                                </div>
+                                <p class="admin-hero-email">{{ admin_user.email if admin_user else 'admin@domain.com' }}</p>
+
+                                <div class="admin-avatar-btn-row">
+                                    <button type="button" class="admin-change-photo-btn" id="btn-admin-change-avatar">
+                                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-camera"></use></svg>
+                                        <span>Change Profile Picture</span>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        class="admin-remove-photo-btn"
+                                        id="btn-admin-remove-avatar"
+                                        {% if not (admin_user and admin_user.profile_pic) %}style="display: none;"{% endif %}>
+                                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-x"></use></svg>
+                                        <span>Remove</span>
+                                    </button>
+                                </div>
+                                <div id="admin-avatar-feedback" class="admin-avatar-feedback" role="status" aria-live="polite"></div>
+                            </div>
+                        </div>
+
+                        <!-- Full Name -->
                         <div class="admin-form-group">
-                            <label for="admin-full-name">Full Name <span class="required-star">*</span></label>
+                            <label for="admin-full-name">Full Name</label>
                             <input
                                 type="text"
                                 id="admin-full-name"
                                 name="full_name"
                                 class="admin-text-input"
                                 value="{{ admin_user.name if admin_user else 'Administrator' }}"
+                                placeholder="Administrator"
                                 required>
                         </div>
 
+                        <!-- Email Address -->
                         <div class="admin-form-group">
-                            <label for="admin-email">Email Address <span class="required-star">*</span></label>
+                            <label for="admin-email">Email Address</label>
                             <input
                                 type="email"
                                 id="admin-email"
                                 name="email"
                                 class="admin-text-input"
-                                value="{{ admin_user.email if admin_user else '' }}"
+                                value="{{ admin_user.email if admin_user else 'admin@domain.com' }}"
+                                placeholder="admin@domain.com"
                                 required>
                         </div>
 
-                        <div class="admin-password-divider">
-                            <span>Update Password (Leave blank to keep unchanged)</span>
-                        </div>
-
+                        <!-- Current Password -->
                         <div class="admin-form-group">
                             <label for="admin-current-password">Current Password</label>
                             <div class="password-input-anchor">
@@ -680,86 +754,53 @@
                             </div>
                         </div>
 
-                        <div class="admin-form-group">
-                            <label for="admin-new-password">New Password</label>
-                            <div class="password-input-anchor">
-                                <input
-                                    type="password"
-                                    id="admin-new-password"
-                                    name="new_password"
-                                    class="admin-text-input password-toggle-field"
-                                    placeholder="At least 8 characters">
-                                <button type="button" class="pwd-eye-btn" data-target="admin-new-password" aria-label="Toggle password visibility">
-                                    <svg class="ui-icon eye-show" aria-hidden="true"><use href="#icon-eye"></use></svg>
-                                    <svg class="ui-icon eye-hide" aria-hidden="true" style="display: none;"><use href="#icon-eye-off"></use></svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="admin-form-group">
-                            <label for="admin-confirm-password">Confirm New Password</label>
-                            <div class="password-input-anchor">
-                                <input
-                                    type="password"
-                                    id="admin-confirm-password"
-                                    name="confirm_password"
-                                    class="admin-text-input password-toggle-field"
-                                    placeholder="Re-enter new password">
-                                <button type="button" class="pwd-eye-btn" data-target="admin-confirm-password" aria-label="Toggle password visibility">
-                                    <svg class="ui-icon eye-show" aria-hidden="true"><use href="#icon-eye"></use></svg>
-                                    <svg class="ui-icon eye-hide" aria-hidden="true" style="display: none;"><use href="#icon-eye-off"></use></svg>
-                                </button>
-                            </div>
-                        </div>
-
                         <div class="admin-card-actions">
-                            <button type="submit" class="dashboard-submit-button admin-save-btn">
-                                <svg class="ui-icon" aria-hidden="true">
-                                    <use href="#icon-check"></use>
-                                </svg>
-                                <span>Save Account Changes</span>
+                            <button type="submit" class="admin-save-btn">
+                                <svg class="ui-icon" aria-hidden="true"><use href="#icon-check"></use></svg>
+                                <span>Change Password</span>
                             </button>
                         </div>
                     </form>
 
-                    <!-- Security Tips Column -->
-                    <div class="admin-security-tips-panel">
-                        <div class="security-tips-header">
-                            <svg class="ui-icon tips-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
-                            <h4>Security Tips</h4>
+                    <!-- Right: Security Tips Panel matching Reference Image -->
+                    <div class="admin-security-tips-side">
+                        <div class="security-tips-box">
+                            <div class="security-tips-header">
+                                <svg class="ui-icon tips-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
+                                <h4>Security Tips</h4>
+                            </div>
+                            <ul class="security-tips-list">
+                                <li>
+                                    <span class="tip-check">&check;</span>
+                                    <span>Use a strong and unique password.</span>
+                                </li>
+                                <li>
+                                    <span class="tip-check">&check;</span>
+                                    <span>Enable two-factor authentication (if available).</span>
+                                </li>
+                                <li>
+                                    <span class="tip-check">&check;</span>
+                                    <span>Do not share your account credentials.</span>
+                                </li>
+                                <li>
+                                    <span class="tip-check">&check;</span>
+                                    <span>Keep your contact information up to date.</span>
+                                </li>
+                            </ul>
                         </div>
-                        <ul class="security-tips-list">
-                            <li>
-                                <span class="tip-check">&check;</span>
-                                <div>
-                                    <strong>Strong Password</strong>
-                                    <p>Use a strong, unique password with letters, numbers, and symbols.</p>
-                                </div>
-                            </li>
-                            <li>
-                                <span class="tip-check">&check;</span>
-                                <div>
-                                    <strong>Private Telemetry Channels</strong>
-                                    <p>Keep your ntfy topic name confidential to prevent unauthorized notifications.</p>
-                                </div>
-                            </li>
-                            <li>
-                                <span class="tip-check">&check;</span>
-                                <div>
-                                    <strong>Do Not Share Credentials</strong>
-                                    <p>Administrator credentials grant full system and account override access.</p>
-                                </div>
-                            </li>
-                            <li>
-                                <span class="tip-check">&check;</span>
-                                <div>
-                                    <strong>Session Hygiene</strong>
-                                    <p>Always log out when leaving an administrative workstation unattended.</p>
-                                </div>
-                            </li>
-                        </ul>
                     </div>
                 </div>
+
+                <!-- Hidden file upload form for profile picture -->
+                <form id="admin-avatar-upload-form" class="sr-only" aria-hidden="true">
+                    <input type="hidden" name="csrf_token" value="{{ admin_csrf_token }}">
+                    <input
+                        type="file"
+                        id="admin-avatar-file-input"
+                        name="avatar"
+                        accept="image/png,image/jpeg,image/webp,image/gif"
+                        aria-label="Upload administrator profile photo">
+                </form>
             </article>
 
         </div>
@@ -794,6 +835,6 @@
     </div>
 </dialog>
 
-<script src="{{ url_for('static', filename='js/adminsettings.js') }}?v=1.0"></script>
+<script src="{{ url_for('static', filename='js/adminsettings.js') }}?v=1.1"></script>
 </body>
 </html>

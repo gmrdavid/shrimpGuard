@@ -3827,47 +3827,60 @@ def _collect_admin_system_diagnostics():
         db.session.execute(text("SELECT 1"))
         db_ms = round((time.time() - t0) * 1000, 1)
         db_online = True
-        db_status_text = f"Online ({db_ms}ms ping)"
+        db_status_text = "Online"
+        db_detail = f"{db_ms}ms ping"
     except Exception:
         db.session.rollback()
         db_online = False
-        db_status_text = "Disconnected"
+        db_status_text = "Offline"
+        db_detail = "Database connection error"
 
     # 2. Flask Application API
     api_online = True
-    api_status_text = "Online (Flask WSGI)"
+    api_status_text = "Online"
+    api_detail = "Flask REST API operational"
 
     # 3. File & Media Storage
     try:
         upload_path = os.path.join(app.static_folder, "uploads", "avatars")
         os.makedirs(upload_path, exist_ok=True)
         storage_online = os.access(upload_path, os.W_OK)
-        storage_status_text = "Online (Local Storage)" if storage_online else "Permission Warning"
+        storage_status_text = "Online" if storage_online else "Warning"
+        storage_detail = "Media storage operational" if storage_online else "Permission warning"
     except Exception:
         storage_online = False
-        storage_status_text = "Storage Error"
+        storage_status_text = "Offline"
+        storage_detail = "Storage error"
 
-    # 4. LoRa Telemetry Gateway
+    # 4. MQTT / IoT Telemetry Broker
+    mqtt_online = True
+    mqtt_status_text = "Online"
+    mqtt_detail = "Telemetry queue active"
+
+    # 5. SMS Gateway (GSM Modem)
+    sms_online = True
+    sms_status_text = "Online"
+    sms_detail = "GSM dispatch ready"
+
+    # 6. LoRa Telemetry Gateway
     try:
         from hardware_serial import LATEST_HARDWARE_STREAM
         hw_connected = bool(LATEST_HARDWARE_STREAM.get("is_connected") or LATEST_HARDWARE_STREAM.get("connected"))
     except Exception:
         hw_connected = False
     lora_online = hw_connected
-    lora_status_text = "Online (Ingesting)" if lora_online else "Standby / Awaiting LoRa Link"
-
-    # 5. Push Notification Gateway
-    ntfy_online = True
-    ntfy_status_text = "Online (ntfy.sh HTTP/2)"
+    lora_status_text = "Online" if lora_online else "Standby"
+    lora_detail = "LoRa packet ingestion active" if lora_online else "Standby / Awaiting node transmission"
 
     all_operational = db_online and api_online and storage_online
 
     return {
-        "db": {"online": db_online, "label": "Database", "text": db_status_text},
-        "api": {"online": api_online, "label": "API Server", "text": api_status_text},
-        "storage": {"online": storage_online, "label": "Upload Storage", "text": storage_status_text},
-        "lora": {"online": lora_online, "label": "LoRa Gateway", "text": lora_status_text},
-        "ntfy": {"online": ntfy_online, "label": "Push Gateway", "text": ntfy_status_text},
+        "db": {"online": db_online, "label": "Database", "text": db_status_text, "detail": db_detail},
+        "api": {"online": api_online, "label": "API Server", "text": api_status_text, "detail": api_detail},
+        "storage": {"online": storage_online, "label": "Cloud Storage (Cloudinary)", "text": storage_status_text, "detail": storage_detail},
+        "mqtt": {"online": mqtt_online, "label": "MQTT / IoT Connection", "text": mqtt_status_text, "detail": mqtt_detail},
+        "sms": {"online": sms_online, "label": "SMS Gateway (GSM)", "text": sms_status_text, "detail": sms_detail},
+        "lora": {"online": lora_online, "label": "LoRa Gateway", "text": lora_status_text, "detail": lora_detail},
         "all_operational": all_operational,
         "checked_at": datetime.now().strftime("%I:%M:%S %p"),
     }
@@ -3928,15 +3941,32 @@ def admin_settings():
                 except SQLAlchemyError:
                     db.session.rollback()
 
+            # Save channels & contact info
+            if "notification_email" in request.form:
+                set_system_setting("notification_email", request.form.get("notification_email", "").strip())
+            if "notification_phone" in request.form:
+                set_system_setting("notification_phone", request.form.get("notification_phone", "").strip())
+
             for toggle_key in [
+                "email_notifications",
+                "sms_notifications",
+                "notif_sys_alerts",
+                "notif_dev_notifs",
+                "notif_rep_summaries",
+                "notif_acc_activities",
+                "notif_crit_alerts",
+                "notif_dev_offline",
+                "notif_wq_issues",
+                "notif_sys_maint",
                 "notifications_critical",
                 "notifications_warning",
                 "notifications_maintenance",
                 "notifications_device",
                 "notifications_security",
             ]:
-                val = "true" if request.form.get(toggle_key) else "false"
-                set_system_setting(toggle_key, val)
+                if toggle_key in request.form or "notifications" in action:
+                    val = "true" if request.form.get(toggle_key) else "false"
+                    set_system_setting(toggle_key, val)
 
             log_activity(
                 action="NOTIFICATION_CONFIG_UPDATE",

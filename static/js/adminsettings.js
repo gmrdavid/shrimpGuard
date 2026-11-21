@@ -312,22 +312,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 7. Notification Channels Tab Switcher
-    const tabPush = document.getElementById("tab-push");
-    const tabInApp = document.getElementById("tab-inapp");
-    if (tabPush && tabInApp) {
-        tabPush.addEventListener("click", () => {
-            tabPush.classList.add("active");
-            tabPush.setAttribute("aria-selected", "true");
-            tabInApp.classList.remove("active");
-            tabInApp.setAttribute("aria-selected", "false");
+    const notifTabs = document.querySelectorAll(".notif-channel-tab");
+    notifTabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+            notifTabs.forEach((t) => {
+                t.classList.remove("active");
+                t.setAttribute("aria-selected", "false");
+            });
+            tab.classList.add("active");
+            tab.setAttribute("aria-selected", "true");
         });
-        tabInApp.addEventListener("click", () => {
-            tabInApp.classList.add("active");
-            tabInApp.setAttribute("aria-selected", "true");
-            tabPush.classList.remove("active");
-            tabPush.setAttribute("aria-selected", "false");
-        });
-    }
+    });
 
     // 8. Dynamic Status Diagnostic Polling (Every 30 seconds)
     async function refreshDiagnostics() {
