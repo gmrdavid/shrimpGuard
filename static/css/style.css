@@ -19742,6 +19742,231 @@ nav a {
     box-shadow: 0 5px 20px rgba(5, 150, 105, 0.05) !important;
 }
 
+/* ==========================================================================
+   ALERTS & STATUS SUMMARY METRIC CARDS (CLEAN DISTINCT COLOR BACKGROUNDS)
+   ========================================================================== */
+
+/* 1. Critical Alerts: Clean Soft Rose-Red */
+.alerts-page .alerts-metric-card.alerts-critical-card {
+    background: linear-gradient(180deg, #fff1f2 0%, #fed7d7 100%) !important;
+    border: 1px solid #fecaca !important;
+    border-top: 3.5px solid #dc2626 !important;
+    box-shadow: 0 5px 20px rgba(220, 38, 38, 0.06) !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-critical-card:hover {
+    box-shadow: 0 9px 26px rgba(220, 38, 38, 0.12) !important;
+    transform: translateY(-2px) !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-critical-card .critical-icon {
+    background: #ffffff !important;
+    color: #dc2626 !important;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.15) !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-critical-card .metric-type {
+    color: #991b1b !important;
+    font-weight: 800 !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-critical-card .metric-card-content h3 {
+    color: #7f1d1d !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-critical-card .metric-reading h2 {
+    color: #450a0a !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-critical-card .metric-status {
+    background: #ffffff !important;
+    border: 1px solid #fecaca !important;
+    color: #7f1d1d !important;
+    box-shadow: 0 1px 3px rgba(220, 38, 38, 0.08) !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-critical-card .metric-status::before {
+    background: #dc2626 !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-critical-card .metric-card-footer {
+    border-top: 1px solid rgba(220, 38, 38, 0.15) !important;
+    color: #991b1b !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-critical-card .metric-footer-dot {
+    background: #dc2626 !important;
+}
+
+
+/* 2. Warning Alerts: Clean Warm Amber-Orange */
+.alerts-page .alerts-metric-card.alerts-warning-card {
+    background: linear-gradient(180deg, #fff9f0 0%, #feeacc 100%) !important;
+    border: 1px solid #fed7aa !important;
+    border-top: 3.5px solid #d97706 !important;
+    box-shadow: 0 5px 20px rgba(217, 119, 6, 0.06) !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-warning-card:hover {
+    box-shadow: 0 9px 26px rgba(217, 119, 6, 0.12) !important;
+    transform: translateY(-2px) !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-warning-card .warning-icon {
+    background: #ffffff !important;
+    color: #d97706 !important;
+    box-shadow: 0 2px 8px rgba(217, 119, 6, 0.15) !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-warning-card .metric-type {
+    color: #92400e !important;
+    font-weight: 800 !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-warning-card .metric-card-content h3 {
+    color: #78350f !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-warning-card .metric-reading h2 {
+    color: #451a03 !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-warning-card .metric-status {
+    background: #ffffff !important;
+    border: 1px solid #fed7aa !important;
+    color: #78350f !important;
+    box-shadow: 0 1px 3px rgba(217, 119, 6, 0.08) !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-warning-card .metric-status::before {
+    background: #d97706 !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-warning-card .metric-card-footer {
+    border-top: 1px solid rgba(217, 119, 6, 0.15) !important;
+    color: #92400e !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-warning-card .metric-footer-dot {
+    background: #d97706 !important;
+}
+
+
+/* 3. Normalized Readings: Clean Fresh Green */
+.alerts-page .alerts-metric-card.alerts-normalized-card,
+.alerts-page .alerts-metric-card.alerts-resolved-card {
+    background: linear-gradient(180deg, #f0fbf5 0%, #dff4e8 100%) !important;
+    border: 1px solid #bbf7d0 !important;
+    border-top: 3.5px solid #16a34a !important;
+    box-shadow: 0 5px 20px rgba(22, 163, 74, 0.06) !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-normalized-card:hover,
+.alerts-page .alerts-metric-card.alerts-resolved-card:hover {
+    box-shadow: 0 9px 26px rgba(22, 163, 74, 0.12) !important;
+    transform: translateY(-2px) !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-normalized-card .normalized-icon,
+.alerts-page .alerts-metric-card.alerts-resolved-card .resolved-icon {
+    background: #ffffff !important;
+    color: #16a34a !important;
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.15) !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-normalized-card .metric-type,
+.alerts-page .alerts-metric-card.alerts-resolved-card .metric-type {
+    color: #14532d !important;
+    font-weight: 800 !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-normalized-card .metric-card-content h3,
+.alerts-page .alerts-metric-card.alerts-resolved-card .metric-card-content h3 {
+    color: #166534 !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-normalized-card .metric-reading h2,
+.alerts-page .alerts-metric-card.alerts-resolved-card .metric-reading h2 {
+    color: #052e16 !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-normalized-card .metric-status,
+.alerts-page .alerts-metric-card.alerts-resolved-card .metric-status {
+    background: #ffffff !important;
+    border: 1px solid #bbf7d0 !important;
+    color: #166534 !important;
+    box-shadow: 0 1px 3px rgba(22, 163, 74, 0.08) !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-normalized-card .metric-status::before,
+.alerts-page .alerts-metric-card.alerts-resolved-card .metric-status::before {
+    background: #16a34a !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-normalized-card .metric-card-footer,
+.alerts-page .alerts-metric-card.alerts-resolved-card .metric-card-footer {
+    border-top: 1px solid rgba(22, 163, 74, 0.15) !important;
+    color: #14532d !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-normalized-card .metric-footer-dot,
+.alerts-page .alerts-metric-card.alerts-resolved-card .metric-footer-dot {
+    background: #16a34a !important;
+}
+
+
+/* 4. Unread Notifications: Clean Modern Blue */
+.alerts-page .alerts-metric-card.alerts-unread-card {
+    background: linear-gradient(180deg, #f0f7ff 0%, #dbeafe 100%) !important;
+    border: 1px solid #bfdbfe !important;
+    border-top: 3.5px solid #2563eb !important;
+    box-shadow: 0 5px 20px rgba(37, 99, 235, 0.06) !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-unread-card:hover {
+    box-shadow: 0 9px 26px rgba(37, 99, 235, 0.12) !important;
+    transform: translateY(-2px) !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-unread-card .unread-icon {
+    background: #ffffff !important;
+    color: #2563eb !important;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15) !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-unread-card .metric-type {
+    color: #1e40af !important;
+    font-weight: 800 !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-unread-card .metric-card-content h3 {
+    color: #1e3a8a !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-unread-card .metric-reading h2 {
+    color: #0f172a !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-unread-card .metric-status {
+    background: #ffffff !important;
+    border: 1px solid #bfdbfe !important;
+    color: #1e40af !important;
+    box-shadow: 0 1px 3px rgba(37, 99, 235, 0.08) !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-unread-card .metric-status::before {
+    background: #2563eb !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-unread-card .metric-card-footer {
+    border-top: 1px solid rgba(37, 99, 235, 0.15) !important;
+    color: #1e40af !important;
+}
+
+.alerts-page .alerts-metric-card.alerts-unread-card .metric-footer-dot {
+    background: #2563eb !important;
+}
+
 /* AI Recommendations Main Cards Across Pages (Monitoring page retains border) */
 .monitoring-page .monitoring-recommendations-panel {
     background: linear-gradient(180deg, #f8fbf9 0%, #edf6f1 100%) !important;
