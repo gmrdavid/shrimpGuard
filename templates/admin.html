@@ -89,7 +89,7 @@
 </aside>
 
 <!-- MAIN CONTENT -->
-<main class="main-content dashboard-main">
+<main class="main-content dashboard-main admin-mgmt-main">
 
     <!-- PAGE HEADER -->
     <header class="dashboard-header admin-header">
@@ -146,116 +146,367 @@
     {% endif %}
     {% endwith %}
 
-    <!-- SUMMARY CARDS -->
-    <section class="dashboard-section" aria-labelledby="admin-metrics-title">
-        <div class="section-heading-row">
-            <div>
-                <span class="section-eyebrow">SYSTEM &amp; ACCOUNT METRICS</span>
-                <h2 id="admin-metrics-title">System Overview</h2>
+    
+    <!-- TOP METRICS (4 STAT CARDS MATCHING REFERENCE DESIGN) -->
+    <section class="mgmt-stats-grid" aria-label="System Metrics">
+        <!-- Total Users -->
+        <article class="mgmt-stat-card">
+            <div class="mgmt-stat-icon-box">
+                <svg class="ui-icon" aria-hidden="true"><use href="#icon-users"></use></svg>
             </div>
+            <div class="mgmt-stat-info">
+                <span class="mgmt-stat-label">Total Users</span>
+                <h2 class="mgmt-stat-value">{{ total_users }}</h2>
+                <span class="mgmt-stat-sub">↑ Registered accounts</span>
+            </div>
+        </article>
 
-            <span class="section-count">4 indicators</span>
-        </div>
+        <!-- Active Users -->
+        <article class="mgmt-stat-card">
+            <div class="mgmt-stat-icon-box">
+                <svg class="ui-icon" aria-hidden="true"><use href="#icon-user"></use></svg>
+            </div>
+            <div class="mgmt-stat-info">
+                <span class="mgmt-stat-label">Active Users</span>
+                <h2 class="mgmt-stat-value">{{ active_users }}</h2>
+                <span class="mgmt-stat-sub">↑ Active accounts</span>
+            </div>
+        </article>
 
-        <div class="cards dashboard-metric-cards">
+        <!-- Inactive Users -->
+        <article class="mgmt-stat-card">
+            <div class="mgmt-stat-icon-box">
+                <svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg>
+            </div>
+            <div class="mgmt-stat-info">
+                <span class="mgmt-stat-label">Inactive Users</span>
+                <h2 class="mgmt-stat-value">{{ inactive_users }}</h2>
+                <span class="mgmt-stat-sub {% if inactive_users == 0 %}sub-muted{% endif %}">
+                    {{ "Pending review" if inactive_users > 0 else "No change" }}
+                </span>
+            </div>
+        </article>
 
-            <article class="card dashboard-metric-card users-card">
-                <div class="metric-card-top">
-                    <div class="metric-icon users-icon">
-                        <svg class="ui-icon" aria-hidden="true">
-                            <use href="#icon-users"></use>
-                        </svg>
-                    </div>
-                    <span class="metric-type">ACCOUNTS</span>
-                </div>
-                <div class="metric-card-content">
-                    <h3>Total Users</h3>
-                    <div class="metric-reading">
-                        <h2>{{ total_users }}</h2>
-                    </div>
-                    <p class="metric-status good">Registered accounts</p>
-                </div>
-                <div class="metric-card-footer">
-                    <span class="metric-footer-dot"></span>
-                    <span>AERIS-V user directory</span>
-                </div>
-            </article>
-
-            <article class="card dashboard-metric-card active-card">
-                <div class="metric-card-top">
-                    <div class="metric-icon active-icon">
-                        <svg class="ui-icon" aria-hidden="true">
-                            <use href="#icon-check-circle"></use>
-                        </svg>
-                    </div>
-                    <span class="metric-type">ACCOUNT STATUS</span>
-                </div>
-                <div class="metric-card-content">
-                    <h3>Active Users</h3>
-                    <div class="metric-reading">
-                        <h2>{{ active_users }}</h2>
-                    </div>
-                    <p class="metric-status good">Currently active accounts</p>
-                </div>
-                <div class="metric-card-footer">
-                    <span class="metric-footer-dot"></span>
-                    <span>Accounts ready to sign in</span>
-                </div>
-            </article>
-
-            <article class="card dashboard-metric-card inactive-card">
-                <div class="metric-card-top">
-                    <div class="metric-icon inactive-icon">
-                        <svg class="ui-icon" aria-hidden="true">
-                            <use href="#icon-clock"></use>
-                        </svg>
-                    </div>
-                    <span class="metric-type">ACCOUNT STATUS</span>
-                </div>
-                <div class="metric-card-content">
-                    <h3>Inactive Users</h3>
-                    <div class="metric-reading">
-                        <h2>{{ inactive_users }}</h2>
-                    </div>
-                    <p class="metric-status {% if inactive_users > 0 %}warning{% else %}good{% endif %}">
-                        {% if inactive_users > 0 %}Pending review or disabled{% else %}No inactive accounts{% endif %}
-                    </p>
-                </div>
-                <div class="metric-card-footer">
-                    <span class="metric-footer-dot"></span>
-                    <span>Inactive accounts</span>
-                </div>
-            </article>
-
-            <article class="card dashboard-metric-card system-card">
-                <div class="metric-card-top">
-                    <div class="metric-icon {% if system_online %}system-icon-online{% else %}system-icon-offline{% endif %}">
-                        <svg class="ui-icon" aria-hidden="true">
-                            <use href="#icon-activity"></use>
-                        </svg>
-                    </div>
-                    <span class="metric-type">DATABASE CONNECTION</span>
-                </div>
-                <div class="metric-card-content">
-                    <h3>System Status</h3>
-                    <div class="metric-reading">
-                        <h2 class="{% if not system_online %}text-danger{% endif %}">{{ "Operational" if system_online else "Unavailable" }}</h2>
-                    </div>
-                    <p class="metric-status {% if system_online %}good{% else %}danger{% endif %}">
-                        {{ "Database connected &amp; responding" if system_online else "Database service offline" }}
-                    </p>
-                </div>
-                <div class="metric-card-footer">
-                    <span class="metric-footer-dot"></span>
-                    <span>Core service connection</span>
-                </div>
-            </article>
-
-        </div>
+        <!-- System Status -->
+        <article class="mgmt-stat-card">
+            <div class="mgmt-stat-icon-box">
+                <svg class="ui-icon" aria-hidden="true"><use href="#icon-shield"></use></svg>
+            </div>
+            <div class="mgmt-stat-info">
+                <span class="mgmt-stat-label">System Status</span>
+                <h2 class="mgmt-stat-value">{{ "Online" if system_online else "Offline" }}</h2>
+                <span class="mgmt-stat-sub">
+                    <span class="status-indicator-dot dot-optimal"></span>
+                    <span>{{ "All systems operational" if system_online else "Attention needed" }}</span>
+                </span>
+            </div>
+        </article>
     </section>
 
+    <!-- MAIN TWO-COLUMN MANAGEMENT LAYOUT -->
+    <div class="mgmt-two-col-layout">
+        <!-- LEFT: USER MANAGEMENT PANEL -->
+        <article class="user-mgmt-panel">
+            <!-- Header -->
+            <div class="user-mgmt-header">
+                <div class="user-mgmt-header-text">
+                    <h2>User Management</h2>
+                    <p class="user-mgmt-header-sub">View and manage registered client and administrator accounts.</p>
+                </div>
+            </div>
 
-    <!-- ADD USER DIALOG -->
+            <!-- Filter & Search Bar -->
+            <div class="user-mgmt-filters">
+                <div class="mgmt-search-wrap">
+                    <svg class="ui-icon search-icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+                    <input
+                        id="user-search"
+                        class="mgmt-search-input"
+                        type="search"
+                        placeholder="Search by name, email, or role..."
+                        autocomplete="off"
+                        aria-label="Search user accounts">
+                </div>
+
+                <div class="mgmt-select-filters">
+                    <select id="user-role-filter" class="mgmt-filter-select" aria-label="Filter by role">
+                        <option value="all" selected>All Roles</option>
+                        <option value="admin">Administrator</option>
+                        <option value="client">Client</option>
+                    </select>
+
+                    <select id="user-status-filter" class="mgmt-filter-select" aria-label="Filter by status">
+                        <option value="all" selected>All Statuses</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+
+                    <button id="user-reset-btn" class="mgmt-reset-btn" type="button" title="Reset filters">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-x"></use></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="user-table-wrap">
+                <table class="user-mgmt-table admin-table">
+                    <thead>
+                        <tr>
+                            <th class="th-cb"><input type="checkbox" id="user-select-all" aria-label="Select all users"></th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Role</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Last Login</th>
+                            <th scope="col" class="th-actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr data-user-row
+                            data-name="{{ user.user_name|lower }}"
+                            data-email="{{ user.email|lower }}"
+                            data-role="{{ user.role|lower }}"
+                            data-status="{{ user.status|lower }}">
+                            <td class="td-cb">
+                                <input type="checkbox" class="user-row-checkbox" aria-label="Select {{ user.user_name }}">
+                            </td>
+                            <td>
+                                <div class="user-profile-cell">
+                                    <span class="user-table-avatar">
+                                        {% if user.profile_pic %}
+                                        <img src="{{ user.profile_pic }}" alt="{{ user.user_name }}" class="user-table-avatar-img">
+                                        {% else %}
+                                        <span class="user-table-avatar-initials">{{ user.user_name[:2]|upper if user.user_name else 'AD' }}</span>
+                                        {% endif %}
+                                    </span>
+                                    <span class="user-name-text">{{ user.user_name }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="user-email-text">{{ user.email }}</span>
+                            </td>
+                            <td>
+                                <span class="role-pill {% if user.role|lower == 'admin' %}role-pill-admin{% else %}role-pill-client{% endif %}">
+                                    {{ "Administrator" if user.role|lower == 'admin' else user.role }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-pill {% if user.status|lower == 'active' %}status-pill-active{% else %}status-pill-inactive{% endif %}">
+                                    {{ user.status }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if user.last_login %}
+                                    <div class="login-date-col">
+                                        <span class="login-date">{{ user.last_login.strftime('%b %d, %Y') if user.last_login.strftime is defined else user.last_login }}</span>
+                                        {% if user.last_login.strftime is defined %}
+                                        <span class="login-time">{{ user.last_login.strftime('%I:%M %p') }}</span>
+                                        {% endif %}
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted">Never</span>
+                                {% endif %}
+                            </td>
+                            <td class="td-actions">
+                                <div class="row-actions-group">
+                                    <button class="mgmt-action-btn edit-btn admin-edit-user"
+                                            type="button"
+                                            title="Edit user"
+                                            aria-label="Edit {{ user.user_name }}"
+                                            data-email="{{ user.email }}"
+                                            data-name="{{ user.user_name }}"
+                                            data-role="{{ user.role }}"
+                                            data-status="{{ user.status }}">
+                                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-edit"></use></svg>
+                                    </button>
+                                    <button class="mgmt-action-btn view-btn admin-view-user"
+                                            type="button"
+                                            title="View user details"
+                                            aria-label="View {{ user.user_name }}"
+                                            data-email="{{ user.email }}"
+                                            data-name="{{ user.user_name }}"
+                                            data-role="{{ user.role }}"
+                                            data-status="{{ user.status }}"
+                                            data-avatar="{{ user.profile_pic or '' }}"
+                                            data-last-login="{% if user.last_login %}{% if user.last_login.strftime is defined %}{{ user.last_login.strftime('%b %d, %Y %I:%M %p') }}{% else %}{{ user.last_login }}{% endif %}{% else %}Never{% endif %}">
+                                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-eye"></use></svg>
+                                    </button>
+                                    <button class="mgmt-action-btn delete-btn admin-delete-user"
+                                            type="button"
+                                            title="Delete user"
+                                            aria-label="Delete {{ user.user_name }}"
+                                            data-email="{{ user.email }}"
+                                            data-name="{{ user.user_name }}"
+                                            {% if session.get('user_id') == user.email %}
+                                            disabled
+                                            title="Cannot delete your own account"
+                                            aria-disabled="true"
+                                            {% endif %}>
+                                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-trash"></use></svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr id="no-users-row">
+                            <td class="admin-empty" colspan="7">
+                                No user accounts have been added yet. Click &quot;Add User&quot; to create the first account.
+                            </td>
+                        </tr>
+                        {% endfor %}
+
+                        <tr id="user-filter-empty" hidden>
+                            <td class="admin-empty" colspan="7">
+                                No accounts match your search or filters.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Table Footer / Pagination -->
+            <div id="user-pagination" class="mgmt-table-footer">
+                <span id="user-page-info" class="mgmt-page-info">Showing accounts...</span>
+                <div class="mgmt-pagination-controls">
+                    <button type="button" id="user-prev-btn" class="mgmt-page-btn prev-btn" aria-label="Previous page">‹</button>
+                    <span id="user-current-page" class="mgmt-current-page">1</span>
+                    <button type="button" id="user-next-btn" class="mgmt-page-btn next-btn" aria-label="Next page">›</button>
+                </div>
+            </div>
+        </article>
+
+        <!-- RIGHT: SIDEBAR PANELS -->
+        <aside class="admin-sidebar-panels">
+            <!-- Card 1: Quick Actions -->
+            <div class="admin-side-card quick-actions-card">
+                <h3>Quick Actions</h3>
+                <div class="quick-actions-list">
+                    <button type="button" class="quick-action-item" onclick="document.getElementById('open-add-user').click()">
+                        <div class="qa-icon-box">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-user"></use></svg>
+                        </div>
+                        <div class="qa-text">
+                            <strong>Add New User</strong>
+                            <span>Create a new account</span>
+                        </div>
+                        <span class="qa-chevron">›</span>
+                    </button>
+
+                    <a href="/admin/settings#card-roles-permissions" class="quick-action-item">
+                        <div class="qa-icon-box">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-users"></use></svg>
+                        </div>
+                        <div class="qa-text">
+                            <strong>Manage Roles</strong>
+                            <span>Edit user permissions</span>
+                        </div>
+                        <span class="qa-chevron">›</span>
+                    </a>
+
+                    <a href="/admin/logs" class="quick-action-item">
+                        <div class="qa-icon-box">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-history"></use></svg>
+                        </div>
+                        <div class="qa-text">
+                            <strong>View Activity Logs</strong>
+                            <span>Track user actions</span>
+                        </div>
+                        <span class="qa-chevron">›</span>
+                    </a>
+
+                    <a href="/admin/settings" class="quick-action-item">
+                        <div class="qa-icon-box">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-settings"></use></svg>
+                        </div>
+                        <div class="qa-text">
+                            <strong>System Settings</strong>
+                            <span>Configure platform settings</span>
+                        </div>
+                        <span class="qa-chevron">›</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Card 2: Recent Activity -->
+            <div class="admin-side-card recent-activity-card">
+                <div class="side-card-header">
+                    <h3>Recent Activity</h3>
+                    <a href="/admin/logs" class="side-card-view-all">View All</a>
+                </div>
+                <div class="activity-feed-list">
+                    {% if recent_activities and recent_activities|length > 0 %}
+                        {% for act in recent_activities %}
+                        <div class="activity-feed-item">
+                            <div class="activity-icon-badge badge-act-{{ act.type }}">
+                                {% if act.type == 'create' %}
+                                <svg class="ui-icon" aria-hidden="true"><use href="#icon-plus"></use></svg>
+                                {% elif act.type == 'update' %}
+                                <svg class="ui-icon" aria-hidden="true"><use href="#icon-edit"></use></svg>
+                                {% elif act.type == 'delete' %}
+                                <svg class="ui-icon" aria-hidden="true"><use href="#icon-x"></use></svg>
+                                {% elif act.type == 'device' %}
+                                <svg class="ui-icon" aria-hidden="true"><use href="#icon-cpu"></use></svg>
+                                {% else %}
+                                <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
+                                {% endif %}
+                            </div>
+                            <div class="activity-text-col">
+                                <strong>{{ act.action }}</strong>
+                                <span class="activity-target" title="{{ act.target }}">{{ act.target }}</span>
+                            </div>
+                            <span class="activity-time">{{ act.time_ago }}</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="activity-empty-state">
+                            <p>No recent activity logged.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Card 3: System Information -->
+            <div class="admin-side-card system-info-card">
+                <div class="side-card-header">
+                    <div class="system-info-title-group">
+                        <svg class="ui-icon sys-info-icon" aria-hidden="true"><use href="#icon-monitor"></use></svg>
+                        <h3>System Information</h3>
+                    </div>
+                </div>
+                <div class="system-info-list">
+                    <div class="sys-info-row">
+                        <span class="sys-info-label">Platform Version</span>
+                        <span class="sys-info-value">{{ platform_version or 'v1.0.0' }}</span>
+                    </div>
+                    <div class="sys-info-row">
+                        <span class="sys-info-label">Database Status</span>
+                        <span class="sys-info-value status-connected">
+                            <span class="status-indicator-dot dot-optimal"></span> Connected
+                        </span>
+                    </div>
+                    <div class="sys-info-row">
+                        <span class="sys-info-label">Server Uptime</span>
+                        <span class="sys-info-value">{{ server_uptime or 'Online' }}</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="dashboard-footer" style="margin-top: 36px;">
+        <span>
+            <img src="{{ url_for('static', filename='images/aeris_v_icon_64.png') }}" alt="AERIS-V" width="18" height="18" style="display:inline-block; vertical-align:middle; margin-right:6px;">AERIS-V
+        </span>
+        <span>Administration Console &bull; Security &amp; Operations</span>
+    </footer>
+
+</main>
+</div>
+
+
+<!-- ADD USER DIALOG -->
     <dialog class="admin-modal admin-user-dialog add-user-dialog"
             id="add-user-dialog"
             aria-labelledby="add-user-title">
@@ -936,272 +1187,6 @@
 
     </div>
 </dialog>
-
-
-    <!-- USER TABLE SECTION -->
-    <section class="dashboard-section admin-directory-section"
-             aria-labelledby="user-directory-title">
-
-        <div class="section-heading-row">
-            <div>
-                <span class="section-eyebrow">ACCOUNTS DIRECTORY</span>
-                <h2 id="user-directory-title">Registered Accounts</h2>
-            </div>
-
-            <span id="user-count" class="section-count" aria-live="polite">
-                <strong>{{ users|length }}</strong> account{% if users|length != 1 %}s{% endif %}
-            </span>
-        </div>
-
-        <article class="panel dashboard-panel admin-user-panel">
-            <div class="panel-heading">
-                <div class="panel-heading-icon users-heading-icon">
-                    <svg class="ui-icon" aria-hidden="true">
-                        <use href="#icon-users"></use>
-                    </svg>
-                </div>
-                <div>
-                    <h2>Account Directory</h2>
-                    <p>Filter, search, view, edit, and manage user permissions across the system.</p>
-                </div>
-            </div>
-
-            <!-- UNIFIED SEARCH, ROLE, STATUS & SORT CONTROLS -->
-            <div class="admin-toolbar">
-                <div class="admin-search-wrap">
-                    <svg class="ui-icon admin-search-icon" aria-hidden="true">
-                        <use href="#icon-search"></use>
-                    </svg>
-                    <input id="user-search"
-                           class="admin-search-input"
-                           type="search"
-                           placeholder="Search name, email, or role..."
-                           autocomplete="off"
-                           aria-label="Search user accounts">
-                </div>
-
-                <div class="admin-toolbar-filters">
-                    <!-- Role Filter Dropdown (Matching Historical Readings Status Filter Design) -->
-                    <div class="status-picker-anchor" style="position: relative; display: inline-block;">
-                        <button id="user-role-filter-btn" class="historical-toolbar-btn" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="Filter by role" title="Filter by role" data-prefix="Role: ">
-                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-filter"></use></svg>
-                            <span id="user-role-filter-text">Role: All Roles</span>
-                            <span class="toolbar-arrow">▾</span>
-                        </button>
-                        <div id="user-role-dropdown-menu" class="status-dropdown-menu" hidden style="display: none;" role="menu">
-                            <button type="button" class="status-menu-item active" data-value="all" role="menuitem">
-                                <span class="status-menu-dot dot-all"></span> All Roles
-                            </button>
-                            <button type="button" class="status-menu-item" data-value="admin" role="menuitem">
-                                <span class="status-menu-dot dot-admin"></span> Admin
-                            </button>
-                            <button type="button" class="status-menu-item" data-value="client" role="menuitem">
-                                <span class="status-menu-dot dot-client"></span> Client
-                            </button>
-                        </div>
-                        <select id="user-role-filter" class="admin-filter-select" hidden style="display: none;" aria-hidden="true" tabindex="-1">
-                            <option value="all" selected>All Roles</option>
-                            <option value="admin">Admin</option>
-                            <option value="client">Client</option>
-                        </select>
-                    </div>
-
-                    <!-- Status Filter Dropdown (Matching Historical Readings Status Filter Design) -->
-                    <div class="status-picker-anchor" style="position: relative; display: inline-block;">
-                        <button id="user-status-filter-btn" class="historical-toolbar-btn" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="Filter by status" title="Filter by status" data-prefix="Status: ">
-                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-users"></use></svg>
-                            <span id="user-status-filter-text">Status: All Statuses</span>
-                            <span class="toolbar-arrow">▾</span>
-                        </button>
-                        <div id="user-status-dropdown-menu" class="status-dropdown-menu" hidden style="display: none;" role="menu">
-                            <button type="button" class="status-menu-item active" data-value="all" role="menuitem">
-                                <span class="status-menu-dot dot-all"></span> All Statuses
-                            </button>
-                            <button type="button" class="status-menu-item" data-value="active" role="menuitem">
-                                <span class="status-menu-dot dot-optimal"></span> Active
-                            </button>
-                            <button type="button" class="status-menu-item" data-value="inactive" role="menuitem">
-                                <span class="status-menu-dot dot-critical"></span> Inactive
-                            </button>
-                        </div>
-                        <select id="user-status-filter" class="admin-filter-select" hidden style="display: none;" aria-hidden="true" tabindex="-1">
-                            <option value="all" selected>All Statuses</option>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                        </select>
-                    </div>
-
-                    <!-- Reset Button -->
-                    <button id="user-reset-btn" class="admin-filter-reset-btn" type="button" title="Reset all filters">
-                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-x"></use></svg>
-                        <span>Reset</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- TABLE -->
-            <div class="table-wrap admin-table-wrap">
-                <table class="uniform-table admin-table">
-                    <thead>
-                        <tr>
-                            <th scope="col">NAME</th>
-                            <th scope="col">EMAIL</th>
-                            <th scope="col">ROLE</th>
-                            <th scope="col">STATUS</th>
-                            <th scope="col">LAST LOGIN</th>
-                            <th scope="col" class="text-right">ACTIONS</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        {% for user in users %}
-                        <tr data-user-row
-                            data-name="{{ user.user_name|lower }}"
-                            data-email="{{ user.email|lower }}"
-                            data-role="{{ user.role|lower }}"
-                            data-status="{{ user.status|lower }}">
-
-                            <td>
-                                <div class="admin-user-cell">
-                                    <span class="user-avatar-circle" aria-hidden="true">
-                                        {% if user.profile_pic %}
-                                        <img src="{{ user.profile_pic }}" alt="{{ user.user_name }}" class="user-avatar-table-img">
-                                        {% else %}
-                                        {{ user.user_name[:1].upper() if user.user_name else '?' }}
-                                        {% endif %}
-                                    </span>
-                                    <strong class="user-cell-name">{{ user.user_name }}</strong>
-                                </div>
-                            </td>
-
-                            <td>
-                                <span class="admin-email-text">{{ user.email }}</span>
-                            </td>
-
-                            <td>
-                                <span class="table-status {% if user.role|lower == 'admin' %}admin-role-badge{% else %}client-role-badge{% endif %}">
-                                    {{ user.role }}
-                                </span>
-                            </td>
-
-                            <td>
-                                <span class="table-status {% if user.status|lower == 'active' %}good{% else %}warning{% endif %}">
-                                    <span class="status-dot"></span>
-                                    {{ user.status }}
-                                </span>
-                            </td>
-
-                            <td>
-                                {% if user.last_login %}
-                                    {% if user.last_login.isoformat is defined %}
-                                    <time datetime="{{ user.last_login.isoformat() }}">
-                                        {{ user.last_login.strftime("%b %d, %Y") }}
-                                        <span class="time-sub">{{ user.last_login.strftime("%I:%M %p") }}</span>
-                                    </time>
-                                    {% else %}
-                                    <span>{{ user.last_login }}</span>
-                                    {% endif %}
-                                {% else %}
-                                <span class="text-muted">Never</span>
-                                {% endif %}
-                            </td>
-
-                            <td class="text-right">
-                                <div class="admin-action-group">
-
-                                    <button class="admin-action-btn view-btn admin-view-user"
-                                            type="button"
-                                            aria-label="View {{ user.user_name }}"
-                                            title="View account"
-                                            data-email="{{ user.email }}"
-                                            data-name="{{ user.user_name }}"
-                                            data-role="{{ user.role }}"
-                                            data-status="{{ user.status }}"
-                                            data-avatar="{{ user.profile_pic or '' }}"
-                                            data-last-login="{% if user.last_login %}{% if user.last_login.strftime is defined %}{{ user.last_login.strftime('%b %d, %Y %I:%M %p') }}{% else %}{{ user.last_login }}{% endif %}{% else %}Never{% endif %}">
-                                        <svg class="ui-icon" aria-hidden="true">
-                                            <use href="#icon-eye"></use>
-                                        </svg>
-                                    </button>
-
-                                    <button class="admin-action-btn edit-btn admin-edit-user"
-                                            type="button"
-                                            aria-label="Edit {{ user.user_name }}"
-                                            title="Edit account"
-                                            data-email="{{ user.email }}"
-                                            data-name="{{ user.user_name }}"
-                                            data-role="{{ user.role }}"
-                                            data-status="{{ user.status }}">
-                                        <svg class="ui-icon" aria-hidden="true">
-                                            <use href="#icon-edit"></use>
-                                        </svg>
-                                    </button>
-
-                                    <button class="admin-action-btn delete-btn admin-delete-user"
-                                            type="button"
-                                            aria-label="Delete {{ user.user_name }}"
-                                            title="Delete account"
-                                            data-email="{{ user.email }}"
-                                            data-name="{{ user.user_name }}"
-                                            {% if session.get('user_id') == user.email %}
-                                            disabled
-                                            title="Cannot delete your own account"
-                                            aria-disabled="true"
-                                            {% endif %}>
-                                        <svg class="ui-icon" aria-hidden="true">
-                                            <use href="#icon-trash"></use>
-                                        </svg>
-                                    </button>
-
-                                </div>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr id="no-users-row">
-                            <td class="admin-empty" colspan="6">
-                                No user accounts have been added yet. Click &quot;Add User&quot; to create the first account.
-                            </td>
-                        </tr>
-                        {% endfor %}
-
-                        <tr id="user-filter-empty" hidden>
-                            <td class="admin-empty" colspan="6">
-                                No accounts match your search or filters.
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- PAGINATION (FIXED 10 PER PAGE) -->
-            <div id="user-pagination" class="table-pagination-footer">
-                <span id="user-page-info" class="pagination-page-info">Showing accounts...</span>
-                <div class="pagination-controls">
-                    <button type="button" id="user-prev-btn" class="pagination-btn prev-btn">‹ Prev</button>
-                    <span id="user-current-page" class="pagination-page-badge">Page 1 of 1</span>
-                    <button type="button" id="user-next-btn" class="pagination-btn next-btn">Next ›</button>
-                </div>
-            </div>
-
-            <div class="panel-card-footer">
-                <span class="metric-footer-dot"></span>
-                <span>Use the action buttons to view, edit, or delete registered user accounts</span>
-            </div>
-        </article>
-
-    </section>
-
-    <!-- FOOTER -->
-    <footer class="dashboard-footer">
-        <span>
-            <img src="{{ url_for('static', filename='images/aeris_v_icon_64.png') }}" alt="AERIS-V" width="18" height="18" style="display:inline-block; vertical-align:middle; margin-right:6px;">AERIS-V
-        </span>
-        <span>Administration Console &bull; Security &amp; Operations</span>
-    </footer>
-
-</main>
-
-</div>
 
 <script src="{{ url_for('static', filename='js/admindashboard.js') }}?v=3.7"></script>
 <script src="{{ url_for('static', filename='js/admindropdowns.js') }}?v=3.6"></script>

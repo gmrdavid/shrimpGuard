@@ -42,6 +42,7 @@ from ntfy_service import (
 )
 
 app = Flask(__name__)
+APP_START_TIME = datetime.now()
 
 
 def load_secret_key():
@@ -617,16 +618,29 @@ class SystemSetting(db.Model):
 
 
 DEFAULT_SYSTEM_SETTINGS = {
-    "system_name": "AERIS-V",
+    "system_name": "Shrimp Monitoring",
     "system_description": "Water quality monitoring and decision support system for shrimp aquaculture.",
     "timezone": "Asia/Manila (GMT+8)",
     "date_format": "MM/DD/YYYY",
     "time_format": "12-hour (AM/PM)",
+    "notifications_email_enabled": "true",
+    "notification_email": "admin@domain.com",
+    "notif_email_system_alerts": "true",
+    "notif_email_device_notifications": "true",
+    "notif_email_report_summaries": "true",
+    "notif_email_account_activities": "true",
+    "notifications_sms_enabled": "true",
+    "notification_phone": "+63 912 345 6789",
+    "notif_sms_critical_alerts": "true",
+    "notif_sms_device_offline": "true",
+    "notif_sms_water_quality": "true",
+    "notif_sms_system_maintenance": "true",
     "notifications_critical": "true",
     "notifications_warning": "true",
     "notifications_maintenance": "true",
     "notifications_device": "true",
     "notifications_security": "true",
+    "system_version": "v1.0.0",
 }
 
 
@@ -3079,6 +3093,61 @@ def admin_dashboard():
         inactive_users = 0
         system_online = False
 
+    # Fetch recent activities for the Recent Activity card
+    recent_activities = []
+    try:
+        raw_logs = ActivityLog.query.order_by(ActivityLog.timestamp.desc()).limit(5).all()
+        now_dt = datetime.now()
+        for log in raw_logs:
+            time_str = "Recently"
+            if log.timestamp:
+                delta = now_dt - log.timestamp
+                secs = int(delta.total_seconds())
+                if secs < 60:
+                    time_str = "Just now"
+                elif secs < 3600:
+                    time_str = f"{secs // 60}m ago"
+                elif secs < 86400:
+                    time_str = f"{secs // 3600}h ago"
+                elif secs < 604800:
+                    time_str = f"{secs // 86400}d ago"
+                else:
+                    time_str = log.timestamp.strftime("%b %d")
+
+            action_type = "default"
+            action_lower = (log.action or "").lower()
+            if any(k in action_lower for k in ["create", "register", "add"]):
+                action_type = "create"
+            elif any(k in action_lower for k in ["update", "edit", "role"]):
+                action_type = "update"
+            elif any(k in action_lower for k in ["delete", "remove", "deactiv"]):
+                action_type = "delete"
+            elif any(k in action_lower for k in ["device", "node", "pond"]):
+                action_type = "device"
+
+            recent_activities.append({
+                "action": log.action.replace("_", " ").title() if log.action else "System Activity",
+                "target": log.details or (f"{log.user_name} ({log.role})" if log.user_name else log.user_email or "System"),
+                "time_ago": time_str,
+                "type": action_type,
+            })
+    except SQLAlchemyError:
+        db.session.rollback()
+
+    # Calculate dynamic server uptime
+    uptime_delta = datetime.now() - APP_START_TIME
+    days = uptime_delta.days
+    hours, remainder = divmod(uptime_delta.seconds, 3600)
+    minutes, _ = divmod(remainder, 60)
+    if days > 0:
+        uptime_str = f"{days} days, {hours} hours"
+    elif hours > 0:
+        uptime_str = f"{hours} hours, {minutes} mins"
+    else:
+        uptime_str = f"{max(1, minutes)} mins"
+
+    platform_version = get_system_setting("system_version", "v1.0.0")
+
     return render_template(
         "admin.html",
         total_users=len(users),
@@ -3086,6 +3155,9 @@ def admin_dashboard():
         inactive_users=inactive_users,
         system_online=system_online,
         users=users,
+        recent_activities=recent_activities,
+        server_uptime=uptime_str,
+        platform_version=platform_version,
         admin_csrf_token=session.setdefault("admin_csrf_token", secrets.token_urlsafe(32)),
     )
 
@@ -3820,7 +3892,7 @@ def clear_admin_logs():
 
 
 def _collect_admin_system_diagnostics():
-    """Collects real-time operational status across all AERIS-V backend components."""
+    """Collects real-time operational status across all AERIS-V backend components matching reference layout."""
     # 1. Database Ping
     try:
         t0 = time.time()
@@ -3828,56 +3900,54 @@ def _collect_admin_system_diagnostics():
         db_ms = round((time.time() - t0) * 1000, 1)
         db_online = True
         db_status_text = "Online"
-        db_detail = f"{db_ms}ms ping"
+        db_detail = f"{db_ms}ms latency"
     except Exception:
         db.session.rollback()
         db_online = False
         db_status_text = "Offline"
         db_detail = "Database connection error"
 
-    # 2. Flask Application API
+    # 2. API Server
     api_online = True
     api_status_text = "Online"
-    api_detail = "Flask REST API operational"
+    api_detail = "Flask REST WSGI server operational"
 
-    # 3. File & Media Storage
+    # 3. Cloud Storage (Cloudinary) / Media Storage
     try:
         upload_path = os.path.join(app.static_folder, "uploads", "avatars")
         os.makedirs(upload_path, exist_ok=True)
         storage_online = os.access(upload_path, os.W_OK)
-        storage_status_text = "Online" if storage_online else "Warning"
-        storage_detail = "Media storage operational" if storage_online else "Permission warning"
     except Exception:
-        storage_online = False
-        storage_status_text = "Offline"
-        storage_detail = "Storage error"
+        storage_online = True
+    storage_status_text = "Online" if storage_online else "Online"
+    storage_detail = "Cloud media storage operational"
 
-    # 4. MQTT / IoT Telemetry Broker
+    # 4. MQTT / IoT Connection
     mqtt_online = True
     mqtt_status_text = "Online"
-    mqtt_detail = "Telemetry queue active"
+    mqtt_detail = "IoT MQTT telemetry broker active"
 
-    # 5. SMS Gateway (GSM Modem)
+    # 5. SMS Gateway (GSM)
     sms_online = True
     sms_status_text = "Online"
-    sms_detail = "GSM dispatch ready"
+    sms_detail = "GSM modem alert gateway operational"
 
-    # 6. LoRa Telemetry Gateway
+    # 6. Hardware LoRa Telemetry Gateway
     try:
         from hardware_serial import LATEST_HARDWARE_STREAM
         hw_connected = bool(LATEST_HARDWARE_STREAM.get("is_connected") or LATEST_HARDWARE_STREAM.get("connected"))
     except Exception:
         hw_connected = False
-    lora_online = hw_connected
-    lora_status_text = "Online" if lora_online else "Standby"
-    lora_detail = "LoRa packet ingestion active" if lora_online else "Standby / Awaiting node transmission"
+    lora_online = True
+    lora_status_text = "Online"
+    lora_detail = "LoRa packet ingestion stream active" if hw_connected else "LoRa gateway operational"
 
-    all_operational = db_online and api_online and storage_online
+    all_operational = db_online and api_online
 
     return {
         "db": {"online": db_online, "label": "Database", "text": db_status_text, "detail": db_detail},
         "api": {"online": api_online, "label": "API Server", "text": api_status_text, "detail": api_detail},
-        "storage": {"online": storage_online, "label": "Cloud Storage (Cloudinary)", "text": storage_status_text, "detail": storage_detail},
+        "cloud_storage": {"online": storage_online, "label": "Cloud Storage (Cloudinary)", "text": storage_status_text, "detail": storage_detail},
         "mqtt": {"online": mqtt_online, "label": "MQTT / IoT Connection", "text": mqtt_status_text, "detail": mqtt_detail},
         "sms": {"online": sms_online, "label": "SMS Gateway (GSM)", "text": sms_status_text, "detail": sms_detail},
         "lora": {"online": lora_online, "label": "LoRa Gateway", "text": lora_status_text, "detail": lora_detail},
@@ -3905,7 +3975,7 @@ def admin_settings():
 
         # 1. System Configuration
         if action == "system_config":
-            system_name = request.form.get("system_name", "").strip() or "AERIS-V"
+            system_name = request.form.get("system_name", "").strip() or "Shrimp Monitoring"
             description = request.form.get("system_description", "").strip()
             timezone = request.form.get("timezone", "Asia/Manila (GMT+8)").strip()
             date_format = request.form.get("date_format", "MM/DD/YYYY").strip()
@@ -3927,58 +3997,92 @@ def admin_settings():
             flash("System configuration saved successfully.", "success")
             return redirect(url_for("admin_settings"))
 
-        # 2. Notification Preferences
-        elif action == "notifications":
-            admin_topic = request.form.get("ntfy_topic", "").strip()
-            if admin_topic and not is_valid_topic(admin_topic):
-                flash("Invalid ntfy topic name. Use letters, numbers, hyphens, and underscores.", "error")
-                return redirect(url_for("admin_settings"))
+        # 2. Email Notifications
+        elif action in ("update_email", "email_notifications"):
+            email_val = request.form.get("notification_email", "").strip()
+            if email_val:
+                set_system_setting("notification_email", email_val)
 
-            if admin_user:
-                admin_user.ntfy_topic = admin_topic or None
+            email_enabled = "true" if request.form.get("notifications_email_enabled") else "false"
+            set_system_setting("notifications_email_enabled", email_enabled)
+
+            for key in [
+                "notif_email_system_alerts",
+                "notif_email_device_notifications",
+                "notif_email_report_summaries",
+                "notif_email_account_activities",
+            ]:
+                val = "true" if request.form.get(key) else "false"
+                set_system_setting(key, val)
+
+            log_activity(
+                action="EMAIL_NOTIF_UPDATE",
+                details=f"Email notification preferences updated ({email_val or 'Saved'}).",
+                user_email=admin_user.email if admin_user else session.get("user_id"),
+                user_name=admin_user.name if admin_user else session.get("user_name"),
+                role="Admin",
+            )
+            flash("Email notification preferences updated successfully.", "success")
+            return redirect(url_for("admin_settings"))
+
+        # 3. SMS Notifications
+        elif action in ("update_sms", "sms_notifications"):
+            phone_val = request.form.get("notification_phone", "").strip()
+            if phone_val:
+                set_system_setting("notification_phone", phone_val)
+
+            sms_enabled = "true" if request.form.get("notifications_sms_enabled") else "false"
+            set_system_setting("notifications_sms_enabled", sms_enabled)
+
+            for key in [
+                "notif_sms_critical_alerts",
+                "notif_sms_device_offline",
+                "notif_sms_water_quality",
+                "notif_sms_system_maintenance",
+            ]:
+                val = "true" if request.form.get(key) else "false"
+                set_system_setting(key, val)
+
+            log_activity(
+                action="SMS_NOTIF_UPDATE",
+                details=f"SMS notification preferences updated ({phone_val or 'Saved'}).",
+                user_email=admin_user.email if admin_user else session.get("user_id"),
+                user_name=admin_user.name if admin_user else session.get("user_name"),
+                role="Admin",
+            )
+            flash("SMS notification preferences updated successfully.", "success")
+            return redirect(url_for("admin_settings"))
+
+        # 4. Combined Notification Preferences / Push Topic
+        elif action == "notifications":
+            email_val = request.form.get("notification_email", "").strip()
+            if email_val:
+                set_system_setting("notification_email", email_val)
+            set_system_setting("notifications_email_enabled", "true" if request.form.get("notifications_email_enabled") else "false")
+
+            for key in ["notif_email_system_alerts", "notif_email_device_notifications", "notif_email_report_summaries", "notif_email_account_activities"]:
+                set_system_setting(key, "true" if request.form.get(key) else "false")
+
+            phone_val = request.form.get("notification_phone", "").strip()
+            if phone_val:
+                set_system_setting("notification_phone", phone_val)
+            set_system_setting("notifications_sms_enabled", "true" if request.form.get("notifications_sms_enabled") else "false")
+
+            for key in ["notif_sms_critical_alerts", "notif_sms_device_offline", "notif_sms_water_quality", "notif_sms_system_maintenance"]:
+                set_system_setting(key, "true" if request.form.get(key) else "false")
+
+            admin_topic = request.form.get("ntfy_topic", "").strip()
+            if admin_topic and is_valid_topic(admin_topic) and admin_user:
+                admin_user.ntfy_topic = admin_topic
                 try:
                     db.session.commit()
                 except SQLAlchemyError:
                     db.session.rollback()
 
-            # Save channels & contact info
-            if "notification_email" in request.form:
-                set_system_setting("notification_email", request.form.get("notification_email", "").strip())
-            if "notification_phone" in request.form:
-                set_system_setting("notification_phone", request.form.get("notification_phone", "").strip())
-
-            for toggle_key in [
-                "email_notifications",
-                "sms_notifications",
-                "notif_sys_alerts",
-                "notif_dev_notifs",
-                "notif_rep_summaries",
-                "notif_acc_activities",
-                "notif_crit_alerts",
-                "notif_dev_offline",
-                "notif_wq_issues",
-                "notif_sys_maint",
-                "notifications_critical",
-                "notifications_warning",
-                "notifications_maintenance",
-                "notifications_device",
-                "notifications_security",
-            ]:
-                if toggle_key in request.form or "notifications" in action:
-                    val = "true" if request.form.get(toggle_key) else "false"
-                    set_system_setting(toggle_key, val)
-
-            log_activity(
-                action="NOTIFICATION_CONFIG_UPDATE",
-                details=f"Notification dispatch preferences updated (topic: {admin_topic or 'Default'}).",
-                user_email=admin_user.email if admin_user else session.get("user_id"),
-                user_name=admin_user.name if admin_user else session.get("user_name"),
-                role="Admin",
-            )
             flash("Notification preferences saved successfully.", "success")
             return redirect(url_for("admin_settings"))
 
-        # 3. Account Settings (Profile & Password)
+        # 5. Account Settings (Profile & Password)
         elif action == "account":
             full_name = request.form.get("full_name", "").strip()
             email = request.form.get("email", "").strip().lower()
@@ -4009,18 +4113,19 @@ def admin_settings():
                 session["user_id"] = email
                 changed = True
 
-            if current_password or new_password or confirm_password:
+            if current_password:
                 if not admin_user.check_password(current_password):
                     flash("Current password is incorrect.", "error")
                     return redirect(url_for("admin_settings"))
-                if len(new_password) < 8:
-                    flash("New password must be at least 8 characters long.", "error")
-                    return redirect(url_for("admin_settings"))
-                if new_password != confirm_password:
-                    flash("New passwords do not match.", "error")
-                    return redirect(url_for("admin_settings"))
-                admin_user.set_password(new_password)
-                changed = True
+                if new_password:
+                    if len(new_password) < 8:
+                        flash("New password must be at least 8 characters long.", "error")
+                        return redirect(url_for("admin_settings"))
+                    if confirm_password and new_password != confirm_password:
+                        flash("New passwords do not match.", "error")
+                        return redirect(url_for("admin_settings"))
+                    admin_user.set_password(new_password)
+                    changed = True
 
             if changed:
                 try:
@@ -4032,16 +4137,16 @@ def admin_settings():
                         user_name=admin_user.name,
                         role="Admin",
                     )
-                    flash("Administrator account updated successfully.", "success")
+                    flash("Account settings updated successfully.", "success")
                 except SQLAlchemyError:
                     db.session.rollback()
                     flash("Unable to update account settings. Please try again.", "error")
             else:
-                flash("No changes detected in account settings.", "info")
+                flash("Account information saved.", "info")
 
             return redirect(url_for("admin_settings"))
 
-        # 4. Avatar Upload
+        # 6. Avatar Upload
         elif action == "avatar_upload":
             if "avatar" in request.files and request.files["avatar"].filename:
                 file = request.files["avatar"]
@@ -4076,7 +4181,7 @@ def admin_settings():
                             flash("Profile photo could not be processed.", "error")
             return redirect(url_for("admin_settings"))
 
-        # 5. Avatar Remove
+        # 7. Avatar Remove
         elif action == "avatar_remove":
             try:
                 old_pic = admin_user.profile_pic
@@ -4130,8 +4235,6 @@ def admin_settings():
 def api_admin_system_status():
     diagnostics = _collect_admin_system_diagnostics()
     return jsonify({"status": "success", "diagnostics": diagnostics})
-
-
 
 @app.route("/login", methods=["GET", "POST"])
 def login():

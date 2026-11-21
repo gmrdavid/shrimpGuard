@@ -220,6 +220,15 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             ntfyTopicInput.value = `aeris-admin-${randStr}`;
             ntfyTopicInput.focus();
+
+            const origContent = generateTopicBtn.innerHTML;
+            generateTopicBtn.innerHTML = `
+                <svg class="ui-icon" aria-hidden="true"><use href="#icon-check"></use></svg>
+                <span>Generated!</span>
+            `;
+            setTimeout(() => {
+                generateTopicBtn.innerHTML = origContent;
+            }, 1400);
         });
     }
 

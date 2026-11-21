@@ -267,15 +267,15 @@
 
         if (pageInfo) {
             if (total === 0) {
-                pageInfo.textContent = "Showing 0 accounts";
+                pageInfo.textContent = "Showing 0 users";
             } else {
                 const actualEnd = Math.min(endIdx, total);
-                pageInfo.textContent = `Showing ${startIdx + 1}–${actualEnd} of ${total} account${total === 1 ? "" : "s"}`;
+                pageInfo.textContent = `Showing ${startIdx + 1}–${actualEnd} of ${total} users`;
             }
         }
 
         if (currentPageLabel) {
-            currentPageLabel.textContent = `Page ${currentPage} of ${totalPages}`;
+            currentPageLabel.textContent = `${currentPage}`;
         }
 
         if (prevBtn) {
@@ -397,6 +397,15 @@
             if (statusFilter) statusFilter.value = "all";
             if (sortSelect) sortSelect.value = "name-asc";
             filterUsers();
+        });
+    }
+
+    const selectAllCb = get("user-select-all");
+    if (selectAllCb) {
+        selectAllCb.addEventListener("change", () => {
+            document.querySelectorAll(".user-row-checkbox").forEach((cb) => {
+                cb.checked = selectAllCb.checked;
+            });
         });
     }
 
