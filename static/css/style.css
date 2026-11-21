@@ -33242,13 +33242,37 @@ body.recommendations-page {
     background: #f4f7f9;
 }
 
-.admin-settings-main {
-    max-width: 1560px;
-    margin: 0 auto;
-    padding-bottom: 60px;
+/* Ensure main content correctly offsets the fixed admin sidebar */
+.admin-page .main-content.admin-settings-main {
+    margin-left: 258px !important;
+    width: calc(100% - 258px) !important;
+    max-width: 1600px !important;
+    box-sizing: border-box !important;
+    padding: 32px 36px 60px !important;
+    min-height: 100vh;
 }
 
-/* Top Row Grid: 3 Equal-Height Columns */
+@media (max-width: 1250px) {
+    .admin-page .main-content.admin-settings-main {
+        padding: 24px 24px 50px !important;
+    }
+}
+
+@media (max-width: 850px) {
+    .admin-page .main-content.admin-settings-main {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding: 20px 16px 40px !important;
+    }
+}
+
+/* Prevent any child element from overflowing its container */
+.admin-settings-card,
+.admin-settings-card * {
+    box-sizing: border-box;
+}
+
+/* Top Row Grid: 3 Columns on very wide screens, 2 Columns on desktop/laptop, 1 on mobile */
 .admin-settings-row-top {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -33257,16 +33281,33 @@ body.recommendations-page {
     align-items: stretch;
 }
 
-/* Bottom Row Grid: 2 Columns (Notification Settings & Account Settings) */
+@media (max-width: 1480px) {
+    .admin-settings-row-top {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .admin-settings-row-top .system-status-card {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 900px) {
+    .admin-settings-row-top {
+        grid-template-columns: 1fr;
+    }
+    .admin-settings-row-top .system-status-card {
+        grid-column: span 1;
+    }
+}
+
+/* Bottom Row Grid: 2 Columns on desktop, 1 on tablet/mobile */
 .admin-settings-row-bottom {
     display: grid;
-    grid-template-columns: 1fr 1.25fr;
+    grid-template-columns: 1fr 1fr;
     gap: 22px;
     align-items: stretch;
 }
 
-@media (max-width: 1200px) {
-    .admin-settings-row-top,
+@media (max-width: 1100px) {
     .admin-settings-row-bottom {
         grid-template-columns: 1fr;
     }
@@ -33283,6 +33324,8 @@ body.recommendations-page {
     flex-direction: column;
     position: relative;
     box-sizing: border-box;
+    min-width: 0;
+    overflow: hidden;
 }
 
 /* Card Header */
@@ -33293,6 +33336,7 @@ body.recommendations-page {
     margin-bottom: 20px;
     padding-bottom: 16px;
     border-bottom: 1px solid #edf2f5;
+    flex-shrink: 0;
 }
 
 .admin-card-icon-box {
@@ -33332,12 +33376,14 @@ body.recommendations-page {
     display: flex;
     flex-direction: column;
     flex: 1;
+    min-width: 0;
 }
 
 .admin-form-group {
     display: flex;
     flex-direction: column;
     margin-bottom: 16px;
+    min-width: 0;
 }
 
 .admin-form-group label {
@@ -33365,6 +33411,7 @@ body.recommendations-page {
     border-radius: 10px;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
     font-family: inherit;
+    min-width: 0;
 }
 
 .admin-text-input:focus,
@@ -33385,9 +33432,10 @@ body.recommendations-page {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 14px;
+    min-width: 0;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 500px) {
     .admin-form-row-duo {
         grid-template-columns: 1fr;
     }
@@ -33398,6 +33446,7 @@ body.recommendations-page {
     padding-top: 18px;
     display: flex;
     justify-content: flex-end;
+    flex-shrink: 0;
 }
 
 .admin-save-btn {
@@ -33413,6 +33462,7 @@ body.recommendations-page {
     align-items: center;
     gap: 8px;
     transition: background 0.18s ease, transform 0.12s ease;
+    white-space: nowrap;
 }
 
 .admin-save-btn:hover {
@@ -33424,18 +33474,20 @@ body.recommendations-page {
 .admin-roles-table-container {
     flex: 1;
     overflow-x: auto;
+    width: 100%;
+    margin-bottom: 12px;
 }
 
 .admin-roles-table {
     width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
+    table-layout: fixed;
+    border-collapse: collapse;
     text-align: left;
     font-size: 13px;
 }
 
 .admin-roles-table th {
-    padding: 10px 12px;
+    padding: 10px 10px;
     font-size: 11px;
     font-weight: 800;
     text-transform: uppercase;
@@ -33445,10 +33497,28 @@ body.recommendations-page {
     background: #fafcfb;
 }
 
+.admin-roles-table th:nth-child(1),
+.admin-roles-table td:nth-child(1) {
+    width: 28%;
+}
+
+.admin-roles-table th:nth-child(2),
+.admin-roles-table td:nth-child(2) {
+    width: 42%;
+}
+
+.admin-roles-table th:nth-child(3),
+.admin-roles-table td:nth-child(3) {
+    width: 30%;
+    text-align: left;
+}
+
 .admin-roles-table td {
-    padding: 14px 12px;
+    padding: 12px 10px;
     border-bottom: 1px solid #f2f5f7;
     vertical-align: top;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .admin-roles-table tr:last-child td {
@@ -33470,6 +33540,7 @@ body.recommendations-page {
     font-size: 12px;
     font-weight: 750;
     width: fit-content;
+    white-space: nowrap;
 }
 
 .role-badge .ui-icon {
@@ -33491,6 +33562,7 @@ body.recommendations-page {
     font-size: 11px;
     color: #718184;
     font-weight: 600;
+    white-space: nowrap;
 }
 
 .role-desc-text {
@@ -33502,12 +33574,16 @@ body.recommendations-page {
 
 .permission-pill {
     display: inline-block;
-    padding: 3px 8px;
+    padding: 4px 8px;
     border-radius: 6px;
     font-size: 11.5px;
     font-weight: 700;
     background: #f1f5f9;
     color: #334155;
+    text-align: left;
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.35;
 }
 
 .permission-pill.perm-all {
@@ -33521,6 +33597,7 @@ body.recommendations-page {
     border-top: 1px solid #edf2f5;
     display: flex;
     justify-content: flex-end;
+    flex-shrink: 0;
 }
 
 .admin-outline-link-btn {
@@ -33536,6 +33613,7 @@ body.recommendations-page {
     font-weight: 700;
     text-decoration: none;
     transition: all 0.15s ease;
+    white-space: nowrap;
 }
 
 .admin-outline-link-btn:hover {
@@ -33551,16 +33629,19 @@ body.recommendations-page {
     gap: 12px;
     margin-bottom: 20px;
     flex: 1;
+    min-width: 0;
 }
 
 .status-diag-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
     padding: 10px 14px;
     border-radius: 10px;
     background: #fafcfc;
     border: 1px solid #edf2f4;
+    min-width: 0;
 }
 
 .status-diag-name {
@@ -33570,6 +33651,7 @@ body.recommendations-page {
     font-size: 13.5px;
     font-weight: 700;
     color: #2c3e44;
+    min-width: 0;
 }
 
 .status-indicator-dot {
@@ -33605,6 +33687,8 @@ body.recommendations-page {
     border-radius: 6px;
     font-size: 12px;
     font-weight: 750;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .badge-optimal {
@@ -33634,6 +33718,7 @@ body.recommendations-page {
     gap: 14px;
     padding: 14px 18px;
     border-radius: 14px;
+    flex-shrink: 0;
 }
 
 .banner-operational {
@@ -33685,6 +33770,8 @@ body.recommendations-page {
     margin-bottom: 18px;
     border-bottom: 1px solid #edf2f5;
     padding-bottom: 12px;
+    flex-wrap: wrap;
+    flex-shrink: 0;
 }
 
 .notif-channel-tab {
@@ -33700,6 +33787,7 @@ body.recommendations-page {
     font-weight: 700;
     cursor: pointer;
     transition: all 0.15s ease;
+    white-space: nowrap;
 }
 
 .notif-channel-tab.active {
@@ -33717,6 +33805,8 @@ body.recommendations-page {
     align-items: center;
     justify-content: space-between;
     margin-bottom: 6px;
+    flex-wrap: wrap;
+    gap: 6px;
 }
 
 .btn-text-action {
@@ -33730,6 +33820,7 @@ body.recommendations-page {
     font-weight: 700;
     cursor: pointer;
     padding: 0;
+    white-space: nowrap;
 }
 
 .btn-text-action:hover {
@@ -33740,10 +33831,12 @@ body.recommendations-page {
 .input-with-button-row {
     display: flex;
     gap: 8px;
+    align-items: stretch;
 }
 
 .input-with-button-row .admin-text-input {
     flex: 1;
+    min-width: 0;
 }
 
 .admin-action-btn {
@@ -33760,6 +33853,7 @@ body.recommendations-page {
     cursor: pointer;
     white-space: nowrap;
     transition: all 0.15s ease;
+    flex-shrink: 0;
 }
 
 .admin-action-btn:hover {
@@ -33804,6 +33898,7 @@ body.recommendations-page {
     border: 1px solid #edf2f4;
     cursor: pointer;
     transition: background 0.15s ease, border-color 0.15s ease;
+    min-width: 0;
 }
 
 .notif-toggle-card:hover {
@@ -33862,18 +33957,22 @@ body.recommendations-page {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    flex: 1;
+    min-width: 0;
 }
 
 .toggle-card-info strong {
     font-size: 13.5px;
     color: #1e3026;
     font-weight: 750;
+    word-break: break-word;
 }
 
 .toggle-card-info span {
     font-size: 12px;
     color: #6c7e82;
     line-height: 1.35;
+    word-break: break-word;
 }
 
 /* Card 5: Admin Account Settings */
@@ -33886,6 +33985,16 @@ body.recommendations-page {
     background: #fafcfc;
     border: 1px solid #edf2f4;
     margin-bottom: 22px;
+    flex-shrink: 0;
+    min-width: 0;
+}
+
+@media (max-width: 600px) {
+    .admin-profile-hero {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
 }
 
 .admin-avatar-box {
@@ -33917,6 +34026,7 @@ body.recommendations-page {
 
 .admin-hero-info {
     flex: 1;
+    min-width: 0;
 }
 
 .admin-hero-title-row {
@@ -33924,6 +34034,7 @@ body.recommendations-page {
     align-items: center;
     gap: 10px;
     margin-bottom: 2px;
+    flex-wrap: wrap;
 }
 
 .admin-hero-title-row h3 {
@@ -33931,6 +34042,7 @@ body.recommendations-page {
     font-weight: 800;
     color: #183c43;
     margin: 0;
+    word-break: break-word;
 }
 
 .badge-status-pill {
@@ -33938,12 +34050,14 @@ body.recommendations-page {
     border-radius: 6px;
     font-size: 11px;
     font-weight: 750;
+    white-space: nowrap;
 }
 
 .admin-hero-email {
     font-size: 13px;
     color: #6c7e82;
     margin: 0 0 10px 0;
+    word-break: break-all;
 }
 
 .admin-avatar-btn-row {
@@ -33966,6 +34080,7 @@ body.recommendations-page {
     font-weight: 750;
     cursor: pointer;
     transition: all 0.15s ease;
+    white-space: nowrap;
 }
 
 .admin-change-photo-btn:hover {
@@ -33985,6 +34100,7 @@ body.recommendations-page {
     font-weight: 700;
     cursor: pointer;
     transition: all 0.15s ease;
+    white-space: nowrap;
 }
 
 .admin-remove-photo-btn:hover {
@@ -34007,17 +34123,18 @@ body.recommendations-page {
     font-weight: 600;
 }
 
+/* Account Settings: Form and Security Tips */
 .admin-account-columns {
-    display: grid;
-    grid-template-columns: 1.15fr 0.85fr;
+    display: flex;
+    flex-direction: column;
     gap: 22px;
-    align-items: start;
+    min-width: 0;
 }
 
-@media (max-width: 900px) {
-    .admin-account-columns {
-        grid-template-columns: 1fr;
-    }
+.admin-account-form {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
 }
 
 .admin-password-divider {
@@ -34035,20 +34152,24 @@ body.recommendations-page {
     position: relative;
     display: flex;
     align-items: center;
+    width: 100%;
 }
 
 .password-input-anchor .password-toggle-field {
-    padding-right: 40px;
+    padding-right: 42px;
+    width: 100%;
 }
 
 .pwd-eye-btn {
     position: absolute;
-    right: 10px;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
     background: none;
     border: none;
     color: #94a3b8;
     cursor: pointer;
-    padding: 4px;
+    padding: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -34063,12 +34184,13 @@ body.recommendations-page {
     height: 18px;
 }
 
-/* Security Tips Card */
+/* Security Tips Panel */
 .admin-security-tips-panel {
     background: #f8fafc;
     border-radius: 14px;
-    padding: 18px;
+    padding: 18px 20px;
     border: 1px solid #eef2f6;
+    min-width: 0;
 }
 
 .security-tips-header {
@@ -34095,15 +34217,22 @@ body.recommendations-page {
     list-style: none;
     padding: 0;
     margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 18px;
+}
+
+@media (max-width: 650px) {
+    .security-tips-list {
+        grid-template-columns: 1fr;
+    }
 }
 
 .security-tips-list li {
     display: flex;
     align-items: flex-start;
     gap: 10px;
+    min-width: 0;
 }
 
 .tip-check {
@@ -34111,6 +34240,7 @@ body.recommendations-page {
     font-weight: 900;
     font-size: 14px;
     margin-top: 1px;
+    flex-shrink: 0;
 }
 
 .security-tips-list strong {
