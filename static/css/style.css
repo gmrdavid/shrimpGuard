@@ -29501,15 +29501,37 @@ body.adaptive-sunlight .maint-banner-actions .btn-maint-dismiss {
     border: 1px solid #bfdbfe;
 }
 
-/* Quick Log Form in Modal */
-.maint-log-dialog {
-    max-width: 580px;
-    width: 94%;
-    border-radius: 16px;
-    border: 1px solid rgba(18, 107, 79, 0.22);
-    box-shadow: 0 24px 64px -12px rgba(10, 35, 30, 0.38), 0 8px 24px -4px rgba(10, 35, 30, 0.16);
-    background: #ffffff;
-    overflow: hidden;
+/* ==========================================================================
+   LOG PROBE MAINTENANCE MODAL DIALOG - ELEVATED DESIGN (UNIFORM THEME)
+   ========================================================================== */
+
+#probe-maint-log-modal.maint-modal-backdrop {
+    background: rgba(12, 31, 26, 0.62) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+}
+
+#probe-maint-log-modal .maint-modal-container,
+.maint-modal-container.maint-log-dialog {
+    border: none !important;
+    border-radius: 24px !important;
+    box-shadow: 0 25px 65px -12px rgba(18, 54, 46, 0.28), 0 12px 28px -6px rgba(18, 54, 46, 0.12), 0 0 1px rgba(18, 54, 46, 0.15) !important;
+    background: #ffffff !important;
+    max-width: 550px !important;
+    width: 92% !important;
+    overflow: hidden !important;
+    animation: maintLogModalEntrance 0.26s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@keyframes maintLogModalEntrance {
+    0% {
+        opacity: 0;
+        transform: scale(0.96) translateY(12px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 .maint-form-wrapper {
@@ -29517,224 +29539,438 @@ body.adaptive-sunlight .maint-banner-actions .btn-maint-dismiss {
     flex-direction: column;
     height: 100%;
     margin: 0;
+    border-radius: 24px;
+    background: #ffffff;
+    overflow: hidden;
 }
 
-.maint-header-info-wrap {
-    display: flex;
-    align-items: center;
-    gap: 13px;
+/* Header with clean pastel mint gradient & badge - Uniform with Pair Node Dialog */
+.maint-log-dialog .maint-modal-header {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+    padding: 24px 28px 20px !important;
+    background: linear-gradient(135deg, #f0fbf5 0%, #e6f6ed 60%, #ddf2e5 100%) !important;
+    border-top: none !important;
+    border-bottom: 1px solid rgba(22, 163, 74, 0.08) !important;
+    border-top-left-radius: 24px !important;
+    border-top-right-radius: 24px !important;
 }
 
-.maint-modal-subtitle {
-    font-size: 12px;
-    color: #64748b;
-    margin: 3px 0 0 0;
-    line-height: 1.4;
-    font-weight: 500;
+.maint-log-dialog .maint-header-info-wrap {
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+    min-width: 0 !important;
+    flex: 1 !important;
 }
 
-/* Target Hardware Context Card */
-.maint-target-context-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: linear-gradient(135deg, #f8fafc 0%, #f0fdf4 100%);
-    border: 1px solid #d1fae5;
-    border-radius: 12px;
-    padding: 12px 16px;
-    margin-bottom: 18px;
+.maint-log-dialog .maint-modal-icon-badge {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 14px !important;
+    background: #ffffff !important;
+    color: #15803d !important;
+    border: none !important;
+    box-shadow: 0 4px 14px rgba(22, 163, 74, 0.16) !important;
+    flex-shrink: 0 !important;
 }
 
-.maint-target-context-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    background: #ecfdf5;
-    color: #059669;
-    border: 1px solid #a7f3d0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+.maint-log-dialog .maint-modal-icon-badge .ui-icon {
+    width: 24px !important;
+    height: 24px !important;
 }
 
-.maint-target-context-icon .ui-icon {
-    width: 18px;
-    height: 18px;
+.maint-log-dialog .maint-modal-heading-text {
+    min-width: 0;
+    flex: 1;
 }
 
-.maint-target-context-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    flex-grow: 1;
+.maint-log-dialog .maint-modal-eyebrow {
+    display: block !important;
+    font-size: 10.5px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.1em !important;
+    text-transform: uppercase !important;
+    color: #16a34a !important;
+    margin-bottom: 3px !important;
+    line-height: 1.2 !important;
 }
 
-.maint-target-context-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.maint-log-dialog h2#log-modal-title {
+    margin: 0 !important;
+    font-size: 18.5px !important;
+    font-weight: 800 !important;
+    color: #143d34 !important;
+    line-height: 1.3 !important;
+    letter-spacing: -0.015em !important;
 }
 
-.maint-target-context-title strong {
-    font-size: 13px;
-    font-weight: 750;
-    color: #0f172a;
+.maint-log-dialog .maint-modal-subtitle {
+    margin: 4px 0 0 !important;
+    font-size: 12.5px !important;
+    color: #52796f !important;
+    line-height: 1.45 !important;
+    font-weight: 500 !important;
 }
 
-.maint-target-id-badge {
-    background: #e2e8f0;
-    color: #334155;
-    font-size: 10.5px;
+.maint-log-dialog .maint-modal-close {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 50% !important;
+    background: rgba(255, 255, 255, 0.8) !important;
+    color: #52796f !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    flex-shrink: 0 !important;
+}
+
+.maint-log-dialog .maint-modal-close:hover {
+    background: #fee2e2 !important;
+    color: #dc2626 !important;
+    transform: rotate(90deg) scale(1.06) !important;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.18) !important;
+}
+
+.maint-log-dialog .maint-modal-close .ui-icon {
+    width: 18px !important;
+    height: 18px !important;
+}
+
+/* Target Hardware Context Card - Uniform with Tip Banner Style */
+.maint-log-dialog .maint-target-context-card {
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+    background: #f0fdf4 !important;
+    border: none !important;
+    box-shadow: inset 0 0 0 1px rgba(22, 163, 74, 0.14) !important;
+    border-radius: 14px !important;
+    padding: 13px 16px !important;
+    margin-bottom: 2px !important;
+}
+
+.maint-log-dialog .maint-target-context-icon {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 12px !important;
+    background: #ffffff !important;
+    color: #16a34a !important;
+    border: none !important;
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.15) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+}
+
+.maint-log-dialog .maint-target-context-icon .ui-icon {
+    width: 20px !important;
+    height: 20px !important;
+}
+
+.maint-log-dialog .maint-target-context-info {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 3px !important;
+    flex-grow: 1 !important;
+    min-width: 0 !important;
+}
+
+.maint-log-dialog .maint-target-context-title {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+}
+
+.maint-log-dialog .maint-target-context-title strong {
+    font-size: 13px !important;
+    font-weight: 750 !important;
+    color: #143d34 !important;
+}
+
+.maint-log-dialog .maint-target-id-badge {
+    background: #eaf6ef !important;
+    color: #166534 !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace !important;
+    padding: 2px 8px !important;
+    border-radius: 6px !important;
+    letter-spacing: 0.05em !important;
+    box-shadow: inset 0 0 0 1px rgba(22, 163, 74, 0.18) !important;
+}
+
+.maint-log-dialog .maint-target-context-sub {
+    font-size: 11.5px !important;
+    color: #52796f !important;
+    margin: 0 !important;
+    line-height: 1.4 !important;
+}
+
+.maint-log-dialog .maint-target-context-chip {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    background: #ffffff !important;
+    color: #15803d !important;
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(22, 163, 74, 0.12) !important;
+    padding: 4px 10px !important;
+    border-radius: 9999px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    flex-shrink: 0 !important;
+}
+
+/* Form Body & Fields - Uniform Spacing & Elevation */
+.maint-log-dialog .maint-modal-body {
+    padding: 22px 28px 12px !important;
+    overflow-y: auto !important;
+    max-height: calc(88vh - 150px) !important;
+}
+
+.maint-log-dialog .maint-form-fields-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 18px !important;
+    margin-top: 14px !important;
+}
+
+.maint-log-dialog .maint-form-row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 16px !important;
+}
+
+.maint-log-dialog .maint-form-field {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 7px !important;
+}
+
+.maint-log-dialog .maint-label {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    font-size: 12.5px !important;
+    font-weight: 700 !important;
+    color: #1c3d33 !important;
+    letter-spacing: 0.01em !important;
+    margin-bottom: 0 !important;
+}
+
+.maint-log-dialog .maint-label-left {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+
+.maint-log-dialog .label-icon {
+    width: 15px !important;
+    height: 15px !important;
+    color: #16a34a !important;
+    flex-shrink: 0 !important;
+}
+
+.maint-log-dialog .maint-label .required-star {
+    color: #dc2626;
     font-weight: 800;
-    padding: 2px 7px;
-    border-radius: 4px;
-    letter-spacing: 0.04em;
-}
-
-.maint-target-context-sub {
-    font-size: 11.5px;
-    color: #64748b;
-    margin: 0;
-}
-
-.maint-target-context-chip {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: #ecfdf5;
-    color: #065f46;
-    border: 1px solid #a7f3d0;
-    padding: 4px 10px;
-    border-radius: 9999px;
-    font-size: 11.5px;
-    font-weight: 700;
-    flex-shrink: 0;
-}
-
-/* Form Fields Grid */
-.maint-form-fields-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.maint-form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-}
-
-.maint-form-field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.maint-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12.5px;
-    font-weight: 700;
-    color: #1e293b;
-}
-
-.maint-label .label-icon {
-    width: 14px;
-    height: 14px;
-    color: #059669;
-    flex-shrink: 0;
+    margin-left: 2px;
 }
 
 /* Custom Select Dropdown with Chevron */
-.maint-select-wrapper {
-    position: relative;
-    width: 100%;
+.maint-log-dialog .maint-select-wrapper {
+    position: relative !important;
+    width: 100% !important;
 }
 
-.maint-select-wrapper select {
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    padding-right: 36px;
+.maint-log-dialog .maint-select-chevron {
+    position: absolute !important;
+    right: 14px !important;
+    top: 50% !important;
+    transform: translateY(-50%) rotate(90deg) !important;
+    width: 14px !important;
+    height: 14px !important;
+    fill: #16a34a !important;
+    pointer-events: none !important;
+    transition: transform 0.2s ease !important;
 }
 
-.maint-select-chevron {
-    position: absolute;
-    right: 14px;
-    top: 50%;
-    transform: translateY(-50%) rotate(90deg);
-    width: 12px;
-    height: 12px;
-    fill: #64748b;
-    pointer-events: none;
+/* Inputs, Select, Textarea - Uniform with Pair Dialog */
+.maint-log-dialog .maint-input,
+.maint-log-dialog .maint-select,
+.maint-log-dialog .maint-textarea {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    border: 1.5px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    outline: none !important;
+    background: #f8fafc !important;
+    color: #1e293b !important;
+    font-family: inherit !important;
+    font-size: 13.5px !important;
+    font-weight: 550 !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-.maint-input,
-.maint-select,
-.maint-textarea {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 10px 14px;
-    border: 1.5px solid #cbd5e1;
-    border-radius: 10px;
-    font-size: 13px;
-    color: #0f172a;
-    background: #ffffff;
-    font-family: inherit;
-    outline: none;
-    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+.maint-log-dialog .maint-input,
+.maint-log-dialog .maint-select {
+    height: 46px !important;
+    min-height: 46px !important;
+    padding: 0 16px !important;
 }
 
-.maint-input:hover,
-.maint-select:hover,
-.maint-textarea:hover {
-    border-color: #94a3b8;
+.maint-log-dialog .maint-select {
+    padding-right: 38px !important;
+    cursor: pointer !important;
 }
 
-.maint-input:focus,
-.maint-select:focus,
-.maint-textarea:focus {
-    border-color: #126b4f;
-    box-shadow: 0 0 0 3.5px rgba(18, 107, 79, 0.15);
+.maint-log-dialog .maint-textarea {
+    padding: 12px 16px !important;
+    min-height: 82px !important;
+    line-height: 1.5 !important;
+    resize: vertical !important;
 }
 
-.maint-textarea {
-    resize: vertical;
-    min-height: 76px;
-    line-height: 1.5;
+.maint-log-dialog .maint-input:hover,
+.maint-log-dialog .maint-select:hover,
+.maint-log-dialog .maint-textarea:hover {
+    border-color: #cbd5e1 !important;
+    background: #ffffff !important;
 }
 
-.maint-hint {
-    font-size: 11.5px;
-    color: #64748b;
-    line-height: 1.45;
-    margin-top: 1px;
+.maint-log-dialog .maint-input:focus,
+.maint-log-dialog .maint-select:focus,
+.maint-log-dialog .maint-textarea:focus {
+    border-color: #16a34a !important;
+    background: #ffffff !important;
+    box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.12) !important;
+    color: #0f172a !important;
+}
+
+.maint-log-dialog .maint-hint {
+    font-size: 11.5px !important;
+    color: #64748b !important;
+    line-height: 1.45 !important;
+    margin-top: 1px !important;
+}
+
+/* Footer Actions - Uniform Elevation & Interaction */
+.maint-log-dialog .maint-modal-footer {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 12px !important;
+    padding: 18px 28px 24px !important;
+    border-top: 1px solid #edf2f0 !important;
+    background: #fafcfb !important;
+    border-bottom-left-radius: 24px !important;
+    border-bottom-right-radius: 24px !important;
+}
+
+.maint-log-dialog #btn-cancel-log-modal,
+.maint-log-dialog .btn-maint-secondary {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    padding: 0 20px !important;
+    border-radius: 12px !important;
+    border: 1px solid #e2e8f0 !important;
+    background: #ffffff !important;
+    color: #475569 !important;
+    font-size: 13px !important;
+    font-weight: 650 !important;
+    cursor: pointer !important;
+    transition: all 0.18s ease !important;
+    font-family: inherit !important;
+    box-sizing: border-box !important;
+}
+
+.maint-log-dialog #btn-cancel-log-modal:hover,
+.maint-log-dialog .btn-maint-secondary:hover {
+    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+    color: #1e293b !important;
+}
+
+.maint-log-dialog #btn-submit-maint-form,
+.maint-log-dialog .btn-maint-primary {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    padding: 0 24px !important;
+    border-radius: 12px !important;
+    border: none !important;
+    background: linear-gradient(135deg, #1b5145 0%, #15803d 100%) !important;
+    color: #ffffff !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    font-family: inherit !important;
+    box-sizing: border-box !important;
+    box-shadow: 0 4px 14px rgba(27, 81, 69, 0.25) !important;
+}
+
+.maint-log-dialog #btn-submit-maint-form:hover,
+.maint-log-dialog .btn-maint-primary:hover {
+    background: linear-gradient(135deg, #143d34 0%, #166534 100%) !important;
+    box-shadow: 0 8px 22px rgba(27, 81, 69, 0.35) !important;
+    transform: translateY(-1.5px) !important;
+}
+
+.maint-log-dialog #btn-submit-maint-form:active,
+.maint-log-dialog .btn-maint-primary:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 8px rgba(27, 81, 69, 0.2) !important;
+}
+
+.maint-log-dialog #btn-submit-maint-form .ui-icon,
+.maint-log-dialog .btn-maint-primary .ui-icon {
+    width: 17px !important;
+    height: 17px !important;
 }
 
 @media (max-width: 600px) {
-    .maint-modal-container.maint-modal-sm {
-        width: 96%;
-        margin: 10px;
+    #probe-maint-log-modal .maint-modal-container,
+    .maint-modal-container.maint-log-dialog {
+        width: 94% !important;
+        margin: 12px auto !important;
     }
-    .maint-form-row {
-        grid-template-columns: 1fr;
-        gap: 12px;
+    .maint-log-dialog .maint-form-row {
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
     }
-    .maint-modal-header {
-        padding: 16px 18px;
+    .maint-log-dialog .maint-modal-header {
+        padding: 18px 20px 16px !important;
     }
-    .maint-modal-body {
-        padding: 16px 18px;
+    .maint-log-dialog .maint-modal-body {
+        padding: 18px 20px 12px !important;
     }
-    .maint-modal-footer {
-        padding: 14px 18px;
-        flex-direction: column-reverse;
+    .maint-log-dialog .maint-modal-footer {
+        padding: 16px 20px 20px !important;
+        flex-direction: column-reverse !important;
     }
-    .maint-modal-footer button {
-        width: 100%;
-        justify-content: center;
+    .maint-log-dialog .maint-modal-footer button {
+        width: 100% !important;
+        justify-content: center !important;
     }
 }
 

@@ -1052,9 +1052,9 @@
                             <div class="maint-modal-icon-badge">
                                 <svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
                             </div>
-                            <div>
+                            <div class="maint-modal-heading-text">
                                 <span class="maint-modal-eyebrow">SENSOR HEALTH &amp; ANTI-DRIFT RECORD</span>
-                                <h2 id="log-modal-title">Log Probe Maintenance &amp; Reset Timer</h2>
+                                <h2 id="log-modal-title">Log Probe Maintenance</h2>
                                 <p class="maint-modal-subtitle">Record cleaning or calibration to clear drift alerts and reset telemetry countdowns</p>
                             </div>
                         </div>
@@ -1086,8 +1086,11 @@
                             <!-- Maintenance Procedure -->
                             <div class="maint-form-field">
                                 <label for="maint-action-select" class="maint-label">
-                                    <svg class="ui-icon label-icon" aria-hidden="true"><use href="#icon-settings"></use></svg>
-                                    <span>Maintenance Procedure Performed *</span>
+                                    <span class="maint-label-left">
+                                        <svg class="ui-icon label-icon" aria-hidden="true"><use href="#icon-settings"></use></svg>
+                                        <span>Maintenance Procedure <span class="required-star" aria-hidden="true">*</span></span>
+                                    </span>
+                                    <span class="field-badge required">Required</span>
                                 </label>
                                 <div class="maint-select-wrapper">
                                     <select id="maint-action-select" name="action" class="maint-select" required>
@@ -1104,16 +1107,22 @@
                             <div class="maint-form-row">
                                 <div class="maint-form-field">
                                     <label for="maint-technician-input" class="maint-label">
-                                        <svg class="ui-icon label-icon" aria-hidden="true"><use href="#icon-user"></use></svg>
-                                        <span>Technician / Operator *</span>
+                                        <span class="maint-label-left">
+                                            <svg class="ui-icon label-icon" aria-hidden="true"><use href="#icon-user"></use></svg>
+                                            <span>Technician / Operator <span class="required-star" aria-hidden="true">*</span></span>
+                                        </span>
+                                        <span class="field-badge required">Required</span>
                                     </label>
                                     <input type="text" id="maint-technician-input" name="technician" class="maint-input" value="${defaultTech}" placeholder="e.g. Pond Operator" required>
                                 </div>
 
                                 <div class="maint-form-field">
                                     <label for="maint-datetime-input" class="maint-label">
-                                        <svg class="ui-icon label-icon" aria-hidden="true"><use href="#icon-clock"></use></svg>
-                                        <span>Date &amp; Time *</span>
+                                        <span class="maint-label-left">
+                                            <svg class="ui-icon label-icon" aria-hidden="true"><use href="#icon-clock"></use></svg>
+                                            <span>Date &amp; Time <span class="required-star" aria-hidden="true">*</span></span>
+                                        </span>
+                                        <span class="field-badge required">Required</span>
                                     </label>
                                     <input type="datetime-local" id="maint-datetime-input" name="performed_at" class="maint-input" required>
                                 </div>
@@ -1122,8 +1131,11 @@
                             <!-- Calibration Notes -->
                             <div class="maint-form-field">
                                 <label for="maint-notes-input" class="maint-label">
-                                    <svg class="ui-icon label-icon" aria-hidden="true"><use href="#icon-message"></use></svg>
-                                    <span>Calibration Notes &amp; Buffer Offsets (Optional)</span>
+                                    <span class="maint-label-left">
+                                        <svg class="ui-icon label-icon" aria-hidden="true"><use href="#icon-message"></use></svg>
+                                        <span>Calibration Notes &amp; Buffer Offsets</span>
+                                    </span>
+                                    <span class="field-badge optional">Optional</span>
                                 </label>
                                 <textarea id="maint-notes-input" name="notes" class="maint-textarea" rows="3" placeholder="e.g. Gently cleaned algal biofilm with soft camel-hair brush; 2-point verified with pH 6.86 and 4.01 standard buffers at 29.5°C. Voltage offset verified."></textarea>
                                 <span class="maint-hint">All entries are permanently logged in the maintenance audit trail for quality assurance.</span>
