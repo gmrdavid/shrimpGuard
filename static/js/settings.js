@@ -836,8 +836,224 @@ function updateDeviceTime() {
         }
     }
 
+    function initAvatarManager() {
+        const fileInput = document.getElementById("avatar-file-input");
+        const changeBtn = document.getElementById("btn-change-avatar");
+        const quickTrigger = document.getElementById("avatar-quick-trigger");
+        const removeBtn = document.getElementById("btn-remove-avatar");
+        const previewImg = document.getElementById("avatar-preview-img");
+        const previewInitials = document.getElementById("avatar-preview-initials");
+        const feedbackEl = document.getElementById("avatar-action-feedback");
+        const headerImg = document.getElementById("header-avatar-img");
+        const headerInitials = document.getElementById("header-avatar-initials");
+
+        const removeDialog = document.getElementById("remove-avatar-dialog");
+        const cancelRemoveBtn = document.getElementById("cancel-remove-avatar");
+        const confirmRemoveBtn = document.getElementById("confirm-remove-avatar");
+
+        const csrfInput = document.querySelector('input[name="csrf_token"]');
+        const csrfToken = csrfInput ? csrfInput.value : "";
+
+        const ALLOWED_EXTENSIONS = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
+        const MAX_BYTES = 5 * 1024 * 1024; // 5MB
+
+        function showFeedback(msg, isSuccess = true) {
+            if (!feedbackEl) return;
+            feedbackEl.className = "settings-avatar-feedback " + (isSuccess ? "is-success" : "is-error");
+            feedbackEl.textContent = msg;
+            feedbackEl.style.display = "block";
+            feedbackEl.style.opacity = "1";
+            setTimeout(() => {
+                feedbackEl.style.opacity = "0";
+                setTimeout(() => {
+                    feedbackEl.style.display = "none";
+                    feedbackEl.style.opacity = "1";
+                }, 300);
+            }, 4000);
+        }
+
+        function triggerFileInput() {
+            if (fileInput) fileInput.click();
+        }
+
+        if (changeBtn) changeBtn.addEventListener("click", triggerFileInput);
+        if (quickTrigger) quickTrigger.addEventListener("click", triggerFileInput);
+
+        if (fileInput) {
+            fileInput.addEventListener("change", async () => {
+                const file = fileInput.files && fileInput.files[0];
+                if (!file) return;
+
+                const fileType = (file.type || "").toLowerCase();
+                const fileName = (file.name || "").toLowerCase();
+                const isExtValid = ALLOWED_EXTENSIONS.includes(fileType) ||
+                    /\.(jpe?g|png|webp|gif)$/i.test(fileName);
+
+                if (!isExtValid) {
+                    showFeedback("Unsupported file format. Please choose a JPG, PNG, GIF, or WebP image.", false);
+                    fileInput.value = "";
+                    return;
+                }
+
+                if (file.size > MAX_BYTES) {
+                    showFeedback("File size exceeds 5MB. Please choose a smaller photo.", false);
+                    fileInput.value = "";
+                    return;
+                }
+
+                // Instant preview via FileReader
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    if (previewImg) {
+                        previewImg.src = e.target.result;
+                        previewImg.style.display = "block";
+                    }
+                    if (previewInitials) {
+                        previewInitials.style.display = "none";
+                    }
+                };
+                reader.readAsDataURL(file);
+
+                // Set loading state
+                const originalHtml = changeBtn ? changeBtn.innerHTML : "";
+                if (changeBtn) {
+                    changeBtn.disabled = true;
+                    changeBtn.innerHTML = `
+                        <svg class="ui-icon spin" aria-hidden="true" style="animation: spin 1s linear infinite;"><use href="#icon-clock"></use></svg>
+                        <span>Uploading...</span>
+                    `;
+                }
+
+                const formData = new FormData();
+                formData.append("avatar", file);
+                formData.append("csrf_token", csrfToken);
+
+                try {
+                    const response = await fetch("/api/user/profile-picture", {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": csrfToken
+                        },
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.status === "success") {
+                        const newUrl = data.avatar_url + "?t=" + Date.now();
+                        if (previewImg) {
+                            previewImg.src = newUrl;
+                            previewImg.style.display = "block";
+                        }
+                        if (previewInitials) previewInitials.style.display = "none";
+                        if (removeBtn) removeBtn.style.display = "inline-flex";
+
+                        if (headerImg) {
+                            headerImg.src = newUrl;
+                            headerImg.style.display = "block";
+                        }
+                        if (headerInitials) headerInitials.style.display = "none";
+
+                        showFeedback("Profile picture updated successfully!", true);
+                    } else {
+                        showFeedback(data.message || "Failed to upload profile picture.", false);
+                    }
+                } catch (err) {
+                    showFeedback("Network error. Please try uploading again.", false);
+                } finally {
+                    if (changeBtn) {
+                        changeBtn.disabled = false;
+                        changeBtn.innerHTML = originalHtml;
+                    }
+                    fileInput.value = "";
+                }
+            });
+        }
+
+        // Remove Avatar Modal & Actions
+        if (removeBtn && removeDialog) {
+            removeBtn.addEventListener("click", () => {
+                if (typeof removeDialog.showModal === "function") {
+                    removeDialog.showModal();
+                } else {
+                    removeDialog.setAttribute("open", "");
+                }
+            });
+        }
+
+        if (cancelRemoveBtn && removeDialog) {
+            cancelRemoveBtn.addEventListener("click", () => {
+                removeDialog.close();
+            });
+        }
+
+        if (removeDialog) {
+            removeDialog.addEventListener("click", (e) => {
+                if (e.target === removeDialog) removeDialog.close();
+            });
+        }
+
+        if (confirmRemoveBtn) {
+            confirmRemoveBtn.addEventListener("click", async () => {
+                if (removeDialog) removeDialog.close();
+
+                const originalRemoveHtml = removeBtn ? removeBtn.innerHTML : "";
+                if (removeBtn) {
+                    removeBtn.disabled = true;
+                    removeBtn.innerHTML = `
+                        <svg class="ui-icon spin" aria-hidden="true" style="animation: spin 1s linear infinite;"><use href="#icon-clock"></use></svg>
+                        <span>Removing...</span>
+                    `;
+                }
+
+                try {
+                    const response = await fetch("/api/user/profile-picture", {
+                        method: "DELETE",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrfToken
+                        },
+                        body: JSON.stringify({ csrf_token: csrfToken })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.status === "success") {
+                        if (previewImg) {
+                            previewImg.src = "";
+                            previewImg.style.display = "none";
+                        }
+                        if (previewInitials) previewInitials.style.display = "flex";
+                        if (removeBtn) removeBtn.style.display = "none";
+
+                        if (headerImg) {
+                            headerImg.src = "";
+                            headerImg.style.display = "none";
+                        }
+                        if (headerInitials) headerInitials.style.display = "flex";
+
+                        showFeedback("Profile picture removed successfully.", true);
+                    } else {
+                        showFeedback(data.message || "Could not remove profile picture.", false);
+                    }
+                } catch (err) {
+                    showFeedback("Network error. Could not remove profile picture.", false);
+                } finally {
+                    if (removeBtn) {
+                        removeBtn.disabled = false;
+                        removeBtn.innerHTML = originalRemoveHtml;
+                    }
+                }
+            });
+        }
+    }
+
     if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initAdaptiveSettings);
+        document.addEventListener("DOMContentLoaded", () => {
+            initAdaptiveSettings();
+            initAvatarManager();
+        });
     } else {
         initAdaptiveSettings();
+        initAvatarManager();
     }

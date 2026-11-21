@@ -1,4 +1,5 @@
 import csv
+import hashlib
 import hmac
 import io
 import math
@@ -227,6 +228,7 @@ class User(db.Model):
     last_login = db.Column(db.DateTime, nullable=True)
     ntfy_topic = db.Column(db.String(100), nullable=True)
     last_read_notifications = db.Column(db.DateTime, nullable=True)
+    profile_pic = db.Column(db.String(255), nullable=True)
 
     @property
     def id(self):
@@ -1116,6 +1118,15 @@ with app.app_context():
                     conn.execute(text("UPDATE sensors SET user_email = 'rio@gmail.com' WHERE user_email IS NULL;"))
                 if "id" not in sensor_cols:
                     conn.execute(text("ALTER TABLE sensors ADD COLUMN id INT NOT NULL AUTO_INCREMENT PRIMARY KEY FIRST;"))
+                conn.commit()
+            except Exception:
+                pass
+
+            try:
+                res_user = conn.execute(text("DESCRIBE users;"))
+                user_cols = {row[0].lower() for row in res_user.fetchall()}
+                if "profile_pic" not in user_cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN profile_pic VARCHAR(255) NULL;"))
                 conn.commit()
             except Exception:
                 pass
@@ -3846,6 +3857,7 @@ def login():
                             session["user_id"] = user.email
                             session["user_role"] = user.role
                             session["user_name"] = user.name
+                            session["user_profile_pic"] = user.profile_pic
                             log_activity(
                                 action="LOGIN",
                                 details=f"User signed in successfully ({user.role}).",
@@ -4703,12 +4715,236 @@ def settings():
                         role=user.role,
                     )
                     flash("Password updated successfully.", "success")
+        elif action == "avatar_upload":
+            if "avatar" in request.files and request.files["avatar"].filename:
+                file = request.files["avatar"]
+                ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
+                if ext not in ALLOWED_AVATAR_EXTENSIONS:
+                    flash("Unsupported format. Please upload a JPG, PNG, GIF, or WebP image.", "error")
+                else:
+                    file.seek(0, os.SEEK_END)
+                    sz = file.tell()
+                    file.seek(0)
+                    if sz > MAX_AVATAR_SIZE:
+                        flash("File exceeds the 5MB size limit.", "error")
+                    else:
+                        try:
+                            old_pic = user.profile_pic
+                            new_pic = save_avatar_image(file, user.email)
+                            user.profile_pic = new_pic
+                            db.session.commit()
+                            session["user_profile_pic"] = new_pic
+                            if old_pic and old_pic != new_pic:
+                                delete_old_avatar(old_pic)
+                            log_activity(
+                                action="PROFILE_PICTURE_UPDATE",
+                                details="Profile picture updated successfully.",
+                                user_email=user.email,
+                                user_name=user.name,
+                                role=user.role,
+                            )
+                            flash("Profile picture updated successfully.", "success")
+                        except Exception as exc:
+                            db.session.rollback()
+                            app.logger.warning(f"Avatar save error: {exc}")
+                            flash("Your profile photo could not be processed. Please try another image.", "error")
+            else:
+                flash("Please choose an image file to upload.", "error")
+        elif action == "avatar_remove":
+            try:
+                old_pic = user.profile_pic
+                user.profile_pic = None
+                db.session.commit()
+                session["user_profile_pic"] = None
+                if old_pic:
+                    delete_old_avatar(old_pic)
+                log_activity(
+                    action="PROFILE_PICTURE_REMOVE",
+                    details="Profile picture removed.",
+                    user_email=user.email,
+                    user_name=user.name,
+                    role=user.role,
+                )
+                flash("Profile picture removed successfully.", "success")
+            except Exception:
+                db.session.rollback()
+                flash("Could not remove profile picture. Please try again.", "error")
         else:
             flash("Choose a valid settings action.", "error")
 
         return redirect(url_for("settings"))
 
     return render_template("settings.html", user=user, settings_csrf_token=csrf_token)
+
+
+# --- USER AVATAR CONFIGURATION & HELPERS ---
+AVATAR_UPLOAD_FOLDER = os.path.join(app.root_path, "static", "uploads", "avatars")
+os.makedirs(AVATAR_UPLOAD_FOLDER, exist_ok=True)
+ALLOWED_AVATAR_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "gif"}
+MAX_AVATAR_SIZE = 5 * 1024 * 1024  # 5 MB
+
+
+def save_avatar_image(file_storage, user_email):
+    """Validates, crops to square, resizes to 512x512, and saves avatar image using Pillow."""
+    from PIL import Image, ImageOps
+
+    in_memory = io.BytesIO(file_storage.read())
+    file_storage.seek(0)
+
+    # Validate image format
+    img = Image.open(in_memory)
+    img.verify()
+
+    in_memory.seek(0)
+    img = Image.open(in_memory)
+    img = ImageOps.exif_transpose(img)
+
+    width, height = img.size
+    min_dim = min(width, height)
+    left = (width - min_dim) // 2
+    top = (height - min_dim) // 2
+    img = img.crop((left, top, left + min_dim, top + min_dim))
+
+    resample = getattr(Image, "Resampling", Image).LANCZOS
+    img = img.resize((512, 512), resample=resample)
+
+    if img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info):
+        img = img.convert("RGBA")
+    else:
+        img = img.convert("RGB")
+
+    safe_hash = hashlib.sha256(user_email.encode("utf-8")).hexdigest()[:12]
+    filename = f"avatar_{safe_hash}_{int(time.time())}.webp"
+    save_path = os.path.join(AVATAR_UPLOAD_FOLDER, filename)
+    img.save(save_path, "WEBP", quality=88, method=6)
+
+    return f"/static/uploads/avatars/{filename}"
+
+
+def delete_old_avatar(avatar_url):
+    """Safely deletes an avatar file if it resides in the static/uploads/avatars directory."""
+    if not avatar_url or not isinstance(avatar_url, str):
+        return
+    prefix = "/static/uploads/avatars/"
+    if avatar_url.startswith(prefix):
+        rel_filename = avatar_url[len(prefix):]
+        safe_name = os.path.basename(rel_filename)
+        file_to_del = os.path.join(AVATAR_UPLOAD_FOLDER, safe_name)
+        if os.path.isfile(file_to_del):
+            try:
+                os.remove(file_to_del)
+            except Exception as exc:
+                app.logger.warning(f"Could not remove old avatar file {file_to_del}: {exc}")
+
+
+@app.route("/api/user/profile-picture", methods=["POST"])
+@role_required("Client", "Admin")
+def api_upload_profile_picture():
+    user_email = session.get("user_id")
+    if not user_email:
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
+
+    user = db.session.get(User, user_email)
+    if not user:
+        return jsonify({"status": "error", "message": "User not found"}), 404
+
+    csrf_token = request.headers.get("X-CSRFToken") or request.form.get("csrf_token")
+    if not csrf_token or not (
+        verify_timed_csrf_token(csrf_token, purpose="settings") or
+        validate_csrf(csrf_token, session_token_key="settings_csrf_token", purpose="settings")
+    ):
+        return jsonify({"status": "error", "message": "Session or security token expired. Please refresh the page."}), 403
+
+    if "avatar" not in request.files:
+        return jsonify({"status": "error", "message": "No file uploaded. Please select an image."}), 400
+
+    file = request.files["avatar"]
+    if not file or not file.filename:
+        return jsonify({"status": "error", "message": "No image selected."}), 400
+
+    ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
+    if ext not in ALLOWED_AVATAR_EXTENSIONS:
+        return jsonify({"status": "error", "message": "Unsupported file format. Please upload JPG, PNG, GIF, or WebP."}), 400
+
+    file.seek(0, os.SEEK_END)
+    sz = file.tell()
+    file.seek(0)
+    if sz > MAX_AVATAR_SIZE:
+        return jsonify({"status": "error", "message": "File exceeds the 5MB size limit."}), 400
+
+    try:
+        old_pic = user.profile_pic
+        new_pic = save_avatar_image(file, user.email)
+        user.profile_pic = new_pic
+        db.session.commit()
+        session["user_profile_pic"] = new_pic
+
+        if old_pic and old_pic != new_pic:
+            delete_old_avatar(old_pic)
+
+        log_activity(
+            action="PROFILE_PICTURE_UPDATE",
+            details="Profile picture updated via settings.",
+            user_email=user.email,
+            user_name=user.name,
+            role=user.role,
+        )
+
+        return jsonify({
+            "status": "success",
+            "message": "Profile picture updated successfully.",
+            "avatar_url": new_pic,
+        })
+    except Exception as exc:
+        db.session.rollback()
+        app.logger.warning(f"Profile picture upload error: {exc}")
+        return jsonify({"status": "error", "message": "Failed to process image. Please try a different photo."}), 500
+
+
+@app.route("/api/user/profile-picture", methods=["DELETE"])
+@app.route("/api/user/profile-picture/delete", methods=["POST"])
+@role_required("Client", "Admin")
+def api_remove_profile_picture():
+    user_email = session.get("user_id")
+    if not user_email:
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
+
+    user = db.session.get(User, user_email)
+    if not user:
+        return jsonify({"status": "error", "message": "User not found"}), 404
+
+    csrf_token = request.headers.get("X-CSRFToken") or request.form.get("csrf_token")
+    if not csrf_token or not (
+        verify_timed_csrf_token(csrf_token, purpose="settings") or
+        validate_csrf(csrf_token, session_token_key="settings_csrf_token", purpose="settings")
+    ):
+        return jsonify({"status": "error", "message": "Session or security token expired. Please refresh the page."}), 403
+
+    try:
+        old_pic = user.profile_pic
+        user.profile_pic = None
+        db.session.commit()
+        session["user_profile_pic"] = None
+
+        if old_pic:
+            delete_old_avatar(old_pic)
+
+        log_activity(
+            action="PROFILE_PICTURE_REMOVE",
+            details="Profile picture removed via settings.",
+            user_email=user.email,
+            user_name=user.name,
+            role=user.role,
+        )
+
+        return jsonify({
+            "status": "success",
+            "message": "Profile picture removed successfully.",
+        })
+    except Exception as exc:
+        db.session.rollback()
+        app.logger.warning(f"Profile picture remove error: {exc}")
+        return jsonify({"status": "error", "message": "Failed to remove profile picture. Please try again."}), 500
 
 
 @app.route("/api/activity-logs")
