@@ -19768,6 +19768,339 @@ nav a {
     box-shadow: 0 8px 28px rgba(18, 107, 79, 0.08) !important;
 }
 
+/* ==========================================================================
+   AI RECOMMENDATIONS - DYNAMIC CLEAN STATUS BACKGROUND COLORS (TOP 3 CARDS)
+   ========================================================================== */
+
+/* 1. GOOD / OPTIMAL STATUS: Clean Fresh Mint-Green */
+.recommendations-page .recs-card.status-tier-good,
+.recommendations-page .recs-card.status-card-good {
+    background: linear-gradient(180deg, #f0fbf5 0%, #dff4e8 100%) !important;
+    border: none !important;
+    box-shadow: 0 4px 20px rgba(18, 107, 79, 0.06), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+.recommendations-page .recs-card.status-tier-good:hover,
+.recommendations-page .recs-card.status-card-good:hover {
+    box-shadow: 0 8px 28px rgba(18, 107, 79, 0.10) !important;
+}
+
+.recommendations-page .recs-card.status-tier-good .recs-card-label,
+.recommendations-page .recs-card.status-card-good .recs-card-label {
+    color: #0f5940 !important;
+}
+
+.recommendations-page .recs-card.status-tier-good .card-label-dot,
+.recommendations-page .recs-card.status-card-good .card-label-dot {
+    background-color: #0f5940 !important;
+}
+
+.recommendations-page .recs-card.status-tier-good .status-heading,
+.recommendations-page .recs-card.status-tier-good .pred-heading {
+    color: #0f5940 !important;
+}
+
+.recommendations-page .recs-card.status-tier-good .status-subtext,
+.recommendations-page .recs-card.status-tier-good .pred-subtext {
+    color: #245844 !important;
+}
+
+.recommendations-page .recs-card.status-tier-good .wqi-label,
+.recommendations-page .recs-card.status-tier-good .donut-gauge-caption {
+    color: #356a55 !important;
+}
+
+.recommendations-page .recs-card.status-tier-good .wqi-number,
+.recommendations-page .recs-card.status-tier-good .donut-gauge-pct {
+    color: #0c3829 !important;
+}
+
+.recommendations-page .recs-card.status-tier-good .wqi-max {
+    color: #3e7560 !important;
+}
+
+.recommendations-page .recs-card.status-tier-good .wqi-progress-track {
+    background: #c5ecd6 !important;
+}
+
+.recommendations-page .recs-card.status-tier-good .wqi-progress-bar {
+    background: linear-gradient(90deg, #0e6b4e 0%, #10b981 100%) !important;
+}
+
+.recommendations-page .recs-card.status-tier-good .donut-gauge-bg {
+    stroke: #c5ecd6 !important;
+}
+
+.recommendations-page .recs-card.status-tier-good .donut-gauge-fill {
+    stroke: #0e6b4e !important;
+}
+
+.recommendations-page .recs-card.status-tier-good .btn-view-details-outline {
+    background: #ffffff !important;
+    border: 1.5px solid #0f6848 !important;
+    color: #0f6848 !important;
+    box-shadow: 0 1px 4px rgba(18, 107, 79, 0.08) !important;
+}
+
+.recommendations-page .recs-card.status-tier-good .btn-view-details-outline:hover {
+    background: #dff4e8 !important;
+    color: #094731 !important;
+    border-color: #094731 !important;
+}
+
+.recommendations-page .recs-card.status-tier-good .view-all-link {
+    color: #0f6848 !important;
+}
+
+.recommendations-page .recs-card.status-tier-good .view-all-link:hover {
+    color: #094731 !important;
+}
+
+.recommendations-page .recs-card.status-tier-good .alert-item-row {
+    background: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 1px 4px rgba(18, 107, 79, 0.06) !important;
+}
+
+.recommendations-page .recs-card.status-tier-good .alert-item-title {
+    color: #113f30 !important;
+}
+
+.recommendations-page .recs-card.status-tier-good .alert-item-desc {
+    color: #2d5e4b !important;
+}
+
+.recommendations-page .recs-card.status-tier-good .alert-item-time {
+    color: #4d7a68 !important;
+}
+
+.recommendations-page .recs-card.status-tier-good .status-circle-icon {
+    background: #ffffff !important;
+    color: #0f5940 !important;
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(18, 107, 79, 0.12) !important;
+}
+
+
+/* 2. WARNING STATUS: Clean Warm Amber-Orange */
+.recommendations-page .recs-card.status-tier-warning,
+.recommendations-page .recs-card.status-card-warning {
+    background: linear-gradient(180deg, #fff9f0 0%, #feeacc 100%) !important;
+    border: none !important;
+    box-shadow: 0 4px 20px rgba(180, 83, 9, 0.06), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+.recommendations-page .recs-card.status-tier-warning:hover,
+.recommendations-page .recs-card.status-card-warning:hover {
+    box-shadow: 0 8px 28px rgba(180, 83, 9, 0.10) !important;
+}
+
+.recommendations-page .recs-card.status-tier-warning .recs-card-label,
+.recommendations-page .recs-card.status-card-warning .recs-card-label {
+    color: #92400e !important;
+}
+
+.recommendations-page .recs-card.status-tier-warning .card-label-dot,
+.recommendations-page .recs-card.status-card-warning .card-label-dot {
+    background-color: #d97706 !important;
+}
+
+.recommendations-page .recs-card.status-tier-warning .status-heading,
+.recommendations-page .recs-card.status-tier-warning .pred-heading {
+    color: #92400e !important;
+}
+
+.recommendations-page .recs-card.status-tier-warning .status-subtext,
+.recommendations-page .recs-card.status-tier-warning .pred-subtext {
+    color: #6e3d10 !important;
+}
+
+.recommendations-page .recs-card.status-tier-warning .wqi-label,
+.recommendations-page .recs-card.status-tier-warning .donut-gauge-caption {
+    color: #8c5825 !important;
+}
+
+.recommendations-page .recs-card.status-tier-warning .wqi-number,
+.recommendations-page .recs-card.status-tier-warning .donut-gauge-pct {
+    color: #4a2101 !important;
+}
+
+.recommendations-page .recs-card.status-tier-warning .wqi-max {
+    color: #925d2b !important;
+}
+
+.recommendations-page .recs-card.status-tier-warning .wqi-progress-track {
+    background: #fcdba6 !important;
+}
+
+.recommendations-page .recs-card.status-tier-warning .wqi-progress-bar {
+    background: linear-gradient(90deg, #d97706 0%, #f59e0b 100%) !important;
+}
+
+.recommendations-page .recs-card.status-tier-warning .donut-gauge-bg {
+    stroke: #fcdba6 !important;
+}
+
+.recommendations-page .recs-card.status-tier-warning .donut-gauge-fill {
+    stroke: #d97706 !important;
+}
+
+.recommendations-page .recs-card.status-tier-warning .btn-view-details-outline {
+    background: #ffffff !important;
+    border: 1.5px solid #d97706 !important;
+    color: #b45309 !important;
+    box-shadow: 0 1px 4px rgba(180, 83, 9, 0.08) !important;
+}
+
+.recommendations-page .recs-card.status-tier-warning .btn-view-details-outline:hover {
+    background: #feeacc !important;
+    color: #78350f !important;
+    border-color: #78350f !important;
+}
+
+.recommendations-page .recs-card.status-tier-warning .view-all-link {
+    color: #b45309 !important;
+}
+
+.recommendations-page .recs-card.status-tier-warning .view-all-link:hover {
+    color: #78350f !important;
+}
+
+.recommendations-page .recs-card.status-tier-warning .alert-item-row {
+    background: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 1px 4px rgba(180, 83, 9, 0.06) !important;
+}
+
+.recommendations-page .recs-card.status-tier-warning .alert-item-title {
+    color: #4a2101 !important;
+}
+
+.recommendations-page .recs-card.status-tier-warning .alert-item-desc {
+    color: #6e3d10 !important;
+}
+
+.recommendations-page .recs-card.status-tier-warning .alert-item-time {
+    color: #8c5825 !important;
+}
+
+.recommendations-page .recs-card.status-tier-warning .status-circle-icon {
+    background: #ffffff !important;
+    color: #b45309 !important;
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(180, 83, 9, 0.12) !important;
+}
+
+
+/* 3. CRITICAL STATUS: Clean Soft Rose-Red */
+.recommendations-page .recs-card.status-tier-critical,
+.recommendations-page .recs-card.status-card-critical {
+    background: linear-gradient(180deg, #fff1f2 0%, #fed7d7 100%) !important;
+    border: none !important;
+    box-shadow: 0 4px 20px rgba(185, 28, 28, 0.06), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+.recommendations-page .recs-card.status-tier-critical:hover,
+.recommendations-page .recs-card.status-card-critical:hover {
+    box-shadow: 0 8px 28px rgba(185, 28, 28, 0.10) !important;
+}
+
+.recommendations-page .recs-card.status-tier-critical .recs-card-label,
+.recommendations-page .recs-card.status-card-critical .recs-card-label {
+    color: #991b1b !important;
+}
+
+.recommendations-page .recs-card.status-tier-critical .card-label-dot,
+.recommendations-page .recs-card.status-card-critical .card-label-dot {
+    background-color: #dc2626 !important;
+}
+
+.recommendations-page .recs-card.status-tier-critical .status-heading,
+.recommendations-page .recs-card.status-tier-critical .pred-heading {
+    color: #991b1b !important;
+}
+
+.recommendations-page .recs-card.status-tier-critical .status-subtext,
+.recommendations-page .recs-card.status-tier-critical .pred-subtext {
+    color: #6d1b1b !important;
+}
+
+.recommendations-page .recs-card.status-tier-critical .wqi-label,
+.recommendations-page .recs-card.status-tier-critical .donut-gauge-caption {
+    color: #913333 !important;
+}
+
+.recommendations-page .recs-card.status-tier-critical .wqi-number,
+.recommendations-page .recs-card.status-tier-critical .donut-gauge-pct {
+    color: #500a0a !important;
+}
+
+.recommendations-page .recs-card.status-tier-critical .wqi-max {
+    color: #9c3e3e !important;
+}
+
+.recommendations-page .recs-card.status-tier-critical .wqi-progress-track {
+    background: #fec1c1 !important;
+}
+
+.recommendations-page .recs-card.status-tier-critical .wqi-progress-bar {
+    background: linear-gradient(90deg, #b91c1c 0%, #ef4444 100%) !important;
+}
+
+.recommendations-page .recs-card.status-tier-critical .donut-gauge-bg {
+    stroke: #fec1c1 !important;
+}
+
+.recommendations-page .recs-card.status-tier-critical .donut-gauge-fill {
+    stroke: #dc2626 !important;
+}
+
+.recommendations-page .recs-card.status-tier-critical .btn-view-details-outline {
+    background: #ffffff !important;
+    border: 1.5px solid #dc2626 !important;
+    color: #b91c1c !important;
+    box-shadow: 0 1px 4px rgba(185, 28, 28, 0.08) !important;
+}
+
+.recommendations-page .recs-card.status-tier-critical .btn-view-details-outline:hover {
+    background: #fed7d7 !important;
+    color: #7f1d1d !important;
+    border-color: #7f1d1d !important;
+}
+
+.recommendations-page .recs-card.status-tier-critical .view-all-link {
+    color: #b91c1c !important;
+}
+
+.recommendations-page .recs-card.status-tier-critical .view-all-link:hover {
+    color: #7f1d1d !important;
+}
+
+.recommendations-page .recs-card.status-tier-critical .alert-item-row {
+    background: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 1px 4px rgba(185, 28, 28, 0.06) !important;
+}
+
+.recommendations-page .recs-card.status-tier-critical .alert-item-title {
+    color: #500a0a !important;
+}
+
+.recommendations-page .recs-card.status-tier-critical .alert-item-desc {
+    color: #6d1b1b !important;
+}
+
+.recommendations-page .recs-card.status-tier-critical .alert-item-time {
+    color: #913333 !important;
+}
+
+.recommendations-page .recs-card.status-tier-critical .status-circle-icon {
+    background: #ffffff !important;
+    color: #dc2626 !important;
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(185, 28, 28, 0.12) !important;
+}
+
 /* AI Recommendation Webpage - Inner Sub-Boxes Stroke Removal */
 .recommendations-page .rec-entry-card {
     border: none !important;

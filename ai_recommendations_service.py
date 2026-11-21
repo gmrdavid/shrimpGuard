@@ -1076,6 +1076,13 @@ def get_comprehensive_ai_recommendations(
     if not actionable_solutions or len(actionable_solutions) < 3:
         actionable_solutions = dynamic_solutions
 
+    # Determine overall status tier of active alerts for card background styling
+    alerts_status = "good"
+    if any(a.get("is_critical") or a.get("severity") == "Critical" for a in active_alerts):
+        alerts_status = "critical"
+    elif any(a.get("severity") == "Warning" for a in active_alerts):
+        alerts_status = "warning"
+
     result = {
         "current_status": {
             "heading": status_heading,
@@ -1094,6 +1101,7 @@ def get_comprehensive_ai_recommendations(
             "projections": proj_data["projections"],
         },
         "active_alerts": active_alerts,
+        "alerts_status": alerts_status,
         "recommendations": ai_content.get("recommendations", []),
         "all_recommendations": ai_content.get("all_recommendations", ai_content.get("recommendations", [])),
         "parameters": parameters,

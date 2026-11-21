@@ -251,11 +251,12 @@
             </div>
         </section>
 
-        <!-- TOP ROW: 3 CARDS (MATCHING ATTACHED PHOTO) -->
+        <!-- TOP ROW: 3 CARDS (MATCHING ATTACHED PHOTO - DYNAMIC CLEAN TINTED BACKGROUNDS) -->
         <section class="recs-top-grid">
 
+            {% set cur_tier = 'good' if (ai_data.current_status.heading|upper in ['GOOD', 'OPTIMAL']) else ('warning' if ai_data.current_status.heading|upper == 'WARNING' else 'critical') %}
             <!-- CARD 1: CURRENT WATER QUALITY STATUS -->
-            <div class="recs-card recs-card-status">
+            <div class="recs-card recs-card-status status-tier-{{ cur_tier }} status-card-{{ cur_tier }}">
                 <div class="recs-card-label">
                     <span class="card-label-dot"></span>
                     Current Water Quality Status
@@ -289,8 +290,9 @@
                 </div>
             </div>
 
+            {% set pred_tier = 'good' if (ai_data.prediction.status|upper in ['GOOD', 'OPTIMAL']) else ('warning' if ai_data.prediction.status|upper == 'WARNING' else 'critical') %}
             <!-- CARD 2: AI MODEL PREDICTION (NEXT 24 HOURS) -->
-            <div class="recs-card recs-card-prediction">
+            <div class="recs-card recs-card-prediction status-tier-{{ pred_tier }} status-card-{{ pred_tier }}">
                 <div class="recs-card-label">
                     <span class="card-label-dot"></span>
                     AI Model Prediction (Next 24 Hours)
@@ -336,8 +338,9 @@
                 </div>
             </div>
 
+            {% set alerts_tier = ai_data.alerts_status|lower if ai_data.alerts_status else ('critical' if (ai_data.active_alerts and (ai_data.active_alerts|selectattr('is_critical')|list or ai_data.active_alerts|selectattr('severity', 'equalto', 'Critical')|list)) else ('warning' if (ai_data.active_alerts and (ai_data.active_alerts|selectattr('severity', 'equalto', 'Warning')|list or ai_data.active_alerts|selectattr('badge_class', 'equalto', 'alert-badge-warning')|list)) else 'good')) %}
             <!-- CARD 3: ACTIVE ALERTS -->
-            <div class="recs-card recs-card-alerts">
+            <div class="recs-card recs-card-alerts status-tier-{{ alerts_tier }} status-card-{{ alerts_tier }}">
                 <div class="alerts-card-header">
                     <div class="recs-card-label">
                         <span class="card-label-dot"></span>
