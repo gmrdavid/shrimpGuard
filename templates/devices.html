@@ -211,9 +211,9 @@
             <div class="cards dashboard-metric-cards devices-metric-cards">
 
                 <!-- 1. TOTAL DEVICES -->
-                <article class="card dashboard-metric-card devices-metric-card">
+                <article class="card dashboard-metric-card devices-metric-card devices-total-card">
                     <div class="metric-card-top">
-                        <div class="metric-icon" style="background: #e0f2fe; color: #0284c7;">
+                        <div class="metric-icon total-devices-icon">
                             <svg class="ui-icon" aria-hidden="true"><use href="#icon-cpu"></use></svg>
                         </div>
                         <span class="metric-type">INVENTORY</span>
@@ -227,73 +227,73 @@
                         <p class="metric-status">All Monitored Hardware Units</p>
                     </div>
                     <div class="metric-card-footer">
-                        <span class="metric-footer-dot" style="background: #0284c7;"></span>
+                        <span class="metric-footer-dot"></span>
                         <span>Hardware network inventory</span>
                     </div>
                 </article>
 
                 <!-- 2. ONLINE DEVICES -->
-                <article class="card dashboard-metric-card devices-metric-card">
+                <article class="card dashboard-metric-card devices-metric-card devices-online-card">
                     <div class="metric-card-top">
-                        <div class="metric-icon" style="background: #ecfdf5; color: #059669;">
+                        <div class="metric-icon online-devices-icon">
                             <svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
                         </div>
-                        <span class="metric-type" style="color: #059669;">ACTIVE</span>
+                        <span class="metric-type">ACTIVE</span>
                     </div>
                     <div class="metric-card-content">
                         <h3>Online Devices</h3>
                         <div class="metric-reading">
-                            <h2 id="top-online-devices" style="color: #059669;">{{ card_online }}</h2>
+                            <h2 id="top-online-devices">{{ card_online }}</h2>
                             <span class="metric-unit">Online</span>
                         </div>
                         <p class="metric-status">Operational &amp; Broadcasting</p>
                     </div>
                     <div class="metric-card-footer">
-                        <span class="metric-footer-dot" style="background: #10b981;"></span>
+                        <span class="metric-footer-dot"></span>
                         <span>Nominal radio telemetry</span>
                     </div>
                 </article>
 
                 <!-- 3. OFFLINE DEVICES -->
-                <article class="card dashboard-metric-card devices-metric-card">
+                <article class="card dashboard-metric-card devices-metric-card devices-offline-card">
                     <div class="metric-card-top">
-                        <div class="metric-icon" style="background: #f1f5f9; color: #64748b;">
+                        <div class="metric-icon offline-devices-icon">
                             <svg class="ui-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
                         </div>
-                        <span class="metric-type" style="color: #64748b;">STANDBY</span>
+                        <span class="metric-type">STANDBY</span>
                     </div>
                     <div class="metric-card-content">
                         <h3>Offline Devices</h3>
                         <div class="metric-reading">
-                            <h2 id="top-offline-devices" style="color: #475569;">{{ card_offline }}</h2>
+                            <h2 id="top-offline-devices">{{ card_offline }}</h2>
                             <span class="metric-unit">Offline</span>
                         </div>
                         <p class="metric-status">Standby / Awaiting LoRa Link</p>
                     </div>
                     <div class="metric-card-footer">
-                        <span class="metric-footer-dot" style="background: #94a3b8;"></span>
+                        <span class="metric-footer-dot"></span>
                         <span>Awaiting transmission window</span>
                     </div>
                 </article>
 
                 <!-- 4. CONNECTED SENSORS -->
-                <article class="card dashboard-metric-card devices-metric-card">
+                <article class="card dashboard-metric-card devices-metric-card devices-sensors-card">
                     <div class="metric-card-top">
-                        <div class="metric-icon" style="background: #eff6ff; color: #2563eb;">
+                        <div class="metric-icon connected-sensors-icon">
                             <svg class="ui-icon" aria-hidden="true"><use href="#icon-droplet"></use></svg>
                         </div>
-                        <span class="metric-type" style="color: #2563eb;">TELEMETRY PROBES</span>
+                        <span class="metric-type">TELEMETRY PROBES</span>
                     </div>
                     <div class="metric-card-content">
                         <h3>Connected Sensors</h3>
                         <div class="metric-reading">
-                            <h2 id="top-connected-sensors" style="color: #2563eb;">{{ card_sensors }}</h2>
+                            <h2 id="top-connected-sensors">{{ card_sensors }}</h2>
                             <span class="metric-unit">Probes</span>
                         </div>
                         <p class="metric-status">Water Quality Telemetry Active</p>
                     </div>
                     <div class="metric-card-footer">
-                        <span class="metric-footer-dot" style="background: #3b82f6;"></span>
+                        <span class="metric-footer-dot"></span>
                         <span>DS18B20 &amp; DFRobot pH probes</span>
                     </div>
                 </article>

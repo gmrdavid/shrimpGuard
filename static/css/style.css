@@ -19869,7 +19869,7 @@ nav a {
 /* ==========================================================================
    THEME 1: CLEAN GREEN IF OPTIMAL / GOOD / DEFAULT HEALTHY
    ========================================================================== */
-.dashboard-page .dashboard-metric-card,
+.dashboard-page:not(.devices-page) .dashboard-metric-card,
 .monitoring-page .monitoring-reading-card,
 .analytics-page .analytics-sensor-card,
 .dashboard-page .dashboard-metric-card.status-card-optimal,
@@ -20210,6 +20210,530 @@ nav a {
     background: #dc2626 !important;
     box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.25) !important;
 }
+
+/* ==========================================================================
+   DEVICES OVERVIEW METRIC CARDS (DISTINCT CLEAN PASTEL THEMES & STROKE-FREE)
+   1. Total Devices: Clean Modern Blue
+   2. Online Devices: Clean Fresh Green
+   3. Offline Devices: Clean Warm Amber-Orange
+   4. Connected Sensors: Clean Royal Purple / Violet
+   ========================================================================== */
+
+/* Base Stroke-Free Styling for Devices Cards */
+body.devices-page .devices-metric-card,
+.devices-page .devices-metric-card {
+    border: none !important;
+    border-top: none !important;
+    border-color: transparent !important;
+    border-radius: 20px !important;
+    padding: 22px 22px 0 !important;
+    transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+body.devices-page .devices-metric-card:hover,
+.devices-page .devices-metric-card:hover {
+    border: none !important;
+    border-color: transparent !important;
+    transform: translateY(-3px) !important;
+}
+
+body.devices-page .devices-metric-card .metric-card-top,
+.devices-page .devices-metric-card .metric-card-top {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    margin-bottom: 2px !important;
+}
+
+body.devices-page .devices-metric-card .metric-icon,
+.devices-page .devices-metric-card .metric-icon {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 13px !important;
+    background: #ffffff !important;
+    border: none !important;
+    display: grid !important;
+    place-items: center !important;
+    flex-shrink: 0 !important;
+}
+
+body.devices-page .devices-metric-card .metric-icon .ui-icon,
+.devices-page .devices-metric-card .metric-icon .ui-icon {
+    width: 22px !important;
+    height: 22px !important;
+}
+
+body.devices-page .devices-metric-card .metric-type,
+.devices-page .devices-metric-card .metric-type {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 4px 10px !important;
+    border-radius: 20px !important;
+    font-size: 9.5px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.8px !important;
+    text-transform: uppercase !important;
+    border: none !important;
+}
+
+body.devices-page .devices-metric-card .metric-card-content,
+.devices-page .devices-metric-card .metric-card-content {
+    padding: 14px 0 16px !important;
+}
+
+body.devices-page .devices-metric-card .metric-card-content h3,
+.devices-page .devices-metric-card .metric-card-content h3 {
+    margin: 0 0 4px !important;
+    font-size: 13.5px !important;
+    font-weight: 750 !important;
+    letter-spacing: -0.01em !important;
+}
+
+body.devices-page .devices-metric-card .metric-reading,
+.devices-page .devices-metric-card .metric-reading {
+    display: flex !important;
+    align-items: baseline !important;
+    gap: 6px !important;
+}
+
+body.devices-page .devices-metric-card .metric-reading h2,
+.devices-page .devices-metric-card .metric-reading h2 {
+    font-size: 38px !important;
+    font-weight: 850 !important;
+    letter-spacing: -1.6px !important;
+    line-height: 1.05 !important;
+    margin: 0 !important;
+}
+
+body.devices-page .devices-metric-card .metric-status,
+.devices-page .devices-metric-card .metric-status {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 12px 0 0 !important;
+    padding: 6px 12px !important;
+    border-radius: 999px !important;
+    background: #ffffff !important;
+    border: none !important;
+    font-size: 11px !important;
+    font-weight: 750 !important;
+    line-height: 1.4 !important;
+}
+
+body.devices-page .devices-metric-card .metric-status::before,
+.devices-page .devices-metric-card .metric-status::before {
+    width: 7px !important;
+    height: 7px !important;
+    flex-shrink: 0 !important;
+    border-radius: 50% !important;
+    content: "" !important;
+}
+
+body.devices-page .devices-metric-card .metric-card-footer,
+.devices-page .devices-metric-card .metric-card-footer {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    min-height: 42px !important;
+    font-size: 11px !important;
+    font-weight: 650 !important;
+    border: none !important;
+    padding: 0 !important;
+}
+
+body.devices-page .devices-metric-card .metric-footer-dot,
+.devices-page .devices-metric-card .metric-footer-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+}
+
+
+/* CARD 1: TOTAL DEVICES (INVENTORY) - CLEAN MODERN BLUE */
+body.devices-page .devices-metric-card.devices-total-card,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(1),
+.devices-page .devices-metric-card.devices-total-card,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(1) {
+    background: linear-gradient(180deg, #f0f7ff 0%, #dbeafe 100%) !important;
+    border: none !important;
+    border-top: none !important;
+    border-color: transparent !important;
+    box-shadow: 0 4px 22px rgba(37, 99, 235, 0.08), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+body.devices-page .devices-metric-card.devices-total-card:hover,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(1):hover,
+.devices-page .devices-metric-card.devices-total-card:hover,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(1):hover {
+    box-shadow: 0 10px 30px rgba(37, 99, 235, 0.16) !important;
+    border: none !important;
+    border-color: transparent !important;
+    transform: translateY(-3px) !important;
+}
+
+body.devices-page .devices-metric-card.devices-total-card .metric-icon,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(1) .metric-icon,
+.devices-page .devices-metric-card.devices-total-card .metric-icon,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(1) .metric-icon {
+    background: #ffffff !important;
+    color: #2563eb !important;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.16) !important;
+}
+
+body.devices-page .devices-metric-card.devices-total-card .metric-type,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(1) .metric-type,
+.devices-page .devices-metric-card.devices-total-card .metric-type,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(1) .metric-type {
+    background: rgba(255, 255, 255, 0.85) !important;
+    color: #1d4ed8 !important;
+    box-shadow: 0 1px 4px rgba(37, 99, 235, 0.08) !important;
+}
+
+body.devices-page .devices-metric-card.devices-total-card .metric-card-content h3,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(1) .metric-card-content h3,
+.devices-page .devices-metric-card.devices-total-card .metric-card-content h3,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(1) .metric-card-content h3 {
+    color: #1e40af !important;
+}
+
+body.devices-page .devices-metric-card.devices-total-card .metric-reading h2,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(1) .metric-reading h2,
+.devices-page .devices-metric-card.devices-total-card .metric-reading h2,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(1) .metric-reading h2 {
+    color: #172554 !important;
+}
+
+body.devices-page .devices-metric-card.devices-total-card .metric-unit,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(1) .metric-unit,
+.devices-page .devices-metric-card.devices-total-card .metric-unit,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(1) .metric-unit {
+    color: #1d4ed8 !important;
+}
+
+body.devices-page .devices-metric-card.devices-total-card .metric-status,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(1) .metric-status,
+.devices-page .devices-metric-card.devices-total-card .metric-status,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(1) .metric-status {
+    background: #ffffff !important;
+    border: none !important;
+    color: #1e40af !important;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.08) !important;
+}
+
+body.devices-page .devices-metric-card.devices-total-card .metric-status::before,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(1) .metric-status::before,
+.devices-page .devices-metric-card.devices-total-card .metric-status::before,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(1) .metric-status::before {
+    background: #2563eb !important;
+    box-shadow: 0 0 0 2.5px rgba(37, 99, 235, 0.25) !important;
+}
+
+body.devices-page .devices-metric-card.devices-total-card .metric-card-footer,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(1) .metric-card-footer,
+.devices-page .devices-metric-card.devices-total-card .metric-card-footer,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(1) .metric-card-footer {
+    border-top: 1px solid rgba(37, 99, 235, 0.14) !important;
+    color: #1e40af !important;
+}
+
+body.devices-page .devices-metric-card.devices-total-card .metric-footer-dot,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(1) .metric-footer-dot,
+.devices-page .devices-metric-card.devices-total-card .metric-footer-dot,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(1) .metric-footer-dot {
+    background: #2563eb !important;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25) !important;
+}
+
+
+/* CARD 2: ONLINE DEVICES (ACTIVE) - CLEAN FRESH GREEN */
+body.devices-page .devices-metric-card.devices-online-card,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(2),
+.devices-page .devices-metric-card.devices-online-card,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(2) {
+    background: linear-gradient(180deg, #f0fbf5 0%, #dff4e8 100%) !important;
+    border: none !important;
+    border-top: none !important;
+    border-color: transparent !important;
+    box-shadow: 0 4px 22px rgba(18, 107, 79, 0.07), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+body.devices-page .devices-metric-card.devices-online-card:hover,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(2):hover,
+.devices-page .devices-metric-card.devices-online-card:hover,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(2):hover {
+    box-shadow: 0 10px 30px rgba(18, 107, 79, 0.15) !important;
+    border: none !important;
+    border-color: transparent !important;
+    transform: translateY(-3px) !important;
+}
+
+body.devices-page .devices-metric-card.devices-online-card .metric-icon,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(2) .metric-icon,
+.devices-page .devices-metric-card.devices-online-card .metric-icon,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(2) .metric-icon {
+    background: #ffffff !important;
+    color: #16a34a !important;
+    box-shadow: 0 2px 8px rgba(18, 107, 79, 0.14) !important;
+}
+
+body.devices-page .devices-metric-card.devices-online-card .metric-type,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(2) .metric-type,
+.devices-page .devices-metric-card.devices-online-card .metric-type,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(2) .metric-type {
+    background: rgba(255, 255, 255, 0.85) !important;
+    color: #15803d !important;
+    box-shadow: 0 1px 4px rgba(18, 107, 79, 0.08) !important;
+}
+
+body.devices-page .devices-metric-card.devices-online-card .metric-card-content h3,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(2) .metric-card-content h3,
+.devices-page .devices-metric-card.devices-online-card .metric-card-content h3,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(2) .metric-card-content h3 {
+    color: #0f5940 !important;
+}
+
+body.devices-page .devices-metric-card.devices-online-card .metric-reading h2,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(2) .metric-reading h2,
+.devices-page .devices-metric-card.devices-online-card .metric-reading h2,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(2) .metric-reading h2 {
+    color: #0c3829 !important;
+}
+
+body.devices-page .devices-metric-card.devices-online-card .metric-unit,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(2) .metric-unit,
+.devices-page .devices-metric-card.devices-online-card .metric-unit,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(2) .metric-unit {
+    color: #166534 !important;
+}
+
+body.devices-page .devices-metric-card.devices-online-card .metric-status,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(2) .metric-status,
+.devices-page .devices-metric-card.devices-online-card .metric-status,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(2) .metric-status {
+    background: #ffffff !important;
+    border: none !important;
+    color: #166534 !important;
+    box-shadow: 0 2px 6px rgba(18, 107, 79, 0.08) !important;
+}
+
+body.devices-page .devices-metric-card.devices-online-card .metric-status::before,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(2) .metric-status::before,
+.devices-page .devices-metric-card.devices-online-card .metric-status::before,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(2) .metric-status::before {
+    background: #16a34a !important;
+    box-shadow: 0 0 0 2.5px rgba(22, 163, 74, 0.25) !important;
+}
+
+body.devices-page .devices-metric-card.devices-online-card .metric-card-footer,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(2) .metric-card-footer,
+.devices-page .devices-metric-card.devices-online-card .metric-card-footer,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(2) .metric-card-footer {
+    border-top: 1px solid rgba(22, 163, 74, 0.14) !important;
+    color: #14532d !important;
+}
+
+body.devices-page .devices-metric-card.devices-online-card .metric-footer-dot,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(2) .metric-footer-dot,
+.devices-page .devices-metric-card.devices-online-card .metric-footer-dot,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(2) .metric-footer-dot {
+    background: #16a34a !important;
+    box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.25) !important;
+}
+
+
+/* CARD 3: OFFLINE DEVICES (STANDBY) - CLEAN WARM AMBER-ORANGE */
+body.devices-page .devices-metric-card.devices-offline-card,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(3),
+.devices-page .devices-metric-card.devices-offline-card,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(3) {
+    background: linear-gradient(180deg, #fff9f0 0%, #feedd6 100%) !important;
+    border: none !important;
+    border-top: none !important;
+    border-color: transparent !important;
+    box-shadow: 0 4px 22px rgba(217, 119, 6, 0.08), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+body.devices-page .devices-metric-card.devices-offline-card:hover,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(3):hover,
+.devices-page .devices-metric-card.devices-offline-card:hover,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(3):hover {
+    box-shadow: 0 10px 30px rgba(217, 119, 6, 0.16) !important;
+    border: none !important;
+    border-color: transparent !important;
+    transform: translateY(-3px) !important;
+}
+
+body.devices-page .devices-metric-card.devices-offline-card .metric-icon,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(3) .metric-icon,
+.devices-page .devices-metric-card.devices-offline-card .metric-icon,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(3) .metric-icon {
+    background: #ffffff !important;
+    color: #d97706 !important;
+    box-shadow: 0 2px 8px rgba(217, 119, 6, 0.16) !important;
+}
+
+body.devices-page .devices-metric-card.devices-offline-card .metric-type,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(3) .metric-type,
+.devices-page .devices-metric-card.devices-offline-card .metric-type,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(3) .metric-type {
+    background: rgba(255, 255, 255, 0.85) !important;
+    color: #b45309 !important;
+    box-shadow: 0 1px 4px rgba(217, 119, 6, 0.08) !important;
+}
+
+body.devices-page .devices-metric-card.devices-offline-card .metric-card-content h3,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(3) .metric-card-content h3,
+.devices-page .devices-metric-card.devices-offline-card .metric-card-content h3,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(3) .metric-card-content h3 {
+    color: #78350f !important;
+}
+
+body.devices-page .devices-metric-card.devices-offline-card .metric-reading h2,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(3) .metric-reading h2,
+.devices-page .devices-metric-card.devices-offline-card .metric-reading h2,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(3) .metric-reading h2 {
+    color: #451a03 !important;
+}
+
+body.devices-page .devices-metric-card.devices-offline-card .metric-unit,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(3) .metric-unit,
+.devices-page .devices-metric-card.devices-offline-card .metric-unit,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(3) .metric-unit {
+    color: #92400e !important;
+}
+
+body.devices-page .devices-metric-card.devices-offline-card .metric-status,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(3) .metric-status,
+.devices-page .devices-metric-card.devices-offline-card .metric-status,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(3) .metric-status {
+    background: #ffffff !important;
+    border: none !important;
+    color: #92400e !important;
+    box-shadow: 0 2px 6px rgba(217, 119, 6, 0.08) !important;
+}
+
+body.devices-page .devices-metric-card.devices-offline-card .metric-status::before,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(3) .metric-status::before,
+.devices-page .devices-metric-card.devices-offline-card .metric-status::before,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(3) .metric-status::before {
+    background: #d97706 !important;
+    box-shadow: 0 0 0 2.5px rgba(217, 119, 6, 0.25) !important;
+}
+
+body.devices-page .devices-metric-card.devices-offline-card .metric-card-footer,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(3) .metric-card-footer,
+.devices-page .devices-metric-card.devices-offline-card .metric-card-footer,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(3) .metric-card-footer {
+    border-top: 1px solid rgba(217, 119, 6, 0.14) !important;
+    color: #78350f !important;
+}
+
+body.devices-page .devices-metric-card.devices-offline-card .metric-footer-dot,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(3) .metric-footer-dot,
+.devices-page .devices-metric-card.devices-offline-card .metric-footer-dot,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(3) .metric-footer-dot {
+    background: #d97706 !important;
+    box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.25) !important;
+}
+
+
+/* CARD 4: CONNECTED SENSORS (PROBES) - CLEAN ROYAL PURPLE */
+body.devices-page .devices-metric-card.devices-sensors-card,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(4),
+.devices-page .devices-metric-card.devices-sensors-card,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(4) {
+    background: linear-gradient(180deg, #faf5ff 0%, #ede9fe 100%) !important;
+    border: none !important;
+    border-top: none !important;
+    border-color: transparent !important;
+    box-shadow: 0 4px 22px rgba(124, 58, 237, 0.08), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+body.devices-page .devices-metric-card.devices-sensors-card:hover,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(4):hover,
+.devices-page .devices-metric-card.devices-sensors-card:hover,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(4):hover {
+    box-shadow: 0 10px 30px rgba(124, 58, 237, 0.16) !important;
+    border: none !important;
+    border-color: transparent !important;
+    transform: translateY(-3px) !important;
+}
+
+body.devices-page .devices-metric-card.devices-sensors-card .metric-icon,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(4) .metric-icon,
+.devices-page .devices-metric-card.devices-sensors-card .metric-icon,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(4) .metric-icon {
+    background: #ffffff !important;
+    color: #7c3aed !important;
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.16) !important;
+}
+
+body.devices-page .devices-metric-card.devices-sensors-card .metric-type,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(4) .metric-type,
+.devices-page .devices-metric-card.devices-sensors-card .metric-type,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(4) .metric-type {
+    background: rgba(255, 255, 255, 0.85) !important;
+    color: #6d28d9 !important;
+    box-shadow: 0 1px 4px rgba(124, 58, 237, 0.08) !important;
+}
+
+body.devices-page .devices-metric-card.devices-sensors-card .metric-card-content h3,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(4) .metric-card-content h3,
+.devices-page .devices-metric-card.devices-sensors-card .metric-card-content h3,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(4) .metric-card-content h3 {
+    color: #5b21b6 !important;
+}
+
+body.devices-page .devices-metric-card.devices-sensors-card .metric-reading h2,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(4) .metric-reading h2,
+.devices-page .devices-metric-card.devices-sensors-card .metric-reading h2,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(4) .metric-reading h2 {
+    color: #3b0764 !important;
+}
+
+body.devices-page .devices-metric-card.devices-sensors-card .metric-unit,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(4) .metric-unit,
+.devices-page .devices-metric-card.devices-sensors-card .metric-unit,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(4) .metric-unit {
+    color: #6d28d9 !important;
+}
+
+body.devices-page .devices-metric-card.devices-sensors-card .metric-status,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(4) .metric-status,
+.devices-page .devices-metric-card.devices-sensors-card .metric-status,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(4) .metric-status {
+    background: #ffffff !important;
+    border: none !important;
+    color: #5b21b6 !important;
+    box-shadow: 0 2px 6px rgba(124, 58, 237, 0.08) !important;
+}
+
+body.devices-page .devices-metric-card.devices-sensors-card .metric-status::before,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(4) .metric-status::before,
+.devices-page .devices-metric-card.devices-sensors-card .metric-status::before,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(4) .metric-status::before {
+    background: #7c3aed !important;
+    box-shadow: 0 0 0 2.5px rgba(124, 58, 237, 0.25) !important;
+}
+
+body.devices-page .devices-metric-card.devices-sensors-card .metric-card-footer,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(4) .metric-card-footer,
+.devices-page .devices-metric-card.devices-sensors-card .metric-card-footer,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(4) .metric-card-footer {
+    border-top: 1px solid rgba(124, 58, 237, 0.14) !important;
+    color: #5b21b6 !important;
+}
+
+body.devices-page .devices-metric-card.devices-sensors-card .metric-footer-dot,
+body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(4) .metric-footer-dot,
+.devices-page .devices-metric-card.devices-sensors-card .metric-footer-dot,
+.devices-page .devices-metric-cards > .devices-metric-card:nth-child(4) .metric-footer-dot {
+    background: #7c3aed !important;
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.25) !important;
+}
+
 
 /* ==========================================================================
    ALERTS & STATUS SUMMARY METRIC CARDS (STROKE-FREE ENHANCED DESIGN)
