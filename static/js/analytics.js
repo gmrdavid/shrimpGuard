@@ -116,10 +116,17 @@ function setAdjustment(key, value, min, max) {
     }
 
     const currentStr = `${val.toFixed(2)}${adjustment.unit}`;
+    const card = statusElement.closest(".analytics-sensor-card");
+    if (card) {
+        card.classList.remove("status-card-optimal", "status-card-warning", "status-card-critical");
+    }
     if (adjustment.amount === 0) {
         statusElement.textContent = `Current: ${currentStr} (ML Optimal)`;
+        if (card) card.classList.add("status-card-optimal");
     } else {
         statusElement.textContent = `Current: ${currentStr} (${adjustment.text} · ${adjustment.sign}${adjustment.amount.toFixed(2)}${adjustment.unit} needed)`;
+        const isCrit = (adjustment.severity && adjustment.severity.toLowerCase().includes("crit")) || adjustment.text.toLowerCase().includes("critical");
+        if (card) card.classList.add(isCrit ? "status-card-critical" : "status-card-warning");
     }
 }
 

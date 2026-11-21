@@ -19720,26 +19720,495 @@ nav a {
     transform: translateY(-2px) !important;
 }
 
-/* Water Temperature Main Parameter Card (Soft Clean Pale Ice-Blue Tint) */
-.dashboard-page .dashboard-metric-card.temperature-card,
-.monitoring-page .monitoring-reading-card.temperature-card,
-.monitoring-page .monitoring-cards > .monitoring-reading-card:first-child,
-.dashboard-page .dashboard-metric-cards > .dashboard-metric-card:first-child {
-    background: linear-gradient(180deg, #f9fbfe 0%, #edf4fc 100%) !important;
-    border: 1px solid #d8e5f5 !important;
-    border-top: 3.5px solid #2563eb !important;
-    box-shadow: 0 5px 20px rgba(37, 99, 235, 0.05) !important;
+/* ==========================================================================
+   WATER QUALITY PARAMETERS / SENSOR READINGS (STROKE-FREE DYNAMIC STATUS THEMES)
+   Applied to Dashboard (.dashboard-metric-card), Monitoring (.monitoring-reading-card),
+   and Analytics (.analytics-sensor-card)
+   ========================================================================== */
+
+/* 1. Base Stroke-Free Styling & Elevation */
+.dashboard-page .dashboard-metric-card,
+.monitoring-page .monitoring-reading-card,
+.analytics-page .analytics-sensor-card {
+    border: none !important;
+    border-top: none !important;
+    border-color: transparent !important;
+    border-radius: 20px !important;
+    padding: 22px 22px 0 !important;
+    transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-/* Water pH Level Main Parameter Card (Soft Clean Pale Emerald-Mint Tint) */
-.dashboard-page .dashboard-metric-card.ph-card,
-.monitoring-page .monitoring-reading-card.ph-card,
-.monitoring-page .monitoring-cards > .monitoring-reading-card:last-child,
-.dashboard-page .dashboard-metric-cards > .dashboard-metric-card:last-child {
-    background: linear-gradient(180deg, #f8fcf9 0%, #ecf7f1 100%) !important;
-    border: 1px solid #d2e9dd !important;
-    border-top: 3.5px solid #059669 !important;
-    box-shadow: 0 5px 20px rgba(5, 150, 105, 0.05) !important;
+.dashboard-page .dashboard-metric-card:hover,
+.monitoring-page .monitoring-reading-card:hover,
+.analytics-page .analytics-sensor-card:hover {
+    border: none !important;
+    border-color: transparent !important;
+    transform: translateY(-3px) !important;
+}
+
+/* Icon Squircle styling */
+.dashboard-page .dashboard-metric-card .metric-icon,
+.monitoring-page .monitoring-reading-card .monitoring-reading-icon,
+.analytics-page .analytics-sensor-card .metric-icon {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 13px !important;
+    background: #ffffff !important;
+    border: none !important;
+    display: grid !important;
+    place-items: center !important;
+    flex-shrink: 0 !important;
+}
+
+.dashboard-page .dashboard-metric-card .metric-icon .ui-icon,
+.monitoring-page .monitoring-reading-card .monitoring-reading-icon .ui-icon,
+.analytics-page .analytics-sensor-card .metric-icon .ui-icon {
+    width: 22px !important;
+    height: 22px !important;
+}
+
+/* Category Pill Badges */
+.dashboard-page .dashboard-metric-card .metric-type,
+.monitoring-page .monitoring-reading-card .monitoring-reading-tag,
+.analytics-page .analytics-sensor-card .metric-type {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 4px 10px !important;
+    border-radius: 20px !important;
+    font-size: 9.5px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.8px !important;
+    text-transform: uppercase !important;
+    border: none !important;
+}
+
+/* Reading content spacing & typography */
+.dashboard-page .dashboard-metric-card .metric-card-content,
+.monitoring-page .monitoring-reading-card .monitoring-reading-body,
+.analytics-page .analytics-sensor-card .metric-card-content {
+    padding: 14px 0 16px !important;
+}
+
+.dashboard-page .dashboard-metric-card .metric-card-content h3,
+.monitoring-page .monitoring-reading-card .monitoring-reading-body h3,
+.analytics-page .analytics-sensor-card .metric-card-content h3 {
+    margin: 0 0 4px !important;
+    font-size: 13.5px !important;
+    font-weight: 750 !important;
+    letter-spacing: -0.01em !important;
+}
+
+.dashboard-page .dashboard-metric-card .metric-reading,
+.monitoring-page .monitoring-reading-card .monitoring-reading-value,
+.analytics-page .analytics-sensor-card .metric-reading {
+    display: flex !important;
+    align-items: baseline !important;
+    gap: 6px !important;
+}
+
+.dashboard-page .dashboard-metric-card .metric-reading h2,
+.monitoring-page .monitoring-reading-card .monitoring-reading-value strong,
+.analytics-page .analytics-sensor-card .metric-reading h2 {
+    font-size: 38px !important;
+    font-weight: 850 !important;
+    letter-spacing: -1.6px !important;
+    line-height: 1.05 !important;
+    margin: 0 !important;
+}
+
+/* Stroke-free Floating White Status Pill Badges */
+.dashboard-page .dashboard-metric-card .metric-status,
+.monitoring-page .monitoring-reading-card .metric-status,
+.analytics-page .analytics-sensor-card .metric-status {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 12px 0 0 !important;
+    padding: 6px 12px !important;
+    border-radius: 999px !important;
+    background: #ffffff !important;
+    border: none !important;
+    font-size: 11px !important;
+    font-weight: 750 !important;
+    line-height: 1.4 !important;
+}
+
+.dashboard-page .dashboard-metric-card .metric-status::before,
+.monitoring-page .monitoring-reading-card .metric-status::before,
+.analytics-page .analytics-sensor-card .metric-status::before {
+    width: 7px !important;
+    height: 7px !important;
+    flex-shrink: 0 !important;
+    border-radius: 50% !important;
+    content: "" !important;
+}
+
+/* Footer divider & dot */
+.dashboard-page .dashboard-metric-card .metric-card-footer,
+.monitoring-page .monitoring-reading-card .monitoring-reading-footer,
+.analytics-page .analytics-sensor-card .metric-card-footer {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    min-height: 42px !important;
+    font-size: 11px !important;
+    font-weight: 650 !important;
+    border: none !important;
+    padding: 0 !important;
+}
+
+.dashboard-page .dashboard-metric-card .metric-footer-dot,
+.monitoring-page .monitoring-reading-card .monitoring-footer-dot,
+.analytics-page .analytics-sensor-card .metric-footer-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+}
+
+/* ==========================================================================
+   THEME 1: CLEAN GREEN IF OPTIMAL / GOOD / DEFAULT HEALTHY
+   ========================================================================== */
+.dashboard-page .dashboard-metric-card,
+.monitoring-page .monitoring-reading-card,
+.analytics-page .analytics-sensor-card,
+.dashboard-page .dashboard-metric-card.status-card-optimal,
+.monitoring-page .monitoring-reading-card.status-card-optimal,
+.analytics-page .analytics-sensor-card.status-card-optimal,
+.dashboard-page .dashboard-metric-card:has(.status-optimal),
+.monitoring-page .monitoring-reading-card:has(.status-optimal),
+.dashboard-page .dashboard-metric-card:has(.status-good),
+.monitoring-page .monitoring-reading-card:has(.status-good) {
+    background: linear-gradient(180deg, #f0fbf5 0%, #dff4e8 100%) !important;
+    border: none !important;
+    border-top: none !important;
+    border-color: transparent !important;
+    box-shadow: 0 4px 22px rgba(18, 107, 79, 0.07), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+.dashboard-page .dashboard-metric-card:hover,
+.monitoring-page .monitoring-reading-card:hover,
+.analytics-page .analytics-sensor-card:hover,
+.dashboard-page .dashboard-metric-card.status-card-optimal:hover,
+.monitoring-page .monitoring-reading-card.status-card-optimal:hover,
+.dashboard-page .dashboard-metric-card:has(.status-optimal):hover,
+.monitoring-page .monitoring-reading-card:has(.status-optimal):hover {
+    border: none !important;
+    border-color: transparent !important;
+    box-shadow: 0 10px 30px rgba(18, 107, 79, 0.15) !important;
+}
+
+.dashboard-page .dashboard-metric-card .metric-icon,
+.monitoring-page .monitoring-reading-card .monitoring-reading-icon,
+.analytics-page .analytics-sensor-card .metric-icon,
+.dashboard-page .dashboard-metric-card.status-card-optimal .metric-icon,
+.monitoring-page .monitoring-reading-card.status-card-optimal .monitoring-reading-icon,
+.dashboard-page .dashboard-metric-card:has(.status-optimal) .metric-icon,
+.monitoring-page .monitoring-reading-card:has(.status-optimal) .monitoring-reading-icon {
+    background: #ffffff !important;
+    color: #16a34a !important;
+    box-shadow: 0 2px 8px rgba(18, 107, 79, 0.14) !important;
+}
+
+.dashboard-page .dashboard-metric-card .metric-type,
+.monitoring-page .monitoring-reading-card .monitoring-reading-tag,
+.analytics-page .analytics-sensor-card .metric-type,
+.dashboard-page .dashboard-metric-card.status-card-optimal .metric-type,
+.monitoring-page .monitoring-reading-card.status-card-optimal .monitoring-reading-tag,
+.dashboard-page .dashboard-metric-card:has(.status-optimal) .metric-type,
+.monitoring-page .monitoring-reading-card:has(.status-optimal) .monitoring-reading-tag {
+    background: rgba(255, 255, 255, 0.85) !important;
+    color: #15803d !important;
+    box-shadow: 0 1px 4px rgba(18, 107, 79, 0.08) !important;
+}
+
+.dashboard-page .dashboard-metric-card .metric-card-content h3,
+.monitoring-page .monitoring-reading-card .monitoring-reading-body h3,
+.analytics-page .analytics-sensor-card .metric-card-content h3,
+.dashboard-page .dashboard-metric-card.status-card-optimal .metric-card-content h3,
+.monitoring-page .monitoring-reading-card.status-card-optimal .monitoring-reading-body h3,
+.dashboard-page .dashboard-metric-card:has(.status-optimal) .metric-card-content h3,
+.monitoring-page .monitoring-reading-card:has(.status-optimal) .monitoring-reading-body h3 {
+    color: #0f5940 !important;
+}
+
+.dashboard-page .dashboard-metric-card .metric-reading h2,
+.monitoring-page .monitoring-reading-card .monitoring-reading-value strong,
+.analytics-page .analytics-sensor-card .metric-reading h2,
+.dashboard-page .dashboard-metric-card.status-card-optimal .metric-reading h2,
+.monitoring-page .monitoring-reading-card.status-card-optimal .monitoring-reading-value strong,
+.dashboard-page .dashboard-metric-card:has(.status-optimal) .metric-reading h2,
+.monitoring-page .monitoring-reading-card:has(.status-optimal) .monitoring-reading-value strong {
+    color: #0c3829 !important;
+}
+
+.dashboard-page .dashboard-metric-card .metric-unit,
+.monitoring-page .monitoring-reading-card .monitoring-reading-value > span,
+.dashboard-page .dashboard-metric-card.status-card-optimal .metric-unit,
+.monitoring-page .monitoring-reading-card.status-card-optimal .monitoring-reading-value > span {
+    color: #166534 !important;
+}
+
+.dashboard-page .dashboard-metric-card .metric-status,
+.monitoring-page .monitoring-reading-card .metric-status,
+.analytics-page .analytics-sensor-card .metric-status,
+.dashboard-page .dashboard-metric-card.status-card-optimal .metric-status,
+.monitoring-page .monitoring-reading-card.status-card-optimal .metric-status,
+.dashboard-page .dashboard-metric-card:has(.status-optimal) .metric-status,
+.monitoring-page .monitoring-reading-card:has(.status-optimal) .metric-status {
+    background: #ffffff !important;
+    border: none !important;
+    color: #166534 !important;
+    box-shadow: 0 2px 6px rgba(18, 107, 79, 0.08) !important;
+}
+
+.dashboard-page .dashboard-metric-card .metric-status::before,
+.monitoring-page .monitoring-reading-card .metric-status::before,
+.analytics-page .analytics-sensor-card .metric-status::before,
+.dashboard-page .dashboard-metric-card.status-card-optimal .metric-status::before,
+.monitoring-page .monitoring-reading-card.status-card-optimal .metric-status::before,
+.dashboard-page .dashboard-metric-card:has(.status-optimal) .metric-status::before,
+.monitoring-page .monitoring-reading-card:has(.status-optimal) .metric-status::before {
+    background: #16a34a !important;
+    box-shadow: 0 0 0 2.5px rgba(22, 163, 74, 0.25) !important;
+}
+
+.dashboard-page .dashboard-metric-card .metric-card-footer,
+.monitoring-page .monitoring-reading-card .monitoring-reading-footer,
+.analytics-page .analytics-sensor-card .metric-card-footer,
+.dashboard-page .dashboard-metric-card.status-card-optimal .metric-card-footer,
+.monitoring-page .monitoring-reading-card.status-card-optimal .monitoring-reading-footer,
+.dashboard-page .dashboard-metric-card:has(.status-optimal) .metric-card-footer,
+.monitoring-page .monitoring-reading-card:has(.status-optimal) .monitoring-reading-footer {
+    border-top: 1px solid rgba(22, 163, 74, 0.14) !important;
+    color: #14532d !important;
+}
+
+.dashboard-page .dashboard-metric-card .metric-footer-dot,
+.monitoring-page .monitoring-reading-card .monitoring-footer-dot,
+.analytics-page .analytics-sensor-card .metric-footer-dot,
+.dashboard-page .dashboard-metric-card.status-card-optimal .metric-footer-dot,
+.monitoring-page .monitoring-reading-card.status-card-optimal .monitoring-footer-dot,
+.dashboard-page .dashboard-metric-card:has(.status-optimal) .metric-footer-dot,
+.monitoring-page .monitoring-reading-card:has(.status-optimal) .monitoring-footer-dot {
+    background: #16a34a !important;
+    box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.25) !important;
+}
+
+/* ==========================================================================
+   THEME 2: CLEAN ORANGE IF WARNING
+   ========================================================================== */
+.dashboard-page .dashboard-metric-card.status-card-warning,
+.monitoring-page .monitoring-reading-card.status-card-warning,
+.analytics-page .analytics-sensor-card.status-card-warning,
+.dashboard-page .dashboard-metric-card:has(.status-warning),
+.monitoring-page .monitoring-reading-card:has(.status-warning),
+.analytics-page .analytics-sensor-card:has(.status-warning) {
+    background: linear-gradient(180deg, #fff9f0 0%, #feedd6 100%) !important;
+    border: none !important;
+    border-top: none !important;
+    border-color: transparent !important;
+    box-shadow: 0 4px 22px rgba(217, 119, 6, 0.08), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+.dashboard-page .dashboard-metric-card.status-card-warning:hover,
+.monitoring-page .monitoring-reading-card.status-card-warning:hover,
+.analytics-page .analytics-sensor-card.status-card-warning:hover,
+.dashboard-page .dashboard-metric-card:has(.status-warning):hover,
+.monitoring-page .monitoring-reading-card:has(.status-warning):hover {
+    border: none !important;
+    border-color: transparent !important;
+    box-shadow: 0 10px 30px rgba(217, 119, 6, 0.16) !important;
+    transform: translateY(-3px) !important;
+}
+
+.dashboard-page .dashboard-metric-card.status-card-warning .metric-icon,
+.monitoring-page .monitoring-reading-card.status-card-warning .monitoring-reading-icon,
+.analytics-page .analytics-sensor-card.status-card-warning .metric-icon,
+.dashboard-page .dashboard-metric-card:has(.status-warning) .metric-icon,
+.monitoring-page .monitoring-reading-card:has(.status-warning) .monitoring-reading-icon {
+    background: #ffffff !important;
+    color: #d97706 !important;
+    box-shadow: 0 2px 8px rgba(217, 119, 6, 0.16) !important;
+}
+
+.dashboard-page .dashboard-metric-card.status-card-warning .metric-type,
+.monitoring-page .monitoring-reading-card.status-card-warning .monitoring-reading-tag,
+.analytics-page .analytics-sensor-card.status-card-warning .metric-type,
+.dashboard-page .dashboard-metric-card:has(.status-warning) .metric-type,
+.monitoring-page .monitoring-reading-card:has(.status-warning) .monitoring-reading-tag {
+    background: rgba(255, 255, 255, 0.85) !important;
+    color: #b45309 !important;
+    box-shadow: 0 1px 4px rgba(217, 119, 6, 0.08) !important;
+}
+
+.dashboard-page .dashboard-metric-card.status-card-warning .metric-card-content h3,
+.monitoring-page .monitoring-reading-card.status-card-warning .monitoring-reading-body h3,
+.analytics-page .analytics-sensor-card.status-card-warning .metric-card-content h3,
+.dashboard-page .dashboard-metric-card:has(.status-warning) .metric-card-content h3,
+.monitoring-page .monitoring-reading-card:has(.status-warning) .monitoring-reading-body h3 {
+    color: #78350f !important;
+}
+
+.dashboard-page .dashboard-metric-card.status-card-warning .metric-reading h2,
+.monitoring-page .monitoring-reading-card.status-card-warning .monitoring-reading-value strong,
+.analytics-page .analytics-sensor-card.status-card-warning .metric-reading h2,
+.dashboard-page .dashboard-metric-card:has(.status-warning) .metric-reading h2,
+.monitoring-page .monitoring-reading-card:has(.status-warning) .monitoring-reading-value strong {
+    color: #451a03 !important;
+}
+
+.dashboard-page .dashboard-metric-card.status-card-warning .metric-unit,
+.monitoring-page .monitoring-reading-card.status-card-warning .monitoring-reading-value > span,
+.dashboard-page .dashboard-metric-card:has(.status-warning) .metric-unit,
+.monitoring-page .monitoring-reading-card:has(.status-warning) .monitoring-reading-value > span {
+    color: #92400e !important;
+}
+
+.dashboard-page .dashboard-metric-card.status-card-warning .metric-status,
+.monitoring-page .monitoring-reading-card.status-card-warning .metric-status,
+.analytics-page .analytics-sensor-card.status-card-warning .metric-status,
+.dashboard-page .dashboard-metric-card:has(.status-warning) .metric-status,
+.monitoring-page .monitoring-reading-card:has(.status-warning) .metric-status {
+    background: #ffffff !important;
+    border: none !important;
+    color: #92400e !important;
+    box-shadow: 0 2px 6px rgba(217, 119, 6, 0.08) !important;
+}
+
+.dashboard-page .dashboard-metric-card.status-card-warning .metric-status::before,
+.monitoring-page .monitoring-reading-card.status-card-warning .metric-status::before,
+.analytics-page .analytics-sensor-card.status-card-warning .metric-status::before,
+.dashboard-page .dashboard-metric-card:has(.status-warning) .metric-status::before,
+.monitoring-page .monitoring-reading-card:has(.status-warning) .metric-status::before {
+    background: #d97706 !important;
+    box-shadow: 0 0 0 2.5px rgba(217, 119, 6, 0.25) !important;
+}
+
+.dashboard-page .dashboard-metric-card.status-card-warning .metric-card-footer,
+.monitoring-page .monitoring-reading-card.status-card-warning .monitoring-reading-footer,
+.analytics-page .analytics-sensor-card.status-card-warning .metric-card-footer,
+.dashboard-page .dashboard-metric-card:has(.status-warning) .metric-card-footer,
+.monitoring-page .monitoring-reading-card:has(.status-warning) .monitoring-reading-footer {
+    border-top: 1px solid rgba(217, 119, 6, 0.14) !important;
+    color: #78350f !important;
+}
+
+.dashboard-page .dashboard-metric-card.status-card-warning .metric-footer-dot,
+.monitoring-page .monitoring-reading-card.status-card-warning .monitoring-footer-dot,
+.analytics-page .analytics-sensor-card.status-card-warning .metric-footer-dot,
+.dashboard-page .dashboard-metric-card:has(.status-warning) .metric-footer-dot,
+.monitoring-page .monitoring-reading-card:has(.status-warning) .monitoring-footer-dot {
+    background: #d97706 !important;
+    box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.25) !important;
+}
+
+/* ==========================================================================
+   THEME 3: CLEAN RED IF CRITICAL
+   ========================================================================== */
+.dashboard-page .dashboard-metric-card.status-card-critical,
+.monitoring-page .monitoring-reading-card.status-card-critical,
+.analytics-page .analytics-sensor-card.status-card-critical,
+.dashboard-page .dashboard-metric-card:has(.status-critical),
+.monitoring-page .monitoring-reading-card:has(.status-critical),
+.analytics-page .analytics-sensor-card:has(.status-critical) {
+    background: linear-gradient(180deg, #fff2f2 0%, #fed7d7 100%) !important;
+    border: none !important;
+    border-top: none !important;
+    border-color: transparent !important;
+    box-shadow: 0 4px 22px rgba(220, 38, 38, 0.08), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+.dashboard-page .dashboard-metric-card.status-card-critical:hover,
+.monitoring-page .monitoring-reading-card.status-card-critical:hover,
+.analytics-page .analytics-sensor-card.status-card-critical:hover,
+.dashboard-page .dashboard-metric-card:has(.status-critical):hover,
+.monitoring-page .monitoring-reading-card:has(.status-critical):hover {
+    border: none !important;
+    border-color: transparent !important;
+    box-shadow: 0 10px 30px rgba(220, 38, 38, 0.16) !important;
+    transform: translateY(-3px) !important;
+}
+
+.dashboard-page .dashboard-metric-card.status-card-critical .metric-icon,
+.monitoring-page .monitoring-reading-card.status-card-critical .monitoring-reading-icon,
+.analytics-page .analytics-sensor-card.status-card-critical .metric-icon,
+.dashboard-page .dashboard-metric-card:has(.status-critical) .metric-icon,
+.monitoring-page .monitoring-reading-card:has(.status-critical) .monitoring-reading-icon {
+    background: #ffffff !important;
+    color: #dc2626 !important;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.16) !important;
+}
+
+.dashboard-page .dashboard-metric-card.status-card-critical .metric-type,
+.monitoring-page .monitoring-reading-card.status-card-critical .monitoring-reading-tag,
+.analytics-page .analytics-sensor-card.status-card-critical .metric-type,
+.dashboard-page .dashboard-metric-card:has(.status-critical) .metric-type,
+.monitoring-page .monitoring-reading-card:has(.status-critical) .monitoring-reading-tag {
+    background: rgba(255, 255, 255, 0.85) !important;
+    color: #b91c1c !important;
+    box-shadow: 0 1px 4px rgba(220, 38, 38, 0.08) !important;
+}
+
+.dashboard-page .dashboard-metric-card.status-card-critical .metric-card-content h3,
+.monitoring-page .monitoring-reading-card.status-card-critical .monitoring-reading-body h3,
+.analytics-page .analytics-sensor-card.status-card-critical .metric-card-content h3,
+.dashboard-page .dashboard-metric-card:has(.status-critical) .metric-card-content h3,
+.monitoring-page .monitoring-reading-card:has(.status-critical) .monitoring-reading-body h3 {
+    color: #7f1d1d !important;
+}
+
+.dashboard-page .dashboard-metric-card.status-card-critical .metric-reading h2,
+.monitoring-page .monitoring-reading-card.status-card-critical .monitoring-reading-value strong,
+.analytics-page .analytics-sensor-card.status-card-critical .metric-reading h2,
+.dashboard-page .dashboard-metric-card:has(.status-critical) .metric-reading h2,
+.monitoring-page .monitoring-reading-card:has(.status-critical) .monitoring-reading-value strong {
+    color: #450a0a !important;
+}
+
+.dashboard-page .dashboard-metric-card.status-card-critical .metric-unit,
+.monitoring-page .monitoring-reading-card.status-card-critical .monitoring-reading-value > span,
+.dashboard-page .dashboard-metric-card:has(.status-critical) .metric-unit,
+.monitoring-page .monitoring-reading-card:has(.status-critical) .monitoring-reading-value > span {
+    color: #991b1b !important;
+}
+
+.dashboard-page .dashboard-metric-card.status-card-critical .metric-status,
+.monitoring-page .monitoring-reading-card.status-card-critical .metric-status,
+.analytics-page .analytics-sensor-card.status-card-critical .metric-status,
+.dashboard-page .dashboard-metric-card:has(.status-critical) .metric-status,
+.monitoring-page .monitoring-reading-card:has(.status-critical) .metric-status {
+    background: #ffffff !important;
+    border: none !important;
+    color: #7f1d1d !important;
+    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.08) !important;
+}
+
+.dashboard-page .dashboard-metric-card.status-card-critical .metric-status::before,
+.monitoring-page .monitoring-reading-card.status-card-critical .metric-status::before,
+.analytics-page .analytics-sensor-card.status-card-critical .metric-status::before,
+.dashboard-page .dashboard-metric-card:has(.status-critical) .metric-status::before,
+.monitoring-page .monitoring-reading-card:has(.status-critical) .metric-status::before {
+    background: #dc2626 !important;
+    box-shadow: 0 0 0 2.5px rgba(220, 38, 38, 0.25) !important;
+}
+
+.dashboard-page .dashboard-metric-card.status-card-critical .metric-card-footer,
+.monitoring-page .monitoring-reading-card.status-card-critical .monitoring-reading-footer,
+.analytics-page .analytics-sensor-card.status-card-critical .metric-card-footer,
+.dashboard-page .dashboard-metric-card:has(.status-critical) .metric-card-footer,
+.monitoring-page .monitoring-reading-card:has(.status-critical) .monitoring-reading-footer {
+    border-top: 1px solid rgba(220, 38, 38, 0.14) !important;
+    color: #991b1b !important;
+}
+
+.dashboard-page .dashboard-metric-card.status-card-critical .metric-footer-dot,
+.monitoring-page .monitoring-reading-card.status-card-critical .monitoring-footer-dot,
+.analytics-page .analytics-sensor-card.status-card-critical .metric-footer-dot,
+.dashboard-page .dashboard-metric-card:has(.status-critical) .metric-footer-dot,
+.monitoring-page .monitoring-reading-card:has(.status-critical) .monitoring-footer-dot {
+    background: #dc2626 !important;
+    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.25) !important;
 }
 
 /* ==========================================================================

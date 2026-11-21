@@ -125,11 +125,23 @@ function updateSummary(reading) {
     if (tempStatusEl) {
         tempStatusEl.textContent = tStat;
         tempStatusEl.className = `metric-status status-${tStat.toLowerCase()}`;
+        const tempCard = tempStatusEl.closest(".monitoring-reading-card");
+        if (tempCard) {
+            tempCard.classList.remove("status-card-optimal", "status-card-warning", "status-card-critical");
+            const slug = tStat.toLowerCase().includes("warn") ? "warning" : (tStat.toLowerCase().includes("crit") ? "critical" : "optimal");
+            tempCard.classList.add(`status-card-${slug}`);
+        }
     }
     const phStatusEl = document.getElementById("monitor-ph-status");
     if (phStatusEl) {
         phStatusEl.textContent = pStat;
         phStatusEl.className = `metric-status status-${pStat.toLowerCase()}`;
+        const phCard = phStatusEl.closest(".monitoring-reading-card");
+        if (phCard) {
+            phCard.classList.remove("status-card-optimal", "status-card-warning", "status-card-critical");
+            const slug = pStat.toLowerCase().includes("warn") ? "warning" : (pStat.toLowerCase().includes("crit") ? "critical" : "optimal");
+            phCard.classList.add(`status-card-${slug}`);
+        }
     }
 
     const status = getQualityStatus(reading);

@@ -67,12 +67,24 @@ function displayResults(data) {
         tempStatusEl.className = isSensorFault
             ? "metric-status status-critical"
             : `metric-status status-${tempStatus.toLowerCase().replace(/[^a-z]/g, "")}`;
+        const tempCard = tempStatusEl.closest(".dashboard-metric-card");
+        if (tempCard) {
+            tempCard.classList.remove("status-card-optimal", "status-card-warning", "status-card-critical");
+            const slug = isSensorFault ? "critical" : (tempStatus.toLowerCase().includes("warn") ? "warning" : (tempStatus.toLowerCase().includes("crit") ? "critical" : "optimal"));
+            tempCard.classList.add(`status-card-${slug}`);
+        }
     }
 
     const phStatusEl = document.getElementById("ph-status");
     if (phStatusEl) {
         phStatusEl.textContent = phStatus;
         phStatusEl.className = `metric-status status-${phStatus.toLowerCase().replace(/[^a-z]/g, "")}`;
+        const phCard = phStatusEl.closest(".dashboard-metric-card");
+        if (phCard) {
+            phCard.classList.remove("status-card-optimal", "status-card-warning", "status-card-critical");
+            const slug = phStatus.toLowerCase().includes("warn") ? "warning" : (phStatus.toLowerCase().includes("crit") ? "critical" : "optimal");
+            phCard.classList.add(`status-card-${slug}`);
+        }
     }
 
     // Update telemetry header indicators
@@ -476,11 +488,21 @@ async function loadLatestReading() {
             if (tempStatusEl) {
                 tempStatusEl.textContent = "No data";
                 tempStatusEl.className = "metric-status";
+                const tempCard = tempStatusEl.closest(".dashboard-metric-card");
+                if (tempCard) {
+                    tempCard.classList.remove("status-card-warning", "status-card-critical");
+                    tempCard.classList.add("status-card-optimal");
+                }
             }
             const phStatusEl = document.getElementById("ph-status");
             if (phStatusEl) {
                 phStatusEl.textContent = "No data";
                 phStatusEl.className = "metric-status";
+                const phCard = phStatusEl.closest(".dashboard-metric-card");
+                if (phCard) {
+                    phCard.classList.remove("status-card-warning", "status-card-critical");
+                    phCard.classList.add("status-card-optimal");
+                }
             }
         }
     } catch (error) {
