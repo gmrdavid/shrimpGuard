@@ -310,14 +310,37 @@
                     <div class="metric-card-content">
                         <h3>Water Temperature</h3>
 
-                        <div class="metric-reading">
-                            <h2 id="temperature">--</h2>
-                            <span class="metric-unit">°C</span>
-                        </div>
+                        <div class="metric-card-body-row">
+                            <div class="metric-reading-col">
+                                <div class="metric-reading">
+                                    <h2 id="temperature">--</h2>
+                                    <span class="metric-unit">°C</span>
+                                </div>
 
-                        <p id="temperature-status" class="metric-status">
-                            Waiting for readings
-                        </p>
+                                <p id="temperature-status" class="metric-status">
+                                    Waiting for readings
+                                </p>
+                            </div>
+
+                            <!-- 1-HOUR WATER TEMPERATURE TREND -->
+                            <div class="metric-trend-col" id="temp-trend-col" title="Latest 1-hour water temperature trend">
+                                <div class="metric-trend-header">
+                                    <span class="metric-trend-badge badge-temp">
+                                        <svg class="ui-icon trend-mini-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
+                                        1H TREND
+                                    </span>
+                                    <span id="temp-trend-delta" class="metric-trend-delta delta-neutral">--</span>
+                                </div>
+                                <div class="metric-trend-canvas-wrap">
+                                    <canvas id="temp-trend-canvas" class="metric-sparkline-canvas" width="220" height="48" aria-label="1-hour temperature trend"></canvas>
+                                    <div id="temp-trend-empty" class="metric-trend-empty" hidden>Awaiting 1h readings</div>
+                                </div>
+                                <div class="metric-trend-footer">
+                                    <span id="temp-trend-range" class="metric-trend-range">--</span>
+                                    <span id="temp-trend-count" class="metric-trend-count">0 readings</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="metric-card-footer">
@@ -344,13 +367,36 @@
                     <div class="metric-card-content">
                         <h3>Water pH Level</h3>
 
-                        <div class="metric-reading">
-                            <h2 id="ph">--</h2>
-                        </div>
+                        <div class="metric-card-body-row">
+                            <div class="metric-reading-col">
+                                <div class="metric-reading">
+                                    <h2 id="ph">--</h2>
+                                </div>
 
-                        <p id="ph-status" class="metric-status">
-                            Waiting for readings
-                        </p>
+                                <p id="ph-status" class="metric-status">
+                                    Waiting for readings
+                                </p>
+                            </div>
+
+                            <!-- 1-HOUR WATER PH LEVEL TREND -->
+                            <div class="metric-trend-col" id="ph-trend-col" title="Latest 1-hour water pH level trend">
+                                <div class="metric-trend-header">
+                                    <span class="metric-trend-badge badge-ph">
+                                        <svg class="ui-icon trend-mini-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
+                                        1H TREND
+                                    </span>
+                                    <span id="ph-trend-delta" class="metric-trend-delta delta-neutral">--</span>
+                                </div>
+                                <div class="metric-trend-canvas-wrap">
+                                    <canvas id="ph-trend-canvas" class="metric-sparkline-canvas" width="220" height="48" aria-label="1-hour pH trend"></canvas>
+                                    <div id="ph-trend-empty" class="metric-trend-empty" hidden>Awaiting 1h readings</div>
+                                </div>
+                                <div class="metric-trend-footer">
+                                    <span id="ph-trend-range" class="metric-trend-range">--</span>
+                                    <span id="ph-trend-count" class="metric-trend-count">0 readings</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="metric-card-footer">
