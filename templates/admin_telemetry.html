@@ -10,7 +10,7 @@
     <meta name="theme-color" content="#126b4f">
     <title>IoT &amp; Telemetry Control | AERIS-V Admin</title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=4.8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=5.0">
 </head>
 
 <body class="dashboard-page admin-page">
@@ -663,52 +663,57 @@
 </div>
 
 <!-- SIMULATE TELEMETRY DIALOG -->
-<dialog class="admin-user-dialog" id="simulate-dialog" aria-labelledby="simulate-title">
-    <div class="admin-user-dialog-heading">
-        <div class="admin-modal-title-group">
-            <span class="admin-modal-icon-badge edit" aria-hidden="true">
-                <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 5v14M5 12h14"/>
-                </svg>
-            </span>
-            <div class="admin-modal-heading-text">
-                <h2 id="simulate-title">Simulate Lab / Offline Telemetry</h2>
-                <p class="admin-modal-subtitle">
-                    Inject a manual test reading for offline sensor calibration and ML verification. Autonomous pond readings stream via LoRa.
-                </p>
-            </div>
+<dialog class="admin-modal admin-user-dialog admin-simulate-dialog" id="simulate-dialog" aria-labelledby="simulate-title">
+        <div class="admin-modal-card">
+            <header class="admin-user-dialog-heading">
+                <div class="admin-modal-title-group">
+                    <span class="admin-modal-icon-badge" aria-hidden="true">
+                        <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 5v14M5 12h14"/>
+                        </svg>
+                    </span>
+                    <div class="admin-modal-heading-text">
+                        <h2 id="simulate-title">Simulate Lab / Offline Telemetry</h2>
+                        <p class="admin-modal-subtitle">
+                            Inject a manual test reading for offline sensor calibration and ML verification.
+                        </p>
+                    </div>
+                </div>
+
+                <button class="admin-dialog-close" type="button" data-close-dialog="simulate-dialog" aria-label="Close dialog">
+                    <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="m18 6-12 12M6 6l12 12"/>
+                    </svg>
+                </button>
+            </header>
+
+            <form class="admin-user-form" method="post" action="{{ url_for('simulate_admin_telemetry') }}">
+                <input type="hidden" name="csrf_token" value="{{ admin_csrf_token }}">
+
+                <div class="admin-form-body">
+                    <div class="admin-form-field">
+                        <label for="sim-temp">Water Temperature (°C) <span aria-hidden="true">*</span></label>
+                        <input id="sim-temp" name="temperature" type="number" step="0.01" min="0" max="50" placeholder="e.g. 28.50" required>
+                        <span class="admin-field-helper">Optimal: 28.00–32.00 °C. Warning below 28°C or above 32°C. Critical below 25°C or above 33.5°C.</span>
+                    </div>
+
+                    <div class="admin-form-field" style="margin-top: 14px;">
+                        <label for="sim-ph">pH Level <span aria-hidden="true">*</span></label>
+                        <input id="sim-ph" name="ph" type="number" step="0.01" min="0" max="14" placeholder="e.g. 8.10" required>
+                        <span class="admin-field-helper">Optimal: 7.50–8.50. Warning outside 7.5–8.5. Critical below 6.50 or above 9.00.</span>
+                    </div>
+                </div>
+
+                <div class="admin-user-form-actions">
+                    <button class="admin-user-cancel" type="button" data-close-dialog="simulate-dialog">Cancel</button>
+                    <button class="admin-user-submit" type="submit">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-plus"></use></svg>
+                        <span>Record &amp; Classify Test Reading</span>
+                    </button>
+                </div>
+            </form>
         </div>
-
-        <button class="admin-dialog-close" type="button" data-close-dialog="simulate-dialog" aria-label="Close dialog">
-            <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="m18 6-12 12M6 6l12 12"/>
-            </svg>
-        </button>
-    </div>
-
-    <form class="admin-user-form" method="post" action="{{ url_for('simulate_admin_telemetry') }}">
-        <input type="hidden" name="csrf_token" value="{{ admin_csrf_token }}">
-
-        <div class="admin-form-section">
-            <div class="admin-form-field">
-                <label for="sim-temp">Water Temperature (°C) *</label>
-                <input id="sim-temp" name="temperature" type="number" step="0.01" min="0" max="50" placeholder="e.g. 28.50" required>
-                <small>Optimal range: 28.0–32.0 °C. Warning below 28°C or above 32°C. Critical below 25°C or above 33.5°C.</small>
-            </div>
-
-            <div class="admin-form-field" style="margin-top: 14px;">
-                <label for="sim-ph">pH Level *</label>
-                <input id="sim-ph" name="ph" type="number" step="0.01" min="0" max="14" placeholder="e.g. 8.10" required>
-                <small>Optimal range: 7.50–8.50. Warning outside 7.5–8.5. Critical below 6.50 or above 9.00.</small>
-            </div>
-        </div>
-
-        <div class="admin-user-form-actions">
-            <button class="admin-user-cancel" type="button" data-close-dialog="simulate-dialog">Cancel</button>
-            <button class="admin-user-submit" type="submit">Record &amp; Classify Test Reading</button>
-        </div>
-    </form>
-</dialog>
+    </dialog>
 
 <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
 <script src="{{ url_for('static', filename='js/adaptive.js') }}"></script>

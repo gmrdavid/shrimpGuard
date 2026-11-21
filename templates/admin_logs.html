@@ -10,7 +10,7 @@
     <meta name="theme-color" content="#126b4f">
     <title>Audit &amp; System Logs | AERIS-V Admin</title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=4.8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=5.0">
 </head>
 
 <body class="dashboard-page admin-page">
@@ -563,51 +563,69 @@
 </div>
 
 <!-- PURGE LOGS DIALOG -->
-<dialog class="admin-user-dialog" id="purge-dialog" aria-labelledby="purge-title">
-    <div class="admin-user-dialog-heading">
-        <div class="admin-modal-title-group">
-            <span class="admin-modal-icon-badge" style="background: #ffe4e6; color: #be123c;" aria-hidden="true">
-                <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <use href="#icon-trash"></use>
-                </svg>
-            </span>
-            <div class="admin-modal-heading-text">
-                <h2 id="purge-title">Prune System Audit Logs</h2>
-                <p class="admin-modal-subtitle">
-                    Select a time window to purge old activity records from the database.
-                </p>
-            </div>
+<dialog class="admin-modal admin-modal-danger admin-user-dialog admin-purge-dialog" id="purge-dialog" aria-labelledby="purge-title">
+        <div class="admin-modal-card">
+            <header class="admin-user-dialog-heading">
+                <div class="admin-modal-title-group">
+                    <span class="admin-modal-icon-badge danger" aria-hidden="true">
+                        <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <use href="#icon-trash"></use>
+                        </svg>
+                    </span>
+                    <div class="admin-modal-heading-text">
+                        <h2 id="purge-title">Prune System Audit Logs</h2>
+                        <p class="admin-modal-subtitle">
+                            Select a retention window to purge historical activity records.
+                        </p>
+                    </div>
+                </div>
+
+                <button class="admin-dialog-close" type="button" data-close-dialog="purge-dialog" aria-label="Close dialog">
+                    <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="m18 6-12 12M6 6l12 12"/>
+                    </svg>
+                </button>
+            </header>
+
+            <form class="admin-user-form" method="post" action="{{ url_for('clear_admin_logs') }}">
+                <input type="hidden" name="csrf_token" value="{{ admin_csrf_token }}">
+
+                <div class="admin-form-body">
+                    <div class="admin-form-field">
+                        <label for="purge-range">Retention Window <span aria-hidden="true">*</span></label>
+                        <select id="purge-range" name="range" required>
+                            <option value="30" selected>Purge logs older than 30 days</option>
+                            <option value="60">Purge logs older than 60 days</option>
+                            <option value="90">Purge logs older than 90 days</option>
+                            <option value="all">Purge ALL logs (Total Reset)</option>
+                        </select>
+                        <div class="admin-dialog-warning-banner">
+                            <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                                <line x1="12" y1="9" x2="12" y2="13"/>
+                                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                            </svg>
+                            <span>Warning: This action permanently deletes historical audit log records from the database.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-user-form-actions">
+                    <button class="admin-user-cancel" type="button" data-close-dialog="purge-dialog">Cancel</button>
+                    <button class="admin-user-submit danger admin-purge-submit" type="submit">
+                        <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M3 6h18"/>
+                            <path d="M8 6V4h8v2"/>
+                            <path d="m19 6-1 14H6L5 6"/>
+                            <path d="M10 11v5"/>
+                            <path d="M14 11v5"/>
+                        </svg>
+                        <span>Confirm Log Prune</span>
+                    </button>
+                </div>
+            </form>
         </div>
-
-        <button class="admin-dialog-close" type="button" data-close-dialog="purge-dialog" aria-label="Close dialog">
-            <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="m18 6-12 12M6 6l12 12"/>
-            </svg>
-        </button>
-    </div>
-
-    <form class="admin-user-form" method="post" action="{{ url_for('clear_admin_logs') }}">
-        <input type="hidden" name="csrf_token" value="{{ admin_csrf_token }}">
-
-        <div class="admin-form-section">
-            <div class="admin-form-field">
-                <label for="purge-range">Retention Window *</label>
-                <select id="purge-range" name="range" required>
-                    <option value="30" selected>Purge logs older than 30 days</option>
-                    <option value="60">Purge logs older than 60 days</option>
-                    <option value="90">Purge logs older than 90 days</option>
-                    <option value="all">Purge ALL logs (Total Reset)</option>
-                </select>
-                <small style="color: #be123c;">Warning: This action will permanently delete historical audit log records.</small>
-            </div>
-        </div>
-
-        <div class="admin-user-form-actions">
-            <button class="admin-user-cancel" type="button" data-close-dialog="purge-dialog">Cancel</button>
-            <button class="admin-user-submit" type="submit" style="background: #be123c; border-color: #be123c;">Confirm Log Prune</button>
-        </div>
-    </form>
-</dialog>
+    </dialog>
 <!-- EXPORT AUDIT LOGS MODAL DIALOG (MATCHING HISTORICAL READINGS EXPORT DESIGN) -->
 <div id="historical-export-modal" class="modal-dialog-backdrop" hidden>
     <div class="modal-dialog-container historical-export-dialog" role="dialog" aria-modal="true" aria-labelledby="export-modal-title">
@@ -626,8 +644,10 @@
                     <p>Customize target user, date scope, event category, and download file format.</p>
                 </div>
             </div>
-            <button type="button" id="close-export-modal" class="modal-close-btn" aria-label="Close export dialog">
-                &times;
+            <button type="button" id="close-export-modal" class="modal-close-btn admin-dialog-close" aria-label="Close export dialog">
+                <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="m18 6-12 12M6 6l12 12"/>
+                </svg>
             </button>
         </div>
 
