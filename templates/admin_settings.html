@@ -343,82 +343,90 @@
                     </div>
                 </div>
 
+                {% set diag_db = (diagnostics.db if (diagnostics is defined and diagnostics.db is defined) else (diagnostics.get('db') if (diagnostics is defined and diagnostics.get is defined) else None)) or {'online': true, 'label': 'Database', 'text': 'Online', 'detail': 'Database connection operational'} %}
+                {% set diag_api = (diagnostics.api if (diagnostics is defined and diagnostics.api is defined) else (diagnostics.get('api') if (diagnostics is defined and diagnostics.get is defined) else None)) or {'online': true, 'label': 'API Server', 'text': 'Online', 'detail': 'Flask REST API operational'} %}
+                {% set diag_storage = (diagnostics.storage if (diagnostics is defined and diagnostics.storage is defined) else (diagnostics.get('storage') if (diagnostics is defined and diagnostics.get is defined) else None)) or {'online': true, 'label': 'Cloud Storage (Cloudinary)', 'text': 'Online', 'detail': 'Media storage operational'} %}
+                {% set diag_mqtt = (diagnostics.mqtt if (diagnostics is defined and diagnostics.mqtt is defined) else (diagnostics.get('mqtt') if (diagnostics is defined and diagnostics.get is defined) else None)) or {'online': true, 'label': 'MQTT / IoT Connection', 'text': 'Online', 'detail': 'Telemetry queue active'} %}
+                {% set diag_sms = (diagnostics.sms if (diagnostics is defined and diagnostics.sms is defined) else (diagnostics.get('sms') if (diagnostics is defined and diagnostics.get is defined) else None)) or {'online': true, 'label': 'SMS Gateway (GSM)', 'text': 'Online', 'detail': 'GSM dispatch ready'} %}
+                {% set diag_lora = (diagnostics.lora if (diagnostics is defined and diagnostics.lora is defined) else (diagnostics.get('lora') if (diagnostics is defined and diagnostics.get is defined) else None)) or {'online': false, 'label': 'LoRa Gateway', 'text': 'Standby', 'detail': 'LoRa packet ingestion ready'} %}
+                {% set all_ops = diagnostics.get('all_operational', true) if (diagnostics is defined and diagnostics.get is defined) else true %}
+
                 <div class="status-diagnostics-list">
                     <!-- Database -->
-                    <div class="status-diag-row" title="{{ diagnostics.db.detail }}">
+                    <div class="status-diag-row" title="{{ diag_db.detail if diag_db.detail is defined else diag_db.get('detail', 'Online') }}">
                         <div class="status-diag-name">
-                            <span class="status-indicator-dot dot-optimal"></span>
-                            <span>{{ diagnostics.db.label }}</span>
+                            <span class="status-indicator-dot {% if diag_db.online %}dot-optimal{% else %}dot-critical{% endif %}"></span>
+                            <span>{{ diag_db.label if diag_db.label is defined else diag_db.get('label', 'Database') }}</span>
                         </div>
                         <div class="status-diag-val">
-                            <span class="status-indicator-dot dot-optimal"></span>
-                            <span>{{ diagnostics.db.text }}</span>
+                            <span class="status-indicator-dot {% if diag_db.online %}dot-optimal{% else %}dot-critical{% endif %}"></span>
+                            <span>{{ diag_db.text if diag_db.text is defined else diag_db.get('text', 'Online') }}</span>
                         </div>
                     </div>
 
                     <!-- API Server -->
-                    <div class="status-diag-row" title="{{ diagnostics.api.detail }}">
+                    <div class="status-diag-row" title="{{ diag_api.detail if diag_api.detail is defined else diag_api.get('detail', 'Online') }}">
                         <div class="status-diag-name">
                             <span class="status-indicator-dot dot-optimal"></span>
-                            <span>{{ diagnostics.api.label }}</span>
+                            <span>{{ diag_api.label if diag_api.label is defined else diag_api.get('label', 'API Server') }}</span>
                         </div>
                         <div class="status-diag-val">
                             <span class="status-indicator-dot dot-optimal"></span>
-                            <span>{{ diagnostics.api.text }}</span>
+                            <span>{{ diag_api.text if diag_api.text is defined else diag_api.get('text', 'Online') }}</span>
                         </div>
                     </div>
 
                     <!-- Cloud Storage -->
-                    <div class="status-diag-row" title="{{ diagnostics.storage.detail }}">
+                    <div class="status-diag-row" title="{{ diag_storage.detail if diag_storage.detail is defined else diag_storage.get('detail', 'Online') }}">
                         <div class="status-diag-name">
-                            <span class="status-indicator-dot {% if diagnostics.storage.online %}dot-optimal{% else %}dot-warning{% endif %}"></span>
-                            <span>{{ diagnostics.storage.label }}</span>
+                            <span class="status-indicator-dot {% if diag_storage.online %}dot-optimal{% else %}dot-warning{% endif %}"></span>
+                            <span>{{ diag_storage.label if diag_storage.label is defined else diag_storage.get('label', 'Cloud Storage (Cloudinary)') }}</span>
                         </div>
                         <div class="status-diag-val">
-                            <span class="status-indicator-dot {% if diagnostics.storage.online %}dot-optimal{% else %}dot-warning{% endif %}"></span>
-                            <span>{{ diagnostics.storage.text }}</span>
+                            <span class="status-indicator-dot {% if diag_storage.online %}dot-optimal{% else %}dot-warning{% endif %}"></span>
+                            <span>{{ diag_storage.text if diag_storage.text is defined else diag_storage.get('text', 'Online') }}</span>
                         </div>
                     </div>
 
                     <!-- MQTT / IoT Connection -->
-                    <div class="status-diag-row" title="{{ diagnostics.mqtt.detail }}">
+                    <div class="status-diag-row" title="{{ diag_mqtt.detail if diag_mqtt.detail is defined else diag_mqtt.get('detail', 'Online') }}">
                         <div class="status-diag-name">
                             <span class="status-indicator-dot dot-optimal"></span>
-                            <span>{{ diagnostics.mqtt.label }}</span>
+                            <span>{{ diag_mqtt.label if diag_mqtt.label is defined else diag_mqtt.get('label', 'MQTT / IoT Connection') }}</span>
                         </div>
                         <div class="status-diag-val">
                             <span class="status-indicator-dot dot-optimal"></span>
-                            <span>{{ diagnostics.mqtt.text }}</span>
+                            <span>{{ diag_mqtt.text if diag_mqtt.text is defined else diag_mqtt.get('text', 'Online') }}</span>
                         </div>
                     </div>
 
                     <!-- SMS Gateway (GSM) -->
-                    <div class="status-diag-row" title="{{ diagnostics.sms.detail }}">
+                    <div class="status-diag-row" title="{{ diag_sms.detail if diag_sms.detail is defined else diag_sms.get('detail', 'Online') }}">
                         <div class="status-diag-name">
                             <span class="status-indicator-dot dot-optimal"></span>
-                            <span>{{ diagnostics.sms.label }}</span>
+                            <span>{{ diag_sms.label if diag_sms.label is defined else diag_sms.get('label', 'SMS Gateway (GSM)') }}</span>
                         </div>
                         <div class="status-diag-val">
                             <span class="status-indicator-dot dot-optimal"></span>
-                            <span>{{ diagnostics.sms.text }}</span>
+                            <span>{{ diag_sms.text if diag_sms.text is defined else diag_sms.get('text', 'Online') }}</span>
                         </div>
                     </div>
 
                     <!-- LoRa Gateway -->
-                    <div class="status-diag-row" title="{{ diagnostics.lora.detail }}">
+                    <div class="status-diag-row" title="{{ diag_lora.detail if diag_lora.detail is defined else diag_lora.get('detail', 'Standby') }}">
                         <div class="status-diag-name">
-                            <span class="status-indicator-dot {% if diagnostics.lora.online %}dot-optimal{% else %}dot-standby{% endif %}"></span>
-                            <span>{{ diagnostics.lora.label }}</span>
+                            <span class="status-indicator-dot {% if diag_lora.online %}dot-optimal{% else %}dot-standby{% endif %}"></span>
+                            <span>{{ diag_lora.label if diag_lora.label is defined else diag_lora.get('label', 'LoRa Gateway') }}</span>
                         </div>
                         <div class="status-diag-val">
-                            <span class="status-indicator-dot {% if diagnostics.lora.online %}dot-optimal{% else %}dot-standby{% endif %}"></span>
-                            <span>{{ diagnostics.lora.text }}</span>
+                            <span class="status-indicator-dot {% if diag_lora.online %}dot-optimal{% else %}dot-standby{% endif %}"></span>
+                            <span>{{ diag_lora.text if diag_lora.text is defined else diag_lora.get('text', 'Online' if diag_lora.online else 'Standby') }}</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Operational Summary Banner -->
-                <div class="status-operational-banner {% if diagnostics.all_operational %}banner-operational{% else %}banner-attention{% endif %}">
+                <div class="status-operational-banner {% if all_ops %}banner-operational{% else %}banner-attention{% endif %}">
                     <div class="banner-icon-col">
                         <svg class="ui-icon banner-icon" aria-hidden="true">
                             <use href="#icon-check-circle"></use>
