@@ -851,11 +851,23 @@ function updateDeviceTime() {
         const cancelRemoveBtn = document.getElementById("cancel-remove-avatar");
         const confirmRemoveBtn = document.getElementById("confirm-remove-avatar");
 
-        const csrfInput = document.querySelector('input[name="csrf_token"]');
-        const csrfToken = csrfInput ? csrfInput.value : "";
-
         const ALLOWED_EXTENSIONS = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
         const MAX_BYTES = 5 * 1024 * 1024; // 5MB
+
+        function getCsrfToken() {
+            const avatarForm = document.getElementById("avatar-upload-form");
+            if (avatarForm) {
+                const inp = avatarForm.querySelector('input[name="csrf_token"]');
+                if (inp && inp.value) return inp.value;
+            }
+            const profileForm = document.getElementById("profile-update-form");
+            if (profileForm) {
+                const inp = profileForm.querySelector('input[name="csrf_token"]');
+                if (inp && inp.value) return inp.value;
+            }
+            const anyInp = document.querySelector('input[name="csrf_token"]');
+            return anyInp ? anyInp.value : "";
+        }
 
         function showFeedback(msg, isSuccess = true) {
             if (!feedbackEl) return;
@@ -869,7 +881,7 @@ function updateDeviceTime() {
                     feedbackEl.style.display = "none";
                     feedbackEl.style.opacity = "1";
                 }, 300);
-            }, 4000);
+            }, 4500);
         }
 
         function triggerFileInput() {
@@ -924,49 +936,118 @@ function updateDeviceTime() {
                     `;
                 }
 
+                const csrfToken = getCsrfToken();
                 const formData = new FormData();
                 formData.append("avatar", file);
-                formData.append("csrf_token", csrfToken);
+                formData.append("action", "avatar_upload");
+                if (csrfToken) {
+                    formData.append("csrf_token", csrfToken);
+                }
+
+                const headers = {};
+                if (csrfToken) {
+                    headers["X-CSRFToken"] = csrfToken;
+                }
+
+                let response;
+                let usedFallback = false;
 
                 try {
-                    const response = await fetch("/api/user/profile-picture", {
+                    response = await fetch("/api/user/profile-picture", {
                         method: "POST",
-                        headers: {
-                            "X-CSRFToken": csrfToken
-                        },
+                        headers: headers,
                         body: formData
                     });
-
-                    const data = await response.json();
-
-                    if (response.ok && data.status === "success") {
-                        const newUrl = data.avatar_url + "?t=" + Date.now();
-                        if (previewImg) {
-                            previewImg.src = newUrl;
-                            previewImg.style.display = "block";
+                } catch (fetchErr) {
+                    console.warn("Direct API upload fetch error, trying /settings fallback:", fetchErr);
+                    // Fallback to /settings form endpoint
+                    try {
+                        response = await fetch("/settings", {
+                            method: "POST",
+                            body: formData
+                        });
+                        usedFallback = true;
+                    } catch (fallbackErr) {
+                        console.error("Upload fallback also failed:", fallbackErr);
+                        showFeedback("Network error. Please verify your connection and try again.", false);
+                        if (changeBtn) {
+                            changeBtn.disabled = false;
+                            changeBtn.innerHTML = originalHtml;
                         }
-                        if (previewInitials) previewInitials.style.display = "none";
-                        if (removeBtn) removeBtn.style.display = "inline-flex";
-
-                        if (headerImg) {
-                            headerImg.src = newUrl;
-                            headerImg.style.display = "block";
-                        }
-                        if (headerInitials) headerInitials.style.display = "none";
-
-                        showFeedback("Profile picture updated successfully!", true);
-                    } else {
-                        showFeedback(data.message || "Failed to upload profile picture.", false);
+                        fileInput.value = "";
+                        return;
                     }
-                } catch (err) {
-                    showFeedback("Network error. Please try uploading again.", false);
-                } finally {
-                    if (changeBtn) {
-                        changeBtn.disabled = false;
-                        changeBtn.innerHTML = originalHtml;
-                    }
-                    fileInput.value = "";
                 }
+
+                if (response && response.status === 404 && !usedFallback) {
+                    // Endpoint not found on running server, fallback to /settings
+                    try {
+                        response = await fetch("/settings", {
+                            method: "POST",
+                            body: formData
+                        });
+                        usedFallback = true;
+                    } catch (fallbackErr) {
+                        console.error("404 fallback failed:", fallbackErr);
+                    }
+                }
+
+                if (usedFallback) {
+                    if (response && response.ok) {
+                        showFeedback("Profile picture updated successfully! Reloading...", true);
+                        setTimeout(() => window.location.reload(), 1000);
+                        return;
+                    } else {
+                        showFeedback("Upload could not be processed. Please try again.", false);
+                        if (changeBtn) {
+                            changeBtn.disabled = false;
+                            changeBtn.innerHTML = originalHtml;
+                        }
+                        fileInput.value = "";
+                        return;
+                    }
+                }
+
+                let data;
+                const contentType = (response && response.headers.get("content-type")) || "";
+                if (contentType.includes("application/json")) {
+                    try {
+                        data = await response.json();
+                    } catch (parseErr) {
+                        console.error("JSON parse error:", parseErr);
+                        data = { status: "error", message: `Server error (${response.status}).` };
+                    }
+                } else {
+                    const textResp = await response.text();
+                    console.warn("Server responded with non-JSON:", textResp.slice(0, 150));
+                    data = { status: "error", message: response.ok ? "Upload completed." : `Server returned error (${response.status}).` };
+                }
+
+                if (response && response.ok && data.status === "success") {
+                    const newUrl = data.avatar_url + "?t=" + Date.now();
+                    if (previewImg) {
+                        previewImg.src = newUrl;
+                        previewImg.style.display = "block";
+                    }
+                    if (previewInitials) previewInitials.style.display = "none";
+                    if (removeBtn) removeBtn.style.display = "inline-flex";
+
+                    if (headerImg) {
+                        headerImg.src = newUrl;
+                        headerImg.style.display = "block";
+                    }
+                    if (headerInitials) headerInitials.style.display = "none";
+
+                    showFeedback("Profile picture updated successfully!", true);
+                } else {
+                    showFeedback((data && (data.message || data.error)) || "Failed to upload profile picture.", false);
+                }
+
+                if (changeBtn) {
+                    changeBtn.disabled = false;
+                    changeBtn.innerHTML = originalHtml;
+                }
+                fileInput.value = "";
             });
         }
 
@@ -1006,43 +1087,104 @@ function updateDeviceTime() {
                     `;
                 }
 
+                const csrfToken = getCsrfToken();
+                const headers = {};
+                if (csrfToken) {
+                    headers["X-CSRFToken"] = csrfToken;
+                }
+
+                let response;
+                let usedFallback = false;
+
                 try {
-                    const response = await fetch("/api/user/profile-picture", {
+                    response = await fetch("/api/user/profile-picture", {
                         method: "DELETE",
                         headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRFToken": csrfToken
+                            ...headers,
+                            "Content-Type": "application/json"
                         },
                         body: JSON.stringify({ csrf_token: csrfToken })
                     });
+                } catch (fetchErr) {
+                    console.warn("Direct delete API error, using /settings fallback:", fetchErr);
+                    try {
+                        const fd = new FormData();
+                        fd.append("action", "avatar_remove");
+                        if (csrfToken) fd.append("csrf_token", csrfToken);
+                        response = await fetch("/settings", {
+                            method: "POST",
+                            body: fd
+                        });
+                        usedFallback = true;
+                    } catch (fallbackErr) {
+                        console.error("Delete fallback also failed:", fallbackErr);
+                    }
+                }
 
-                    const data = await response.json();
+                if (response && response.status === 404 && !usedFallback) {
+                    try {
+                        const fd = new FormData();
+                        fd.append("action", "avatar_remove");
+                        if (csrfToken) fd.append("csrf_token", csrfToken);
+                        response = await fetch("/settings", {
+                            method: "POST",
+                            body: fd
+                        });
+                        usedFallback = true;
+                    } catch (fallbackErr) {
+                        console.error("404 delete fallback failed:", fallbackErr);
+                    }
+                }
 
-                    if (response.ok && data.status === "success") {
-                        if (previewImg) {
-                            previewImg.src = "";
-                            previewImg.style.display = "none";
-                        }
-                        if (previewInitials) previewInitials.style.display = "flex";
-                        if (removeBtn) removeBtn.style.display = "none";
-
-                        if (headerImg) {
-                            headerImg.src = "";
-                            headerImg.style.display = "none";
-                        }
-                        if (headerInitials) headerInitials.style.display = "flex";
-
-                        showFeedback("Profile picture removed successfully.", true);
+                if (usedFallback) {
+                    if (response && response.ok) {
+                        showFeedback("Profile picture removed. Reloading...", true);
+                        setTimeout(() => window.location.reload(), 1000);
+                        return;
                     } else {
-                        showFeedback(data.message || "Could not remove profile picture.", false);
+                        showFeedback("Could not remove profile picture.", false);
+                        if (removeBtn) {
+                            removeBtn.disabled = false;
+                            removeBtn.innerHTML = originalRemoveHtml;
+                        }
+                        return;
                     }
-                } catch (err) {
-                    showFeedback("Network error. Could not remove profile picture.", false);
-                } finally {
-                    if (removeBtn) {
-                        removeBtn.disabled = false;
-                        removeBtn.innerHTML = originalRemoveHtml;
+                }
+
+                let data;
+                const contentType = (response && response.headers.get("content-type")) || "";
+                if (contentType.includes("application/json")) {
+                    try {
+                        data = await response.json();
+                    } catch (parseErr) {
+                        data = { status: "error", message: `Server error (${response.status}).` };
                     }
+                } else {
+                    data = { status: "error", message: response && response.ok ? "Removed." : "Server error." };
+                }
+
+                if (response && response.ok && data.status === "success") {
+                    if (previewImg) {
+                        previewImg.src = "";
+                        previewImg.style.display = "none";
+                    }
+                    if (previewInitials) previewInitials.style.display = "flex";
+                    if (removeBtn) removeBtn.style.display = "none";
+
+                    if (headerImg) {
+                        headerImg.src = "";
+                        headerImg.style.display = "none";
+                    }
+                    if (headerInitials) headerInitials.style.display = "flex";
+
+                    showFeedback("Profile picture removed successfully.", true);
+                } else {
+                    showFeedback((data && (data.message || data.error)) || "Could not remove profile picture.", false);
+                }
+
+                if (removeBtn) {
+                    removeBtn.disabled = false;
+                    removeBtn.innerHTML = originalRemoveHtml;
                 }
             });
         }

@@ -12,7 +12,7 @@
     <title>Settings | AERIS-V</title>
 
     <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css', v='3.2') }}">
+          href="{{ url_for('static', filename='css/style.css', v='3.3') }}">
 </head>
 
 <body class="dashboard-page settings-page" data-user-email="{{ current_user.email if current_user else '' }}">
@@ -250,8 +250,12 @@
                                 <p class="settings-avatar-meta-hint">Upload a custom profile picture. Recommended: square JPG, PNG, GIF, or WebP (max 5MB).</p>
                                 
                                 <div class="settings-avatar-buttons">
-                                    <!-- Hidden File Input -->
-                                    <input type="file" id="avatar-file-input" name="avatar" accept="image/png, image/jpeg, image/jpg, image/webp, image/gif" style="display: none;" aria-label="Choose profile photo file">
+                                    <!-- Hidden Avatar Upload Form -->
+                                    <form id="avatar-upload-form" method="post" action="{{ url_for('settings') }}" enctype="multipart/form-data" style="display: none;">
+                                        <input type="hidden" name="csrf_token" value="{{ settings_csrf_token }}">
+                                        <input type="hidden" name="action" value="avatar_upload">
+                                        <input type="file" id="avatar-file-input" name="avatar" accept="image/png, image/jpeg, image/jpg, image/webp, image/gif" aria-label="Choose profile photo file">
+                                    </form>
 
                                     <button type="button" class="settings-avatar-action-btn primary" id="btn-change-avatar">
                                         <svg class="ui-icon" aria-hidden="true">
@@ -1048,6 +1052,6 @@
 
 <script src="{{ url_for('static', filename='js/notifications.js', v='3.0') }}"></script>
 <script src="{{ url_for('static', filename='js/adaptive.js', v='3.0') }}"></script>
-<script src="{{ url_for('static', filename='js/settings.js', v='3.0') }}"></script>
+<script src="{{ url_for('static', filename='js/settings.js', v='3.3') }}"></script>
 </body>
 </html>

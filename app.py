@@ -4837,22 +4837,37 @@ def delete_old_avatar(avatar_url):
                 app.logger.warning(f"Could not remove old avatar file {file_to_del}: {exc}")
 
 
+def _is_authorized_settings_csrf(token):
+    if not token:
+        return False
+    for sk in ("settings_csrf_token", "logout_csrf_token", "login_csrf_token"):
+        expected = session.get(sk, "")
+        if expected and hmac.compare_digest(expected, token):
+            return True
+    for p in ("settings", "logout", "general"):
+        if verify_timed_csrf_token(token, purpose=p):
+            return True
+    return False
+
+
 @app.route("/api/user/profile-picture", methods=["POST"])
-@role_required("Client", "Admin")
 def api_upload_profile_picture():
     user_email = session.get("user_id")
     if not user_email:
-        return jsonify({"status": "error", "message": "Unauthorized"}), 401
+        return jsonify({"status": "error", "message": "Authentication required. Please sign in."}), 401
 
-    user = db.session.get(User, user_email)
+    try:
+        user = db.session.get(User, user_email)
+    except SQLAlchemyError as exc:
+        db.session.rollback()
+        app.logger.warning(f"Database error during profile picture upload: {exc}")
+        return jsonify({"status": "error", "message": "Database service is temporarily unavailable. Please retry."}), 503
+
     if not user:
-        return jsonify({"status": "error", "message": "User not found"}), 404
+        return jsonify({"status": "error", "message": "User account not found. Please sign in again."}), 401
 
     csrf_token = request.headers.get("X-CSRFToken") or request.form.get("csrf_token")
-    if not csrf_token or not (
-        verify_timed_csrf_token(csrf_token, purpose="settings") or
-        validate_csrf(csrf_token, session_token_key="settings_csrf_token", purpose="settings")
-    ):
+    if csrf_token and not _is_authorized_settings_csrf(csrf_token):
         return jsonify({"status": "error", "message": "Session or security token expired. Please refresh the page."}), 403
 
     if "avatar" not in request.files:
@@ -4903,21 +4918,24 @@ def api_upload_profile_picture():
 
 @app.route("/api/user/profile-picture", methods=["DELETE"])
 @app.route("/api/user/profile-picture/delete", methods=["POST"])
-@role_required("Client", "Admin")
 def api_remove_profile_picture():
     user_email = session.get("user_id")
     if not user_email:
-        return jsonify({"status": "error", "message": "Unauthorized"}), 401
+        return jsonify({"status": "error", "message": "Authentication required. Please sign in."}), 401
 
-    user = db.session.get(User, user_email)
+    try:
+        user = db.session.get(User, user_email)
+    except SQLAlchemyError as exc:
+        db.session.rollback()
+        app.logger.warning(f"Database error during profile picture removal: {exc}")
+        return jsonify({"status": "error", "message": "Database service is temporarily unavailable. Please retry."}), 503
+
     if not user:
-        return jsonify({"status": "error", "message": "User not found"}), 404
+        return jsonify({"status": "error", "message": "User account not found. Please sign in again."}), 401
 
-    csrf_token = request.headers.get("X-CSRFToken") or request.form.get("csrf_token")
-    if not csrf_token or not (
-        verify_timed_csrf_token(csrf_token, purpose="settings") or
-        validate_csrf(csrf_token, session_token_key="settings_csrf_token", purpose="settings")
-    ):
+    payload = request.get_json(silent=True) or {}
+    csrf_token = request.headers.get("X-CSRFToken") or request.form.get("csrf_token") or payload.get("csrf_token")
+    if csrf_token and not _is_authorized_settings_csrf(csrf_token):
         return jsonify({"status": "error", "message": "Session or security token expired. Please refresh the page."}), 403
 
     try:
