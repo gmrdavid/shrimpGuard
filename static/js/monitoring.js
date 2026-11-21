@@ -330,78 +330,200 @@ function resetWQI() {
 }
 
 
+function drawSmoothSpline(ctx, points, tension = 0.18) {
+    if (!points || points.length === 0) return;
+    if (points.length === 1) {
+        ctx.moveTo(points[0].x, points[0].y);
+        return;
+    }
+    if (points.length === 2) {
+        ctx.moveTo(points[0].x, points[0].y);
+        ctx.lineTo(points[1].x, points[1].y);
+        return;
+    }
+
+    ctx.moveTo(points[0].x, points[0].y);
+
+    for (let i = 0; i < points.length - 1; i++) {
+        const p0 = i > 0 ? points[i - 1] : points[i];
+        const p1 = points[i];
+        const p2 = points[i + 1];
+        const p3 = i < points.length - 2 ? points[i + 2] : p2;
+
+        const cp1x = p1.x + (p2.x - p0.x) * tension;
+        const cp1y = p1.y + (p2.y - p0.y) * tension;
+
+        const cp2x = p2.x - (p3.x - p1.x) * tension;
+        const cp2y = p2.y - (p3.y - p1.y) * tension;
+
+        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
+    }
+}
+
 function drawTrendChart(history) {
-    if (!Array.isArray(history) || history.length === 0) return;
+    if (!Array.isArray(history) || history.length === 0) {
+        const emptyEl = document.getElementById("chart-empty");
+        if (emptyEl) emptyEl.hidden = false;
+        return;
+    }
     currentHistory = history;
+
+    const emptyEl = document.getElementById("chart-empty");
+    if (emptyEl) emptyEl.hidden = true;
 
     const canvas = document.getElementById("trend-chart");
     if (!canvas) return;
     const context = canvas.getContext("2d");
     const width = canvas.clientWidth || 600;
-    const height = canvas.clientHeight || 300;
+    const height = canvas.clientHeight || 320;
     const scale = window.devicePixelRatio || 1;
-
-    const series = ["temperature", "ph"];
-    const values = series.map((key) => history.map((reading) => Number(reading[key])));
-    const allValues = values.flat();
-    const minimum = Math.min(...allValues);
-    const maximum = Math.max(...allValues);
-    const range = maximum - minimum || 1;
-    const padding = { top: 26, right: 30, bottom: 32, left: 42 };
 
     canvas.width = Math.round(width * scale);
     canvas.height = Math.round(height * scale);
     context.scale(scale, scale);
     context.clearRect(0, 0, width, height);
 
-    // Horizontal grid lines and Y-axis scale
-    context.strokeStyle = "#e8edea";
-    context.fillStyle = "#8a978f";
-    context.font = "600 11px Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-    context.lineWidth = 1;
+    const isMobile = width < 520;
+    const padding = isMobile
+        ? { top: 32, right: 38, bottom: 34, left: 42 }
+        : { top: 34, right: 52, bottom: 36, left: 52 };
+    const plotWidth = width - padding.left - padding.right;
+    const plotHeight = height - padding.top - padding.bottom;
 
-    const gridSteps = 4;
-    for (let index = 0; index < gridSteps; index += 1) {
-        const y = padding.top + ((height - padding.top - padding.bottom) / (gridSteps - 1)) * index;
+    // Independent scales for Temperature and pH
+    const tempVals = history.map((r) => Number(r.temperature)).filter((v) => !isNaN(v));
+    const phVals = history.map((r) => Number(r.ph)).filter((v) => !isNaN(v));
+
+    const rawTMin = tempVals.length ? Math.min(...tempVals) : 25;
+    const rawTMax = tempVals.length ? Math.max(...tempVals) : 33;
+    const rawPMin = phVals.length ? Math.min(...phVals) : 7.0;
+    const rawPMax = phVals.length ? Math.max(...phVals) : 8.8;
+
+    // Temperature scale (headroom + min span 3.0°C)
+    const tSpan = Math.max(rawTMax - rawTMin, 0.4);
+    let tempMin = Math.floor((rawTMin - tSpan * 0.16) * 10) / 10;
+    let tempMax = Math.ceil((rawTMax + tSpan * 0.16) * 10) / 10;
+    if (tempMax - tempMin < 3.0) {
+        const mid = (tempMax + tempMin) / 2;
+        tempMin = Math.round((mid - 1.5) * 10) / 10;
+        tempMax = Math.round((mid + 1.5) * 10) / 10;
+    }
+    const tempRange = tempMax - tempMin || 1;
+
+    // pH scale (headroom + min span 0.8 pH)
+    const pSpan = Math.max(rawPMax - rawPMin, 0.1);
+    let phMin = Math.floor((rawPMin - pSpan * 0.18) * 100) / 100;
+    let phMax = Math.ceil((rawPMax + pSpan * 0.18) * 100) / 100;
+    if (phMax - phMin < 0.8) {
+        const mid = (phMax + phMin) / 2;
+        phMin = Math.round((mid - 0.4) * 100) / 100;
+        phMax = Math.round((mid + 0.4) * 100) / 100;
+    }
+    const phRange = phMax - phMin || 1;
+
+    // Subtle Safe-Zone Background Band for Penaeus vannamei (28.0°C - 32.0°C)
+    const tOptTopY = Math.max(padding.top, Math.min(height - padding.bottom, padding.top + (1 - (32.0 - tempMin) / tempRange) * plotHeight));
+    const tOptBottomY = Math.max(padding.top, Math.min(height - padding.bottom, padding.top + (1 - (28.0 - tempMin) / tempRange) * plotHeight));
+    if (tOptBottomY > tOptTopY) {
+        context.save();
+        context.fillStyle = "rgba(47, 111, 189, 0.035)";
+        context.fillRect(padding.left, tOptTopY, plotWidth, tOptBottomY - tOptTopY);
+        context.setLineDash([2, 4]);
+        context.strokeStyle = "rgba(47, 111, 189, 0.18)";
+        context.lineWidth = 1;
         context.beginPath();
+        context.moveTo(padding.left, tOptTopY);
+        context.lineTo(width - padding.right, tOptTopY);
+        context.moveTo(padding.left, tOptBottomY);
+        context.lineTo(width - padding.right, tOptBottomY);
+        context.stroke();
+        context.restore();
+    }
+
+    // Grid lines & Dual Y-Axis Labels
+    const gridSteps = isMobile ? 4 : 5;
+    for (let index = 0; index < gridSteps; index += 1) {
+        const y = padding.top + (plotHeight / (gridSteps - 1)) * index;
+
+        // Horizontal grid line
+        context.beginPath();
+        context.strokeStyle = index === gridSteps - 1 ? "#d3ded7" : "#edf2ee";
+        context.lineWidth = 1;
+        context.setLineDash([]);
         context.moveTo(padding.left, y);
         context.lineTo(width - padding.right, y);
         context.stroke();
-        const labelVal = (maximum - (range / (gridSteps - 1)) * index).toFixed(1);
-        context.fillText(labelVal, 6, y + 4);
+
+        // Left Axis Label: Temperature in #2f6fbd
+        const tempLabel = (tempMax - (tempRange / (gridSteps - 1)) * index).toFixed(1);
+        context.fillStyle = "#2f6fbd";
+        context.font = isMobile ? "600 10px Inter, -apple-system, sans-serif" : "600 11px Inter, -apple-system, sans-serif";
+        context.textAlign = "right";
+        context.textBaseline = "middle";
+        context.fillText(`${tempLabel}°`, padding.left - 8, y);
+
+        // Right Axis Label: pH in #126b4f
+        const phLabel = (phMax - (phRange / (gridSteps - 1)) * index).toFixed(2);
+        context.fillStyle = "#126b4f";
+        context.textAlign = "left";
+        context.textBaseline = "middle";
+        context.fillText(phLabel, width - padding.right + 8, y);
     }
 
-    // Compute coordinate points
-    const pointsBySeries = series.map((key, seriesIndex) => {
-        return values[seriesIndex].map((value, index) => {
-            const x = history.length === 1
-                ? padding.left + (width - padding.left - padding.right) / 2
-                : padding.left + (index / (history.length - 1)) * (width - padding.left - padding.right);
-            const y = padding.top + (1 - (value - minimum) / range) * (height - padding.top - padding.bottom);
-            return { x, y, value, key, reading: history[index], index };
-        });
+    // Axis Headers
+    context.font = "700 9.5px Inter, -apple-system, sans-serif";
+    context.textBaseline = "bottom";
+    // Left Axis Header
+    context.fillStyle = "#2f6fbd";
+    context.textAlign = "right";
+    context.fillText("°C (TEMP)", padding.left - 6, padding.top - 8);
+    // Right Axis Header
+    context.fillStyle = "#126b4f";
+    context.textAlign = "left";
+    context.fillText("pH LEVEL", width - padding.right + 6, padding.top - 8);
+
+    // Compute coordinate points per series
+    const tempPoints = history.map((reading, index) => {
+        const val = Number(reading.temperature);
+        const x = history.length === 1
+            ? padding.left + plotWidth / 2
+            : padding.left + (index / (history.length - 1)) * plotWidth;
+        const y = padding.top + (1 - (val - tempMin) / tempRange) * plotHeight;
+        return { x, y, value: val, key: "temperature", reading, index };
     });
-    currentPoints = pointsBySeries;
+
+    const phPoints = history.map((reading, index) => {
+        const val = Number(reading.ph);
+        const x = history.length === 1
+            ? padding.left + plotWidth / 2
+            : padding.left + (index / (history.length - 1)) * plotWidth;
+        const y = padding.top + (1 - (val - phMin) / phRange) * plotHeight;
+        return { x, y, value: val, key: "ph", reading, index };
+    });
+
+    currentPoints = [tempPoints, phPoints];
 
     // X-Axis Baseline
     context.beginPath();
-    context.strokeStyle = "#e8edea";
+    context.strokeStyle = "#d4dfd8";
+    context.lineWidth = 1;
     context.moveTo(padding.left, height - padding.bottom);
     context.lineTo(width - padding.right, height - padding.bottom);
     context.stroke();
 
     // Time Ticks and Labels along X-Axis
     if (history.length > 0) {
-        const maxTicks = width < 480 ? 3 : 5;
+        const maxTicks = isMobile ? 3 : (width < 768 ? 4 : 6);
         const numTicks = Math.min(maxTicks, history.length);
         const tickStep = (history.length - 1) / (numTicks - 1 || 1);
-        context.fillStyle = "#8a978f";
-        context.font = "600 10.5px Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+        context.fillStyle = "#718277";
+        context.font = "600 10.5px Inter, -apple-system, sans-serif";
         context.textAlign = "center";
+        context.textBaseline = "top";
 
         for (let i = 0; i < numTicks; i++) {
             const idx = Math.round(i * tickStep);
-            const pt = pointsBySeries[0][idx];
+            const pt = tempPoints[idx];
             if (!pt) continue;
 
             const rDate = parseSafeDate(pt.reading && pt.reading.recorded_at);
@@ -414,73 +536,166 @@ function drawTrendChart(history) {
 
             // Small tick
             context.beginPath();
-            context.strokeStyle = "#d8e2dc";
+            context.strokeStyle = "#ccd7d0";
+            context.lineWidth = 1;
             context.moveTo(pt.x, height - padding.bottom);
-            context.lineTo(pt.x, height - padding.bottom + 4);
+            context.lineTo(pt.x, height - padding.bottom + 5);
             context.stroke();
 
             // Label
-            context.fillText(timeStr, pt.x, height - 12);
+            context.fillText(timeStr, pt.x, height - padding.bottom + 8);
         }
-        context.textAlign = "left"; // reset alignment
+        context.textAlign = "left";
     }
 
-    // Subtle vertical dashed guide for hoverIndex
-    if (hoverIndex !== null && hoverIndex >= 0 && hoverIndex < history.length) {
-        const hoverX = pointsBySeries[0][hoverIndex].x;
+    // 1. Draw Temperature Spline & Translucent Area Gradient
+    if (tempPoints.length > 0) {
+        context.save();
+        const tempGrad = context.createLinearGradient(0, padding.top, 0, height - padding.bottom);
+        tempGrad.addColorStop(0, "rgba(47, 111, 189, 0.18)");
+        tempGrad.addColorStop(0.7, "rgba(47, 111, 189, 0.05)");
+        tempGrad.addColorStop(1, "rgba(47, 111, 189, 0.00)");
+
+        context.beginPath();
+        drawSmoothSpline(context, tempPoints, 0.18);
+        context.lineTo(tempPoints[tempPoints.length - 1].x, height - padding.bottom);
+        context.lineTo(tempPoints[0].x, height - padding.bottom);
+        context.closePath();
+        context.fillStyle = tempGrad;
+        context.fill();
+        context.restore();
+
         context.save();
         context.beginPath();
-        context.setLineDash([4, 4]);
-        context.strokeStyle = "rgba(18, 107, 79, 0.45)";
-        context.lineWidth = 1.5;
-        context.moveTo(hoverX, padding.top - 6);
-        context.lineTo(hoverX, height - padding.bottom + 6);
+        drawSmoothSpline(context, tempPoints, 0.18);
+        context.strokeStyle = "#2f6fbd";
+        context.lineWidth = 2.75;
+        context.lineCap = "round";
+        context.lineJoin = "round";
         context.stroke();
         context.restore();
     }
 
-    // Draw lines and points
-    series.forEach((key, seriesIndex) => {
-        const pts = pointsBySeries[seriesIndex];
-        if (!pts.length) return;
+    // 2. Draw pH Spline & Translucent Area Gradient
+    if (phPoints.length > 0) {
+        context.save();
+        const phGrad = context.createLinearGradient(0, padding.top, 0, height - padding.bottom);
+        phGrad.addColorStop(0, "rgba(18, 107, 79, 0.16)");
+        phGrad.addColorStop(0.7, "rgba(18, 107, 79, 0.04)");
+        phGrad.addColorStop(1, "rgba(18, 107, 79, 0.00)");
 
-        // Draw connecting line
         context.beginPath();
-        pts.forEach((pt, index) => {
-            if (index === 0) context.moveTo(pt.x, pt.y);
-            else context.lineTo(pt.x, pt.y);
-        });
-        context.strokeStyle = chartColors[seriesIndex];
-        context.lineWidth = 2.5;
+        drawSmoothSpline(context, phPoints, 0.18);
+        context.lineTo(phPoints[phPoints.length - 1].x, height - padding.bottom);
+        context.lineTo(phPoints[0].x, height - padding.bottom);
+        context.closePath();
+        context.fillStyle = phGrad;
+        context.fill();
+        context.restore();
+
+        context.save();
+        context.beginPath();
+        drawSmoothSpline(context, phPoints, 0.18);
+        context.strokeStyle = "#126b4f";
+        context.lineWidth = 2.75;
         context.lineCap = "round";
         context.lineJoin = "round";
         context.stroke();
+        context.restore();
+    }
 
-        // Draw points with hover glow effects
+    // Interactive Vertical Laser Scrubber & Floating Pill
+    if (hoverIndex !== null && hoverIndex >= 0 && hoverIndex < history.length) {
+        const hoverX = tempPoints[hoverIndex].x;
+        context.save();
+        context.beginPath();
+        context.setLineDash([3, 3]);
+        context.strokeStyle = "rgba(18, 107, 79, 0.55)";
+        context.lineWidth = 1.5;
+        context.moveTo(hoverX, padding.top - 6);
+        context.lineTo(hoverX, height - padding.bottom + 6);
+        context.stroke();
+
+        const rDate = parseSafeDate(history[hoverIndex] && history[hoverIndex].recorded_at);
+        const pillText = rDate ? rDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : `#${hoverIndex + 1}`;
+        context.font = "600 10px Inter, -apple-system, sans-serif";
+        const pillTextW = context.measureText(pillText).width;
+        const pillW = pillTextW + 14;
+        const pillH = 19;
+        let pillX = hoverX - pillW / 2;
+        if (pillX < padding.left) pillX = padding.left;
+        if (pillX + pillW > width - padding.right) pillX = width - padding.right - pillW;
+        const pillY = padding.top - 23;
+
+        context.fillStyle = "#1e293b";
+        context.beginPath();
+        if (context.roundRect) {
+            context.roundRect(pillX, pillY, pillW, pillH, 4);
+        } else {
+            context.rect(pillX, pillY, pillW, pillH);
+        }
+        context.fill();
+
+        context.fillStyle = "#ffffff";
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        context.fillText(pillText, pillX + pillW / 2, pillY + pillH / 2);
+        context.restore();
+    }
+
+    // Render Dual-Layer High-Definition Data Points
+    [
+        { pts: tempPoints, color: "#2f6fbd", halo: "rgba(47, 111, 189, 0.22)", key: "temperature" },
+        { pts: phPoints, color: "#126b4f", halo: "rgba(18, 107, 79, 0.22)", key: "ph" }
+    ].forEach(({ pts, color, halo, key }) => {
         pts.forEach((pt, index) => {
             const isHovered = hoverIndex === index;
             const isFocused = isHovered && (hoveredParam === key || hoveredParam === null);
 
-            // Halo glow for hovered point
             if (isHovered) {
+                // Ambient glow
                 context.beginPath();
-                context.arc(pt.x, pt.y, isFocused ? 11 : 7, 0, Math.PI * 2);
-                context.fillStyle = seriesIndex === 0
-                    ? "rgba(47, 111, 189, 0.22)"
-                    : "rgba(47, 138, 87, 0.22)";
+                context.arc(pt.x, pt.y, isFocused ? 11 : 8, 0, Math.PI * 2);
+                context.fillStyle = halo;
                 context.fill();
-            }
 
-            // Outer point ring & dot
-            context.beginPath();
-            context.arc(pt.x, pt.y, isHovered ? (isFocused ? 5.5 : 4.5) : 3.5, 0, Math.PI * 2);
-            context.fillStyle = isHovered ? "#ffffff" : chartColors[seriesIndex];
-            context.fill();
-            context.strokeStyle = chartColors[seriesIndex];
-            context.lineWidth = isHovered ? 2.5 : 1.5;
-            context.stroke();
+                // Outer Ring
+                context.beginPath();
+                context.arc(pt.x, pt.y, isFocused ? 5.5 : 4.5, 0, Math.PI * 2);
+                context.fillStyle = "#ffffff";
+                context.fill();
+                context.strokeStyle = color;
+                context.lineWidth = 2.5;
+                context.stroke();
+
+                // Core Dot
+                context.beginPath();
+                context.arc(pt.x, pt.y, 2.2, 0, Math.PI * 2);
+                context.fillStyle = color;
+                context.fill();
+            } else {
+                // Crisp standard point
+                context.beginPath();
+                context.arc(pt.x, pt.y, 3, 0, Math.PI * 2);
+                context.fillStyle = "#ffffff";
+                context.fill();
+                context.strokeStyle = color;
+                context.lineWidth = 1.75;
+                context.stroke();
+            }
         });
     });
+
+    // Update Live Legend Values
+    const activeReading = (hoverIndex !== null && history[hoverIndex]) ? history[hoverIndex] : (history.length > 0 ? history[history.length - 1] : null);
+    const tempBadge = document.getElementById("monitoring-legend-temp-val");
+    const phBadge = document.getElementById("monitoring-legend-ph-val");
+    if (tempBadge) {
+        tempBadge.textContent = activeReading && activeReading.temperature != null ? `${Number(activeReading.temperature).toFixed(1)} °C` : "-- °C";
+    }
+    if (phBadge) {
+        phBadge.textContent = activeReading && activeReading.ph != null ? `${Number(activeReading.ph).toFixed(2)}` : "--";
+    }
 }
 
 function renderTooltip(reading, index, pointX, mouseY, focusedParam, containerWidth, containerHeight) {
@@ -582,7 +797,10 @@ function handlePointerMove(event) {
     const mouseY = event.clientY - rect.top;
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
-    const padding = { top: 26, right: 30, bottom: 32, left: 42 };
+    const isMobile = width < 520;
+    const padding = isMobile
+        ? { top: 32, right: 38, bottom: 34, left: 42 }
+        : { top: 34, right: 52, bottom: 36, left: 52 };
 
     if (
         mouseX < padding.left - 15 ||

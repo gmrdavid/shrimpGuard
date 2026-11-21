@@ -9777,13 +9777,20 @@ nav a {
 .monitoring-page .monitoring-chart-wrap {
     position: relative;
     width: 100%;
-    height: 300px;
-    min-height: 220px;
+    height: 330px;
+    min-height: 240px;
     overflow: hidden;
-    border: 1px solid #edf1ee;
-    border-radius: 12px;
-    background: #fcfdfc;
+    border: 1px solid #dce5df;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #ffffff 0%, #f9fbf9 100%);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.02), 0 4px 18px rgba(18, 107, 79, 0.04);
     cursor: crosshair;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.monitoring-page .monitoring-chart-wrap:hover {
+    border-color: #cbdad1;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.02), 0 6px 22px rgba(18, 107, 79, 0.07);
 }
 
 .monitoring-page #trend-chart {
@@ -9791,6 +9798,118 @@ nav a {
     width: 100%;
     max-width: 100%;
     height: 100%;
+}
+
+/* Enhanced Visual Telemetry Chart Legend */
+.chart-legend.monitoring-chart-legend,
+.chart-legend.historical-legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: #f7faf8;
+    border: 1px solid #e3ece6;
+    border-radius: 12px;
+}
+
+.legend-items-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.legend-pill-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 11px 5px 9px;
+    background: #ffffff;
+    border: 1px solid #dce5df;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #2c3a32;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.legend-pill-item:hover {
+    border-color: #bed0c5;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
+}
+
+.legend-indicator {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.95), 0 0 4px rgba(0, 0, 0, 0.2);
+}
+
+.legend-label {
+    font-size: 12px;
+    font-weight: 650;
+    color: #33443b;
+}
+
+.legend-val-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-family: var(--sg-mono, monospace, sans-serif);
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+}
+
+.legend-pill-temp .legend-val-badge,
+.legend-pill-temperature .legend-val-badge {
+    background: #eef4fc;
+    color: #1d4ed8;
+    border: 1px solid #d8e5f8;
+}
+
+.legend-pill-ph .legend-val-badge {
+    background: #ebf6f1;
+    color: #0f563f;
+    border: 1px solid #d0e7dc;
+}
+
+.legend-meta-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-axis-mode-tag,
+.legend-safezone-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 9px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.legend-axis-mode-tag {
+    background: #edf4ef;
+    border: 1px solid #d5e4da;
+    color: #3b5044;
+}
+
+.legend-safezone-tag {
+    background: #f0f8f3;
+    border: 1px solid #cbe3d4;
+    color: #1a5639;
 }
 
 /* Interactive Hover Tooltip for Monitoring & Historical Charts */
@@ -11021,13 +11140,20 @@ nav a {
 .historical-page .historical-chart-wrap {
     position: relative;
     width: 100%;
-    height: 300px;
-    min-height: 220px;
+    height: 330px;
+    min-height: 240px;
     overflow: hidden;
-    border: 1px solid #edf1ee;
-    border-radius: 12px;
-    background: #fcfdfc;
+    border: 1px solid #dce5df;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #ffffff 0%, #f9fbf9 100%);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.02), 0 4px 18px rgba(18, 107, 79, 0.04);
     cursor: crosshair;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.historical-page .historical-chart-wrap:hover {
+    border-color: #cbdad1;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.02), 0 6px 22px rgba(18, 107, 79, 0.07);
 }
 
 .historical-page #historical-chart {
@@ -19599,8 +19725,8 @@ nav a {
 }
 
 .historical-page .historical-chart-wrap {
-    height: 260px !important;
-    min-height: 200px !important;
+    height: 330px;
+    min-height: 240px;
     margin-top: 10px !important;
 }
 

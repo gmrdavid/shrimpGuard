@@ -494,15 +494,30 @@
                 <div class="chart-legend monitoring-chart-legend"
                      aria-label="Chart legend">
 
-                    <span>
-                        <i class="legend-temperature"></i>
-                        Temperature (&deg;C)
-                    </span>
+                    <div class="legend-items-group">
+                        <span class="legend-pill-item legend-pill-temp">
+                            <i class="legend-indicator" style="background: #2f6fbd;"></i>
+                            <span class="legend-label">Water Temperature (&deg;C)</span>
+                            <span class="legend-val-badge" id="monitoring-legend-temp-val">-- &deg;C</span>
+                        </span>
 
-                    <span>
-                        <i class="legend-ph"></i>
-                        pH Level
-                    </span>
+                        <span class="legend-pill-item legend-pill-ph">
+                            <i class="legend-indicator" style="background: #126b4f;"></i>
+                            <span class="legend-label">pH Level</span>
+                            <span class="legend-val-badge" id="monitoring-legend-ph-val">--</span>
+                        </span>
+                    </div>
+
+                    <div class="legend-meta-group">
+                        <span class="legend-axis-mode-tag" title="Calibrated independent Y-axes: Left = Temp, Right = pH">
+                            <svg class="ui-icon" style="width:12px;height:12px;" aria-hidden="true"><use href="#icon-chart"></use></svg>
+                            Dual-Axis Telemetry
+                        </span>
+                        <span class="legend-safezone-tag" title="Penaeus vannamei standards: 28-32°C & pH 7.5-8.5">
+                            <span class="cal-dot cal-dot-green" style="width:7px;height:7px;"></span>
+                            <i>P. vannamei</i> Safe Zones
+                        </span>
+                    </div>
 
                 </div>
 
