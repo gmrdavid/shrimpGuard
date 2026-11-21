@@ -3873,7 +3873,7 @@ def _collect_admin_system_diagnostics():
     }
 
 
-@app.route("/admin/settings", methods=["GET", "POST"])
+@app.route("/admin/settings", methods=["GET", "POST"], strict_slashes=False)
 @role_required("Admin")
 def admin_settings():
     admin_user = db.session.get(User, session.get("user_id"))
