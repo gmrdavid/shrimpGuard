@@ -950,8 +950,6 @@ function updateDeviceTime() {
                 }
 
                 let response;
-                let usedFallback = false;
-
                 try {
                     response = await fetch("/api/user/profile-picture", {
                         method: "POST",
@@ -959,53 +957,24 @@ function updateDeviceTime() {
                         body: formData
                     });
                 } catch (fetchErr) {
-                    console.warn("Direct API upload fetch error, trying /settings fallback:", fetchErr);
-                    // Fallback to /settings form endpoint
-                    try {
-                        response = await fetch("/settings", {
-                            method: "POST",
-                            body: formData
-                        });
-                        usedFallback = true;
-                    } catch (fallbackErr) {
-                        console.error("Upload fallback also failed:", fallbackErr);
-                        showFeedback("Network error. Please verify your connection and try again.", false);
-                        if (changeBtn) {
-                            changeBtn.disabled = false;
-                            changeBtn.innerHTML = originalHtml;
-                        }
-                        fileInput.value = "";
-                        return;
+                    console.error("Fetch failed:", fetchErr);
+                    showFeedback("Network error. Please check your connection and try again.", false);
+                    if (changeBtn) {
+                        changeBtn.disabled = false;
+                        changeBtn.innerHTML = originalHtml;
                     }
+                    fileInput.value = "";
+                    return;
                 }
 
-                if (response && response.status === 404 && !usedFallback) {
-                    // Endpoint not found on running server, fallback to /settings
-                    try {
-                        response = await fetch("/settings", {
-                            method: "POST",
-                            body: formData
-                        });
-                        usedFallback = true;
-                    } catch (fallbackErr) {
-                        console.error("404 fallback failed:", fallbackErr);
+                if (response && response.status === 404) {
+                    showFeedback("Backend restart required: Please stop (Ctrl+C) and re-run your Flask server (python app.py) in your terminal to activate the new profile picture route.", false);
+                    if (changeBtn) {
+                        changeBtn.disabled = false;
+                        changeBtn.innerHTML = originalHtml;
                     }
-                }
-
-                if (usedFallback) {
-                    if (response && response.ok) {
-                        showFeedback("Profile picture updated successfully! Reloading...", true);
-                        setTimeout(() => window.location.reload(), 1000);
-                        return;
-                    } else {
-                        showFeedback("Upload could not be processed. Please try again.", false);
-                        if (changeBtn) {
-                            changeBtn.disabled = false;
-                            changeBtn.innerHTML = originalHtml;
-                        }
-                        fileInput.value = "";
-                        return;
-                    }
+                    fileInput.value = "";
+                    return;
                 }
 
                 let data;
@@ -1020,10 +989,10 @@ function updateDeviceTime() {
                 } else {
                     const textResp = await response.text();
                     console.warn("Server responded with non-JSON:", textResp.slice(0, 150));
-                    data = { status: "error", message: response.ok ? "Upload completed." : `Server returned error (${response.status}).` };
+                    data = { status: "error", message: `Server error (${response.status}). Please restart Flask.` };
                 }
 
-                if (response && response.ok && data.status === "success") {
+                if (response && response.ok && data && data.status === "success") {
                     const newUrl = data.avatar_url + "?t=" + Date.now();
                     if (previewImg) {
                         previewImg.src = newUrl;
@@ -1094,8 +1063,6 @@ function updateDeviceTime() {
                 }
 
                 let response;
-                let usedFallback = false;
-
                 try {
                     response = await fetch("/api/user/profile-picture", {
                         method: "DELETE",
@@ -1106,49 +1073,22 @@ function updateDeviceTime() {
                         body: JSON.stringify({ csrf_token: csrfToken })
                     });
                 } catch (fetchErr) {
-                    console.warn("Direct delete API error, using /settings fallback:", fetchErr);
-                    try {
-                        const fd = new FormData();
-                        fd.append("action", "avatar_remove");
-                        if (csrfToken) fd.append("csrf_token", csrfToken);
-                        response = await fetch("/settings", {
-                            method: "POST",
-                            body: fd
-                        });
-                        usedFallback = true;
-                    } catch (fallbackErr) {
-                        console.error("Delete fallback also failed:", fallbackErr);
+                    console.error("Delete fetch error:", fetchErr);
+                    showFeedback("Network error. Could not remove profile picture.", false);
+                    if (removeBtn) {
+                        removeBtn.disabled = false;
+                        removeBtn.innerHTML = originalRemoveHtml;
                     }
+                    return;
                 }
 
-                if (response && response.status === 404 && !usedFallback) {
-                    try {
-                        const fd = new FormData();
-                        fd.append("action", "avatar_remove");
-                        if (csrfToken) fd.append("csrf_token", csrfToken);
-                        response = await fetch("/settings", {
-                            method: "POST",
-                            body: fd
-                        });
-                        usedFallback = true;
-                    } catch (fallbackErr) {
-                        console.error("404 delete fallback failed:", fallbackErr);
+                if (response && response.status === 404) {
+                    showFeedback("Backend restart required: Please restart your Flask server to enable this route.", false);
+                    if (removeBtn) {
+                        removeBtn.disabled = false;
+                        removeBtn.innerHTML = originalRemoveHtml;
                     }
-                }
-
-                if (usedFallback) {
-                    if (response && response.ok) {
-                        showFeedback("Profile picture removed. Reloading...", true);
-                        setTimeout(() => window.location.reload(), 1000);
-                        return;
-                    } else {
-                        showFeedback("Could not remove profile picture.", false);
-                        if (removeBtn) {
-                            removeBtn.disabled = false;
-                            removeBtn.innerHTML = originalRemoveHtml;
-                        }
-                        return;
-                    }
+                    return;
                 }
 
                 let data;
@@ -1160,10 +1100,10 @@ function updateDeviceTime() {
                         data = { status: "error", message: `Server error (${response.status}).` };
                     }
                 } else {
-                    data = { status: "error", message: response && response.ok ? "Removed." : "Server error." };
+                    data = { status: "error", message: `Server error (${response.status}).` };
                 }
 
-                if (response && response.ok && data.status === "success") {
+                if (response && response.ok && data && data.status === "success") {
                     if (previewImg) {
                         previewImg.src = "";
                         previewImg.style.display = "none";
