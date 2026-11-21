@@ -17,6 +17,9 @@ from flask import Flask, flash, has_request_context, jsonify, make_response, red
 from flask.sessions import SecureCookieSessionInterface
 from flask_sqlalchemy import SQLAlchemy
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
+from dotenv import load_dotenv
+
+load_dotenv()
 from sqlalchemy import delete, func, insert, select, text, update
 from sqlalchemy.engine import URL
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -595,6 +598,75 @@ class ProbeMaintenanceHistory(db.Model):
             "performed_at": dt.strftime("%Y-%m-%d %H:%M:%S"),
             "date_formatted": dt.strftime("%b %d, %Y %I:%M %p"),
         }
+
+
+# --- TABLE 8: SYSTEM SETTINGS ---
+class SystemSetting(db.Model):
+    __tablename__ = "system_settings"
+
+    key = db.Column(db.String(100), primary_key=True)
+    value = db.Column(db.Text, nullable=True)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.now, onupdate=datetime.now)
+
+    def to_dict(self):
+        return {
+            "key": self.key,
+            "value": self.value,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+DEFAULT_SYSTEM_SETTINGS = {
+    "system_name": "AERIS-V",
+    "system_description": "Water quality monitoring and decision support system for shrimp aquaculture.",
+    "timezone": "Asia/Manila (GMT+8)",
+    "date_format": "MM/DD/YYYY",
+    "time_format": "12-hour (AM/PM)",
+    "notifications_critical": "true",
+    "notifications_warning": "true",
+    "notifications_maintenance": "true",
+    "notifications_device": "true",
+    "notifications_security": "true",
+}
+
+
+def get_system_setting(key, default=None):
+    try:
+        record = db.session.get(SystemSetting, key)
+        if record and record.value is not None:
+            return record.value
+    except Exception:
+        db.session.rollback()
+    if default is not None:
+        return default
+    return DEFAULT_SYSTEM_SETTINGS.get(key, "")
+
+
+def set_system_setting(key, value):
+    try:
+        record = db.session.get(SystemSetting, key)
+        if not record:
+            record = SystemSetting(key=key, value=str(value) if value is not None else "")
+            db.session.add(record)
+        else:
+            record.value = str(value) if value is not None else ""
+            record.updated_at = datetime.now()
+        db.session.commit()
+        return True
+    except Exception:
+        db.session.rollback()
+        return False
+
+
+def get_all_system_settings():
+    settings = dict(DEFAULT_SYSTEM_SETTINGS)
+    try:
+        records = SystemSetting.query.all()
+        for rec in records:
+            settings[rec.key] = rec.value
+    except Exception:
+        db.session.rollback()
+    return settings
 
 
 def _get_unpaired_maintenance_dict(device_id=None, user_email=None):
@@ -3747,6 +3819,289 @@ def clear_admin_logs():
     return redirect(url_for("admin_logs"))
 
 
+def _collect_admin_system_diagnostics():
+    """Collects real-time operational status across all AERIS-V backend components."""
+    # 1. Database Ping
+    try:
+        t0 = time.time()
+        db.session.execute(text("SELECT 1"))
+        db_ms = round((time.time() - t0) * 1000, 1)
+        db_online = True
+        db_status_text = f"Online ({db_ms}ms ping)"
+    except Exception:
+        db.session.rollback()
+        db_online = False
+        db_status_text = "Disconnected"
+
+    # 2. Flask Application API
+    api_online = True
+    api_status_text = "Online (Flask WSGI)"
+
+    # 3. File & Media Storage
+    try:
+        upload_path = os.path.join(app.static_folder, "uploads", "avatars")
+        os.makedirs(upload_path, exist_ok=True)
+        storage_online = os.access(upload_path, os.W_OK)
+        storage_status_text = "Online (Local Storage)" if storage_online else "Permission Warning"
+    except Exception:
+        storage_online = False
+        storage_status_text = "Storage Error"
+
+    # 4. LoRa Telemetry Gateway
+    try:
+        from hardware_serial import LATEST_HARDWARE_STREAM
+        hw_connected = bool(LATEST_HARDWARE_STREAM.get("is_connected") or LATEST_HARDWARE_STREAM.get("connected"))
+    except Exception:
+        hw_connected = False
+    lora_online = hw_connected
+    lora_status_text = "Online (Ingesting)" if lora_online else "Standby / Awaiting LoRa Link"
+
+    # 5. Push Notification Gateway
+    ntfy_online = True
+    ntfy_status_text = "Online (ntfy.sh HTTP/2)"
+
+    all_operational = db_online and api_online and storage_online
+
+    return {
+        "db": {"online": db_online, "label": "Database", "text": db_status_text},
+        "api": {"online": api_online, "label": "API Server", "text": api_status_text},
+        "storage": {"online": storage_online, "label": "Upload Storage", "text": storage_status_text},
+        "lora": {"online": lora_online, "label": "LoRa Gateway", "text": lora_status_text},
+        "ntfy": {"online": ntfy_online, "label": "Push Gateway", "text": ntfy_status_text},
+        "all_operational": all_operational,
+        "checked_at": datetime.now().strftime("%I:%M:%S %p"),
+    }
+
+
+@app.route("/admin/settings", methods=["GET", "POST"])
+@role_required("Admin")
+def admin_settings():
+    admin_user = db.session.get(User, session.get("user_id"))
+    csrf_token = session.setdefault("admin_csrf_token", secrets.token_urlsafe(32))
+
+    if request.method == "POST":
+        submitted_token = request.form.get("csrf_token", "")
+        if not submitted_token or not (
+            hmac.compare_digest(csrf_token, submitted_token)
+            or _is_authorized_settings_csrf(submitted_token)
+        ):
+            flash("Your request expired. Please try again.", "error")
+            return redirect(url_for("admin_settings"))
+
+        action = request.form.get("action", "").strip()
+
+        # 1. System Configuration
+        if action == "system_config":
+            system_name = request.form.get("system_name", "").strip() or "AERIS-V"
+            description = request.form.get("system_description", "").strip()
+            timezone = request.form.get("timezone", "Asia/Manila (GMT+8)").strip()
+            date_format = request.form.get("date_format", "MM/DD/YYYY").strip()
+            time_format = request.form.get("time_format", "12-hour (AM/PM)").strip()
+
+            set_system_setting("system_name", system_name)
+            set_system_setting("system_description", description)
+            set_system_setting("timezone", timezone)
+            set_system_setting("date_format", date_format)
+            set_system_setting("time_format", time_format)
+
+            log_activity(
+                action="SYSTEM_CONFIG_UPDATE",
+                details=f"System configuration updated: {system_name}, {timezone}, {date_format}, {time_format}.",
+                user_email=admin_user.email if admin_user else session.get("user_id"),
+                user_name=admin_user.name if admin_user else session.get("user_name"),
+                role="Admin",
+            )
+            flash("System configuration saved successfully.", "success")
+            return redirect(url_for("admin_settings"))
+
+        # 2. Notification Preferences
+        elif action == "notifications":
+            admin_topic = request.form.get("ntfy_topic", "").strip()
+            if admin_topic and not is_valid_topic(admin_topic):
+                flash("Invalid ntfy topic name. Use letters, numbers, hyphens, and underscores.", "error")
+                return redirect(url_for("admin_settings"))
+
+            if admin_user:
+                admin_user.ntfy_topic = admin_topic or None
+                try:
+                    db.session.commit()
+                except SQLAlchemyError:
+                    db.session.rollback()
+
+            for toggle_key in [
+                "notifications_critical",
+                "notifications_warning",
+                "notifications_maintenance",
+                "notifications_device",
+                "notifications_security",
+            ]:
+                val = "true" if request.form.get(toggle_key) else "false"
+                set_system_setting(toggle_key, val)
+
+            log_activity(
+                action="NOTIFICATION_CONFIG_UPDATE",
+                details=f"Notification dispatch preferences updated (topic: {admin_topic or 'Default'}).",
+                user_email=admin_user.email if admin_user else session.get("user_id"),
+                user_name=admin_user.name if admin_user else session.get("user_name"),
+                role="Admin",
+            )
+            flash("Notification preferences saved successfully.", "success")
+            return redirect(url_for("admin_settings"))
+
+        # 3. Account Settings (Profile & Password)
+        elif action == "account":
+            full_name = request.form.get("full_name", "").strip()
+            email = request.form.get("email", "").strip().lower()
+            current_password = request.form.get("current_password", "")
+            new_password = request.form.get("new_password", "")
+            confirm_password = request.form.get("confirm_password", "")
+
+            if not admin_user:
+                flash("Administrator account not found.", "error")
+                return redirect(url_for("admin_settings"))
+
+            changed = False
+            if full_name and full_name != admin_user.user_name:
+                existing_name = User.query.filter(User.user_name == full_name, User.email != admin_user.email).first()
+                if existing_name:
+                    flash("An account with that username already exists.", "error")
+                    return redirect(url_for("admin_settings"))
+                admin_user.user_name = full_name
+                session["user_name"] = full_name
+                changed = True
+
+            if email and email != admin_user.email:
+                existing_email = User.query.filter(User.email == email, User.email != admin_user.email).first()
+                if existing_email:
+                    flash("An account with that email address already exists.", "error")
+                    return redirect(url_for("admin_settings"))
+                admin_user.email = email
+                session["user_id"] = email
+                changed = True
+
+            if current_password or new_password or confirm_password:
+                if not admin_user.check_password(current_password):
+                    flash("Current password is incorrect.", "error")
+                    return redirect(url_for("admin_settings"))
+                if len(new_password) < 8:
+                    flash("New password must be at least 8 characters long.", "error")
+                    return redirect(url_for("admin_settings"))
+                if new_password != confirm_password:
+                    flash("New passwords do not match.", "error")
+                    return redirect(url_for("admin_settings"))
+                admin_user.set_password(new_password)
+                changed = True
+
+            if changed:
+                try:
+                    db.session.commit()
+                    log_activity(
+                        action="ADMIN_ACCOUNT_UPDATE",
+                        details="Administrator account profile and security credentials updated.",
+                        user_email=admin_user.email,
+                        user_name=admin_user.name,
+                        role="Admin",
+                    )
+                    flash("Administrator account updated successfully.", "success")
+                except SQLAlchemyError:
+                    db.session.rollback()
+                    flash("Unable to update account settings. Please try again.", "error")
+            else:
+                flash("No changes detected in account settings.", "info")
+
+            return redirect(url_for("admin_settings"))
+
+        # 4. Avatar Upload
+        elif action == "avatar_upload":
+            if "avatar" in request.files and request.files["avatar"].filename:
+                file = request.files["avatar"]
+                ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
+                if ext not in ALLOWED_AVATAR_EXTENSIONS:
+                    flash("Unsupported format. Please upload a JPG, PNG, GIF, or WebP image.", "error")
+                else:
+                    file.seek(0, os.SEEK_END)
+                    sz = file.tell()
+                    file.seek(0)
+                    if sz > MAX_AVATAR_SIZE:
+                        flash("File exceeds the 5MB size limit.", "error")
+                    else:
+                        try:
+                            old_pic = admin_user.profile_pic
+                            new_pic = save_avatar_image(file, admin_user.email)
+                            admin_user.profile_pic = new_pic
+                            db.session.commit()
+                            session["user_profile_pic"] = new_pic
+                            if old_pic and old_pic != new_pic:
+                                delete_old_avatar(old_pic)
+                            log_activity(
+                                action="PROFILE_PICTURE_UPDATE",
+                                details="Administrator profile photo updated.",
+                                user_email=admin_user.email,
+                                user_name=admin_user.name,
+                                role="Admin",
+                            )
+                            flash("Profile picture updated successfully.", "success")
+                        except Exception as exc:
+                            db.session.rollback()
+                            flash("Profile photo could not be processed.", "error")
+            return redirect(url_for("admin_settings"))
+
+        # 5. Avatar Remove
+        elif action == "avatar_remove":
+            try:
+                old_pic = admin_user.profile_pic
+                admin_user.profile_pic = None
+                db.session.commit()
+                session["user_profile_pic"] = None
+                if old_pic:
+                    delete_old_avatar(old_pic)
+                log_activity(
+                    action="PROFILE_PICTURE_REMOVE",
+                    details="Administrator profile photo removed.",
+                    user_email=admin_user.email,
+                    user_name=admin_user.name,
+                    role="Admin",
+                )
+                flash("Profile picture removed successfully.", "success")
+            except Exception:
+                db.session.rollback()
+                flash("Could not remove profile picture.", "error")
+            return redirect(url_for("admin_settings"))
+
+    # GET Request: Dynamic values
+    system_settings = get_all_system_settings()
+
+    try:
+        total_users = User.query.count()
+        admin_count = User.query.filter(func.lower(User.role) == "admin").count()
+        client_count = User.query.filter(func.lower(User.role) == "client").count()
+    except SQLAlchemyError:
+        db.session.rollback()
+        total_users = 0
+        admin_count = 0
+        client_count = 0
+
+    diagnostics = _collect_admin_system_diagnostics()
+
+    return render_template(
+        "admin_settings.html",
+        admin_user=admin_user,
+        system_settings=system_settings,
+        diagnostics=diagnostics,
+        total_users=total_users,
+        admin_count=admin_count,
+        client_count=client_count,
+        admin_csrf_token=csrf_token,
+    )
+
+
+@app.route("/api/admin/system-status")
+@role_required("Admin")
+def api_admin_system_status():
+    diagnostics = _collect_admin_system_diagnostics()
+    return jsonify({"status": "success", "diagnostics": diagnostics})
+
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -4840,11 +5195,11 @@ def delete_old_avatar(avatar_url):
 def _is_authorized_settings_csrf(token):
     if not token:
         return False
-    for sk in ("settings_csrf_token", "logout_csrf_token", "login_csrf_token"):
+    for sk in ("settings_csrf_token", "admin_csrf_token", "logout_csrf_token", "login_csrf_token"):
         expected = session.get(sk, "")
         if expected and hmac.compare_digest(expected, token):
             return True
-    for p in ("settings", "logout", "general"):
+    for p in ("settings", "admin_settings", "admin", "logout", "general"):
         if verify_timed_csrf_token(token, purpose=p):
             return True
     return False

@@ -33234,3 +33234,897 @@ body.recommendations-page {
     100% { transform: rotate(360deg); }
 }
 
+/* ==========================================================================
+   ADMIN SETTINGS PAGE DESIGN SYSTEM
+   ========================================================================== */
+
+.admin-settings-page {
+    background: #f4f7f9;
+}
+
+.admin-settings-main {
+    max-width: 1560px;
+    margin: 0 auto;
+    padding-bottom: 60px;
+}
+
+/* Top Row Grid: 3 Equal-Height Columns */
+.admin-settings-row-top {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
+    margin-bottom: 24px;
+    align-items: stretch;
+}
+
+/* Bottom Row Grid: 2 Columns (Notification Settings & Account Settings) */
+.admin-settings-row-bottom {
+    display: grid;
+    grid-template-columns: 1fr 1.25fr;
+    gap: 22px;
+    align-items: stretch;
+}
+
+@media (max-width: 1200px) {
+    .admin-settings-row-top,
+    .admin-settings-row-bottom {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Elevated Uniform Card Style */
+.admin-settings-card {
+    background: #ffffff;
+    border: none !important;
+    border-radius: 18px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
+    padding: 24px 26px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* Card Header */
+.admin-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #edf2f5;
+}
+
+.admin-card-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #e8f5e9;
+    color: #126b4f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.admin-card-icon-box .ui-icon {
+    width: 22px;
+    height: 22px;
+}
+
+.admin-card-header h2 {
+    font-size: 18px;
+    font-weight: 750;
+    color: #183c43;
+    margin: 0 0 3px 0;
+    line-height: 1.25;
+}
+
+.admin-card-header p {
+    font-size: 13px;
+    color: #6c7e82;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Form Styles */
+.admin-settings-form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.admin-form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16px;
+}
+
+.admin-form-group label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #3b5059;
+    margin-bottom: 6px;
+}
+
+.required-star {
+    color: #dc2626;
+    margin-left: 2px;
+}
+
+.admin-text-input,
+.admin-textarea,
+.admin-select-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 14px;
+    font-size: 14px;
+    color: #1e3026;
+    background: #ffffff;
+    border: 1px solid #dce5ed;
+    border-radius: 10px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    font-family: inherit;
+}
+
+.admin-text-input:focus,
+.admin-textarea:focus,
+.admin-select-input:focus {
+    outline: none;
+    border-color: #126b4f;
+    box-shadow: 0 0 0 3px rgba(18, 107, 79, 0.12);
+}
+
+.admin-textarea {
+    resize: vertical;
+    min-height: 72px;
+    line-height: 1.45;
+}
+
+.admin-form-row-duo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+@media (max-width: 600px) {
+    .admin-form-row-duo {
+        grid-template-columns: 1fr;
+    }
+}
+
+.admin-card-actions {
+    margin-top: auto;
+    padding-top: 18px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.admin-save-btn {
+    background: #126b4f !important;
+    color: #ffffff !important;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.18s ease, transform 0.12s ease;
+}
+
+.admin-save-btn:hover {
+    background: #0d4a36 !important;
+    transform: translateY(-1px);
+}
+
+/* Card 2: Roles Matrix Table */
+.admin-roles-table-container {
+    flex: 1;
+    overflow-x: auto;
+}
+
+.admin-roles-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    text-align: left;
+    font-size: 13px;
+}
+
+.admin-roles-table th {
+    padding: 10px 12px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #718184;
+    border-bottom: 1px solid #edf2f5;
+    background: #fafcfb;
+}
+
+.admin-roles-table td {
+    padding: 14px 12px;
+    border-bottom: 1px solid #f2f5f7;
+    vertical-align: top;
+}
+
+.admin-roles-table tr:last-child td {
+    border-bottom: none;
+}
+
+.role-cell-title {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 750;
+    width: fit-content;
+}
+
+.role-badge .ui-icon {
+    width: 14px;
+    height: 14px;
+}
+
+.badge-admin {
+    background: #eef2ff;
+    color: #3730a3;
+}
+
+.badge-client {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.role-count-sub {
+    font-size: 11px;
+    color: #718184;
+    font-weight: 600;
+}
+
+.role-desc-text {
+    font-size: 12.5px;
+    color: #4a5c63;
+    line-height: 1.45;
+    margin: 0;
+}
+
+.permission-pill {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    background: #f1f5f9;
+    color: #334155;
+}
+
+.permission-pill.perm-all {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.admin-card-footer-action {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid #edf2f5;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.admin-outline-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 10px;
+    background: #ffffff;
+    border: 1px solid #dce5ed;
+    color: #126b4f;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.admin-outline-link-btn:hover {
+    background: #e8f5e9;
+    border-color: #126b4f;
+    color: #0d4a36;
+}
+
+/* Card 3: System Status Diagnostics */
+.status-diagnostics-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex: 1;
+}
+
+.status-diag-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: #fafcfc;
+    border: 1px solid #edf2f4;
+}
+
+.status-diag-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #2c3e44;
+}
+
+.status-indicator-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.dot-optimal {
+    background: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.dot-standby {
+    background: #f59e0b;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+}
+
+.dot-critical {
+    background: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+.dot-warning {
+    background: #f59e0b;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+}
+
+.status-diag-badge {
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.badge-optimal {
+    background: #e8f5e9;
+    color: #126b4f;
+}
+
+.badge-standby {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.badge-critical {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.badge-warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+/* Operational Banner */
+.status-operational-banner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    border-radius: 14px;
+}
+
+.banner-operational {
+    background: #edf7f0;
+    border: 1px solid #cce8d4;
+    color: #126b4f;
+}
+
+.banner-attention {
+    background: #fffbeb;
+    border: 1px solid #fef3c7;
+    color: #92400e;
+}
+
+.banner-icon-col {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    flex-shrink: 0;
+}
+
+.banner-icon {
+    width: 22px;
+    height: 22px;
+}
+
+.banner-text-col h3 {
+    font-size: 14px;
+    font-weight: 800;
+    margin: 0 0 2px 0;
+}
+
+.banner-text-col p {
+    font-size: 12px;
+    margin: 0;
+    opacity: 0.9;
+    line-height: 1.35;
+}
+
+/* Card 4: Notification Channels & Toggles */
+.notif-channels-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid #edf2f5;
+    padding-bottom: 12px;
+}
+
+.notif-channel-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: #f4f7f9;
+    border: none;
+    color: #556871;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.notif-channel-tab.active {
+    background: #e8f5e9;
+    color: #126b4f;
+}
+
+.notif-channel-tab .ui-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.field-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.btn-text-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    color: #126b4f;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0;
+}
+
+.btn-text-action:hover {
+    text-decoration: underline;
+    color: #0d4a36;
+}
+
+.input-with-button-row {
+    display: flex;
+    gap: 8px;
+}
+
+.input-with-button-row .admin-text-input {
+    flex: 1;
+}
+
+.admin-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: #f4f7f9;
+    border: 1px solid #dce5ed;
+    color: #2c3e44;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+}
+
+.admin-action-btn:hover {
+    background: #e8f5e9;
+    border-color: #126b4f;
+    color: #126b4f;
+}
+
+.field-help-text {
+    font-size: 12px;
+    color: #718184;
+    margin-top: 6px;
+    line-height: 1.4;
+}
+
+.notif-types-container {
+    margin-top: 18px;
+}
+
+.notif-types-heading {
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #556871;
+    margin: 0 0 12px 0;
+}
+
+.notif-toggle-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.notif-toggle-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #fafcfc;
+    border: 1px solid #edf2f4;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.notif-toggle-card:hover {
+    background: #f4f9f6;
+    border-color: #d1e7dd;
+}
+
+.toggle-switch-wrapper {
+    position: relative;
+    width: 38px;
+    height: 22px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.toggle-switch-wrapper input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #cbd5e1;
+    transition: 0.2s;
+    border-radius: 22px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.2s;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.toggle-switch-wrapper input:checked + .toggle-slider {
+    background-color: #126b4f;
+}
+
+.toggle-switch-wrapper input:checked + .toggle-slider:before {
+    transform: translateX(16px);
+}
+
+.toggle-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.toggle-card-info strong {
+    font-size: 13.5px;
+    color: #1e3026;
+    font-weight: 750;
+}
+
+.toggle-card-info span {
+    font-size: 12px;
+    color: #6c7e82;
+    line-height: 1.35;
+}
+
+/* Card 5: Admin Account Settings */
+.admin-profile-hero {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 18px 20px;
+    border-radius: 14px;
+    background: #fafcfc;
+    border: 1px solid #edf2f4;
+    margin-bottom: 22px;
+}
+
+.admin-avatar-box {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #126b4f 0%, #0d4a36 100%);
+    box-shadow: 0 4px 14px rgba(18, 107, 79, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.admin-avatar-hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.admin-avatar-hero-initials {
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 850;
+    line-height: 1;
+    user-select: none;
+}
+
+.admin-hero-info {
+    flex: 1;
+}
+
+.admin-hero-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 2px;
+}
+
+.admin-hero-title-row h3 {
+    font-size: 17px;
+    font-weight: 800;
+    color: #183c43;
+    margin: 0;
+}
+
+.badge-status-pill {
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 750;
+}
+
+.admin-hero-email {
+    font-size: 13px;
+    color: #6c7e82;
+    margin: 0 0 10px 0;
+}
+
+.admin-avatar-btn-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.admin-change-photo-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    background: #e8f5e9;
+    border: 1px solid #c8e6c9;
+    color: #126b4f;
+    font-size: 12px;
+    font-weight: 750;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.admin-change-photo-btn:hover {
+    background: #c8e6c9;
+}
+
+.admin-remove-photo-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid #fee2e2;
+    color: #dc2626;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.admin-remove-photo-btn:hover {
+    background: #fee2e2;
+}
+
+.admin-avatar-feedback {
+    font-size: 12px;
+    margin-top: 6px;
+    min-height: 16px;
+}
+
+.admin-avatar-feedback.is-success {
+    color: #126b4f;
+    font-weight: 600;
+}
+
+.admin-avatar-feedback.is-error {
+    color: #dc2626;
+    font-weight: 600;
+}
+
+.admin-account-columns {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 22px;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .admin-account-columns {
+        grid-template-columns: 1fr;
+    }
+}
+
+.admin-password-divider {
+    font-size: 12px;
+    font-weight: 750;
+    color: #718184;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding-top: 10px;
+    margin-bottom: 12px;
+    border-top: 1px dashed #e2e8f0;
+}
+
+.password-input-anchor {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-anchor .password-toggle-field {
+    padding-right: 40px;
+}
+
+.pwd-eye-btn {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pwd-eye-btn:hover {
+    color: #126b4f;
+}
+
+.pwd-eye-btn .ui-icon {
+    width: 18px;
+    height: 18px;
+}
+
+/* Security Tips Card */
+.admin-security-tips-panel {
+    background: #f8fafc;
+    border-radius: 14px;
+    padding: 18px;
+    border: 1px solid #eef2f6;
+}
+
+.security-tips-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    color: #126b4f;
+}
+
+.tips-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.security-tips-header h4 {
+    font-size: 14px;
+    font-weight: 800;
+    margin: 0;
+    color: #183c43;
+}
+
+.security-tips-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.security-tips-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.tip-check {
+    color: #126b4f;
+    font-weight: 900;
+    font-size: 14px;
+    margin-top: 1px;
+}
+
+.security-tips-list strong {
+    font-size: 12.5px;
+    color: #2c3e44;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.security-tips-list p {
+    font-size: 11.5px;
+    color: #6c7e82;
+    margin: 0;
+    line-height: 1.35;
+}
+
+
