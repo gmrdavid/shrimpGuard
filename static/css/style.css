@@ -20736,6 +20736,414 @@ body.devices-page .devices-metric-cards > .devices-metric-card:nth-child(4) .met
 
 
 /* ==========================================================================
+   ANALYTICS WATER QUALITY OVERVIEW METRIC CARDS (DISTINCT CLEAN PASTEL THEMES & STROKE-FREE)
+   1. Average Water Quality: Clean Fresh Green
+   2. Active Alerts: Clean Warm Amber-Orange
+   3. Recommended Action: Clean Royal Purple / Violet
+   4. Monitoring Status: Clean Modern Blue
+   ========================================================================== */
+
+/* Base Stroke-Free Styling for Analytics Metric Cards */
+.analytics-page .analytics-metric-card {
+    border: none !important;
+    border-top: none !important;
+    border-color: transparent !important;
+    border-radius: 20px !important;
+    padding: 22px 22px 0 !important;
+    transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.analytics-page .analytics-metric-card:hover {
+    border: none !important;
+    border-color: transparent !important;
+    transform: translateY(-3px) !important;
+}
+
+.analytics-page .analytics-metric-card .metric-card-top {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    margin-bottom: 2px !important;
+}
+
+.analytics-page .analytics-metric-card .metric-icon {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 13px !important;
+    background: #ffffff !important;
+    border: none !important;
+    display: grid !important;
+    place-items: center !important;
+    flex-shrink: 0 !important;
+}
+
+.analytics-page .analytics-metric-card .metric-icon .ui-icon {
+    width: 22px !important;
+    height: 22px !important;
+}
+
+.analytics-page .analytics-metric-card .metric-type {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 4px 10px !important;
+    border-radius: 20px !important;
+    font-size: 9.5px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.8px !important;
+    text-transform: uppercase !important;
+    border: none !important;
+}
+
+.analytics-page .analytics-metric-card .metric-card-content {
+    padding: 14px 0 16px !important;
+}
+
+.analytics-page .analytics-metric-card .metric-card-content h3 {
+    margin: 0 0 4px !important;
+    font-size: 13.5px !important;
+    font-weight: 750 !important;
+    letter-spacing: -0.01em !important;
+}
+
+.analytics-page .analytics-metric-card .metric-reading {
+    display: flex !important;
+    align-items: baseline !important;
+    gap: 6px !important;
+}
+
+.analytics-page .analytics-metric-card .metric-reading h2 {
+    font-size: 38px !important;
+    font-weight: 850 !important;
+    letter-spacing: -1.6px !important;
+    line-height: 1.05 !important;
+    margin: 0 !important;
+}
+
+.analytics-page .analytics-metric-card .metric-status {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 12px 0 0 !important;
+    padding: 6px 12px !important;
+    border-radius: 999px !important;
+    background: #ffffff !important;
+    border: none !important;
+    font-size: 11px !important;
+    font-weight: 750 !important;
+    line-height: 1.4 !important;
+}
+
+.analytics-page .analytics-metric-card .metric-status::before {
+    width: 7px !important;
+    height: 7px !important;
+    flex-shrink: 0 !important;
+    border-radius: 50% !important;
+    content: "" !important;
+}
+
+.analytics-page .analytics-metric-card .metric-card-footer {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    min-height: 42px !important;
+    font-size: 11px !important;
+    font-weight: 650 !important;
+    border: none !important;
+    padding: 0 !important;
+}
+
+.analytics-page .analytics-metric-card .metric-footer-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+}
+
+
+/* CARD 1: AVERAGE WATER QUALITY - CLEAN FRESH GREEN */
+.analytics-page .analytics-metric-card.analytics-quality-card,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(1) {
+    background: linear-gradient(180deg, #f0fbf5 0%, #dff4e8 100%) !important;
+    border: none !important;
+    border-top: none !important;
+    border-color: transparent !important;
+    box-shadow: 0 4px 22px rgba(18, 107, 79, 0.07), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-quality-card:hover,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(1):hover {
+    box-shadow: 0 10px 30px rgba(18, 107, 79, 0.15) !important;
+    border: none !important;
+    border-color: transparent !important;
+    transform: translateY(-3px) !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-quality-card .quality-icon,
+.analytics-page .analytics-metric-card.analytics-quality-card .metric-icon,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(1) .metric-icon {
+    background: #ffffff !important;
+    color: #16a34a !important;
+    box-shadow: 0 2px 8px rgba(18, 107, 79, 0.14) !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-quality-card .metric-type,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(1) .metric-type {
+    background: rgba(255, 255, 255, 0.85) !important;
+    color: #15803d !important;
+    box-shadow: 0 1px 4px rgba(18, 107, 79, 0.08) !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-quality-card .metric-card-content h3,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(1) .metric-card-content h3 {
+    color: #0f5940 !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-quality-card .metric-reading h2,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(1) .metric-reading h2 {
+    color: #0c3829 !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-quality-card .metric-status,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(1) .metric-status {
+    background: #ffffff !important;
+    border: none !important;
+    color: #166534 !important;
+    box-shadow: 0 2px 6px rgba(18, 107, 79, 0.08) !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-quality-card .metric-status::before,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(1) .metric-status::before {
+    background: #16a34a !important;
+    box-shadow: 0 0 0 2.5px rgba(22, 163, 74, 0.25) !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-quality-card .metric-card-footer,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(1) .metric-card-footer {
+    border-top: 1px solid rgba(22, 163, 74, 0.14) !important;
+    color: #14532d !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-quality-card .metric-footer-dot,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(1) .metric-footer-dot {
+    background: #16a34a !important;
+    box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.25) !important;
+}
+
+
+/* CARD 2: ACTIVE ALERTS - CLEAN WARM AMBER-ORANGE */
+.analytics-page .analytics-metric-card.analytics-alert-card,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(2) {
+    background: linear-gradient(180deg, #fff9f0 0%, #feedd6 100%) !important;
+    border: none !important;
+    border-top: none !important;
+    border-color: transparent !important;
+    box-shadow: 0 4px 22px rgba(217, 119, 6, 0.08), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-alert-card:hover,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(2):hover {
+    box-shadow: 0 10px 30px rgba(217, 119, 6, 0.16) !important;
+    border: none !important;
+    border-color: transparent !important;
+    transform: translateY(-3px) !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-alert-card .alert-icon,
+.analytics-page .analytics-metric-card.analytics-alert-card .metric-icon,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(2) .metric-icon {
+    background: #ffffff !important;
+    color: #d97706 !important;
+    box-shadow: 0 2px 8px rgba(217, 119, 6, 0.16) !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-alert-card .metric-type,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(2) .metric-type {
+    background: rgba(255, 255, 255, 0.85) !important;
+    color: #b45309 !important;
+    box-shadow: 0 1px 4px rgba(217, 119, 6, 0.08) !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-alert-card .metric-card-content h3,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(2) .metric-card-content h3 {
+    color: #78350f !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-alert-card .metric-reading h2,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(2) .metric-reading h2 {
+    color: #451a03 !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-alert-card .metric-status,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(2) .metric-status {
+    background: #ffffff !important;
+    border: none !important;
+    color: #92400e !important;
+    box-shadow: 0 2px 6px rgba(217, 119, 6, 0.08) !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-alert-card .metric-status::before,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(2) .metric-status::before {
+    background: #d97706 !important;
+    box-shadow: 0 0 0 2.5px rgba(217, 119, 6, 0.25) !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-alert-card .metric-card-footer,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(2) .metric-card-footer {
+    border-top: 1px solid rgba(217, 119, 6, 0.14) !important;
+    color: #78350f !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-alert-card .metric-footer-dot,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(2) .metric-footer-dot {
+    background: #d97706 !important;
+    box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.25) !important;
+}
+
+
+/* CARD 3: RECOMMENDED ACTION - CLEAN ROYAL PURPLE / VIOLET */
+.analytics-page .analytics-metric-card.analytics-action-card,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(3) {
+    background: linear-gradient(180deg, #faf5ff 0%, #ede9fe 100%) !important;
+    border: none !important;
+    border-top: none !important;
+    border-color: transparent !important;
+    box-shadow: 0 4px 22px rgba(124, 58, 237, 0.08), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-action-card:hover,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(3):hover {
+    box-shadow: 0 10px 30px rgba(124, 58, 237, 0.16) !important;
+    border: none !important;
+    border-color: transparent !important;
+    transform: translateY(-3px) !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-action-card .action-icon,
+.analytics-page .analytics-metric-card.analytics-action-card .metric-icon,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(3) .metric-icon {
+    background: #ffffff !important;
+    color: #7c3aed !important;
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.16) !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-action-card .metric-type,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(3) .metric-type {
+    background: rgba(255, 255, 255, 0.85) !important;
+    color: #6d28d9 !important;
+    box-shadow: 0 1px 4px rgba(124, 58, 237, 0.08) !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-action-card .metric-card-content h3,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(3) .metric-card-content h3 {
+    color: #5b21b6 !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-action-card .metric-reading h2,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(3) .metric-reading h2 {
+    color: #3b0764 !important;
+    font-size: 30px !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-action-card .metric-status,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(3) .metric-status {
+    background: #ffffff !important;
+    border: none !important;
+    color: #5b21b6 !important;
+    box-shadow: 0 2px 6px rgba(124, 58, 237, 0.08) !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-action-card .metric-status::before,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(3) .metric-status::before {
+    background: #7c3aed !important;
+    box-shadow: 0 0 0 2.5px rgba(124, 58, 237, 0.25) !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-action-card .metric-card-footer,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(3) .metric-card-footer {
+    border-top: 1px solid rgba(124, 58, 237, 0.14) !important;
+    color: #5b21b6 !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-action-card .metric-footer-dot,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(3) .metric-footer-dot {
+    background: #7c3aed !important;
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.25) !important;
+}
+
+
+/* CARD 4: MONITORING STATUS - CLEAN MODERN BLUE */
+.analytics-page .analytics-metric-card.analytics-monitoring-card,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(4) {
+    background: linear-gradient(180deg, #f0f7ff 0%, #dbeafe 100%) !important;
+    border: none !important;
+    border-top: none !important;
+    border-color: transparent !important;
+    box-shadow: 0 4px 22px rgba(37, 99, 235, 0.08), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-monitoring-card:hover,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(4):hover {
+    box-shadow: 0 10px 30px rgba(37, 99, 235, 0.16) !important;
+    border: none !important;
+    border-color: transparent !important;
+    transform: translateY(-3px) !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-monitoring-card .monitoring-icon,
+.analytics-page .analytics-metric-card.analytics-monitoring-card .metric-icon,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(4) .metric-icon {
+    background: #ffffff !important;
+    color: #2563eb !important;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.16) !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-monitoring-card .metric-type,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(4) .metric-type {
+    background: rgba(255, 255, 255, 0.85) !important;
+    color: #1d4ed8 !important;
+    box-shadow: 0 1px 4px rgba(37, 99, 235, 0.08) !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-monitoring-card .metric-card-content h3,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(4) .metric-card-content h3 {
+    color: #1e40af !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-monitoring-card .metric-reading h2,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(4) .metric-reading h2 {
+    color: #172554 !important;
+    font-size: 30px !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-monitoring-card .metric-status,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(4) .metric-status {
+    background: #ffffff !important;
+    border: none !important;
+    color: #1e40af !important;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.08) !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-monitoring-card .metric-status::before,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(4) .metric-status::before {
+    background: #2563eb !important;
+    box-shadow: 0 0 0 2.5px rgba(37, 99, 235, 0.25) !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-monitoring-card .metric-card-footer,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(4) .metric-card-footer {
+    border-top: 1px solid rgba(37, 99, 235, 0.14) !important;
+    color: #1e40af !important;
+}
+
+.analytics-page .analytics-metric-card.analytics-monitoring-card .metric-footer-dot,
+.analytics-page .analytics-metric-cards > .analytics-metric-card:nth-child(4) .metric-footer-dot {
+    background: #2563eb !important;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25) !important;
+}
+
+
+/* ==========================================================================
    ALERTS & STATUS SUMMARY METRIC CARDS (STROKE-FREE ENHANCED DESIGN)
    ========================================================================== */
 
