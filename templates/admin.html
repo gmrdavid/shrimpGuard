@@ -12,7 +12,7 @@
     <title>User Management | AERIS-V</title>
 
     <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}?v=3.7">
+          href="{{ url_for('static', filename='css/style.css') }}?v=4.8">
 </head>
 
 <body class="dashboard-page admin-page">
@@ -147,60 +147,103 @@
     {% endwith %}
 
     
-    <!-- TOP METRICS (4 STAT CARDS MATCHING REFERENCE DESIGN) -->
-    <section class="mgmt-stats-grid" aria-label="System Metrics">
-        <!-- Total Users -->
-        <article class="mgmt-stat-card">
-            <div class="mgmt-stat-icon-box">
-                <svg class="ui-icon" aria-hidden="true"><use href="#icon-users"></use></svg>
-            </div>
-            <div class="mgmt-stat-info">
-                <span class="mgmt-stat-label">Total Users</span>
-                <h2 class="mgmt-stat-value">{{ total_users }}</h2>
-                <span class="mgmt-stat-sub">↑ Registered accounts</span>
-            </div>
-        </article>
+        <!-- TOP METRICS: 4 STANDARDIZED NON-REPEATING CLEAN COLOR CARDS -->
+    <section class="admin-stats-section" aria-label="System Metrics">
+        <div class="cards dashboard-metric-cards">
 
-        <!-- Active Users -->
-        <article class="mgmt-stat-card">
-            <div class="mgmt-stat-icon-box">
-                <svg class="ui-icon" aria-hidden="true"><use href="#icon-user"></use></svg>
-            </div>
-            <div class="mgmt-stat-info">
-                <span class="mgmt-stat-label">Active Users</span>
-                <h2 class="mgmt-stat-value">{{ active_users }}</h2>
-                <span class="mgmt-stat-sub">↑ Active accounts</span>
-            </div>
-        </article>
+            <!-- TOTAL USERS (SKY BLUE) -->
+            <article class="card dashboard-metric-card card-palette-blue users-card">
+                <div class="metric-card-top">
+                    <div class="metric-icon users-icon">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-users"></use></svg>
+                    </div>
+                    <span class="metric-type">ACCOUNTS</span>
+                </div>
+                <div class="metric-card-content">
+                    <h3>Total Users</h3>
+                    <div class="metric-reading">
+                        <h2>{{ total_users }}</h2>
+                    </div>
+                    <p class="metric-status">
+                        Registered accounts
+                    </p>
+                </div>
+                <div class="metric-card-footer">
+                    <span class="metric-footer-dot"></span>
+                    <span>AERIS-V user directory</span>
+                </div>
+            </article>
 
-        <!-- Inactive Users -->
-        <article class="mgmt-stat-card">
-            <div class="mgmt-stat-icon-box">
-                <svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg>
-            </div>
-            <div class="mgmt-stat-info">
-                <span class="mgmt-stat-label">Inactive Users</span>
-                <h2 class="mgmt-stat-value">{{ inactive_users }}</h2>
-                <span class="mgmt-stat-sub {% if inactive_users == 0 %}sub-muted{% endif %}">
-                    {{ "Pending review" if inactive_users > 0 else "No change" }}
-                </span>
-            </div>
-        </article>
+            <!-- ACTIVE USERS (MINT GREEN) -->
+            <article class="card dashboard-metric-card card-palette-green active-card">
+                <div class="metric-card-top">
+                    <div class="metric-icon active-icon">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-check-circle"></use></svg>
+                    </div>
+                    <span class="metric-type">ACCOUNT STATUS</span>
+                </div>
+                <div class="metric-card-content">
+                    <h3>Active Users</h3>
+                    <div class="metric-reading">
+                        <h2>{{ active_users }}</h2>
+                    </div>
+                    <p class="metric-status">
+                        Active system access
+                    </p>
+                </div>
+                <div class="metric-card-footer">
+                    <span class="metric-footer-dot"></span>
+                    <span>Accounts ready to sign in</span>
+                </div>
+            </article>
 
-        <!-- System Status -->
-        <article class="mgmt-stat-card">
-            <div class="mgmt-stat-icon-box">
-                <svg class="ui-icon" aria-hidden="true"><use href="#icon-shield"></use></svg>
-            </div>
-            <div class="mgmt-stat-info">
-                <span class="mgmt-stat-label">System Status</span>
-                <h2 class="mgmt-stat-value">{{ "Online" if system_online else "Offline" }}</h2>
-                <span class="mgmt-stat-sub">
-                    <span class="status-indicator-dot dot-optimal"></span>
-                    <span>{{ "All systems operational" if system_online else "Attention needed" }}</span>
-                </span>
-            </div>
-        </article>
+            <!-- INACTIVE USERS (WARM PEACH) -->
+            <article class="card dashboard-metric-card card-palette-peach inactive-card">
+                <div class="metric-card-top">
+                    <div class="metric-icon inactive-icon">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg>
+                    </div>
+                    <span class="metric-type">ACCOUNT STATUS</span>
+                </div>
+                <div class="metric-card-content">
+                    <h3>Inactive Users</h3>
+                    <div class="metric-reading">
+                        <h2>{{ inactive_users }}</h2>
+                    </div>
+                    <p class="metric-status">
+                        {{ "Pending review or disabled" if inactive_users > 0 else "No inactive accounts" }}
+                    </p>
+                </div>
+                <div class="metric-card-footer">
+                    <span class="metric-footer-dot"></span>
+                    <span>Inactive accounts</span>
+                </div>
+            </article>
+
+            <!-- SYSTEM STATUS (SOFT ROSE) -->
+            <article class="card dashboard-metric-card card-palette-rose system-card">
+                <div class="metric-card-top">
+                    <div class="metric-icon system-icon-online">
+                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-shield"></use></svg>
+                    </div>
+                    <span class="metric-type">SYSTEM HEALTH</span>
+                </div>
+                <div class="metric-card-content">
+                    <h3>System Status</h3>
+                    <div class="metric-reading">
+                        <h2>{{ "Online" if system_online else "Offline" }}</h2>
+                    </div>
+                    <p class="metric-status">
+                        {{ "All systems operational" if system_online else "Attention needed" }}
+                    </p>
+                </div>
+                <div class="metric-card-footer">
+                    <span class="metric-footer-dot"></span>
+                    <span>Platform services</span>
+                </div>
+            </article>
+
+        </div>
     </section>
 
     <!-- MAIN TWO-COLUMN MANAGEMENT LAYOUT -->

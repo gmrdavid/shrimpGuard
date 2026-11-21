@@ -11,7 +11,7 @@
     <title>Settings | AERIS-V Administration</title>
 
     <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}?v=4.4">
+          href="{{ url_for('static', filename='css/style.css') }}?v=4.8">
 </head>
 
 <body class="dashboard-page admin-page admin-settings-page" data-user-email="{{ admin_user.email if admin_user else '' }}">
@@ -20,99 +20,72 @@
 
 <div class="dashboard-layout">
 
-    <!-- SIDEBAR -->
+    <!-- SIDEBAR (ADMIN ONLY - NO USER VIEWS) -->
     <aside class="sidebar dashboard-sidebar">
-        <a href="/admin/dashboard" class="logo dashboard-logo" aria-label="AERIS-V administration">
-            <span class="dashboard-logo-mark">
+    <a href="/admin/dashboard" class="logo dashboard-logo" aria-label="AERIS-V administration">
+        <span class="dashboard-logo-mark">
                 <img src="{{ url_for('static', filename='images/aeris_v_icon_64.png') }}" alt="AERIS-V" class="brand-img" width="32" height="32">
             </span>
-            <span>AERIS-V</span>
+        <span>AERIS-V</span>
+    </a>
+
+    <p class="subtitle">Administration</p>
+
+    <div class="sidebar-section-label">ADMIN MENU</div>
+
+    <nav class="dashboard-nav" aria-label="Admin navigation">
+        <a href="/admin/dashboard">
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-dashboard"></use>
+            </svg>
+            <span>Admin Dashboard</span>
         </a>
 
-        <p class="subtitle">Administration</p>
+        <a href="/admin">
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-users"></use>
+            </svg>
+            <span>User Management</span>
+        </a>
 
-        <div class="sidebar-section-label">ADMIN MENU</div>
+        <a href="/admin/telemetry">
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-monitor"></use>
+            </svg>
+            <span>IoT &amp; Telemetry Control</span>
+        </a>
 
-        <nav class="dashboard-nav" aria-label="Admin navigation">
-            <a href="/admin/dashboard">
-                <svg class="ui-icon" aria-hidden="true">
-                    <use href="#icon-dashboard"></use>
-                </svg>
-                <span>Admin Dashboard</span>
-            </a>
+        <a href="/admin/logs">
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-history"></use>
+            </svg>
+            <span>Audit &amp; System Logs</span>
+        </a>
 
-            <a href="/admin">
+        <a href="/admin/settings" class="active" aria-current="page">
+            <svg class="ui-icon" aria-hidden="true">
+                <use href="#icon-settings"></use>
+            </svg>
+            <span>Settings</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-bottom">
+        <div class="sidebar-help">
+            <span class="sidebar-help-icon">
                 <svg class="ui-icon" aria-hidden="true">
                     <use href="#icon-users"></use>
                 </svg>
-                <span>User Management</span>
-            </a>
-
-            <a href="/admin/telemetry">
-                <svg class="ui-icon" aria-hidden="true">
-                    <use href="#icon-radio"></use>
-                </svg>
-                <span>Telemetry Ingestion</span>
-            </a>
-
-            <a href="/admin/logs">
-                <svg class="ui-icon" aria-hidden="true">
-                    <use href="#icon-clipboard-list"></use>
-                </svg>
-                <span>Activity Logs</span>
-            </a>
-
-            <a href="/admin/settings" class="active" aria-current="page">
-                <svg class="ui-icon" aria-hidden="true">
-                    <use href="#icon-settings"></use>
-                </svg>
-                <span>Settings</span>
-            </a>
-        </nav>
-
-        <div class="sidebar-section-label">USER VIEWS</div>
-
-        <nav class="dashboard-nav secondary-nav" aria-label="User navigation views">
-            <a href="/dashboard">
-                <svg class="ui-icon" aria-hidden="true">
-                    <use href="#icon-dashboard"></use>
-                </svg>
-                <span>User Dashboard</span>
-            </a>
-            <a href="/monitoring">
-                <svg class="ui-icon" aria-hidden="true">
-                    <use href="#icon-activity"></use>
-                </svg>
-                <span>Live Monitoring</span>
-            </a>
-            <a href="/devices">
-                <svg class="ui-icon" aria-hidden="true">
-                    <use href="#icon-cpu"></use>
-                </svg>
-                <span>Device Hub</span>
-            </a>
-        </nav>
-
-        <!-- Admin Profile Footer -->
-        <div class="sidebar-profile">
-            <div class="sidebar-profile-avatar">
-                {% if admin_user and admin_user.profile_pic %}
-                <img src="{{ url_for('static', filename='uploads/avatars/' + admin_user.profile_pic) }}" alt="{{ admin_user.name }}" class="admin-sidebar-avatar-img">
-                {% else %}
-                <span class="avatar-initials">{{ (admin_user.name[:2] if admin_user and admin_user.name else 'AD')|upper }}</span>
-                {% endif %}
+            </span>
+            <div>
+                <strong>Admin Console</strong>
+                <p>System &amp; account control.</p>
             </div>
-            <div class="sidebar-profile-info">
-                <span class="sidebar-profile-name">{{ admin_user.name if admin_user else 'Administrator' }}</span>
-                <span class="sidebar-profile-role">System Administrator</span>
-            </div>
-            <a href="/adminlogout" class="sidebar-logout-link" title="Sign out" aria-label="Sign out">
-                <svg class="ui-icon" aria-hidden="true">
-                    <use href="#icon-logout"></use>
-                </svg>
-            </a>
         </div>
-    </aside>
+
+        {% include "adminlogout.html" %}
+    </div>
+</aside>
 
     <!-- MAIN CONTENT -->
     <main class="main-content dashboard-main admin-settings-main">
@@ -193,8 +166,8 @@
                             id="cfg-system-name"
                             name="system_name"
                             class="admin-text-input"
-                            value="{{ system_settings.get('system_name', 'Shrimp Monitoring') if system_settings and system_settings.get else 'Shrimp Monitoring' }}"
-                            placeholder="Shrimp Monitoring"
+                            value="{{ system_settings.get('system_name', 'AERIS-V ShrimpGuard') if system_settings and system_settings.get else 'AERIS-V ShrimpGuard' }}"
+                            placeholder="AERIS-V ShrimpGuard"
                             required>
                     </div>
 
@@ -218,7 +191,6 @@
                             <option value="Asia/Bangkok (GMT+7)" {% if tz == 'Asia/Bangkok (GMT+7)' %}selected{% endif %}>Asia/Bangkok (GMT+7)</option>
                             <option value="Asia/Tokyo (GMT+9)" {% if tz == 'Asia/Tokyo (GMT+9)' %}selected{% endif %}>Asia/Tokyo (GMT+9)</option>
                             <option value="America/New_York (EST)" {% if tz == 'America/New_York (EST)' %}selected{% endif %}>America/New_York (EST)</option>
-                            <option value="Europe/London (GMT/BST)" {% if tz == 'Europe/London (GMT/BST)' %}selected{% endif %}>Europe/London (GMT/BST)</option>
                         </select>
                     </div>
 
@@ -252,7 +224,7 @@
                 </form>
             </article>
 
-            <!-- CARD 2: ROLES & PERMISSIONS -->
+            <!-- CARD 2: ROLES & PERMISSIONS (REAL PROJECT ROLES & DYNAMIC COUNTS) -->
             <article class="admin-settings-card roles-matrix-card" id="card-roles-permissions">
                 <div class="admin-card-header">
                     <div class="admin-card-icon-box">
@@ -274,64 +246,30 @@
                     </div>
 
                     <div class="roles-matrix-body">
-                        <!-- Super Admin -->
-                        <div class="roles-matrix-row">
-                            <div class="rm-col rm-col-role">
-                                <span class="role-icon-label role-super-admin">
-                                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-award"></use></svg>
-                                    <span>Super Admin</span>
-                                </span>
-                            </div>
-                            <div class="rm-col rm-col-desc">Full access to all features and settings.</div>
-                            <div class="rm-col rm-col-perm"><span class="perm-tag">All</span></div>
-                        </div>
-
-                        <!-- Admin -->
+                        <!-- Administrator -->
                         <div class="roles-matrix-row">
                             <div class="rm-col rm-col-role">
                                 <span class="role-icon-label role-admin">
+                                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-shield"></use></svg>
+                                    <span>Administrator</span>
+                                </span>
+                                <span class="role-user-count-badge">{{ admin_count }} Accounts</span>
+                            </div>
+                            <div class="rm-col rm-col-desc">Full access to manage user accounts, telemetry ingestion, activity logs, and system settings.</div>
+                            <div class="rm-col rm-col-perm"><span class="perm-tag">Full Administration</span></div>
+                        </div>
+
+                        <!-- Client / Farm Operator -->
+                        <div class="roles-matrix-row">
+                            <div class="rm-col rm-col-role">
+                                <span class="role-icon-label role-client">
                                     <svg class="ui-icon" aria-hidden="true"><use href="#icon-user"></use></svg>
-                                    <span>Admin</span>
+                                    <span>Client</span>
                                 </span>
+                                <span class="role-user-count-badge">{{ client_count }} Accounts</span>
                             </div>
-                            <div class="rm-col rm-col-desc">Manages users, farms, devices, and reports.</div>
-                            <div class="rm-col rm-col-perm"><span class="perm-tag">All except system settings</span></div>
-                        </div>
-
-                        <!-- Technician -->
-                        <div class="roles-matrix-row">
-                            <div class="rm-col rm-col-role">
-                                <span class="role-icon-label role-tech">
-                                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-cpu"></use></svg>
-                                    <span>Technician</span>
-                                </span>
-                            </div>
-                            <div class="rm-col rm-col-desc">Monitors devices, handles technical issues.</div>
-                            <div class="rm-col rm-col-perm"><span class="perm-tag">Devices, Alerts, Reports</span></div>
-                        </div>
-
-                        <!-- Aquaculturist -->
-                        <div class="roles-matrix-row">
-                            <div class="rm-col rm-col-role">
-                                <span class="role-icon-label role-aqua">
-                                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-droplet"></use></svg>
-                                    <span>Aquaculturist</span>
-                                </span>
-                            </div>
-                            <div class="rm-col rm-col-desc">Views farm data, water quality, and recommendations.</div>
-                            <div class="rm-col rm-col-perm"><span class="perm-tag">Farms, Devices, Reports (read-only)</span></div>
-                        </div>
-
-                        <!-- Viewer -->
-                        <div class="roles-matrix-row">
-                            <div class="rm-col rm-col-role">
-                                <span class="role-icon-label role-viewer">
-                                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-eye"></use></svg>
-                                    <span>Viewer</span>
-                                </span>
-                            </div>
-                            <div class="rm-col rm-col-desc">Read-only access to monitoring data and reports.</div>
-                            <div class="rm-col rm-col-perm"><span class="perm-tag">View Only</span></div>
+                            <div class="rm-col rm-col-desc">Access to pond water quality monitoring, historical telemetry, analytics, decision support, and calculators.</div>
+                            <div class="rm-col rm-col-perm"><span class="perm-tag">Pond Monitoring &amp; Analytics</span></div>
                         </div>
                     </div>
                 </div>
@@ -339,37 +277,36 @@
                 <div class="admin-card-actions center-actions">
                     <a href="/admin" class="btn-outline-manage-roles" id="manage-roles-link">
                         <svg class="ui-icon" aria-hidden="true"><use href="#icon-users"></use></svg>
-                        <span>Manage Roles &amp; Permissions</span>
+                        <span>Manage User Accounts</span>
                     </a>
                 </div>
             </article>
 
-            <!-- CARD 3: SYSTEM STATUS -->
+            <!-- CARD 3: SYSTEM STATUS (REAL PROJECT HARDWARE & SERVICES) -->
             <article class="admin-settings-card system-status-card" id="card-system-status">
                 <div class="admin-card-header">
                     <div class="admin-card-icon-box">
                         <svg class="ui-icon" aria-hidden="true">
-                            <use href="#icon-shield"></use>
+                            <use href="#icon-check-circle"></use>
                         </svg>
                     </div>
                     <div class="admin-card-header-text">
                         <h2>System Status</h2>
-                        <p>Live platform and infrastructure health.</p>
+                        <p>Live infrastructure and hardware diagnostics.</p>
                     </div>
                 </div>
 
-                {% set diag_db = (diagnostics.get('db') if diagnostics and diagnostics.get else None) or {'online': true, 'label': 'Database', 'text': 'Online', 'detail': 'Database operational'} %}
+                {% set diag_db = (diagnostics.get('db') if diagnostics and diagnostics.get else None) or {'online': true, 'label': 'Database Engine', 'text': 'Online', 'detail': 'Database operational'} %}
                 {% set diag_api = (diagnostics.get('api') if diagnostics and diagnostics.get else None) or {'online': true, 'label': 'API Server', 'text': 'Online', 'detail': 'Flask WSGI active'} %}
-                {% set diag_storage = (diagnostics.get('cloud_storage') if diagnostics and diagnostics.get else None) or {'online': true, 'label': 'Cloud Storage (Cloudinary)', 'text': 'Online', 'detail': 'Storage active'} %}
-                {% set diag_mqtt = (diagnostics.get('mqtt') if diagnostics and diagnostics.get else None) or {'online': true, 'label': 'MQTT / IoT Connection', 'text': 'Online', 'detail': 'Telemetry active'} %}
-                {% set diag_sms = (diagnostics.get('sms') if diagnostics and diagnostics.get else None) or {'online': true, 'label': 'SMS Gateway (GSM)', 'text': 'Online', 'detail': 'GSM gateway active'} %}
-                {% set diag_lora = (diagnostics.get('lora') if diagnostics and diagnostics.get else None) or {'online': true, 'label': 'LoRa Gateway', 'text': 'Online', 'detail': 'LoRa active'} %}
+                {% set diag_lora = (diagnostics.get('lora') if diagnostics and diagnostics.get else None) or {'online': true, 'label': 'LoRa Telemetry Gateway', 'text': 'Online', 'detail': 'LoRa active'} %}
+                {% set diag_ntfy = (diagnostics.get('ntfy') if diagnostics and diagnostics.get else None) or {'online': true, 'label': 'Push Notification Gateway', 'text': 'Online', 'detail': 'ntfy.sh active'} %}
+                {% set diag_storage = (diagnostics.get('storage') if diagnostics and diagnostics.get else None) or {'online': true, 'label': 'Media & Avatar Storage', 'text': 'Online', 'detail': 'Storage writable'} %}
 
                 <div class="status-diagnostics-list">
                     <!-- Database -->
-                    <div class="status-diag-row">
+                    <div class="status-diag-row" title="{{ diag_db.detail }}">
                         <div class="status-diag-name">
-                            <span class="status-indicator-dot dot-optimal"></span>
+                            <span class="status-indicator-dot {% if diag_db.online %}dot-optimal{% else %}dot-critical{% endif %}"></span>
                             <span>{{ diag_db.label }}</span>
                         </div>
                         <div class="status-diag-val">
@@ -378,7 +315,7 @@
                     </div>
 
                     <!-- API Server -->
-                    <div class="status-diag-row">
+                    <div class="status-diag-row" title="{{ diag_api.detail }}">
                         <div class="status-diag-name">
                             <span class="status-indicator-dot dot-optimal"></span>
                             <span>{{ diag_api.label }}</span>
@@ -388,47 +325,36 @@
                         </div>
                     </div>
 
-                    <!-- Cloud Storage (Cloudinary) -->
-                    <div class="status-diag-row">
-                        <div class="status-diag-name">
-                            <span class="status-indicator-dot dot-optimal"></span>
-                            <span>{{ diag_storage.label }}</span>
-                        </div>
-                        <div class="status-diag-val">
-                            <span class="status-badge-text">{{ diag_storage.text }}</span>
-                        </div>
-                    </div>
-
-                    <!-- MQTT / IoT Connection -->
-                    <div class="status-diag-row">
-                        <div class="status-diag-name">
-                            <span class="status-indicator-dot dot-optimal"></span>
-                            <span>{{ diag_mqtt.label }}</span>
-                        </div>
-                        <div class="status-diag-val">
-                            <span class="status-badge-text">{{ diag_mqtt.text }}</span>
-                        </div>
-                    </div>
-
-                    <!-- SMS Gateway (GSM) -->
-                    <div class="status-diag-row">
-                        <div class="status-diag-name">
-                            <span class="status-indicator-dot dot-optimal"></span>
-                            <span>{{ diag_sms.label }}</span>
-                        </div>
-                        <div class="status-diag-val">
-                            <span class="status-badge-text">{{ diag_sms.text }}</span>
-                        </div>
-                    </div>
-
-                    <!-- LoRa Gateway -->
-                    <div class="status-diag-row">
+                    <!-- LoRa Telemetry Gateway -->
+                    <div class="status-diag-row" title="{{ diag_lora.detail }}">
                         <div class="status-diag-name">
                             <span class="status-indicator-dot dot-optimal"></span>
                             <span>{{ diag_lora.label }}</span>
                         </div>
                         <div class="status-diag-val">
                             <span class="status-badge-text">{{ diag_lora.text }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Push Notification Gateway (ntfy.sh) -->
+                    <div class="status-diag-row" title="{{ diag_ntfy.detail }}">
+                        <div class="status-diag-name">
+                            <span class="status-indicator-dot dot-optimal"></span>
+                            <span>{{ diag_ntfy.label }}</span>
+                        </div>
+                        <div class="status-diag-val">
+                            <span class="status-badge-text">{{ diag_ntfy.text }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Media & Avatar Storage -->
+                    <div class="status-diag-row" title="{{ diag_storage.detail }}">
+                        <div class="status-diag-name">
+                            <span class="status-indicator-dot dot-optimal"></span>
+                            <span>{{ diag_storage.label }}</span>
+                        </div>
+                        <div class="status-diag-val">
+                            <span class="status-badge-text">{{ diag_storage.text }}</span>
                         </div>
                     </div>
                 </div>
@@ -452,7 +378,7 @@
         <!-- BOTTOM ROW: 2 CARDS (Notification Settings, Account Settings) -->
         <div class="admin-settings-row-bottom">
 
-            <!-- CARD 4: NOTIFICATION SETTINGS -->
+            <!-- CARD 4: NOTIFICATION SETTINGS (CLEAN, NO OVERLAPPING BUTTONS) -->
             <article class="admin-settings-card notification-settings-card" id="card-notifications">
                 <div class="admin-card-header">
                     <div class="admin-card-icon-box">
@@ -466,190 +392,117 @@
                     </div>
                 </div>
 
-                <!-- Channels Tabs -->
-                <div class="notif-channels-bar" role="tablist">
-                    <button type="button" class="notif-channel-tab active" role="tab" id="tab-btn-email" data-tab="tab-email">
-                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-mail"></use></svg>
-                        <span>Email</span>
-                    </button>
-                    <button type="button" class="notif-channel-tab" role="tab" id="tab-btn-sms" data-tab="tab-sms">
-                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-chat"></use></svg>
-                        <span>SMS</span>
-                    </button>
-                    <button type="button" class="notif-channel-tab" role="tab" id="tab-btn-push" data-tab="tab-push">
-                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-bell"></use></svg>
-                        <span>Push Notifications</span>
-                    </button>
-                    <button type="button" class="notif-channel-tab" role="tab" id="tab-btn-inapp" data-tab="tab-inapp">
-                        <svg class="ui-icon" aria-hidden="true"><use href="#icon-monitor"></use></svg>
-                        <span>In-App</span>
-                    </button>
-                </div>
+                <form action="/admin/settings" method="POST" class="admin-settings-form" id="admin-notif-form">
+                    <input type="hidden" name="csrf_token" value="{{ admin_csrf_token }}">
+                    <input type="hidden" name="action" value="notifications">
 
-                <!-- Notification Dual-Column Content (Matches Image Reference Layout) -->
-                <div class="notif-two-columns">
-                    <!-- Left Column: Email Notifications -->
-                    <div class="notif-col-card">
-                        <form action="/admin/settings" method="POST" class="notif-sub-form">
-                            <input type="hidden" name="csrf_token" value="{{ admin_csrf_token }}">
-                            <input type="hidden" name="action" value="update_email">
+                    <!-- Push Notification Topic Field (Spacious & Non-Overlapping) -->
+                    <div class="admin-form-group notif-topic-clean-group">
+                        <label for="admin-ntfy-topic">Push Notification Topic (ntfy.sh)</label>
+                        <div class="notif-input-wrapper">
+                            <input
+                                type="text"
+                                id="admin-ntfy-topic"
+                                name="ntfy_topic"
+                                class="admin-text-input notif-topic-input"
+                                value="{{ admin_user.ntfy_topic or '' if admin_user else '' }}"
+                                placeholder="e.g. sg-pond-alerts">
+                        </div>
+                        <span class="field-help-text">
+                            Subscribe to this topic in the free <strong>ntfy</strong> mobile app or web client to receive instantaneous alert dispatches.
+                        </span>
 
-                            <div class="notif-col-header">
-                                <div class="notif-col-title-row">
-                                    <label class="toggle-switch-wrapper" title="Toggle email notifications">
-                                        <input
-                                            type="checkbox"
-                                            name="notifications_email_enabled"
-                                            value="true"
-                                            {% if system_settings.get('notifications_email_enabled', 'true') == 'true' %}checked{% endif %}>
-                                        <span class="toggle-slider"></span>
-                                    </label>
-                                    <h3>Email Notifications</h3>
-                                </div>
-                                <p class="notif-col-sub">Receive system alerts and reports via email.</p>
-                            </div>
-
-                            <div class="admin-form-group">
-                                <label for="notif-email-input">Email Address</label>
-                                <div class="setting-input-btn-group">
-                                    <input
-                                        type="email"
-                                        id="notif-email-input"
-                                        name="notification_email"
-                                        class="admin-text-input"
-                                        value="{{ system_settings.get('notification_email', admin_user.email if admin_user else 'admin@domain.com') }}"
-                                        placeholder="admin@domain.com"
-                                        required>
-                                    <button type="submit" class="setting-inline-update-btn">
-                                        Update
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="admin-form-group notif-types-group">
-                                <label class="notif-types-label">Notification Types</label>
-                                <div class="setting-checkbox-group">
-                                    <label class="setting-checkbox-row">
-                                        <input
-                                            type="checkbox"
-                                            name="notif_email_system_alerts"
-                                            value="true"
-                                            {% if system_settings.get('notif_email_system_alerts', 'true') == 'true' %}checked{% endif %}>
-                                        <span>System Alerts</span>
-                                    </label>
-
-                                    <label class="setting-checkbox-row">
-                                        <input
-                                            type="checkbox"
-                                            name="notif_email_device_notifications"
-                                            value="true"
-                                            {% if system_settings.get('notif_email_device_notifications', 'true') == 'true' %}checked{% endif %}>
-                                        <span>Device Notifications</span>
-                                    </label>
-
-                                    <label class="setting-checkbox-row">
-                                        <input
-                                            type="checkbox"
-                                            name="notif_email_report_summaries"
-                                            value="true"
-                                            {% if system_settings.get('notif_email_report_summaries', 'true') == 'true' %}checked{% endif %}>
-                                        <span>Report Summaries</span>
-                                    </label>
-
-                                    <label class="setting-checkbox-row">
-                                        <input
-                                            type="checkbox"
-                                            name="notif_email_account_activities"
-                                            value="true"
-                                            {% if system_settings.get('notif_email_account_activities', 'true') == 'true' %}checked{% endif %}>
-                                        <span>Account Activities</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </form>
+                        <!-- Dedicated Non-Overlapping Action Buttons Row -->
+                        <div class="notif-actions-row">
+                            <button type="button" class="btn-topic-action" id="admin-generate-topic-btn">
+                                <svg class="ui-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg>
+                                <span>Generate Secure Topic</span>
+                            </button>
+                            <button type="button" class="btn-topic-action btn-test-push-action" id="admin-test-ntfy-btn">
+                                <svg class="ui-icon" aria-hidden="true"><use href="#icon-bell"></use></svg>
+                                <span>Test Push</span>
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Right Column: SMS Notifications -->
-                    <div class="notif-col-card">
-                        <form action="/admin/settings" method="POST" class="notif-sub-form">
-                            <input type="hidden" name="csrf_token" value="{{ admin_csrf_token }}">
-                            <input type="hidden" name="action" value="update_sms">
+                    <!-- Notification Types / Alert Dispatch Toggles -->
+                    <div class="notif-types-container">
+                        <span class="notif-types-heading">Active Alert Dispatches</span>
 
-                            <div class="notif-col-header">
-                                <div class="notif-col-title-row">
-                                    <label class="toggle-switch-wrapper" title="Toggle SMS notifications">
-                                        <input
-                                            type="checkbox"
-                                            name="notifications_sms_enabled"
-                                            value="true"
-                                            {% if system_settings.get('notifications_sms_enabled', 'true') == 'true' %}checked{% endif %}>
-                                        <span class="toggle-slider"></span>
-                                    </label>
-                                    <h3>SMS Notifications</h3>
-                                </div>
-                                <p class="notif-col-sub">Receive critical alerts via SMS.</p>
-                            </div>
-
-                            <div class="admin-form-group">
-                                <label for="notif-sms-input">Phone Number</label>
-                                <div class="setting-input-btn-group">
+                        <div class="notif-toggle-grid">
+                            <!-- Critical Water Quality -->
+                            <label class="notif-toggle-card">
+                                <div class="toggle-switch-wrapper">
                                     <input
-                                        type="tel"
-                                        id="notif-sms-input"
-                                        name="notification_phone"
-                                        class="admin-text-input"
-                                        value="{{ system_settings.get('notification_phone', '+63 912 345 6789') }}"
-                                        placeholder="+63 912 345 6789"
-                                        required>
-                                    <button type="submit" class="setting-inline-update-btn">
-                                        Update
-                                    </button>
+                                        type="checkbox"
+                                        name="notifications_critical"
+                                        value="true"
+                                        {% if (system_settings.get('notifications_critical', 'true') if system_settings and system_settings.get else 'true') == 'true' %}checked{% endif %}>
+                                    <span class="toggle-slider"></span>
                                 </div>
-                            </div>
-
-                            <div class="admin-form-group notif-types-group">
-                                <label class="notif-types-label">Notification Types</label>
-                                <div class="setting-checkbox-group">
-                                    <label class="setting-checkbox-row">
-                                        <input
-                                            type="checkbox"
-                                            name="notif_sms_critical_alerts"
-                                            value="true"
-                                            {% if system_settings.get('notif_sms_critical_alerts', 'true') == 'true' %}checked{% endif %}>
-                                        <span>Critical Alerts</span>
-                                    </label>
-
-                                    <label class="setting-checkbox-row">
-                                        <input
-                                            type="checkbox"
-                                            name="notif_sms_device_offline"
-                                            value="true"
-                                            {% if system_settings.get('notif_sms_device_offline', 'true') == 'true' %}checked{% endif %}>
-                                        <span>Device Offline</span>
-                                    </label>
-
-                                    <label class="setting-checkbox-row">
-                                        <input
-                                            type="checkbox"
-                                            name="notif_sms_water_quality"
-                                            value="true"
-                                            {% if system_settings.get('notif_sms_water_quality', 'true') == 'true' %}checked{% endif %}>
-                                        <span>Water Quality Issues</span>
-                                    </label>
-
-                                    <label class="setting-checkbox-row">
-                                        <input
-                                            type="checkbox"
-                                            name="notif_sms_system_maintenance"
-                                            value="true"
-                                            {% if system_settings.get('notif_sms_system_maintenance', 'true') == 'true' %}checked{% endif %}>
-                                        <span>System Maintenance</span>
-                                    </label>
+                                <div class="toggle-card-info">
+                                    <strong>Critical Water Quality Alerts</strong>
+                                    <span>Immediate alert when DO, pH, Temp, or Salinity crosses critical thresholds.</span>
                                 </div>
-                            </div>
-                        </form>
+                            </label>
+
+                            <!-- Parameter Drift Warnings -->
+                            <label class="notif-toggle-card">
+                                <div class="toggle-switch-wrapper">
+                                    <input
+                                        type="checkbox"
+                                        name="notifications_warning"
+                                        value="true"
+                                        {% if (system_settings.get('notifications_warning', 'true') if system_settings and system_settings.get else 'true') == 'true' %}checked{% endif %}>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                                <div class="toggle-card-info">
+                                    <strong>Parameter Drift Warnings</strong>
+                                    <span>Early advisory when pond parameters drift outside optimal shrimp farming ranges.</span>
+                                </div>
+                            </label>
+
+                            <!-- Device Offline / Telemetry Interruption -->
+                            <label class="notif-toggle-card">
+                                <div class="toggle-switch-wrapper">
+                                    <input
+                                        type="checkbox"
+                                        name="notifications_device"
+                                        value="true"
+                                        {% if (system_settings.get('notifications_device', 'true') if system_settings and system_settings.get else 'true') == 'true' %}checked{% endif %}>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                                <div class="toggle-card-info">
+                                    <strong>Device &amp; Sensor Offline Alerts</strong>
+                                    <span>Dispatches when a LoRa telemetry node or pond probe stops transmitting.</span>
+                                </div>
+                            </label>
+
+                            <!-- System Maintenance & Security -->
+                            <label class="notif-toggle-card">
+                                <div class="toggle-switch-wrapper">
+                                    <input
+                                        type="checkbox"
+                                        name="notifications_maintenance"
+                                        value="true"
+                                        {% if (system_settings.get('notifications_maintenance', 'true') if system_settings and system_settings.get else 'true') == 'true' %}checked{% endif %}>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                                <div class="toggle-card-info">
+                                    <strong>System Maintenance &amp; Security</strong>
+                                    <span>Alerts for database maintenance tasks and administrator credential events.</span>
+                                </div>
+                            </label>
+                        </div>
                     </div>
-                </div>
+
+                    <div class="admin-card-actions">
+                        <button type="submit" class="admin-save-btn">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-check"></use></svg>
+                            <span>Save Notification Preferences</span>
+                        </button>
+                    </div>
+                </form>
             </article>
 
             <!-- CARD 5: ACCOUNT SETTINGS -->
@@ -666,7 +519,7 @@
                     </div>
                 </div>
 
-                <!-- Admin Profile Top Row Matching Reference Image -->
+                <!-- Admin Profile Top Row -->
                 <div class="account-user-banner">
                     <div class="account-user-left">
                         <div class="account-user-avatar" id="admin-avatar-display">
@@ -678,7 +531,7 @@
                         </div>
                         <div class="account-user-info">
                             <div class="account-user-name-row">
-                                <strong class="account-user-name">{{ admin_user.name if admin_user else 'Admin' }}</strong>
+                                <strong class="account-user-name">{{ admin_user.name if admin_user else 'Administrator' }}</strong>
                                 <span class="user-status-pill status-active">Active</span>
                             </div>
                             <span class="account-user-email">{{ admin_user.email if admin_user else 'admin@domain.com' }}</span>
@@ -764,7 +617,7 @@
                         </div>
                     </form>
 
-                    <!-- Right Security Tips Box Matching Reference Image -->
+                    <!-- Right Security Tips Box -->
                     <div class="security-tips-side">
                         <div class="security-tips-box">
                             <div class="security-tips-header">
@@ -778,11 +631,11 @@
                                 </li>
                                 <li>
                                     <span class="tip-check">&check;</span>
-                                    <span>Enable two-factor authentication (if available).</span>
+                                    <span>Keep your private ntfy push topic confidential.</span>
                                 </li>
                                 <li>
                                     <span class="tip-check">&check;</span>
-                                    <span>Do not share your account credentials.</span>
+                                    <span>Do not share administrator credentials.</span>
                                 </li>
                                 <li>
                                     <span class="tip-check">&check;</span>
@@ -810,6 +663,6 @@
     </main>
 </div>
 
-<script src="{{ url_for('static', filename='js/adminsettings.js') }}?v=2.0"></script>
+<script src="{{ url_for('static', filename='js/adminsettings.js') }}?v=2.5"></script>
 </body>
 </html>

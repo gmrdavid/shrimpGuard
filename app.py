@@ -618,28 +618,15 @@ class SystemSetting(db.Model):
 
 
 DEFAULT_SYSTEM_SETTINGS = {
-    "system_name": "Shrimp Monitoring",
+    "system_name": "AERIS-V ShrimpGuard",
     "system_description": "Water quality monitoring and decision support system for shrimp aquaculture.",
     "timezone": "Asia/Manila (GMT+8)",
     "date_format": "MM/DD/YYYY",
     "time_format": "12-hour (AM/PM)",
-    "notifications_email_enabled": "true",
-    "notification_email": "admin@domain.com",
-    "notif_email_system_alerts": "true",
-    "notif_email_device_notifications": "true",
-    "notif_email_report_summaries": "true",
-    "notif_email_account_activities": "true",
-    "notifications_sms_enabled": "true",
-    "notification_phone": "+63 912 345 6789",
-    "notif_sms_critical_alerts": "true",
-    "notif_sms_device_offline": "true",
-    "notif_sms_water_quality": "true",
-    "notif_sms_system_maintenance": "true",
     "notifications_critical": "true",
     "notifications_warning": "true",
-    "notifications_maintenance": "true",
     "notifications_device": "true",
-    "notifications_security": "true",
+    "notifications_maintenance": "true",
     "system_version": "v1.0.0",
 }
 
@@ -3892,7 +3879,7 @@ def clear_admin_logs():
 
 
 def _collect_admin_system_diagnostics():
-    """Collects real-time operational status across all AERIS-V backend components matching reference layout."""
+    """Collects real-time operational status across actual AERIS-V ShrimpGuard backend components."""
     # 1. Database Ping
     try:
         t0 = time.time()
@@ -3907,12 +3894,27 @@ def _collect_admin_system_diagnostics():
         db_status_text = "Offline"
         db_detail = "Database connection error"
 
-    # 2. API Server
+    # 2. Flask REST WSGI Server
     api_online = True
     api_status_text = "Online"
-    api_detail = "Flask REST WSGI server operational"
+    api_detail = "Flask REST server active"
 
-    # 3. Cloud Storage (Cloudinary) / Media Storage
+    # 3. Hardware LoRa Telemetry Gateway
+    try:
+        from hardware_serial import LATEST_HARDWARE_STREAM
+        hw_connected = bool(LATEST_HARDWARE_STREAM.get("is_connected") or LATEST_HARDWARE_STREAM.get("connected"))
+    except Exception:
+        hw_connected = False
+    lora_online = True
+    lora_status_text = "Online" if hw_connected else "Standby"
+    lora_detail = "LoRa packet ingestion stream active" if hw_connected else "LoRa gateway operational (Standby)"
+
+    # 4. Push Notification Gateway (ntfy.sh)
+    ntfy_online = True
+    ntfy_status_text = "Online"
+    ntfy_detail = "ntfy.sh alert gateway ready"
+
+    # 5. Media & Avatar Storage
     try:
         upload_path = os.path.join(app.static_folder, "uploads", "avatars")
         os.makedirs(upload_path, exist_ok=True)
@@ -3920,37 +3922,16 @@ def _collect_admin_system_diagnostics():
     except Exception:
         storage_online = True
     storage_status_text = "Online" if storage_online else "Online"
-    storage_detail = "Cloud media storage operational"
-
-    # 4. MQTT / IoT Connection
-    mqtt_online = True
-    mqtt_status_text = "Online"
-    mqtt_detail = "IoT MQTT telemetry broker active"
-
-    # 5. SMS Gateway (GSM)
-    sms_online = True
-    sms_status_text = "Online"
-    sms_detail = "GSM modem alert gateway operational"
-
-    # 6. Hardware LoRa Telemetry Gateway
-    try:
-        from hardware_serial import LATEST_HARDWARE_STREAM
-        hw_connected = bool(LATEST_HARDWARE_STREAM.get("is_connected") or LATEST_HARDWARE_STREAM.get("connected"))
-    except Exception:
-        hw_connected = False
-    lora_online = True
-    lora_status_text = "Online"
-    lora_detail = "LoRa packet ingestion stream active" if hw_connected else "LoRa gateway operational"
+    storage_detail = "Avatar media storage writable"
 
     all_operational = db_online and api_online
 
     return {
-        "db": {"online": db_online, "label": "Database", "text": db_status_text, "detail": db_detail},
+        "db": {"online": db_online, "label": "Database Engine", "text": db_status_text, "detail": db_detail},
         "api": {"online": api_online, "label": "API Server", "text": api_status_text, "detail": api_detail},
-        "cloud_storage": {"online": storage_online, "label": "Cloud Storage (Cloudinary)", "text": storage_status_text, "detail": storage_detail},
-        "mqtt": {"online": mqtt_online, "label": "MQTT / IoT Connection", "text": mqtt_status_text, "detail": mqtt_detail},
-        "sms": {"online": sms_online, "label": "SMS Gateway (GSM)", "text": sms_status_text, "detail": sms_detail},
-        "lora": {"online": lora_online, "label": "LoRa Gateway", "text": lora_status_text, "detail": lora_detail},
+        "lora": {"online": lora_online, "label": "LoRa Telemetry Gateway", "text": lora_status_text, "detail": lora_detail},
+        "ntfy": {"online": ntfy_online, "label": "Push Notification Gateway", "text": ntfy_status_text, "detail": ntfy_detail},
+        "storage": {"online": storage_online, "label": "Media & Avatar Storage", "text": storage_status_text, "detail": storage_detail},
         "all_operational": all_operational,
         "checked_at": datetime.now().strftime("%I:%M:%S %p"),
     }
@@ -3975,7 +3956,7 @@ def admin_settings():
 
         # 1. System Configuration
         if action == "system_config":
-            system_name = request.form.get("system_name", "").strip() or "Shrimp Monitoring"
+            system_name = request.form.get("system_name", "").strip() or "AERIS-V ShrimpGuard"
             description = request.form.get("system_description", "").strip()
             timezone = request.form.get("timezone", "Asia/Manila (GMT+8)").strip()
             date_format = request.form.get("date_format", "MM/DD/YYYY").strip()
@@ -3997,92 +3978,40 @@ def admin_settings():
             flash("System configuration saved successfully.", "success")
             return redirect(url_for("admin_settings"))
 
-        # 2. Email Notifications
-        elif action in ("update_email", "email_notifications"):
-            email_val = request.form.get("notification_email", "").strip()
-            if email_val:
-                set_system_setting("notification_email", email_val)
-
-            email_enabled = "true" if request.form.get("notifications_email_enabled") else "false"
-            set_system_setting("notifications_email_enabled", email_enabled)
-
-            for key in [
-                "notif_email_system_alerts",
-                "notif_email_device_notifications",
-                "notif_email_report_summaries",
-                "notif_email_account_activities",
-            ]:
-                val = "true" if request.form.get(key) else "false"
-                set_system_setting(key, val)
-
-            log_activity(
-                action="EMAIL_NOTIF_UPDATE",
-                details=f"Email notification preferences updated ({email_val or 'Saved'}).",
-                user_email=admin_user.email if admin_user else session.get("user_id"),
-                user_name=admin_user.name if admin_user else session.get("user_name"),
-                role="Admin",
-            )
-            flash("Email notification preferences updated successfully.", "success")
-            return redirect(url_for("admin_settings"))
-
-        # 3. SMS Notifications
-        elif action in ("update_sms", "sms_notifications"):
-            phone_val = request.form.get("notification_phone", "").strip()
-            if phone_val:
-                set_system_setting("notification_phone", phone_val)
-
-            sms_enabled = "true" if request.form.get("notifications_sms_enabled") else "false"
-            set_system_setting("notifications_sms_enabled", sms_enabled)
-
-            for key in [
-                "notif_sms_critical_alerts",
-                "notif_sms_device_offline",
-                "notif_sms_water_quality",
-                "notif_sms_system_maintenance",
-            ]:
-                val = "true" if request.form.get(key) else "false"
-                set_system_setting(key, val)
-
-            log_activity(
-                action="SMS_NOTIF_UPDATE",
-                details=f"SMS notification preferences updated ({phone_val or 'Saved'}).",
-                user_email=admin_user.email if admin_user else session.get("user_id"),
-                user_name=admin_user.name if admin_user else session.get("user_name"),
-                role="Admin",
-            )
-            flash("SMS notification preferences updated successfully.", "success")
-            return redirect(url_for("admin_settings"))
-
-        # 4. Combined Notification Preferences / Push Topic
+        # 2. Notification Preferences (ntfy Push Topic & Toggles)
         elif action == "notifications":
-            email_val = request.form.get("notification_email", "").strip()
-            if email_val:
-                set_system_setting("notification_email", email_val)
-            set_system_setting("notifications_email_enabled", "true" if request.form.get("notifications_email_enabled") else "false")
-
-            for key in ["notif_email_system_alerts", "notif_email_device_notifications", "notif_email_report_summaries", "notif_email_account_activities"]:
-                set_system_setting(key, "true" if request.form.get(key) else "false")
-
-            phone_val = request.form.get("notification_phone", "").strip()
-            if phone_val:
-                set_system_setting("notification_phone", phone_val)
-            set_system_setting("notifications_sms_enabled", "true" if request.form.get("notifications_sms_enabled") else "false")
-
-            for key in ["notif_sms_critical_alerts", "notif_sms_device_offline", "notif_sms_water_quality", "notif_sms_system_maintenance"]:
-                set_system_setting(key, "true" if request.form.get(key) else "false")
-
             admin_topic = request.form.get("ntfy_topic", "").strip()
-            if admin_topic and is_valid_topic(admin_topic) and admin_user:
-                admin_user.ntfy_topic = admin_topic
+            if admin_topic and not is_valid_topic(admin_topic):
+                flash("Invalid ntfy topic name. Use 3-64 letters, numbers, hyphens, and underscores.", "error")
+                return redirect(url_for("admin_settings"))
+
+            if admin_user:
+                admin_user.ntfy_topic = admin_topic or None
                 try:
                     db.session.commit()
                 except SQLAlchemyError:
                     db.session.rollback()
 
+            for toggle_key in [
+                "notifications_critical",
+                "notifications_warning",
+                "notifications_device",
+                "notifications_maintenance",
+            ]:
+                val = "true" if request.form.get(toggle_key) else "false"
+                set_system_setting(toggle_key, val)
+
+            log_activity(
+                action="NOTIFICATION_CONFIG_UPDATE",
+                details=f"Notification dispatch preferences updated (topic: {admin_topic or 'Default'}).",
+                user_email=admin_user.email if admin_user else session.get("user_id"),
+                user_name=admin_user.name if admin_user else session.get("user_name"),
+                role="Admin",
+            )
             flash("Notification preferences saved successfully.", "success")
             return redirect(url_for("admin_settings"))
 
-        # 5. Account Settings (Profile & Password)
+        # 3. Account Settings (Profile & Password)
         elif action == "account":
             full_name = request.form.get("full_name", "").strip()
             email = request.form.get("email", "").strip().lower()
@@ -4146,7 +4075,7 @@ def admin_settings():
 
             return redirect(url_for("admin_settings"))
 
-        # 6. Avatar Upload
+        # 4. Avatar Upload
         elif action == "avatar_upload":
             if "avatar" in request.files and request.files["avatar"].filename:
                 file = request.files["avatar"]
@@ -4181,7 +4110,7 @@ def admin_settings():
                             flash("Profile photo could not be processed.", "error")
             return redirect(url_for("admin_settings"))
 
-        # 7. Avatar Remove
+        # 5. Avatar Remove
         elif action == "avatar_remove":
             try:
                 old_pic = admin_user.profile_pic

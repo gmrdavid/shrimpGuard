@@ -1,7 +1,7 @@
 /**
  * AERIS-V Admin Settings JavaScript
- * Handles local clock, asynchronous profile avatar updates, security toggles,
- * ntfy push notification testing, and live system diagnostics.
+ * Handles local clock, asynchronous profile avatar updates, password toggles,
+ * ntfy push topic generation, test notifications, and live system diagnostics.
  */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -45,28 +45,10 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // 4. Admin Avatar Management (Async Upload & Remove)
+    // 4. Admin Avatar Management (Async Upload)
     const fileInput = document.getElementById("admin-avatar-file-input");
     const changeBtn = document.getElementById("btn-admin-change-avatar");
-    const removeBtn = document.getElementById("btn-admin-remove-avatar");
-    const previewImg = document.getElementById("admin-avatar-preview-img");
-    const previewInitials = document.getElementById("admin-avatar-preview-initials");
-    const feedbackEl = document.getElementById("admin-avatar-feedback");
-    const removeDialog = document.getElementById("admin-remove-avatar-dialog");
-    const cancelRemoveBtn = document.getElementById("cancel-admin-remove-avatar");
-    const confirmRemoveBtn = document.getElementById("confirm-admin-remove-avatar");
-
-    function setAvatarFeedback(msg, isSuccess) {
-        if (!feedbackEl) return;
-        feedbackEl.className = "admin-avatar-feedback " + (isSuccess ? "is-success" : "is-error");
-        feedbackEl.textContent = msg;
-        setTimeout(() => {
-            if (feedbackEl) {
-                feedbackEl.textContent = "";
-                feedbackEl.className = "admin-avatar-feedback";
-            }
-        }, 6000);
-    }
+    const avatarDisplay = document.getElementById("admin-avatar-display");
 
     if (changeBtn && fileInput) {
         changeBtn.addEventListener("click", () => {
@@ -77,26 +59,22 @@ document.addEventListener("DOMContentLoaded", () => {
             const file = fileInput.files[0];
             if (!file) return;
 
-            // Validate format
             const validTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
             if (!validTypes.includes(file.type)) {
-                setAvatarFeedback("Please select a JPG, PNG, WebP, or GIF image.", false);
+                alert("Please select a JPG, PNG, WebP, or GIF image.");
                 fileInput.value = "";
                 return;
             }
 
-            // Validate size (5MB max)
             if (file.size > 5 * 1024 * 1024) {
-                setAvatarFeedback("Image exceeds the 5MB size limit.", false);
+                alert("Image exceeds the 5MB size limit.");
                 fileInput.value = "";
                 return;
             }
 
+            const origContent = changeBtn.innerHTML;
             changeBtn.disabled = true;
-            changeBtn.innerHTML = `
-                <svg class="ui-icon spin" aria-hidden="true"><use href="#icon-activity"></use></svg>
-                <span>Uploading...</span>
-            `;
+            changeBtn.innerHTML = `<span>Uploading...</span>`;
 
             const formData = new FormData();
             formData.append("avatar", file);
@@ -116,6 +94,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 const data = await response.json();
                 if (response.ok && data.status === "success") {
                     const newUrl = data.avatar_url + "?t=" + Date.now();
+                    let previewImg = document.getElementById("admin-avatar-preview-img");
+                    const previewInitials = document.getElementById("admin-avatar-preview-initials");
+
+                    if (!previewImg && avatarDisplay) {
+                        previewImg = document.createElement("img");
+                        previewImg.id = "admin-avatar-preview-img";
+                        avatarDisplay.appendChild(previewImg);
+                    }
+
                     if (previewImg) {
                         previewImg.src = newUrl;
                         previewImg.style.display = "block";
@@ -123,133 +110,60 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (previewInitials) {
                         previewInitials.style.display = "none";
                     }
-                    if (removeBtn) {
-                        removeBtn.style.display = "inline-flex";
-                    }
-                    setAvatarFeedback("Profile picture updated successfully.", true);
                 } else {
-                    setAvatarFeedback(data.message || "Failed to update profile picture.", false);
+                    alert(data.message || "Failed to update profile picture.");
                 }
             } catch (err) {
-                setAvatarFeedback("Network error. Please try uploading again.", false);
+                console.error("Avatar upload error:", err);
+                alert("Network error while uploading photo. Please try again.");
             } finally {
-                fileInput.value = "";
                 changeBtn.disabled = false;
-                changeBtn.innerHTML = `
-                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-edit"></use></svg>
-                    <span>Change Profile Picture</span>
-                `;
+                changeBtn.innerHTML = origContent;
+                fileInput.value = "";
             }
         });
     }
 
-    if (removeBtn && removeDialog) {
-        removeBtn.addEventListener("click", () => {
-            if (typeof removeDialog.showModal === "function") {
-                removeDialog.showModal();
-            } else {
-                removeDialog.setAttribute("open", "");
-            }
-        });
-
-        if (cancelRemoveBtn) {
-            cancelRemoveBtn.addEventListener("click", () => {
-                if (typeof removeDialog.close === "function") {
-                    removeDialog.close();
-                } else {
-                    removeDialog.removeAttribute("open");
-                }
-            });
-        }
-
-        if (confirmRemoveBtn) {
-            confirmRemoveBtn.addEventListener("click", async () => {
-                confirmRemoveBtn.disabled = true;
-                confirmRemoveBtn.textContent = "Removing...";
-
-                const csrfToken = getCsrfToken();
-                try {
-                    const response = await fetch("/api/user/profile-picture", {
-                        method: "DELETE",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRFToken": csrfToken,
-                        },
-                        body: JSON.stringify({ csrf_token: csrfToken }),
-                    });
-
-                    const data = await response.json();
-                    if (response.ok && data.status === "success") {
-                        if (previewImg) {
-                            previewImg.src = "";
-                            previewImg.style.display = "none";
-                        }
-                        if (previewInitials) {
-                            previewInitials.style.display = "flex";
-                        }
-                        removeBtn.style.display = "none";
-                        setAvatarFeedback("Profile picture removed.", true);
-                    } else {
-                        setAvatarFeedback(data.message || "Could not remove profile picture.", false);
-                    }
-                } catch (err) {
-                    setAvatarFeedback("Network error. Please try again.", false);
-                } finally {
-                    confirmRemoveBtn.disabled = false;
-                    confirmRemoveBtn.textContent = "Remove Photo";
-                    if (typeof removeDialog.close === "function") {
-                        removeDialog.close();
-                    } else {
-                        removeDialog.removeAttribute("open");
-                    }
-                }
-            });
-        }
-    }
-
-    // 5. Generate Secure ntfy Topic Helper
-    const generateTopicBtn = document.getElementById("admin-generate-topic-btn");
+    // 5. Generate Secure Topic Handler
+    const genTopicBtn = document.getElementById("admin-generate-topic-btn");
     const ntfyTopicInput = document.getElementById("admin-ntfy-topic");
 
-    if (generateTopicBtn && ntfyTopicInput) {
-        generateTopicBtn.addEventListener("click", () => {
-            const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-            let randStr = "";
-            for (let i = 0; i < 8; i++) {
-                randStr += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            ntfyTopicInput.value = `aeris-admin-${randStr}`;
-            ntfyTopicInput.focus();
+    if (genTopicBtn && ntfyTopicInput) {
+        genTopicBtn.addEventListener("click", async () => {
+            const origContent = genTopicBtn.innerHTML;
+            genTopicBtn.disabled = true;
+            genTopicBtn.innerHTML = `<span>Generating...</span>`;
 
-            const origContent = generateTopicBtn.innerHTML;
-            generateTopicBtn.innerHTML = `
-                <svg class="ui-icon" aria-hidden="true"><use href="#icon-check"></use></svg>
-                <span>Generated!</span>
-            `;
-            setTimeout(() => {
-                generateTopicBtn.innerHTML = origContent;
-            }, 1400);
-        });
-    }
-
-    // 6. Test ntfy Push Notification
-    const testNtfyBtn = document.getElementById("admin-test-ntfy-btn");
-    const testNtfyDialog = document.getElementById("admin-test-ntfy-dialog");
-    const testNtfyBody = document.getElementById("admin-test-ntfy-body");
-    const closeTestNtfyBtn = document.getElementById("close-admin-test-ntfy");
-
-    if (closeTestNtfyBtn && testNtfyDialog) {
-        closeTestNtfyBtn.addEventListener("click", () => {
-            if (typeof testNtfyDialog.close === "function") {
-                testNtfyDialog.close();
-            } else {
-                testNtfyDialog.removeAttribute("open");
+            try {
+                const resp = await fetch("/api/ntfy/generate-topic");
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (data.topic) {
+                        ntfyTopicInput.value = data.topic;
+                    }
+                } else {
+                    const randomHex = Array.from(crypto.getRandomValues(new Uint8Array(6)))
+                        .map(b => b.toString(16).padStart(2, '0'))
+                        .join('');
+                    ntfyTopicInput.value = "sg-pond-" + randomHex;
+                }
+            } catch (e) {
+                const randomHex = Array.from(crypto.getRandomValues(new Uint8Array(6)))
+                    .map(b => b.toString(16).padStart(2, '0'))
+                    .join('');
+                ntfyTopicInput.value = "sg-pond-" + randomHex;
+            } finally {
+                genTopicBtn.disabled = false;
+                genTopicBtn.innerHTML = origContent;
+                ntfyTopicInput.focus();
             }
         });
     }
 
-    if (testNtfyBtn && ntfyTopicInput && testNtfyDialog) {
-        testNtfyBtn.addEventListener("click", async () => {
+    // 6. Test Push Notification Handler
+    const testPushBtn = document.getElementById("admin-test-ntfy-btn");
+    if (testPushBtn && ntfyTopicInput) {
+        testPushBtn.addEventListener("click", async () => {
             const topic = ntfyTopicInput.value.trim();
             if (!topic) {
                 alert("Please enter or generate a push notification topic first.");
@@ -257,104 +171,46 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            testNtfyBtn.disabled = true;
-            testNtfyBtn.innerHTML = `
-                <svg class="ui-icon spin" aria-hidden="true"><use href="#icon-activity"></use></svg>
-                <span>Dispatching...</span>
-            `;
+            const origContent = testPushBtn.innerHTML;
+            testPushBtn.disabled = true;
+            testPushBtn.innerHTML = `<span>Sending...</span>`;
 
             try {
-                const response = await fetch("/api/ntfy/test", {
+                const resp = await fetch("/api/ntfy/test", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCsrfToken(),
+                    },
                     body: JSON.stringify({ ntfy_topic: topic }),
                 });
 
-                const data = await response.json();
-                if (typeof testNtfyDialog.showModal === "function") {
-                    testNtfyDialog.showModal();
+                const data = await resp.json();
+                if (resp.ok && !data.error) {
+                    testPushBtn.innerHTML = `<span>✓ Sent!</span>`;
+                    setTimeout(() => {
+                        testPushBtn.innerHTML = origContent;
+                        testPushBtn.disabled = false;
+                    }, 3000);
                 } else {
-                    testNtfyDialog.setAttribute("open", "");
-                }
-
-                if (response.ok && data.success) {
-                    testNtfyBody.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                            <span class="status-indicator-dot dot-optimal" style="width: 14px; height: 14px;"></span>
-                            <strong style="color: #126b4f; font-size: 16px;">Test Notification Dispatched!</strong>
-                        </div>
-                        <p style="color: #405468; line-height: 1.5;">
-                            A test alert was sent to topic <code style="background: #eef2f5; padding: 2px 6px; border-radius: 4px;">${topic}</code> via the ntfy.sh gateway.
-                        </p>
-                        <p style="margin-top: 8px; font-size: 13px; color: #718184;">
-                            Open your ntfy app or visit <a href="https://ntfy.sh/${topic}" target="_blank" rel="noopener noreferrer" style="color: #1769d2; text-decoration: underline;">ntfy.sh/${topic}</a> to confirm receipt.
-                        </p>
-                    `;
-                } else {
-                    testNtfyBody.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                            <span class="status-indicator-dot dot-critical" style="width: 14px; height: 14px;"></span>
-                            <strong style="color: #dc2626; font-size: 16px;">Dispatch Notice</strong>
-                        </div>
-                        <p style="color: #405468; line-height: 1.5;">
-                            ${data.error || "Unable to contact ntfy gateway. Please verify network access."}
-                        </p>
-                    `;
+                    alert(data.error || "Failed to dispatch test notification. Please verify your topic.");
+                    testPushBtn.disabled = false;
+                    testPushBtn.innerHTML = origContent;
                 }
             } catch (err) {
-                if (typeof testNtfyDialog.showModal === "function") {
-                    testNtfyDialog.showModal();
-                } else {
-                    testNtfyDialog.setAttribute("open", "");
-                }
-                testNtfyBody.innerHTML = `
-                    <p style="color: #dc2626;">Network error communicating with the notification endpoint.</p>
-                `;
-            } finally {
-                testNtfyBtn.disabled = false;
-                testNtfyBtn.innerHTML = `
-                    <svg class="ui-icon" aria-hidden="true"><use href="#icon-bell"></use></svg>
-                    <span>Test Push</span>
-                `;
+                alert("Network error dispatching test push notification.");
+                testPushBtn.disabled = false;
+                testPushBtn.innerHTML = origContent;
             }
         });
     }
 
-    // 7. Notification Channels Tab Switcher
-    const notifTabs = document.querySelectorAll(".notif-channel-tab");
-    notifTabs.forEach((tab) => {
-        tab.addEventListener("click", () => {
-            notifTabs.forEach((t) => {
-                t.classList.remove("active");
-                t.setAttribute("aria-selected", "false");
-            });
-            tab.classList.add("active");
-            tab.setAttribute("aria-selected", "true");
-        });
-    });
-
-    // 8. Dynamic Status Diagnostic Polling (Every 30 seconds)
+    // 7. Dynamic System Diagnostics Polling (Every 30 seconds)
     async function refreshDiagnostics() {
         try {
-            const resp = await fetch("/api/admin/system-status");
-            if (!resp.ok) return;
-            const res = await resp.json();
-            if (res.status === "success" && res.diagnostics) {
-                const diag = res.diagnostics;
-                // Live update LoRa status row if elements exist
-                const loraRow = document.querySelector(".system-status-card .status-diag-row:nth-child(4)");
-                if (loraRow) {
-                    const dot = loraRow.querySelector(".status-indicator-dot");
-                    const badge = loraRow.querySelector(".status-diag-badge");
-                    if (dot && badge) {
-                        dot.className = `status-indicator-dot ${diag.lora.online ? "dot-optimal" : "dot-standby"}`;
-                        badge.className = `status-diag-badge ${diag.lora.online ? "badge-optimal" : "badge-standby"}`;
-                        badge.textContent = diag.lora.text;
-                    }
-                }
-            }
+            await fetch("/api/admin/system-status");
         } catch (e) {
-            // Background polling failure, silent fallback
+            // Silently continue
         }
     }
     setInterval(refreshDiagnostics, 30000);

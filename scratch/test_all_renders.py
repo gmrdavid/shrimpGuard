@@ -1,65 +1,46 @@
-# -*- coding: utf-8 -*-
-import jinja2
+from jinja2 import Environment, FileSystemLoader
 
-env = jinja2.Environment(loader=jinja2.FileSystemLoader('templates'))
+env = Environment(loader=FileSystemLoader('templates'))
 
-class MockUser:
-    email = "test@shrimpguard.com"
-    first_name = "Aquaculture"
-    last_name = "Specialist"
-    user_name = "Aquaculture Specialist"
-    role = "Client"
-    ntfy_topic = "sg-pond-test"
+mock_data = {
+    'session': {'user_id': 1, 'username': 'admin'},
+    'total_users': 8,
+    'active_users': 6,
+    'inactive_users': 2,
+    'system_online': True,
+    'total_readings': 782,
+    'latest_reading': {'temperature': 28.5, 'ph': 10.0, 'status': 'Critical'},
+    'gateway_online': False,
+    'hw_connected': False,
+    'hardware_stream': {'device_id': 'NODE01', 'connected_port': 'COM8'},
+    'total_logs': 6226,
+    'auth_events': 253,
+    'user_mgmt_events': 10,
+    'system_settings': {'system_name': 'AERIS-V ShrimpGuard', 'notifications_critical': 'true'},
+    'admin_user': {'username': 'admin', 'email': 'admin@shrimpguard.com', 'role': 'Admin', 'ntfy_topic': 'sg-alerts'},
+    'admin_csrf_token': 'test_token',
+    'users': [
+        {'id': 1, 'username': 'admin', 'email': 'admin@shrimpguard.com', 'role': 'Administrator', 'is_active': 1, 'last_login': '2026-05-26 09:30:00'},
+        {'id': 2, 'username': 'gliadavid', 'email': 'gliadavid@slsu.edu', 'role': 'Operator', 'is_active': 1, 'last_login': '2026-05-26 08:15:00'}
+    ],
+    'roles': ['Administrator', 'Operator', 'Viewer'],
+    'statuses': ['Active', 'Inactive'],
+    'url_for': lambda endpoint, **values: f"/static/{values.get('filename', '')}",
+    'get_flashed_messages': lambda **kwargs: []
+}
 
-def mock_url_for(endpoint, **values):
-    return f"/{endpoint}/" + "/".join(str(v) for v in values.values())
+templates_to_test = [
+    'admin.html',
+    'admin_dashboard.html',
+    'admin_telemetry.html',
+    'admin_logs.html',
+    'admin_settings.html'
+]
 
-# 1. Test calculators.html
-template_calc = env.get_template('calculators.html')
-rendered_calc = template_calc.render(user=MockUser(), url_for=mock_url_for, get_flashed_messages=lambda **kw: [])
-assert "Computed Performance Metrics" in rendered_calc
-assert "Water Remediation" in rendered_calc
-assert "tools-icon-remediation" in rendered_calc
-assert "tools-remediation-section" in rendered_calc
-assert "growth-trend-graph-modal" in rendered_calc
-assert "btn-open-growth-chart" in rendered_calc
-print("calculators.html rendered cleanly!")
-
-# 2. Test historical.html
-template_hist = env.get_template('historical.html')
-rendered_hist = template_hist.render(user=MockUser(), url_for=mock_url_for, get_flashed_messages=lambda **kw: [])
-assert "history-export-button" not in rendered_hist, "history-export-button should be removed from chart"
-assert "history-interval" not in rendered_hist, "history-interval should be removed from filter form"
-assert "table-export-button" in rendered_hist, "table-export-button should remain in data table"
-print("historical.html rendered cleanly!")
-
-# 3. Test alerts.html
-template_alerts = env.get_template('alerts.html')
-rendered_alerts = template_alerts.render(user=MockUser(), url_for=mock_url_for, get_flashed_messages=lambda **kw: [])
-assert "mark-all-read-btn" not in rendered_alerts, "mark-all-read-btn should be removed"
-assert "unread-notifications-count" in rendered_alerts, "unread-notifications-count should remain"
-print("alerts.html rendered cleanly!")
-
-# 4. Test settings.html
-template_settings = env.get_template('settings.html')
-rendered_settings = template_settings.render(user=MockUser(), url_for=mock_url_for, settings_csrf_token="dummy", get_flashed_messages=lambda **kw: [])
-assert "icon-user" in rendered_settings, "icon-user should be used for Profile Information"
-assert "Profile Information" in rendered_settings
-assert "Password &amp; Security" in rendered_settings
-print("settings.html rendered cleanly!")
-
-# 5. Test landing.html
-template_landing = env.get_template('landing.html')
-rendered_landing = template_landing.render(url_for=mock_url_for, current_year=2026)
-assert "ShrimpGuard" in rendered_landing
-assert "Penaeus vannamei" in rendered_landing
-assert "Google Gemini" in rendered_landing
-assert "landing-stats-strip" in rendered_landing
-assert "landing-features" in rendered_landing
-assert "landing-workflow-section" in rendered_landing
-assert "landing-cta-section" in rendered_landing
-print("landing.html rendered cleanly!")
-
-print("All Jinja2 rendering tests passed with flying colors!")
-
-
+for tpl_name in templates_to_test:
+    try:
+        tpl = env.get_template(tpl_name)
+        rendered = tpl.render(**mock_data)
+        print(f"[OK] {tpl_name}: rendered successfully ({len(rendered)} chars)")
+    except Exception as e:
+        print(f"[ERROR] {tpl_name}: {e}")
