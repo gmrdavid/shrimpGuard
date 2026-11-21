@@ -12,7 +12,7 @@
     <title>User Management | AERIS-V</title>
 
     <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}?v=3.6">
+          href="{{ url_for('static', filename='css/style.css') }}?v=3.7">
 </head>
 
 <body class="dashboard-page admin-page">
@@ -54,13 +54,6 @@
                 <use href="#icon-monitor"></use>
             </svg>
             <span>IoT &amp; Telemetry Control</span>
-        </a>
-
-        <a href="/recommendations">
-            <svg class="ui-icon" aria-hidden="true">
-                <use href="#icon-sparkles"></use>
-            </svg>
-            <span>AI Recommendation</span>
         </a>
 
         <a href="/admin/logs">
@@ -1064,7 +1057,11 @@
                             <td>
                                 <div class="admin-user-cell">
                                     <span class="user-avatar-circle" aria-hidden="true">
+                                        {% if user.profile_pic %}
+                                        <img src="{{ user.profile_pic }}" alt="{{ user.user_name }}" class="user-avatar-table-img">
+                                        {% else %}
                                         {{ user.user_name[:1].upper() if user.user_name else '?' }}
+                                        {% endif %}
                                     </span>
                                     <strong class="user-cell-name">{{ user.user_name }}</strong>
                                 </div>
@@ -1113,6 +1110,7 @@
                                             data-name="{{ user.user_name }}"
                                             data-role="{{ user.role }}"
                                             data-status="{{ user.status }}"
+                                            data-avatar="{{ user.profile_pic or '' }}"
                                             data-last-login="{% if user.last_login %}{% if user.last_login.strftime is defined %}{{ user.last_login.strftime('%b %d, %Y %I:%M %p') }}{% else %}{{ user.last_login }}{% endif %}{% else %}Never{% endif %}">
                                         <svg class="ui-icon" aria-hidden="true">
                                             <use href="#icon-eye"></use>
@@ -1198,7 +1196,7 @@
 
 </div>
 
-<script src="{{ url_for('static', filename='js/admindashboard.js') }}?v=3.6"></script>
+<script src="{{ url_for('static', filename='js/admindashboard.js') }}?v=3.7"></script>
 <script src="{{ url_for('static', filename='js/admindropdowns.js') }}?v=3.6"></script>
 <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
 <script src="{{ url_for('static', filename='js/adaptive.js') }}"></script>

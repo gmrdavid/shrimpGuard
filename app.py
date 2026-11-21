@@ -4076,7 +4076,7 @@ def analytics():
 
 @app.route("/recommendations")
 @app.route("/ai-recommendations")
-@role_required("Client", "Admin")
+@role_required("Client")
 def ai_recommendations_page():
     user_email = session.get("user_id")
     user = db.session.get(User, user_email) if user_email else None
@@ -4086,7 +4086,7 @@ def ai_recommendations_page():
 
 
 @app.route("/api/ai/recommendations")
-@role_required("Client", "Admin")
+@role_required("Client")
 def api_ai_recommendations():
     user_email = session.get("user_id")
     device_id = request.args.get("device_id")

@@ -11,3 +11,5 @@ dashboard.db
 .env.*
 
 scratch/
+static/uploads/avatars/*
+!static/uploads/avatars/.gitkeep

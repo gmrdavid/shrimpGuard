@@ -90,8 +90,13 @@
             if (lastLoginEl) lastLoginEl.textContent = button.dataset.lastLogin || "Never";
 
             const avatarEl = get("view-user-avatar");
+            const avatarUrl = button.dataset.avatar || "";
             if (avatarEl) {
-                avatarEl.textContent = name.trim().charAt(0).toUpperCase() || "?";
+                if (avatarUrl) {
+                    avatarEl.innerHTML = `<img src="${avatarUrl}" alt="${name}" class="view-user-avatar-img">`;
+                } else {
+                    avatarEl.textContent = name.trim().charAt(0).toUpperCase() || "?";
+                }
             }
 
             const roleElement = get("view-user-role");

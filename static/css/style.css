@@ -5049,6 +5049,7 @@ nav a {
     font-weight: 750;
     border: 2px solid #ffffff;
     box-shadow: 0 3px 10px rgba(20, 61, 52, 0.18);
+    overflow: hidden;
 }
 
 .admin-page .admin-view-dialog .user-hero-meta {
@@ -17321,8 +17322,8 @@ nav a {
 
 .admin-page .user-avatar-circle {
     display: grid;
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     place-items: center;
     border-radius: 50%;
     background: linear-gradient(135deg, #24744d 0%, #143d34 100%);
@@ -17330,6 +17331,23 @@ nav a {
     font-size: 12px;
     font-weight: 800;
     flex-shrink: 0;
+    overflow: hidden;
+}
+
+.admin-page .user-avatar-table-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+}
+
+.admin-page .view-user-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+    display: block;
 }
 
 .admin-page .user-cell-name {
