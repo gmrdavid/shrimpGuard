@@ -220,12 +220,25 @@ function renderDevices(data) {
             const statusClass = isDevOnline ? "status-optimal status-online" : "status-danger status-offline";
             const dotClass = isDevOnline ? "dot-optimal" : "dot-danger dot-offline";
             const catSlug = (dev.category || "communication").toLowerCase().replace(/ & /g, "-").replace(/\s+/g, "-");
+            const iconMap = {
+                sensors: "droplet",
+                communication: "monitor",
+                "alerts-signaling": "bell",
+                power: "activity"
+            };
+            const iconName = iconMap[catSlug] || "cpu";
 
             tr.className = `device-row device-row-${dev.status ? dev.status.toLowerCase() : "offline"}`;
             tr.innerHTML = `
                 <td>
                     <div class="device-cell-title-row">
-                        <strong class="device-cell-name">${dev.name}</strong>
+                        <span class="device-avatar-box avatar-${catSlug}">
+                            <svg class="ui-icon" aria-hidden="true"><use href="#icon-${iconName}"></use></svg>
+                        </span>
+                        <div class="device-name-stack">
+                            <strong class="device-cell-name">${dev.name}</strong>
+                            <span class="device-category-hint">${dev.category || "Monitored Unit"}</span>
+                        </div>
                     </div>
                 </td>
                 <td>

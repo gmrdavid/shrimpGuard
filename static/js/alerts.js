@@ -584,8 +584,8 @@ function renderAlertHistory(history) {
 
             const countNum = Number(item.alert_count) || 0;
             const countBadge = countNum > 0
-                ? `<span class="alert-count-pill alert-count-active">${countNum} active</span>`
-                : `<span class="alert-count-pill alert-count-zero">0</span>`;
+                ? `<span class="alert-count-pill alert-count-active"><svg class="ui-icon mini-cell-icon" aria-hidden="true"><use href="#icon-alert"></use></svg>${countNum} Triggered</span>`
+                : `<span class="alert-count-pill alert-count-zero"><svg class="ui-icon mini-cell-icon" style="color:#059669;" aria-hidden="true"><use href="#icon-check"></use></svg>0 Active</span>`;
 
             return `
                 <tr>

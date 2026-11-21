@@ -476,11 +476,36 @@
                         <table class="alerts-history-table">
                             <thead>
                                 <tr>
-                                    <th>Date</th>
-                                    <th>Time</th>
-                                    <th>Alerts</th>
-                                    <th>Severity</th>
-                                    <th>Details</th>
+                                    <th scope="col" style="width: 140px;">
+                                        <span class="th-content">
+                                            <svg class="ui-icon th-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>
+                                            Date
+                                        </span>
+                                    </th>
+                                    <th scope="col" style="width: 130px;">
+                                        <span class="th-content">
+                                            <svg class="ui-icon th-icon" aria-hidden="true"><use href="#icon-clock"></use></svg>
+                                            Time
+                                        </span>
+                                    </th>
+                                    <th scope="col" style="width: 140px;">
+                                        <span class="th-content">
+                                            <svg class="ui-icon th-icon" aria-hidden="true"><use href="#icon-bell"></use></svg>
+                                            Alert Count
+                                        </span>
+                                    </th>
+                                    <th scope="col" style="width: 140px;">
+                                        <span class="th-content">
+                                            <svg class="ui-icon th-icon" aria-hidden="true"><use href="#icon-alert"></use></svg>
+                                            Severity
+                                        </span>
+                                    </th>
+                                    <th scope="col">
+                                        <span class="th-content">
+                                            <svg class="ui-icon th-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
+                                            Telemetry Diagnostics &amp; Details
+                                        </span>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody id="alert-history-body"></tbody>

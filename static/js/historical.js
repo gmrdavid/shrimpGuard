@@ -1256,9 +1256,24 @@ function updateTable() {
             <tr>
                 <td><span class="table-cell-date">${dateDisplay}</span></td>
                 <td><span class="table-cell-time">${timeDisplay}</span></td>
-                <td><span class="reading-val-badge reading-val-temp">${formattedTemp} °C</span></td>
-                <td><span class="reading-val-badge reading-val-ph">${formattedPh}</span></td>
-                <td><span class="table-status status-${statusClass}"><span class="status-indicator-dot ${dotClass}"></span>${statusLabel}</span></td>
+                <td>
+                    <span class="reading-val-badge reading-val-temp" title="Water Temperature">
+                        <svg class="ui-icon mini-cell-icon" style="color:#2563eb;" aria-hidden="true"><use href="#icon-thermometer"></use></svg>
+                        ${formattedTemp} °C
+                    </span>
+                </td>
+                <td>
+                    <span class="reading-val-badge reading-val-ph" title="Water pH Level">
+                        <svg class="ui-icon mini-cell-icon" style="color:#059669;" aria-hidden="true"><use href="#icon-droplet"></use></svg>
+                        ${formattedPh}
+                    </span>
+                </td>
+                <td>
+                    <span class="table-status status-${statusClass}">
+                        <span class="status-indicator-dot ${dotClass}"></span>
+                        ${statusLabel}
+                    </span>
+                </td>
             </tr>
         `;
     }).join("");

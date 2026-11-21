@@ -480,11 +480,36 @@
                     <table class="devices-table">
                         <thead>
                             <tr>
-                                <th scope="col" style="width: 150px;">Hardware Node ID</th>
-                                <th scope="col">Node / Pond Location</th>
-                                <th scope="col" style="width: 140px;">Account Owner</th>
-                                <th scope="col" style="width: 140px;">LoRa Link</th>
-                                <th scope="col" style="width: 180px;">Last Telemetry</th>
+                                <th scope="col" style="width: 170px;">
+                                    <span class="th-content">
+                                        <svg class="ui-icon th-icon" aria-hidden="true"><use href="#icon-database"></use></svg>
+                                        Hardware Node ID
+                                    </span>
+                                </th>
+                                <th scope="col">
+                                    <span class="th-content">
+                                        <svg class="ui-icon th-icon" aria-hidden="true"><use href="#icon-monitor"></use></svg>
+                                        Node / Pond Location
+                                    </span>
+                                </th>
+                                <th scope="col" style="width: 160px;">
+                                    <span class="th-content">
+                                        <svg class="ui-icon th-icon" aria-hidden="true"><use href="#icon-user"></use></svg>
+                                        Account Owner
+                                    </span>
+                                </th>
+                                <th scope="col" style="width: 145px;">
+                                    <span class="th-content">
+                                        <svg class="ui-icon th-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
+                                        LoRa Link
+                                    </span>
+                                </th>
+                                <th scope="col" style="width: 180px;">
+                                    <span class="th-content">
+                                        <svg class="ui-icon th-icon" aria-hidden="true"><use href="#icon-clock"></use></svg>
+                                        Last Telemetry
+                                    </span>
+                                </th>
                                 <th scope="col" style="width: 110px; text-align: center;">Actions</th>
                             </tr>
                         </thead>
@@ -568,20 +593,47 @@
                         <table class="devices-table">
                             <thead>
                                 <tr>
-                                    <th scope="col">Device Name</th>
-                                    <th scope="col" style="width: 240px;">Type</th>
-                                    <th scope="col" style="width: 140px;">Status</th>
-                                    <th scope="col" style="width: 160px;">Last Seen</th>
+                                    <th scope="col">
+                                        <span class="th-content">
+                                            <svg class="ui-icon th-icon" aria-hidden="true"><use href="#icon-cpu"></use></svg>
+                                            Device Hardware
+                                        </span>
+                                    </th>
+                                    <th scope="col" style="width: 230px;">
+                                        <span class="th-content">
+                                            <svg class="ui-icon th-icon" aria-hidden="true"><use href="#icon-settings"></use></svg>
+                                            Subsystem / Type
+                                        </span>
+                                    </th>
+                                    <th scope="col" style="width: 150px;">
+                                        <span class="th-content">
+                                            <svg class="ui-icon th-icon" aria-hidden="true"><use href="#icon-activity"></use></svg>
+                                            Health Status
+                                        </span>
+                                    </th>
+                                    <th scope="col" style="width: 170px;">
+                                        <span class="th-content">
+                                            <svg class="ui-icon th-icon" aria-hidden="true"><use href="#icon-clock"></use></svg>
+                                            Last Heartbeat
+                                        </span>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody id="devices-table-body">
                                 {% for dev in (devices_list or []) %}
                                 {% set dev_status_slug = (dev.status or 'offline')|lower %}
                                 {% set dev_cat_slug = (dev.category or 'general')|lower|replace(' & ', '-')|replace(' ', '-') %}
+                                {% set dev_icon = 'droplet' if dev_cat_slug == 'sensors' else ('monitor' if dev_cat_slug == 'communication' else ('bell' if dev_cat_slug == 'alerts-signaling' else ('activity' if dev_cat_slug == 'power' else 'cpu'))) %}
                                 <tr class="device-row device-row-{{ dev_status_slug }}">
                                     <td>
                                         <div class="device-cell-title-row">
-                                            <strong class="device-cell-name">{{ dev.name }}</strong>
+                                            <span class="device-avatar-box avatar-{{ dev_cat_slug }}">
+                                                <svg class="ui-icon" aria-hidden="true"><use href="#icon-{{ dev_icon }}"></use></svg>
+                                            </span>
+                                            <div class="device-name-stack">
+                                                <strong class="device-cell-name">{{ dev.name }}</strong>
+                                                <span class="device-category-hint">{{ dev.category or 'Monitored Unit' }}</span>
+                                            </div>
                                         </div>
                                     </td>
                                     <td>
