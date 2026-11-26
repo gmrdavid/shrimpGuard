@@ -100,11 +100,25 @@ def parse_telemetry_line(raw_line):
         rssi_m = re.search(r"RSSI=([-+]?[0-9]+)", line)
         snr_m = re.search(r"SNR=([-+]?[0-9]*\.?[0-9]+)", line)
 
-        if temp_m and ph_m:
+        temp_val = None
+        if "Temp=ERR" in line:
+            err_m = re.search(r"Temp=ERR\s*\(([-+]?[0-9]*\.?[0-9]+)", line)
+            temp_val = float(err_m.group(1)) if err_m else -127.0
+        elif temp_m:
+            temp_val = float(temp_m.group(1))
+
+        ph_val = None
+        if "pH=ERR" in line:
+            err_ph = re.search(r"pH=ERR\s*\(([-+]?[0-9]*\.?[0-9]+)", line)
+            ph_val = float(err_ph.group(1)) if err_ph else 14.0
+        elif ph_m:
+            ph_val = float(ph_m.group(1))
+
+        if temp_val is not None and ph_val is not None:
             try:
                 return {
-                    "temperature": float(temp_m.group(1)),
-                    "ph": float(ph_m.group(1)),
+                    "temperature": temp_val,
+                    "ph": ph_val,
                     "device_id": dev_m.group(1) if dev_m else "NODE01",
                     "seq": int(seq_m.group(1)) if seq_m else None,
                     "status_hint": stat_m.group(1) if stat_m else None,
@@ -132,20 +146,27 @@ def parse_telemetry_line(raw_line):
         except Exception:
             pass
 
-    # 3. Raw LoRa CSV format - only accept if explicitly marked as Gateway RX
-    # (Prevents accidentally reading Node 1 Transmitter if plugged into PC via USB)
-    if line.startswith("SG1,") and "[RX]" in line:
-        parts = line.split(",")
+    # 3. Raw LoRa CSV format - accept if it contains "SG1," from Gateway receiver
+    if "SG1," in line and ("[RX]" in line or line.startswith("SG1,")):
+        clean = line[line.find("SG1,") :]
+        clean = clean.strip("\"' \r\n")
+        parts = clean.split(",")
         if len(parts) >= 5:
             try:
-                return {
-                    "temperature": float(parts[3]),
-                    "ph": float(parts[4]),
-                    "device_id": parts[1],
-                    "seq": int(parts[2]),
-                    "status_hint": parts[5] if len(parts) > 5 else None,
-                }
-            except ValueError:
+                clean_temp = re.search(r"[-+]?[0-9]*\.?[0-9]+", parts[3])
+                clean_ph = re.search(r"[-+]?[0-9]*\.?[0-9]+", parts[4])
+                clean_seq = re.search(r"\d+", parts[2])
+                clean_stat = parts[5].split()[0].strip("\"',") if len(parts) > 5 else None
+
+                if clean_temp and clean_ph and clean_seq:
+                    return {
+                        "temperature": float(clean_temp.group(0)),
+                        "ph": float(clean_ph.group(0)),
+                        "device_id": parts[1].strip(),
+                        "seq": int(clean_seq.group(0)),
+                        "status_hint": clean_stat,
+                    }
+            except (ValueError, IndexError):
                 pass
 
     return None

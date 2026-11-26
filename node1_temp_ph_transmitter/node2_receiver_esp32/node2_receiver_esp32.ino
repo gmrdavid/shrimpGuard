@@ -198,6 +198,7 @@ bool        haveLastSeq    = false;
 float       lastTemp       = 0.0f;
 float       lastPH         = 0.0f;
 bool        lastTempValid  = false;
+bool        lastPHValid    = false;
 float       lastRssi       = 0.0f;
 float       lastSnr        = 0.0f;
 WaterStatus lastStatus     = WATER_CRITICAL;
@@ -421,15 +422,11 @@ bool parsePacket(const String& raw, char* idOut, size_t idSize,
   float t = strtod(temp, &end);
   if (end == temp || *end != '\0') return false;
 
-  // Temperature validity check: allow -127.0 (disconnected sensor code) or valid range -55..125
-  bool validTemp = (t >= -55.0f && t <= 125.0f) || (t <= -120.0f);
-  if (!validTemp) return false;
-
+  // Parse pH numeric value (syntax check only; physical sensor range 0..14 is evaluated in handlePacket)
   float p = NAN;
   if (ph) {
     p = strtod(ph, &end);
     if (end == ph || *end != '\0') return false;
-    if (p < 0.0f || p > 14.0f) return false;
   }
 
   // Parse status if present; otherwise predict locally using embedded ML model
@@ -534,7 +531,7 @@ void updateLcdScreen(bool timeoutAlert) {
 
   // Row 2: pH Reading + Individual Status (20 chars)
   lcd.setCursor(0, 2);
-  if (isnan(lastPH)) {
+  if (!lastPHValid) {
     snprintf(line, sizeof(line), "pH:  ERR      %-8s", getPHStatusWord(lastPH));
   } else {
     snprintf(line, sizeof(line), "pH:  %5.2f  %-8s", lastPH, getPHStatusWord(lastPH));
@@ -688,8 +685,9 @@ void handlePacket() {
 
   // Cache readings
   lastTemp       = tempC;
-  lastTempValid  = (tempC > -120.0f); // -127.0 is disconnected DS18B20
+  lastTempValid  = (tempC > -120.0f && tempC >= -55.0f && tempC <= 125.0f); // -127.0 is disconnected DS18B20
   lastPH         = phVal;
+  lastPHValid    = (!isnan(phVal) && phVal >= 0.0f && phVal <= 14.0f);
   lastRssi       = rssi;
   lastSnr        = snr;
   lastStatus     = parsedStatus;
@@ -707,11 +705,17 @@ void handlePacket() {
     Serial.print(tempC, 2);
     Serial.print(F(" C"));
   } else {
-    Serial.print(F("ERR"));
+    Serial.print(F("ERR ("));
+    Serial.print(tempC, 2);
+    Serial.print(F(" C)"));
   }
   Serial.print(F(" | pH="));
-  if (!isnan(phVal)) {
+  if (lastPHValid) {
     Serial.print(phVal, 2);
+  } else if (!isnan(phVal)) {
+    Serial.print(F("ERR ("));
+    Serial.print(phVal, 2);
+    Serial.print(F(")"));
   } else {
     Serial.print(F("N/A"));
   }

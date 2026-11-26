@@ -460,6 +460,14 @@ void loop() {
         // --- Read pH with real-time temperature compensation ---
         currentVoltage = readPHVoltage();
         currentPH = ph.readPH(currentVoltage, currentTemperature);
+        bool phSensorOk = (!isnan(currentPH) && currentPH >= 0.0f && currentPH <= 14.0f);
+
+        if (!phSensorOk) {
+          sensorErrCount++;
+          Serial.print(F("[pH] WARNING: Sensor read out of range 0..14 ("));
+          Serial.print(currentPH, 2);
+          Serial.println(F("). Check probe BNC connection, module power, or run EEPROM calibration."));
+        }
 
         Serial.print(F("[pH] Voltage: "));
         Serial.print(currentVoltage, 1);
