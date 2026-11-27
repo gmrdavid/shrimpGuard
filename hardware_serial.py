@@ -300,7 +300,13 @@ def _run_listener_loop(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dis
                 )
 
         if not handle:
-            LATEST_HARDWARE_STREAM["is_connected"] = False
+            # Do not overwrite Wi-Fi gateway connection state while Wi-Fi readings are actively arriving
+            is_wifi_active = (
+                LATEST_HARDWARE_STREAM.get("connected_port") == "Wi-Fi (Node 2 Gateway)"
+                and (time.time() - LATEST_HARDWARE_STREAM.get("last_packet_time", 0) < 60)
+            )
+            if not is_wifi_active:
+                LATEST_HARDWARE_STREAM["is_connected"] = False
             time.sleep(3)
             continue
 

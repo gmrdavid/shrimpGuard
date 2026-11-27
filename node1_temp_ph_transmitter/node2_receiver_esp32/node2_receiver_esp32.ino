@@ -143,7 +143,7 @@ const uint32_t RADIO_RETRY_MS     = 5000;  // RadioLib init retry interval
 #define ENABLE_WIFI_POST           true   // Enabled for standalone solar operation
 const char* WIFI_SSID             = "Xiaomi 12X";      // Enter your Wi-Fi Router or Phone Hotspot Name
 const char* WIFI_PASSWORD         = "12345678K";  // Enter your Wi-Fi Password
-const char* AERIS_V_HOST          = "191.0.14.54";   // AERIS-V PC IPv4 (run `ipconfig` on the PC; must be on the SAME Wi-Fi as Node 2)
+const char* AERIS_V_HOST          = "10.126.106.145"; // AERIS-V PC IPv4 (run `ipconfig` on the PC; must be on the SAME Wi-Fi as Node 2)
 const uint16_t AERIS_V_PORT       = 5000;
 char AERIS_V_API_URL[96];                            // built in setup() from host + port
 const char* AERIS_V_API_KEY       = "aeris-v-secret-key-capstone2";
@@ -575,11 +575,7 @@ void postReadingToAerisV(float temp, float ph, const char* devId, uint32_t seq) 
 
   WiFiClient client;
   HTTPClient http;
-#if defined(ESP8266)
   if (!http.begin(client, AERIS_V_API_URL)) {
-#else
-  if (!http.begin(AERIS_V_API_URL)) {
-#endif
     Serial.println(F("[HTTP] Failed to initialize connection to AERIS-V API."));
     return;
   }
@@ -597,6 +593,10 @@ void postReadingToAerisV(float temp, float ph, const char* devId, uint32_t seq) 
   if (httpCode > 0) {
     Serial.print(F("[HTTP] Forwarded reading to AERIS-V -> HTTP "));
     Serial.println(httpCode);
+    if (httpCode < 200 || httpCode >= 300) {
+      Serial.print(F("[HTTP] Response: "));
+      Serial.println(http.getString());
+    }
   } else {
     Serial.print(F("[HTTP] POST failed, error: "));
     Serial.print(http.errorToString(httpCode).c_str());

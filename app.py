@@ -1504,8 +1504,26 @@ def latest_reading():
 
     from hardware_serial import LATEST_HARDWARE_STREAM
 
-    # Only fallback to live hardware serial stream if Admin or the designated hardware owner
-    is_hw_authorized = (user_role == "Admin") or (user_id and user_id.lower() == hw_default_owner.lower())
+    # Authorize live hardware stream for Admin, designated default owner, or owner of the paired device
+    stream_dev_id = LATEST_HARDWARE_STREAM.get("device_id")
+    owns_stream_device = False
+    if user_id and stream_dev_id:
+        try:
+            owns_stream_device = (
+                UserDevice.query.filter_by(
+                    user_email=user_id, device_id=stream_dev_id, status="Active"
+                ).first()
+                is not None
+            )
+        except SQLAlchemyError:
+            db.session.rollback()
+            owns_stream_device = False
+
+    is_hw_authorized = (
+        (user_role == "Admin")
+        or (user_id and user_id.lower() == hw_default_owner.lower())
+        or owns_stream_device
+    )
 
     stream_temp = LATEST_HARDWARE_STREAM.get("temperature")
     stream_last_time = LATEST_HARDWARE_STREAM.get("last_packet_time", 0)
