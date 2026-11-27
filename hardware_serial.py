@@ -377,7 +377,9 @@ def _run_listener_loop(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dis
                                             logger.debug(f"Device lookup error: {pe}")
 
                                     if node_is_paused:
-                                        logger.info(f"[LoRa SYNC] Ignored reading from paused node '{dev_id}' (Seq {seq}).")
+                                        pause_msg = f"[LoRa SYNC] PAUSED — Ignored incoming reading from Node: {dev_id} (Seq {seq})"
+                                        logger.info(pause_msg)
+                                        print(pause_msg, flush=True)
                                         continue
 
                                     if not target_user:

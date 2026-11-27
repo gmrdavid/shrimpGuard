@@ -1381,7 +1381,9 @@ def create_reading():
         paired = db.session.query(UserDevice).filter(func.upper(UserDevice.device_id) == dev_id).first()
         if paired:
             if paired.status == "Paused" and is_hardware_request:
-                app.logger.info(f"[WiFi IoT SYNC] Ignored reading from paused node '{dev_id}'.")
+                pause_msg = f"[WiFi IoT SYNC] PAUSED — Ignored incoming reading from Node: {dev_id}"
+                app.logger.info(pause_msg)
+                print(pause_msg, flush=True)
                 return jsonify({
                     "ignored": True,
                     "paused": True,
@@ -1393,7 +1395,8 @@ def create_reading():
                 if not target_user_email:
                     target_user_email = paired.user_email
     except Exception as pe:
-        app.logger.debug(f"UserDevice lookup error: {pe}")
+        app.logger.warning(f"UserDevice lookup error for '{dev_id}': {pe}")
+        print(f"[WiFi IoT SYNC] UserDevice lookup error for '{dev_id}': {pe}", flush=True)
 
     if not target_user_email:
         target_user_email = os.getenv("LORA_DEFAULT_USER_EMAIL", "rio@gmail.com")
