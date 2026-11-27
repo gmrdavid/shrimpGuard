@@ -1362,7 +1362,13 @@ def create_reading():
 
     recorded_at_str = recorded_at.strftime("%Y-%m-%dT%H:%M:%S.%f")
 
-    dev_id = payload.get("device_id", "NODE01") if isinstance(payload, dict) else "NODE01"
+    raw_dev_id = payload.get("device_id") if isinstance(payload, dict) else None
+    dev_id = str(raw_dev_id or "NODE01").strip().upper()
+    is_hardware_request = bool(
+        request.headers.get("X-API-Key")
+        or request.headers.get("Authorization", "").startswith("Bearer ")
+        or raw_dev_id
+    )
 
     # Associate reading with paired device owner, authenticated client, or specified user
     target_user_email = (
@@ -1372,11 +1378,20 @@ def create_reading():
     )
 
     try:
-        paired = db.session.query(UserDevice).filter_by(device_id=dev_id, status="Active").first()
+        paired = db.session.query(UserDevice).filter_by(device_id=dev_id).first()
         if paired:
-            paired.last_seen = now_dt
-            if not target_user_email:
-                target_user_email = paired.user_email
+            if paired.status == "Paused" and is_hardware_request:
+                app.logger.info(f"[WiFi IoT SYNC] Ignored reading from paused node '{dev_id}'.")
+                return jsonify({
+                    "ignored": True,
+                    "paused": True,
+                    "device_id": dev_id,
+                    "message": f"Node '{dev_id}' is currently paused; reading not recorded.",
+                }), 200
+            if paired.status == "Active":
+                paired.last_seen = now_dt
+                if not target_user_email:
+                    target_user_email = paired.user_email
     except Exception as pe:
         app.logger.debug(f"UserDevice lookup error: {pe}")
 
@@ -1507,22 +1522,26 @@ def latest_reading():
     # Authorize live hardware stream for Admin, designated default owner, or owner of the paired device
     stream_dev_id = LATEST_HARDWARE_STREAM.get("device_id")
     owns_stream_device = False
-    if user_id and stream_dev_id:
+    stream_device_paused = False
+    if stream_dev_id:
         try:
-            owns_stream_device = (
-                UserDevice.query.filter_by(
-                    user_email=user_id, device_id=stream_dev_id, status="Active"
-                ).first()
-                is not None
-            )
+            stream_device = UserDevice.query.filter_by(device_id=str(stream_dev_id).strip().upper()).first()
+            if stream_device:
+                if stream_device.status == "Paused":
+                    stream_device_paused = True
+                elif user_id and stream_device.user_email == user_id and stream_device.status == "Active":
+                    owns_stream_device = True
         except SQLAlchemyError:
             db.session.rollback()
             owns_stream_device = False
 
     is_hw_authorized = (
-        (user_role == "Admin")
-        or (user_id and user_id.lower() == hw_default_owner.lower())
-        or owns_stream_device
+        not stream_device_paused
+        and (
+            (user_role == "Admin")
+            or (user_id and user_id.lower() == hw_default_owner.lower())
+            or owns_stream_device
+        )
     )
 
     stream_temp = LATEST_HARDWARE_STREAM.get("temperature")
@@ -2072,6 +2091,11 @@ def api_devices_toggle_pause():
         else:
             device.status = "Paused"
             action_desc = "Paused"
+            # Immediately stop active live stream cache for this paused node
+            from hardware_serial import LATEST_HARDWARE_STREAM
+            if str(LATEST_HARDWARE_STREAM.get("device_id") or "").strip().upper() == raw_node_id:
+                LATEST_HARDWARE_STREAM["last_packet_time"] = 0
+                LATEST_HARDWARE_STREAM["is_connected"] = False
 
         db.session.commit()
         log_activity(user_email, f"{action_desc} Device", f"{action_desc} telemetry routing for node '{raw_node_id}'")

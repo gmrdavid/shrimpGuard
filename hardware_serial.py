@@ -356,6 +356,8 @@ def _run_listener_loop(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dis
                                 analysis = None
 
                             # Ingest into DB within Flask app context
+                            dev_id = str(dev_id or "NODE01").strip().upper()
+                            node_is_paused = False
                             with app.app_context():
                                 try:
                                     from sqlalchemy import insert
@@ -364,13 +366,19 @@ def _run_listener_loop(app, db, sensor_readings_table, calculate_ml_fn, ntfy_dis
                                         try:
                                             paired = db.session.query(user_device_model).filter(
                                                 user_device_model.device_id == dev_id,
-                                                user_device_model.status == "Active",
                                             ).first()
                                             if paired:
-                                                target_user = paired.user_email
-                                                paired.last_seen = now_dt
+                                                if paired.status == "Paused":
+                                                    node_is_paused = True
+                                                elif paired.status == "Active":
+                                                    target_user = paired.user_email
+                                                    paired.last_seen = now_dt
                                         except Exception as pe:
                                             logger.debug(f"Device lookup error: {pe}")
+
+                                    if node_is_paused:
+                                        logger.info(f"[LoRa SYNC] Ignored reading from paused node '{dev_id}' (Seq {seq}).")
+                                        continue
 
                                     if not target_user:
                                         target_user = os.getenv("LORA_DEFAULT_USER_EMAIL", "rio@gmail.com")
