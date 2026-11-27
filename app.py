@@ -1378,7 +1378,7 @@ def create_reading():
     )
 
     try:
-        paired = db.session.query(UserDevice).filter_by(device_id=dev_id).first()
+        paired = db.session.query(UserDevice).filter(func.upper(UserDevice.device_id) == dev_id).first()
         if paired:
             if paired.status == "Paused" and is_hardware_request:
                 app.logger.info(f"[WiFi IoT SYNC] Ignored reading from paused node '{dev_id}'.")
@@ -1593,19 +1593,47 @@ def get_system_devices_inventory():
     hw_default_owner = os.getenv("LORA_DEFAULT_USER_EMAIL", "rio@gmail.com")
 
     paired_nodes = []
+    paused_nodes = set()
     if user_email:
         try:
-            paired_nodes = [d.device_id for d in UserDevice.query.filter_by(user_email=user_email, status="Active").all()]
+            all_user_nodes = UserDevice.query.filter_by(user_email=user_email).all()
+            paired_nodes = [d.device_id for d in all_user_nodes if d.status == "Active"]
+            paused_nodes = {str(d.device_id).strip().upper() for d in all_user_nodes if d.status == "Paused"}
         except Exception:
             paired_nodes = []
+            paused_nodes = set()
+    else:
+        try:
+            paused_nodes = {
+                str(d.device_id).strip().upper()
+                for d in UserDevice.query.filter_by(status="Paused").all()
+            }
+        except Exception:
+            paused_nodes = set()
+
+    if user_role == "Admin":
+        try:
+            paused_nodes = {
+                str(d.device_id).strip().upper()
+                for d in UserDevice.query.filter_by(status="Paused").all()
+            }
+        except Exception:
+            pass
+
+    raw_stream = LATEST_HARDWARE_STREAM or {}
+    stream_dev_upper = str(raw_stream.get("device_id") or "").strip().upper()
+    is_stream_paused = bool(stream_dev_upper and stream_dev_upper in paused_nodes)
 
     is_hw_authorized = (
-        (user_role == "Admin")
-        or (user_email and user_email.lower() == hw_default_owner.lower())
-        or bool(paired_nodes)
+        not is_stream_paused
+        and (
+            (user_role == "Admin")
+            or (user_email and user_email.lower() == hw_default_owner.lower())
+            or bool(paired_nodes)
+        )
     )
 
-    stream = (LATEST_HARDWARE_STREAM or {}) if is_hw_authorized else {}
+    stream = raw_stream if is_hw_authorized else {}
     if user_role != "Admin" and user_email and user_email.lower() != hw_default_owner.lower():
         if stream.get("device_id") not in paired_nodes:
             stream = {}
@@ -1856,7 +1884,11 @@ def api_devices_paired():
         result = []
         for n in nodes:
             d_dict = n.to_dict()
-            d_dict["is_streaming"] = is_live and (stream_dev_id == n.device_id)
+            d_dict["is_streaming"] = (
+                n.status == "Active"
+                and is_live
+                and (str(stream_dev_id or "").strip().upper() == str(n.device_id or "").strip().upper())
+            )
             result.append(d_dict)
 
         return jsonify({"success": True, "devices": result})
@@ -2095,6 +2127,7 @@ def api_devices_toggle_pause():
             from hardware_serial import LATEST_HARDWARE_STREAM
             if str(LATEST_HARDWARE_STREAM.get("device_id") or "").strip().upper() == raw_node_id:
                 LATEST_HARDWARE_STREAM["last_packet_time"] = 0
+                LATEST_HARDWARE_STREAM["recorded_at"] = None
                 LATEST_HARDWARE_STREAM["is_connected"] = False
 
         db.session.commit()
