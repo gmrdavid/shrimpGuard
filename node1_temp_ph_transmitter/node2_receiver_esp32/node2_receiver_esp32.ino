@@ -143,7 +143,9 @@ const uint32_t RADIO_RETRY_MS     = 5000;  // RadioLib init retry interval
 #define ENABLE_WIFI_POST           true   // Enabled for standalone solar operation
 const char* WIFI_SSID             = "Xiaomi 12X";      // Enter your Wi-Fi Router or Phone Hotspot Name
 const char* WIFI_PASSWORD         = "12345678K";  // Enter your Wi-Fi Password
-const char* AERIS_V_API_URL       = "http://10.136.191.145:5000/api/readings"; // AERIS-V PC Local IP
+const char* AERIS_V_HOST          = "191.0.14.54";   // AERIS-V PC IPv4 (run `ipconfig` on the PC; must be on the SAME Wi-Fi as Node 2)
+const uint16_t AERIS_V_PORT       = 5000;
+char AERIS_V_API_URL[96];                            // built in setup() from host + port
 const char* AERIS_V_API_KEY       = "aeris-v-secret-key-capstone2";
 #define SHRIMPGUARD_API_URL AERIS_V_API_URL
 #define SHRIMPGUARD_API_KEY AERIS_V_API_KEY
@@ -588,7 +590,7 @@ void postReadingToAerisV(float temp, float ph, const char* devId, uint32_t seq) 
 
   char jsonPayload[180];
   snprintf(jsonPayload, sizeof(jsonPayload),
-           "{\"temperature\":%.2f,\"ph\":%.2f,\"device_id\":\"%s\",\"seq\":%lu,\"user_email\":\"rio@gmail.com\"}",
+           "{\"temperature\":%.2f,\"ph\":%.2f,\"device_id\":\"%s\",\"seq\":%lu}",
            temp, ph, devId, (unsigned long)seq);
 
   int httpCode = http.POST((uint8_t*)jsonPayload, strlen(jsonPayload));
@@ -597,7 +599,9 @@ void postReadingToAerisV(float temp, float ph, const char* devId, uint32_t seq) 
     Serial.println(httpCode);
   } else {
     Serial.print(F("[HTTP] POST failed, error: "));
-    Serial.println(http.errorToString(httpCode).c_str());
+    Serial.print(http.errorToString(httpCode).c_str());
+    Serial.print(F(" | target: "));
+    Serial.println(AERIS_V_API_URL);
   }
   http.end();
 #endif
@@ -767,6 +771,10 @@ void setup() {
   Serial.begin(115200);
   delay(300);
 
+  snprintf(AERIS_V_API_URL, sizeof(AERIS_V_API_URL), "http://%s:%u/api/readings", AERIS_V_HOST, (unsigned)AERIS_V_PORT);
+  Serial.print(F("[WiFi] AERIS-V endpoint: "));
+  Serial.println(AERIS_V_API_URL);
+
 #if (defined(ESP8266) || defined(ESP32))
   if (ENABLE_WIFI_POST) {
     Serial.print(F("[WiFi] Connecting to: "));
@@ -871,6 +879,24 @@ void setup() {
 // ============================================================================
 void loop() {
   uint32_t now = millis();
+
+#if (defined(ESP8266) || defined(ESP32))
+  // 0. Wi-Fi link diagnostics (one-shot per connection)
+  static bool wifiReported = false;
+  if (ENABLE_WIFI_POST) {
+    if (WiFi.status() == WL_CONNECTED) {
+      if (!wifiReported) {
+        wifiReported = true;
+        Serial.print(F("[WiFi] Connected. Node2 IP: "));
+        Serial.print(WiFi.localIP());
+        Serial.print(F(" | Gateway: "));
+        Serial.println(WiFi.gatewayIP());
+      }
+    } else {
+      wifiReported = false;
+    }
+  }
+#endif
 
   // 1. Retry radio initialization if failed (non-blocking)
   if (!radioReady) {

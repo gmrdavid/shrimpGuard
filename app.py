@@ -5941,6 +5941,31 @@ if os.environ.get("FLASK_RUN_FROM_CLI") == "true":
     start_lora_hardware_service()
 
 
+def _print_lan_endpoints():
+    """Print the LAN URLs that Node 2 (Wi-Fi gateway) should POST readings to."""
+    import socket
+    ips = []
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ips.append(s.getsockname()[0])
+        s.close()
+    except Exception:
+        pass
+    try:
+        for info in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET):
+            ips.append(info[4][0])
+    except Exception:
+        pass
+    seen = set()
+    for ip in ips:
+        if ip.startswith("127.") or ip in seen:
+            continue
+        seen.add(ip)
+        print(f"[AERIS-V] Node 2 Wi-Fi gateway should POST to: http://{ip}:5000/api/readings", flush=True)
+
+
 if __name__ == "__main__":
+    _print_lan_endpoints()
     start_lora_hardware_service()
     app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=False)
